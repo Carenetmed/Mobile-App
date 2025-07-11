@@ -1,0 +1,260 @@
+import 'package:app_t/core/constants/app_assets.dart';
+import 'package:app_t/core/constants/app_colors.dart';
+import 'package:app_t/core/constants/fonts.dart';
+import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/model/validator.dart';
+import 'package:app_t/features/Authentication/presentation/widget/bordered_keyboard_input.dart';
+import 'package:app_t/shared/widgets/app_button.dart';
+import 'package:app_t/shared/widgets/svg_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+class FinSignUp extends StatefulWidget {
+  const FinSignUp({super.key});
+
+  @override
+  State<FinSignUp> createState() => _FinSignUpState();
+}
+
+class _FinSignUpState extends State<FinSignUp> {
+  // TextEditingController _dateController = TextEditingController();
+
+  bool _visiblePassword = true;
+  bool _visibleConfirmPassword = true;
+
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _dateController;
+  late final TextEditingController _passwordController;
+  late final TextEditingController _confirmPasswordController;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
+    _emailController = TextEditingController();
+    _dateController = TextEditingController();
+    _passwordController = TextEditingController();
+    _confirmPasswordController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _passwordController.dispose();
+    _emailController.dispose();
+    _dateController.dispose();
+    _confirmPasswordController.dispose();
+    _formKey.currentState?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: REdgeInsets.symmetric(horizontal: 15.w, vertical: .06.sh),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    icon: const Icon(Icons.arrow_back_ios),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Finish signing up',
+                    style: TextStyle(
+                      fontFamily: AppFonts.montserrat,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                ],
+              ),
+              SizedBox(height: 20.h),
+              Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    BorderedTextInput(
+                      keyboardType1: TextInputType.name,
+                      keyboardType2: TextInputType.name,
+                      hintText1: 'First name',
+                      hintText2: 'Last name',
+                      controller1: _firstNameController,
+                      controller2: _lastNameController,
+                      suffixIcon2: SizedBox(),
+
+                      validator1: Validators.validateFirstName,
+                      validator2: Validators.validateLastNAme,
+                    ),
+                    SizedBox(height: 3.h),
+                    Text(
+                      'Please make sure it matches the name on your government ID',
+                      style: TextStyle(
+                        fontFamily: AppFonts.montserrat,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    SizedBox(height: 50.h),
+                    BorderedTextInput(
+                      keyboardType2: TextInputType.emailAddress,
+                      suffixIcon1: Icon(Icons.keyboard_arrow_down_rounded),
+                      controller1: _dateController,
+                      controller2: _emailController,
+                      validator2: Validators.validateEmail,
+                      suffixIcon2: SizedBox(),
+                      readOnly1: true,
+                      onTap1: () async {
+                        DateTime? _picker = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(3000),
+                        );
+                        if (_picker != null) {
+                          setState(() {
+                            _dateController.text =
+                                _picker.toString().split(' ')[0];
+                          });
+                        }
+                      },
+                      hintText1: 'Birthday',
+                      hintText2: 'Email address',
+                    ),
+                    SizedBox(height: 3.h),
+                    Text(
+                      'Your birthday wont be shared with other people who use this\nservice',
+                      style: TextStyle(
+                        fontFamily: AppFonts.montserrat,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    SizedBox(height: 50.h),
+                    BorderedTextInput(
+                      keyboardType1: TextInputType.visiblePassword,
+                      keyboardType2: TextInputType.visiblePassword,
+                      obscureText1: _visiblePassword,
+                      obscureText2: _visibleConfirmPassword,
+                      controller1: _passwordController,
+                      controller2: _confirmPasswordController,
+                      validator1: Validators.validatePassword,
+                      validator2: Validators.validateConfirmPassword,
+                      hintText1: 'Password',
+                      hintText2: 'Confirm password',
+                      suffixIcon1: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _visiblePassword = !_visiblePassword;
+                          });
+                        },
+                        icon:
+                            _visiblePassword
+                                ? SvgImage(imgName: AssetsIcon.visible)
+                                : Icon(Icons.visibility_off),
+                      ),
+                      suffixIcon2: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _visibleConfirmPassword = !_visibleConfirmPassword;
+                          });
+                        },
+                        icon:
+                            _visibleConfirmPassword
+                                ? SvgImage(imgName: AssetsIcon.visible)
+                                : Icon(Icons.visibility_off),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 3.h),
+              Text(
+                'Your password must be at least 8 characters long including\nnumbers and special characters.',
+                style: TextStyle(
+                  fontFamily: AppFonts.montserrat,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              SizedBox(height: 50.h),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text:
+                          'By selecting Agree and continue, I agree to Carenet\'s',
+                      style: TextStyle(
+                        fontFamily: AppFonts.montserrat,
+                        color: AppColors.kBlack,
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' Terms of\nService,',
+                      style: TextStyle(
+                        fontFamily: AppFonts.montserrat,
+                        fontSize: 12.sp,
+                        color: AppColors.primaryBlue5,
+                        fontWeight: FontWeight.w400,
+                        decoration: TextDecoration.underline,
+                        decorationColor: AppColors.primaryBlue5,
+                      ),
+                    ),
+                    TextSpan(
+                      text: 'and I acknowledge the',
+                      style: TextStyle(
+                        fontFamily: AppFonts.montserrat,
+                        fontSize: 12.sp,
+                        color: AppColors.kBlack,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    TextSpan(
+                      text: 'Privacy Policy.',
+                      style: TextStyle(
+                        fontFamily: AppFonts.montserrat,
+                        fontSize: 12.sp,
+                        color: AppColors.primaryBlue5,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 5.h),
+              CarenetButtonFilled(
+                btnAction: () {
+                  Navigator.of(
+                    context,
+                  ).popAndPushNamed(RouteName.communityAgreement);
+                  // if (_formKey.currentState!.validate()){
+                  //   Navigator.of(context).popAndPushNamed(RouteName.communityAgreement);
+                  // }
+                },
+                btnName: ' Agree & continue',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

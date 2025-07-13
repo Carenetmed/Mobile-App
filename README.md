@@ -76,6 +76,7 @@ To maintain a clean and stable repository, we follow these rules:
 
 - **Flutter**: `>=3.27.0`
 - **Dart**
+- **BLOC State Management**
 - **REST API** (for external integrations)
 
 ---

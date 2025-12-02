@@ -9,6 +9,10 @@ import 'core/constants/navigators/routeName.dart';
 import 'core/constants/navigators/router.dart';
 import 'core/constants/strings.dart';
 import 'core/theme/theme.dart';
+import 'package:app_t/features/Messaging/presentation/pages/Chat.dart' as chat;
+import 'package:app_t/features/Messaging/presentation/pages/Messages.dart' as messages;
+import 'package:app_t/features/Messaging/presentation/pages/Message.dart';
+import 'package:app_t/features/Messaging/presentation/pages/Notofication.dart';
 
 void main() {
   runApp(const MyApp());
@@ -46,7 +50,7 @@ class MyApp extends StatelessWidget {
                   themeMode: state,
                   theme: lightTheme,
                   darkTheme: darkTheme,
-                  home: SignInEmail(),
+                  home: messages.MessagesPage(),
                   // onGenerateRoute: generateRoute,
                   // initialRoute: RouteName.splash,
                 );

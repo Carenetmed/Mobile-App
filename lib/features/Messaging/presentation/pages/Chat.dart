@@ -2,8 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // --- The Page Widget (Empty Chat with Dr. Uzo) ---
-class ChatPageEmpty extends StatelessWidget {
+class ChatPageEmpty extends StatefulWidget {
   const ChatPageEmpty({super.key});
+
+  @override
+  State<ChatPageEmpty> createState() => _ChatPageEmptyState();
+}
+
+class _ChatPageEmptyState extends State<ChatPageEmpty> {
+  late TextEditingController _messageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _messageController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,56 +77,81 @@ class ChatPageEmpty extends StatelessWidget {
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.emoji_emotions_outlined, color: Colors.black, size: 26),
+          _buildHoverableIconButton(
+            icon: Icons.emoji_emotions_outlined,
             onPressed: () {},
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
           ),
           const SizedBox(width: 12),
-          IconButton(
-            icon: Transform.rotate(
-              angle: 0.785398, // 45 degrees in radians
-              child: const Icon(Icons.attach_file, color: Colors.black, size: 26),
-            ),
+          _buildHoverableIconButton(
+            icon: Icons.attach_file,
+            isRotated: true,
             onPressed: () {},
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3F4F6),
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: const Text(
-                'Message',
-                style: TextStyle(
+            child: TextField(
+              controller: _messageController,
+              decoration: InputDecoration(
+                hintText: 'Message',
+                hintStyle: const TextStyle(
                   color: Color(0xFF9CA3AF),
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
                   letterSpacing: -0.41,
                 ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                filled: true,
+                fillColor: const Color(0xFFF3F4F6),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(22),
+                  borderSide: BorderSide.none,
+                ),
+                isDense: true,
+              ),
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                letterSpacing: -0.41,
               ),
             ),
           ),
           const SizedBox(width: 12),
-          IconButton(
-            icon: const Icon(Icons.camera_alt_outlined, color: Colors.black, size: 26),
+          _buildHoverableIconButton(
+            icon: Icons.camera_alt_outlined,
             onPressed: () {},
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
           ),
           const SizedBox(width: 12),
-          IconButton(
-            icon: const Icon(Icons.mic_none, color: Colors.black, size: 26),
+          _buildHoverableIconButton(
+            icon: Icons.mic_none,
             onPressed: () {},
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHoverableIconButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    bool isRotated = false,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: onPressed,
+        splashColor: Colors.transparent,
+        hoverColor: Colors.grey[200]?.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: isRotated
+              ? Transform.rotate(
+                  angle: 0.785398, // 45 degrees in radians
+                  child: Icon(icon, color: Colors.black, size: 26),
+                )
+              : Icon(icon, color: Colors.black, size: 26),
+        ),
       ),
     );
   }

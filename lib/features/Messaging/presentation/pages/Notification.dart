@@ -1,8 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class NotificationsPage extends StatelessWidget {
+class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
+
+  @override
+  State<NotificationsPage> createState() => _NotificationsPageState();
+}
+
+class _NotificationsPageState extends State<NotificationsPage> {
+  late String _selectedTopTab;
+  late String _selectedBottom;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTopTab = 'All';
+    _selectedBottom = 'Alert';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,38 +173,51 @@ class NotificationsPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildTab('All', true),
-          _buildTab('Events', false),
-          _buildTab('Appointment', false),
-          _buildTab('Messages', false),
-          _buildTab('Payment', false),
+          _buildTab('All'),
+          _buildTab('Events'),
+          _buildTab('Appointment'),
+          _buildTab('Messages'),
+          _buildTab('Payment'),
         ],
       ),
     );
   }
 
-  Widget _buildTab(String text, bool isSelected) {
+  Widget _buildTab(String text) {
+    final isSelected = _selectedTopTab == text;
     return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? const Color(0xFF007AFF) : Colors.black,
-                letterSpacing: -0.08,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _selectedTopTab = text;
+            });
+          },
+          splashColor: Colors.grey[200]?.withOpacity(0.3),
+          hoverColor: Colors.grey[100]?.withOpacity(0.5),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected ? const Color(0xFF007AFF) : Colors.black,
+                    letterSpacing: -0.08,
+                  ),
+                ),
               ),
-            ),
+              Container(
+                height: 2,
+                color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
+              ),
+            ],
           ),
-          Container(
-            height: 2,
-            color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -278,36 +306,52 @@ class NotificationsPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(Icons.home_outlined, 'Home', false),
-          _buildNavItem(Icons.search, 'Search', false),
-          _buildNavItem(Icons.article_outlined, 'Articles', false),
-          _buildNavItem(Icons.calendar_today_outlined, 'Appointments', false),
-          _buildNavItem(Icons.notifications_outlined, 'Alert', true),
+          _buildNavItem(Icons.home_outlined, 'Home'),
+          _buildNavItem(Icons.search, 'Search'),
+          _buildNavItem(Icons.article_outlined, 'Articles'),
+          _buildNavItem(Icons.calendar_today_outlined, 'Appointments'),
+          _buildNavItem(Icons.notifications_outlined, 'Alert'),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, bool isSelected) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          size: 24,
-          color: isSelected ? const Color(0xFF007AFF) : Colors.black,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w400,
-            color: isSelected ? const Color(0xFF007AFF) : Colors.black,
-            letterSpacing: -0.08,
+  Widget _buildNavItem(IconData icon, String label) {
+    final isSelected = _selectedBottom == label;
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedBottom = label;
+          });
+        },
+        borderRadius: BorderRadius.circular(8),
+        hoverColor: Colors.grey[100]?.withOpacity(0.5),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 24,
+                color: isSelected ? const Color(0xFF007AFF) : Colors.black,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                  color: isSelected ? const Color(0xFF007AFF) : Colors.black,
+                  letterSpacing: -0.08,
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

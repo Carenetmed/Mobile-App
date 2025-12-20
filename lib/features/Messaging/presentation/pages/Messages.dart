@@ -25,8 +25,21 @@ class MyApp extends StatelessWidget {
 }
 
 // --- The Page Widget (Messages Page) ---
-class MessagesPage extends StatelessWidget {
+class MessagesPage extends StatefulWidget {
   const MessagesPage({super.key});
+
+  @override
+  State<MessagesPage> createState() => _MessagesPageState();
+}
+
+class _MessagesPageState extends State<MessagesPage> {
+  late String _selectedTab;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTab = 'Messages';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,39 +114,52 @@ class MessagesPage extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildTab('All', false),
-          _buildTab('Events', false),
-          _buildTab('Appointment', false),
-          _buildTab('Messages', true),
-          _buildTab('Payment', false),
+            _buildTab('All'),
+            _buildTab('Events'),
+            _buildTab('Appointment'),
+            _buildTab('Messages'),
+            _buildTab('Payment'),
         ],
       ),
     );
   }
 
-  Widget _buildTab(String text, bool isSelected) {
+    Widget _buildTab(String text) {
+      final isSelected = _selectedTab == text;
     return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? const Color(0xFF007AFF) : Colors.black,
-                letterSpacing: -0.08,
-              ),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                _selectedTab = text;
+              });
+            },
+            splashColor: Colors.grey[200]?.withOpacity(0.3),
+            hoverColor: Colors.grey[100]?.withOpacity(0.5),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected ? const Color(0xFF007AFF) : Colors.black,
+                      letterSpacing: -0.08,
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 2,
+                  color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
+                ),
+              ],
             ),
           ),
-          Container(
-            height: 2,
-            color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
-          ),
-        ],
-      ),
+        ),
     );
   }
 

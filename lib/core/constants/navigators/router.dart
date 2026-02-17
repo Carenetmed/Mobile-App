@@ -12,6 +12,10 @@ import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.d
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/user_edit.dart';
 import 'package:app_t/features/splash/presentation/pages/splash_screen.dart';
+import 'package:app_t/features/Messaging/presentation/pages/Messages.dart' as messages;
+import 'package:app_t/features/Messaging/presentation/pages/Chat.dart' as chat;
+import 'package:app_t/features/Messaging/presentation/pages/Message.dart';
+import 'package:app_t/features/Messaging/presentation/pages/Notofication.dart';
 import 'package:flutter/material.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -69,6 +73,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.signInPhone:
       return _getPageRoute(routeName: settings.name!,
           viewToShow: SignInPhone());
+    case RouteName.messages:
+      return _getPageRoute(routeName: settings.name!, viewToShow: messages.MessagesPage());
+    case RouteName.chat:
+      return _getPageRoute(routeName: settings.name!, viewToShow: chat.ChatPageEmpty());
+    case RouteName.message:
+      return _getPageRoute(routeName: settings.name!, viewToShow: ChatPageUnavailable());
+    case RouteName.notification:
+      return _getPageRoute(routeName: settings.name!, viewToShow: NotificationsPage());
 
     /*case RouteName.upload:
       final args = settings.arguments! as UploadParams;

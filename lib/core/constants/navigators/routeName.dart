@@ -13,4 +13,8 @@ class RouteName {
   static const String dashboard = 'dashboard';
   static const String signInPhone = 'signInPhone';
   static const String signInEmail = 'signInEmail';
+  static const String messages = 'messages';
+  static const String chat = 'chat';
+  static const String message = 'message';
+  static const String notification = 'notification';
 }

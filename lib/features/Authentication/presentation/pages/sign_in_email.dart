@@ -41,7 +41,6 @@ class _SignInEmailState extends State<SignInEmail> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          physics: NeverScrollableScrollPhysics(),
           padding: REdgeInsets.only(left: 15.w, right: 15.w, top: .04.sh),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

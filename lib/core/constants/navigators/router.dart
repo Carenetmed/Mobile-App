@@ -7,15 +7,17 @@ import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.d
 import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/onboarding.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/profession.dart';
+import 'package:app_t/features/Settings/presentation/pages/settings_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/user_edit.dart';
 import 'package:app_t/features/splash/presentation/pages/splash_screen.dart';
-import 'package:app_t/features/Messaging/presentation/pages/Messages.dart' as messages;
+import 'package:app_t/features/Messaging/presentation/pages/Messages.dart'
+    as messages;
 import 'package:app_t/features/Messaging/presentation/pages/Chat.dart' as chat;
 import 'package:app_t/features/Messaging/presentation/pages/Message.dart';
-import 'package:app_t/features/Messaging/presentation/pages/Notofication.dart';
+import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
 import 'package:flutter/material.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -56,31 +58,56 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         viewToShow: ProfessionScreen(),
       );
     case RouteName.signUpPhone:
-      return _getPageRoute(routeName: settings.name!,
-          viewToShow: SignUpPhone());
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: SignUpPhone(),
+      );
 
     case RouteName.medicalEdit:
       return _getPageRoute(routeName: settings.name!, viewToShow: UserEdit());
 
     case RouteName.dashboard:
       return _getPageRoute(routeName: settings.name!, viewToShow: Dashboard());
+    case RouteName.settings:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const SettingsPage(),
+      );
     case RouteName.signUpEmail:
-      return _getPageRoute(routeName: settings.name!,
-          viewToShow: SignUpEmail());
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: SignUpEmail(),
+      );
     case RouteName.signInEmail:
-      return _getPageRoute(routeName: settings.name!,
-          viewToShow: SignInEmail());
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: SignInEmail(),
+      );
     case RouteName.signInPhone:
-      return _getPageRoute(routeName: settings.name!,
-          viewToShow: SignInPhone());
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: SignInPhone(),
+      );
     case RouteName.messages:
-      return _getPageRoute(routeName: settings.name!, viewToShow: messages.MessagesPage());
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: messages.MessagesPage(),
+      );
     case RouteName.chat:
-      return _getPageRoute(routeName: settings.name!, viewToShow: chat.ChatPageEmpty());
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: chat.ChatPageEmpty(),
+      );
     case RouteName.message:
-      return _getPageRoute(routeName: settings.name!, viewToShow: ChatPageUnavailable());
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: ChatPageUnavailable(),
+      );
     case RouteName.notification:
-      return _getPageRoute(routeName: settings.name!, viewToShow: NotificationsPage());
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: NotificationsPage(),
+      );
 
     /*case RouteName.upload:
       final args = settings.arguments! as UploadParams;

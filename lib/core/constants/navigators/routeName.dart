@@ -11,6 +11,7 @@ class RouteName {
   static const String medicalAgreement = 'medicalAgreement';
   static const String medicalEdit = 'medicalEdit';
   static const String dashboard = 'dashboard';
+  static const String settings = 'settings';
   static const String signInPhone = 'signInPhone';
   static const String signInEmail = 'signInEmail';
   static const String messages = 'messages';

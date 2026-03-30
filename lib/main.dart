@@ -1,6 +1,4 @@
 import 'package:app_t/core/theme/bloc/theme_bloc.dart';
-import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
-import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,11 +7,6 @@ import 'core/constants/navigators/routeName.dart';
 import 'core/constants/navigators/router.dart';
 import 'core/constants/strings.dart';
 import 'core/theme/theme.dart';
-import 'package:app_t/features/Messaging/presentation/pages/Chat.dart' as chat;
-import 'package:app_t/features/Messaging/presentation/pages/Messages.dart' as messages;
-import 'package:app_t/features/Messaging/presentation/pages/Message.dart';
-import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
-import 'package:app_t/features/Messaging/presentation/pages/Chat_2.dart';
 
 void main() {
   runApp(const MyApp());
@@ -51,12 +44,8 @@ class MyApp extends StatelessWidget {
                   themeMode: state,
                   theme: lightTheme,
                   darkTheme: darkTheme,
-                  home: NotificationsPage(),
-
-
-
-                  // onGenerateRoute: generateRoute,
-                  // initialRoute: RouteName.splash,
+                  onGenerateRoute: generateRoute,
+                  initialRoute: RouteName.dashboard,
                 );
               },
             );

@@ -1,6 +1,7 @@
 import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
+import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/model/drawer_item_model.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Home/presentation/widget/icon_listile.dart';
@@ -14,7 +15,7 @@ class CarenetDraw extends StatelessWidget {
   final int following = 22;
   final int followers = 252;
 
-  List<DrawerItem> _drawerItem = [
+  final List<DrawerItem> _drawerItem = [
     DrawerItem(label: 'Dashboard', assetPath: AssetsIcon.home, actButton: null),
     DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
     DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
@@ -150,6 +151,10 @@ class CarenetDraw extends StatelessWidget {
             IconListile(
               label: 'Settings & Privacy',
               assetPath: AssetsIcon.settings,
+              btnAction: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushNamed(RouteName.settings);
+              },
             ),
             IconListile(label: 'Rate the App', assetPath: AssetsIcon.star),
             IconListile(label: 'Need help?', assetPath: AssetsIcon.help),

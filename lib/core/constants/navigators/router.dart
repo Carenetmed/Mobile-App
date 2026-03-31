@@ -7,6 +7,8 @@ import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.d
 import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/onboarding.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/profession.dart';
+import 'package:app_t/features/Settings/presentation/pages/deactivate_account_page.dart';
+import 'package:app_t/features/Settings/presentation/pages/delete_account_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/settings_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
@@ -72,6 +74,16 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _getPageRoute(
         routeName: settings.name!,
         viewToShow: const SettingsPage(),
+      );
+    case RouteName.deactivateAccount:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const DeactivateAccountPage(),
+      );
+    case RouteName.deleteAccount:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const DeleteAccountPage(),
       );
     case RouteName.signUpEmail:
       return _getPageRoute(

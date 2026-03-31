@@ -225,3 +225,140 @@ class SettingsNavigationTile extends StatelessWidget {
     );
   }
 }
+
+class SettingsTextField extends StatelessWidget {
+  final String label;
+  final String hintText;
+  final TextEditingController? controller;
+  final TextInputType keyboardType;
+  final int maxLines;
+  final bool obscureText;
+  final Widget? suffixIcon;
+  final String? Function(String?)? validator;
+
+  const SettingsTextField({
+    required this.label,
+    required this.hintText,
+    this.controller,
+    this.keyboardType = TextInputType.text,
+    this.maxLines = 1,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.validator,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: FontSizes.footer1,
+            fontWeight: FontWeight.w600,
+            fontFamily: AppFonts.montserrat,
+            color: AppColors.white06,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          maxLines: obscureText ? 1 : maxLines,
+          obscureText: obscureText,
+          validator: validator,
+          style: TextStyle(
+            fontSize: FontSizes.body3,
+            fontWeight: FontWeight.w400,
+            fontFamily: AppFonts.montserrat,
+            color: AppColors.white06,
+          ),
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: TextStyle(
+              fontSize: FontSizes.body3,
+              fontWeight: FontWeight.w400,
+              fontFamily: AppFonts.montserrat,
+              color: AppColors.white04,
+            ),
+            suffixIcon: suffixIcon,
+            filled: true,
+            fillColor: AppColors.kWhite,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 14.w,
+              vertical: maxLines > 1 ? 14.h : 12.h,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: AppColors.white02),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: AppColors.primaryBlue6),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: AppColors.primaryRed6),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: AppColors.primaryRed6),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class SettingsActionButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color borderColor;
+
+  const SettingsActionButton({
+    required this.label,
+    required this.onTap,
+    required this.backgroundColor,
+    required this.textColor,
+    required this.borderColor,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48.h,
+      child: Material(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12.r),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12.r),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: borderColor),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: FontSizes.body3,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: AppFonts.montserrat,
+                  color: textColor,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

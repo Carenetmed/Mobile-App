@@ -23,5 +23,7 @@ void main() {
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('Privacy & safety'), findsOneWidget);
     expect(find.text('Help & support'), findsOneWidget);
+    expect(find.text('Deactivate account'), findsOneWidget);
+    expect(find.text('Delete account'), findsOneWidget);
   });
 }

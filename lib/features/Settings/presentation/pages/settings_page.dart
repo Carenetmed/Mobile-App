@@ -1,4 +1,5 @@
 import 'package:app_t/core/constants/app_colors.dart';
+import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Settings/presentation/widgets/settings_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -52,6 +53,27 @@ class SettingsPage extends StatelessWidget {
             subtitle:
                 'Find guidance for account access, security, and support requests.',
             onTap: () => _showComingSoon(context, 'Help & support'),
+          ),
+          SizedBox(height: 24.h),
+          const SettingsSectionTitle(title: 'Account actions'),
+          SizedBox(height: 12.h),
+          SettingsNavigationTile(
+            icon: Icons.pause_circle_outline_rounded,
+            title: 'Deactivate account',
+            subtitle:
+                'Temporarily disable your account while keeping your information available when you return.',
+            destructive: true,
+            onTap:
+                () => Navigator.pushNamed(context, RouteName.deactivateAccount),
+          ),
+          SizedBox(height: 12.h),
+          SettingsNavigationTile(
+            icon: Icons.delete_outline_rounded,
+            title: 'Delete account',
+            subtitle:
+                'Permanently remove your account and start the final account deletion review.',
+            destructive: true,
+            onTap: () => Navigator.pushNamed(context, RouteName.deleteAccount),
           ),
         ],
       ),

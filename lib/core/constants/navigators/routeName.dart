@@ -20,4 +20,5 @@ class RouteName {
   static const String chat = 'chat';
   static const String message = 'message';
   static const String notification = 'notification';
+  static const String notificationCenter = 'notificationCenter';
 }

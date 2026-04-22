@@ -1,7 +1,7 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/theme/textStyle.dart';
-import 'package:app_t/features/Home/presentation/widget/vitals_box.dart';
+import 'package:app_t/features/Home/presentation/widget/home_readings_row.dart';
 import 'package:app_t/shared/widgets/action_container.dart';
 import 'package:app_t/shared/widgets/complete_profile_alert.dart';
 import 'package:app_t/shared/widgets/upgrade_widget.dart';
@@ -39,17 +39,7 @@ class FeedTab extends StatelessWidget {
         CompleteProfileAlert(),
         Padding(
           padding: REdgeInsets.only(top: 12, bottom: 25),
-          child: SizedBox(
-            height: .085.sh,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: BouncingScrollPhysics(),
-              itemCount: 1,
-              itemBuilder: (BuildContext context, int index) {
-                return VitalsBox(btnAction: () {});
-              },
-            ),
-          ),
+          child: const HomeReadingsRow(),
         ),
         SearchBar(
           hintText: 'What would you like to know?',

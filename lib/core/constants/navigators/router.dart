@@ -20,6 +20,7 @@ import 'package:app_t/features/Messaging/presentation/pages/Messages.dart'
 import 'package:app_t/features/Messaging/presentation/pages/Chat.dart' as chat;
 import 'package:app_t/features/Messaging/presentation/pages/Message.dart';
 import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
+import 'package:app_t/features/Messaging/presentation/pages/notification_center_page.dart';
 import 'package:flutter/material.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -119,6 +120,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _getPageRoute(
         routeName: settings.name!,
         viewToShow: NotificationsPage(),
+      );
+    case RouteName.notificationCenter:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const NotificationCenterPage(),
       );
 
     /*case RouteName.upload:

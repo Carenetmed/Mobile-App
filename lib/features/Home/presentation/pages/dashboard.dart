@@ -4,6 +4,7 @@ import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Home/presentation/pages/home.dart';
 import 'package:app_t/features/Home/presentation/widget/drawer.dart';
+import 'package:app_t/features/Messaging/presentation/pages/notification_center_page.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 
@@ -31,12 +32,16 @@ class _DashboardState extends State<Dashboard> {
     _index = 0;
   }
 
-  List<Widget> navBarView = [
-    Home(),
-    Placeholder(),
-    Placeholder(),
-    Placeholder(),
-    Placeholder(),
+  List<Widget> get navBarView => [
+    const Home(),
+    const Placeholder(),
+    const Placeholder(),
+    const Placeholder(),
+    NotificationCenterPage(
+      onBackTap: () {
+        setState(() => _index = 0);
+      },
+    ),
   ];
 
   @override

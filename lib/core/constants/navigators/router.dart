@@ -2,6 +2,10 @@ import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
+import 'package:app_t/features/Home/presentation/pages/manage_readings.dart';
+import 'package:app_t/features/Home/presentation/pages/reading_metric_detail_page.dart';
+import 'package:app_t/features/Home/presentation/pages/readings.dart';
+import 'package:app_t/features/Home/presentation/model/reading_metric.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/commitment_screen.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
@@ -125,6 +129,22 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _getPageRoute(
         routeName: settings.name!,
         viewToShow: const NotificationCenterPage(),
+      );
+    case RouteName.readings:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const VitalsReading(),
+      );
+    case RouteName.manageReadings:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const ManageReadings(),
+      );
+    case RouteName.readingMetricDetail:
+      final args = settings.arguments! as ReadingMetricRouteArgs;
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: ReadingMetricDetailPage(metric: metricById(args.metricId)),
       );
 
     /*case RouteName.upload:

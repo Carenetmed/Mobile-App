@@ -2,7 +2,6 @@ import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
-import 'package:app_t/core/model/drawer_item_model.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Home/presentation/widget/icon_listile.dart';
 import 'package:flutter/material.dart';
@@ -14,19 +13,6 @@ class CarenetDraw extends StatelessWidget {
   final String user = 'Dr. Lagbaja Tamedu';
   final int following = 22;
   final int followers = 252;
-
-  final List<DrawerItem> _drawerItem = [
-    DrawerItem(label: 'Dashboard', assetPath: AssetsIcon.home, actButton: null),
-    DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
-    DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
-    DrawerItem(label: 'Reminders', assetPath: AssetsIcon.clock),
-    DrawerItem(label: 'Schedule', assetPath: AssetsIcon.calendar),
-    DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
-    DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
-    DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
-    DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
-    DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -137,12 +123,13 @@ class CarenetDraw extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 // clipBehavior: Clip.hardEdge,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: _drawerItem.length,
+                itemCount: _drawerItems(context).length,
                 itemBuilder: (context, index) {
+                  final item = _drawerItems(context)[index];
                   return IconListile(
-                    btnAction: _drawerItem[index].actButton,
-                    assetPath: _drawerItem[index].assetPath,
-                    label: _drawerItem[index].label,
+                    btnAction: item.$3,
+                    assetPath: item.$2,
+                    label: item.$1,
                   );
                 },
               ),
@@ -165,4 +152,25 @@ class CarenetDraw extends StatelessWidget {
       ),
     );
   }
+
+  List<(String, String, void Function()?)> _drawerItems(BuildContext context) =>
+      [
+        ('Dashboard', AssetsIcon.home, null),
+        ('Profile', AssetsIcon.personOutline, null),
+        (
+          'Readings',
+          AssetsIcon.content,
+          () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamed(RouteName.readings);
+          },
+        ),
+        ('Reminders', AssetsIcon.clock, null),
+        ('Schedule', AssetsIcon.calendar, null),
+        ('provider', AssetsIcon.umbrella_outline, null),
+        ('Premium', AssetsIcon.trophy, null),
+        ('Articles', AssetsIcon.notepad, null),
+        ('Messages', AssetsIcon.mail, null),
+        ('Events', AssetsIcon.mic, null),
+      ];
 }

@@ -10,6 +10,9 @@ import 'package:app_t/features/Onboarding/presentation/pages/profession.dart';
 import 'package:app_t/features/Settings/presentation/pages/deactivate_account_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/delete_account_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/settings_page.dart';
+import 'package:app_t/features/Reminders/presentation/model/reminder_item.dart';
+import 'package:app_t/features/Reminders/presentation/pages/reminder_editor_page.dart';
+import 'package:app_t/features/Reminders/presentation/pages/reminders_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
@@ -125,6 +128,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _getPageRoute(
         routeName: settings.name!,
         viewToShow: const NotificationCenterPage(),
+      );
+    case RouteName.reminders:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const RemindersPage(),
+      );
+    case RouteName.reminderEditor:
+      final args = settings.arguments as ReminderEditorArgs?;
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: ReminderEditorPage(reminder: args?.reminder),
       );
 
     /*case RouteName.upload:

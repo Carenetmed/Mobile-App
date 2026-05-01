@@ -15,19 +15,6 @@ class CarenetDraw extends StatelessWidget {
   final int following = 22;
   final int followers = 252;
 
-  final List<DrawerItem> _drawerItem = [
-    DrawerItem(label: 'Dashboard', assetPath: AssetsIcon.home, actButton: null),
-    DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
-    DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
-    DrawerItem(label: 'Reminders', assetPath: AssetsIcon.clock),
-    DrawerItem(label: 'Schedule', assetPath: AssetsIcon.calendar),
-    DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
-    DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
-    DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
-    DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
-    DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -137,12 +124,13 @@ class CarenetDraw extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 // clipBehavior: Clip.hardEdge,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: _drawerItem.length,
+                itemCount: _drawerItems(context).length,
                 itemBuilder: (context, index) {
+                  final item = _drawerItems(context)[index];
                   return IconListile(
-                    btnAction: _drawerItem[index].actButton,
-                    assetPath: _drawerItem[index].assetPath,
-                    label: _drawerItem[index].label,
+                    btnAction: item.actButton,
+                    assetPath: item.assetPath,
+                    label: item.label,
                   );
                 },
               ),
@@ -165,4 +153,24 @@ class CarenetDraw extends StatelessWidget {
       ),
     );
   }
+
+  List<DrawerItem> _drawerItems(BuildContext context) => [
+    DrawerItem(label: 'Dashboard', assetPath: AssetsIcon.home, actButton: null),
+    DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
+    DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
+    DrawerItem(
+      label: 'Reminders',
+      assetPath: AssetsIcon.clock,
+      actButton: () {
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamed(RouteName.reminders);
+      },
+    ),
+    DrawerItem(label: 'Schedule', assetPath: AssetsIcon.calendar),
+    DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
+    DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
+    DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
+    DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
+    DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
+  ];
 }

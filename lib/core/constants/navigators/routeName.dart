@@ -22,6 +22,8 @@ class RouteName {
   static const String notification = 'notification';
   static const String notificationCenter = 'notificationCenter';
   static const String reminders = 'reminders';
+  static const String addReminder = 'addReminder';
+  static const String schedule = 'schedule';
   static const String reminderEditor = 'reminderEditor';
   static const String readings = 'readings';
   static const String manageReadings = 'manageReadings';

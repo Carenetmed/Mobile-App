@@ -15,21 +15,39 @@ class CarenetDraw extends StatelessWidget {
   final int following = 22;
   final int followers = 252;
 
-  final List<DrawerItem> _drawerItem = [
-    DrawerItem(label: 'Dashboard', assetPath: AssetsIcon.home, actButton: null),
-    DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
-    DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
-    DrawerItem(label: 'Reminders', assetPath: AssetsIcon.clock),
-    DrawerItem(label: 'Schedule', assetPath: AssetsIcon.calendar),
-    DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
-    DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
-    DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
-    DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
-    DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final List<DrawerItem> drawerItems = [
+      DrawerItem(
+        label: 'Dashboard',
+        assetPath: AssetsIcon.home,
+        actButton: null,
+      ),
+      DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
+      DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
+      DrawerItem(
+        label: 'Reminders',
+        assetPath: AssetsIcon.clock,
+        actButton: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushNamed(RouteName.reminders);
+        },
+      ),
+      DrawerItem(
+        label: 'Schedule',
+        assetPath: AssetsIcon.calendar,
+        actButton: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushNamed(RouteName.schedule);
+        },
+      ),
+      DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
+      DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
+      DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
+      DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
+      DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
+    ];
+
     return Drawer(
       backgroundColor: AppColors.kWhite,
       width: .63.sw,
@@ -44,7 +62,7 @@ class CarenetDraw extends StatelessWidget {
                 Image.asset(AssetsImages.firePlace),
                 IconButton(
                   onPressed: () {},
-                  icon: Icon(Icons.info_outline, size: 13),
+                  icon: const Icon(Icons.info_outline, size: 13),
                 ),
               ],
             ),
@@ -57,9 +75,6 @@ class CarenetDraw extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            // SizedBox(
-            //   height: 3.h,
-            // ),
             Text(
               'Resident Doctor at LUTH',
               style: TextStyle(
@@ -124,10 +139,7 @@ class CarenetDraw extends StatelessWidget {
               ],
             ),
             RPadding(
-              padding: REdgeInsets.only(
-                top: 16.h,
-                // bottom: .01.sh
-              ),
+              padding: REdgeInsets.only(top: 16.h),
               child: Divider(thickness: 1, color: AppColors.kPink),
             ),
             SizedBox(height: 25.h),
@@ -135,14 +147,13 @@ class CarenetDraw extends StatelessWidget {
               height: .45.sh,
               child: ListView.builder(
                 padding: EdgeInsets.zero,
-                // clipBehavior: Clip.hardEdge,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _drawerItem.length,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: drawerItems.length,
                 itemBuilder: (context, index) {
                   return IconListile(
-                    btnAction: _drawerItem[index].actButton,
-                    assetPath: _drawerItem[index].assetPath,
-                    label: _drawerItem[index].label,
+                    btnAction: drawerItems[index].actButton,
+                    assetPath: drawerItems[index].assetPath,
+                    label: drawerItems[index].label,
                   );
                 },
               ),

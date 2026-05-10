@@ -7,6 +7,9 @@ import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.d
 import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/onboarding.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/profession.dart';
+import 'package:app_t/features/Reminders/presentation/pages/add_reminder_page.dart';
+import 'package:app_t/features/Reminders/presentation/pages/reminder_page.dart';
+import 'package:app_t/features/Reminders/presentation/pages/schedule_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/deactivate_account_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/delete_account_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/settings_page.dart';
@@ -126,13 +129,21 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         routeName: settings.name!,
         viewToShow: const NotificationCenterPage(),
       );
-
-    /*case RouteName.upload:
-      final args = settings.arguments! as UploadParams;
+    case RouteName.reminders:
       return _getPageRoute(
         routeName: settings.name!,
-        viewToShow: UploadPage(params: args),
-      ); */
+        viewToShow: const ReminderPage(),
+      );
+    case RouteName.addReminder:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const AddReminderPage(),
+      );
+    case RouteName.schedule:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const SchedulePage(),
+      );
 
     default:
       return MaterialPageRoute<dynamic>(

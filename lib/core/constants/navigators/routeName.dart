@@ -23,4 +23,7 @@ class RouteName {
   static const String notificationCenter = 'notificationCenter';
   static const String reminders = 'reminders';
   static const String reminderEditor = 'reminderEditor';
+  static const String readings = 'readings';
+  static const String manageReadings = 'manageReadings';
+  static const String readingMetricDetail = 'readingMetricDetail';
 }

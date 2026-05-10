@@ -2,7 +2,6 @@ import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
-import 'package:app_t/core/model/drawer_item_model.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Home/presentation/widget/icon_listile.dart';
 import 'package:flutter/material.dart';
@@ -131,6 +130,9 @@ class CarenetDraw extends StatelessWidget {
                     btnAction: item.actButton,
                     assetPath: item.assetPath,
                     label: item.label,
+                    btnAction: item.$3,
+                    assetPath: item.$2,
+                    label: item.$1,
                   );
                 },
               ),
@@ -173,4 +175,24 @@ class CarenetDraw extends StatelessWidget {
     DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
     DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
   ];
+  List<(String, String, void Function()?)> _drawerItems(BuildContext context) =>
+      [
+        ('Dashboard', AssetsIcon.home, null),
+        ('Profile', AssetsIcon.personOutline, null),
+        (
+          'Readings',
+          AssetsIcon.content,
+          () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pushNamed(RouteName.readings);
+          },
+        ),
+        ('Reminders', AssetsIcon.clock, null),
+        ('Schedule', AssetsIcon.calendar, null),
+        ('provider', AssetsIcon.umbrella_outline, null),
+        ('Premium', AssetsIcon.trophy, null),
+        ('Articles', AssetsIcon.notepad, null),
+        ('Messages', AssetsIcon.mail, null),
+        ('Events', AssetsIcon.mic, null),
+      ];
 }

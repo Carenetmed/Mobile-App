@@ -24,4 +24,8 @@ class RouteName {
   static const String reminders = 'reminders';
   static const String addReminder = 'addReminder';
   static const String schedule = 'schedule';
+  static const String reminderEditor = 'reminderEditor';
+  static const String readings = 'readings';
+  static const String manageReadings = 'manageReadings';
+  static const String readingMetricDetail = 'readingMetricDetail';
 }

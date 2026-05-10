@@ -2,6 +2,10 @@ import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
+import 'package:app_t/features/Home/presentation/pages/manage_readings.dart';
+import 'package:app_t/features/Home/presentation/pages/reading_metric_detail_page.dart';
+import 'package:app_t/features/Home/presentation/pages/readings.dart';
+import 'package:app_t/features/Home/presentation/model/reading_metric.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/commitment_screen.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
@@ -13,6 +17,9 @@ import 'package:app_t/features/Reminders/presentation/pages/schedule_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/deactivate_account_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/delete_account_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/settings_page.dart';
+import 'package:app_t/features/Reminders/presentation/model/reminder_item.dart';
+import 'package:app_t/features/Reminders/presentation/pages/reminder_editor_page.dart';
+import 'package:app_t/features/Reminders/presentation/pages/reminders_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
@@ -135,6 +142,32 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         viewToShow: const ReminderPage(),
       );
     case RouteName.addReminder:
+        viewToShow: const RemindersPage(),
+      );
+    case RouteName.reminderEditor:
+      final args = settings.arguments as ReminderEditorArgs?;
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: ReminderEditorPage(reminder: args?.reminder),
+    case RouteName.readings:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const VitalsReading(),
+      );
+    case RouteName.manageReadings:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const ManageReadings(),
+      );
+    case RouteName.readingMetricDetail:
+      final args = settings.arguments! as ReadingMetricRouteArgs;
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: ReadingMetricDetailPage(metric: metricById(args.metricId)),
+      );
+
+    /*case RouteName.upload:
+      final args = settings.arguments! as UploadParams;
       return _getPageRoute(
         routeName: settings.name!,
         viewToShow: const AddReminderPage(),

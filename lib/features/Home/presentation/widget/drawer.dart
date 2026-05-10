@@ -127,6 +127,9 @@ class CarenetDraw extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final item = _drawerItems(context)[index];
                   return IconListile(
+                    btnAction: item.actButton,
+                    assetPath: item.assetPath,
+                    label: item.label,
                     btnAction: item.$3,
                     assetPath: item.$2,
                     label: item.$1,
@@ -153,6 +156,25 @@ class CarenetDraw extends StatelessWidget {
     );
   }
 
+  List<DrawerItem> _drawerItems(BuildContext context) => [
+    DrawerItem(label: 'Dashboard', assetPath: AssetsIcon.home, actButton: null),
+    DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
+    DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
+    DrawerItem(
+      label: 'Reminders',
+      assetPath: AssetsIcon.clock,
+      actButton: () {
+        Navigator.of(context).pop();
+        Navigator.of(context).pushNamed(RouteName.reminders);
+      },
+    ),
+    DrawerItem(label: 'Schedule', assetPath: AssetsIcon.calendar),
+    DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
+    DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
+    DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
+    DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
+    DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
+  ];
   List<(String, String, void Function()?)> _drawerItems(BuildContext context) =>
       [
         ('Dashboard', AssetsIcon.home, null),

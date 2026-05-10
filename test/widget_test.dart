@@ -4,6 +4,9 @@ import 'package:app_t/features/Home/presentation/pages/manage_readings.dart';
 import 'package:app_t/features/Home/presentation/pages/reading_metric_detail_page.dart';
 import 'package:app_t/features/Home/presentation/pages/readings.dart';
 import 'package:app_t/features/Messaging/presentation/pages/notification_center_page.dart';
+import 'package:app_t/features/Reminders/presentation/model/reminder_item.dart';
+import 'package:app_t/features/Reminders/presentation/pages/reminder_editor_page.dart';
+import 'package:app_t/features/Reminders/presentation/pages/reminders_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -78,6 +81,7 @@ void main() {
     );
   });
 
+  testWidgets('Reminders screen renders the overview and seeded reminders', (
   testWidgets('Readings overview renders the health record section', (
     WidgetTester tester,
   ) async {
@@ -85,6 +89,7 @@ void main() {
       ScreenUtilInit(
         designSize: const Size(430, 932),
         builder: (context, child) {
+          return const MaterialApp(home: RemindersPage());
           return const MaterialApp(home: VitalsReading());
         },
       ),
@@ -92,6 +97,13 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.text('Reminders'), findsOneWidget);
+    expect(find.text('Stay on top of your care plan'), findsOneWidget);
+    expect(find.text('Morning medication'), findsOneWidget);
+    expect(find.text('Create reminder'), findsOneWidget);
+  });
+
+  testWidgets('Reminder editor renders editing controls', (
     expect(find.text('Readings'), findsOneWidget);
     expect(find.text('Health records overview'), findsOneWidget);
     expect(find.text('Blood Pressure'), findsOneWidget);
@@ -126,6 +138,7 @@ void main() {
         designSize: const Size(430, 932),
         builder: (context, child) {
           return MaterialApp(
+            home: ReminderEditorPage(reminder: sampleReminders.first),
             home: ReadingMetricDetailPage(metric: metricById('blood_pressure')),
           );
         },
@@ -134,6 +147,10 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.text('Edit Reminder'), findsOneWidget);
+    expect(find.text('Reminder setup'), findsOneWidget);
+    expect(find.text('Reminder enabled'), findsOneWidget);
+    expect(find.text('Save changes'), findsOneWidget);
     expect(find.text('Blood Pressure'), findsWidgets);
     expect(find.text('Current reading'), findsOneWidget);
     expect(find.text('Quick insight'), findsOneWidget);

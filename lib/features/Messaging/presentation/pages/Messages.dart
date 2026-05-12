@@ -1,218 +1,198 @@
+import 'package:app_t/core/constants/app_assets.dart';
+import 'package:app_t/core/constants/app_colors.dart';
+import 'package:app_t/core/constants/fonts.dart';
+import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/theme/textStyle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// --- Application Entry Point ---
-void main() {
-  runApp(const MyApp());
-}
-
-// --- Application Wrapper (The Root Widget) ---
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Carenet Health',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'SF Pro Text',
-      ),
-      home: const MessagesPage(),
-    );
-  }
-}
-
-// --- The Page Widget (Messages Page) ---
-class MessagesPage extends StatefulWidget {
+class MessagesPage extends StatelessWidget {
   const MessagesPage({super.key});
-
-  @override
-  State<MessagesPage> createState() => _MessagesPageState();
-}
-
-class _MessagesPageState extends State<MessagesPage> {
-  late String _selectedTab;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedTab = 'Messages';
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: AppColors.kWhite,
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.kWhite,
+        surfaceTintColor: AppColors.kWhite,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
-          onPressed: () {},
+          icon: const Icon(Icons.arrow_back, color: AppColors.kBlack, size: 24),
+          onPressed: () => Navigator.of(context).maybePop(),
         ),
-        title: const Text(
+        title: Text(
           'Messages',
           style: TextStyle(
-            color: Color(0xFF007AFF),
-            fontSize: 17,
+            color: AppColors.primaryBlue5,
+            fontFamily: AppFonts.montserrat,
+            fontSize: FontSizes.body3,
             fontWeight: FontWeight.w600,
-            letterSpacing: -0.41,
           ),
         ),
         centerTitle: true,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: REdgeInsets.only(right: 16),
             child: CircleAvatar(
-              radius: 16,
-              backgroundColor: const Color(0xFFD1D5DB),
-              child: const Icon(Icons.person, size: 18, color: Colors.white),
+              radius: 16.r,
+              backgroundImage: const AssetImage(AssetsImages.profileHandle),
             ),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildTabBar(),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              children: [
-                _buildMessageCard(
-                  'Dr. Lagbaja has replied your message.',
-                  'Reply him now',
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: 5,
-            width: 134,
-            margin: const EdgeInsets.only(bottom: 8, top: 4),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(100),
-            ),
-          ),
-        ],
-      ),
+      body: const MessagesTabContent(embedded: false),
     );
   }
+}
 
-  Widget _buildTabBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!, width: 1),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-            _buildTab('All'),
-            _buildTab('Events'),
-            _buildTab('Appointment'),
-            _buildTab('Messages'),
-            _buildTab('Payment'),
-        ],
-      ),
-    );
-  }
+class MessagesTabContent extends StatefulWidget {
+  const MessagesTabContent({super.key, required this.embedded});
 
-    Widget _buildTab(String text) {
-      final isSelected = _selectedTab == text;
-    return Expanded(
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: InkWell(
-            onTap: () {
-              setState(() {
-                _selectedTab = text;
-              });
-            },
-            splashColor: Colors.grey[200]?.withOpacity(0.3),
-            hoverColor: Colors.grey[100]?.withOpacity(0.5),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+  final bool embedded;
+
+  @override
+  State<MessagesTabContent> createState() => _MessagesTabContentState();
+}
+
+class _MessagesTabContentState extends State<MessagesTabContent> {
+  String _selectedTab = 'Messages';
+
+  final List<String> _tabs = const [
+    'All',
+    'Events',
+    'Appointment',
+    'Messages',
+    'Payment',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(height: widget.embedded ? 8.h : 0),
+        SizedBox(
+          height: 42.h,
+          child: ListView.separated(
+            padding: REdgeInsets.symmetric(
+              horizontal: widget.embedded ? 2 : 12,
+            ),
+            scrollDirection: Axis.horizontal,
+            itemCount: _tabs.length,
+            separatorBuilder: (_, __) => SizedBox(width: 8.w),
+            itemBuilder: (context, index) {
+              final tab = _tabs[index];
+              final isSelected = _selectedTab == tab;
+              return InkWell(
+                borderRadius: BorderRadius.circular(999.r),
+                onTap: () => setState(() => _selectedTab = tab),
+                child: Container(
+                  padding: REdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color:
+                        isSelected
+                            ? AppColors.primaryBlue5
+                            : const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(999.r),
+                  ),
                   child: Text(
-                    text,
+                    tab,
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected ? const Color(0xFF007AFF) : Colors.black,
-                      letterSpacing: -0.08,
+                      fontFamily: AppFonts.montserrat,
+                      fontSize: FontSizes.footer2,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: isSelected ? AppColors.kWhite : AppColors.white06,
                     ),
                   ),
                 ),
-                Container(
-                  height: 2,
-                  color: isSelected ? const Color(0xFF007AFF) : Colors.transparent,
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
+        Expanded(
+          child: ListView(
+            padding: REdgeInsets.fromLTRB(
+              widget.embedded ? 2 : 12,
+              14,
+              widget.embedded ? 2 : 12,
+              24,
+            ),
+            children: [
+              _MessageCard(
+                onTap: () {
+                  Navigator.of(context).pushNamed(RouteName.message);
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
+}
 
-  Widget _buildMessageCard(String title, String subtitle) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: const Color(0xFFD1D5DB),
-            child: const Icon(Icons.person, size: 24, color: Colors.white),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                    letterSpacing: -0.24,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFF6B7280),
-                    letterSpacing: -0.08,
-                  ),
-                ),
-              ],
+class _MessageCard extends StatelessWidget {
+  const _MessageCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14.r),
+      child: Container(
+        padding: REdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.kWhite,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: const Color(0xFFE9EEF5)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 22.r,
+              backgroundImage: const AssetImage(AssetsImages.profileHandle),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Dr. Lagbaja has replied your message.',
+                    style: TextStyle(
+                      fontFamily: AppFonts.montserrat,
+                      fontSize: FontSizes.footer1,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.white06,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    'Reply him now',
+                    style: TextStyle(
+                      fontFamily: AppFonts.montserrat,
+                      fontSize: FontSizes.footer2,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.white04,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

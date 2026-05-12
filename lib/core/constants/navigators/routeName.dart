@@ -28,4 +28,6 @@ class RouteName {
   static const String readings = 'readings';
   static const String manageReadings = 'manageReadings';
   static const String readingMetricDetail = 'readingMetricDetail';
+  static const String commentOnFeed = 'commentOnFeed';
+  static const String articles = 'articles';
 }

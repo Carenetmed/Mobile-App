@@ -1,36 +1,37 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
+import 'package:app_t/features/Home/presentation/model/reading_metric.dart';
+import 'package:app_t/features/Home/presentation/pages/articles_tab.dart';
+import 'package:app_t/features/Home/presentation/pages/comment_on_feed_page.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
 import 'package:app_t/features/Home/presentation/pages/manage_readings.dart';
 import 'package:app_t/features/Home/presentation/pages/reading_metric_detail_page.dart';
 import 'package:app_t/features/Home/presentation/pages/readings.dart';
-import 'package:app_t/features/Home/presentation/model/reading_metric.dart';
+import 'package:app_t/features/Messaging/presentation/pages/Chat.dart' as chat;
+import 'package:app_t/features/Messaging/presentation/pages/Message.dart';
+import 'package:app_t/features/Messaging/presentation/pages/Messages.dart'
+    as messages;
+import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
+import 'package:app_t/features/Messaging/presentation/pages/notification_center_page.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/commitment_screen.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/onboarding.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/profession.dart';
-import 'package:app_t/features/Reminders/presentation/pages/add_reminder_page.dart';
+import 'package:app_t/features/Onboarding/presentation/pages/user_edit.dart';
+import 'package:app_t/features/Reminders/presentation/model/reminder_item.dart';
+import 'package:app_t/features/Reminders/presentation/pages/reminder_editor_page.dart';
 import 'package:app_t/features/Reminders/presentation/pages/reminder_page.dart';
+import 'package:app_t/features/Reminders/presentation/pages/reminders_page.dart';
 import 'package:app_t/features/Reminders/presentation/pages/schedule_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/deactivate_account_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/delete_account_page.dart';
 import 'package:app_t/features/Settings/presentation/pages/settings_page.dart';
-import 'package:app_t/features/Reminders/presentation/model/reminder_item.dart';
-import 'package:app_t/features/Reminders/presentation/pages/reminder_editor_page.dart';
-import 'package:app_t/features/Reminders/presentation/pages/reminders_page.dart';
-import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
-import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
-import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
-import 'package:app_t/features/Onboarding/presentation/pages/user_edit.dart';
 import 'package:app_t/features/splash/presentation/pages/splash_screen.dart';
-import 'package:app_t/features/Messaging/presentation/pages/Messages.dart'
-    as messages;
-import 'package:app_t/features/Messaging/presentation/pages/Chat.dart' as chat;
-import 'package:app_t/features/Messaging/presentation/pages/Message.dart';
-import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
-import 'package:app_t/features/Messaging/presentation/pages/notification_center_page.dart';
 import 'package:flutter/material.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
@@ -45,10 +46,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         routeName: settings.name!,
         viewToShow: OnboardingView(),
       );
-
     case RouteName.finishSignUp:
       return _getPageRoute(routeName: settings.name!, viewToShow: FinSignUp());
-
     case RouteName.communityAgreement:
       return _getPageRoute(
         routeName: settings.name!,
@@ -64,7 +63,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         routeName: settings.name!,
         viewToShow: MedicalAgreement(),
       );
-
     case RouteName.medicalProfessional:
       return _getPageRoute(
         routeName: settings.name!,
@@ -75,12 +73,13 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         routeName: settings.name!,
         viewToShow: SignUpPhone(),
       );
-
     case RouteName.medicalEdit:
       return _getPageRoute(routeName: settings.name!, viewToShow: UserEdit());
-
     case RouteName.dashboard:
-      return _getPageRoute(routeName: settings.name!, viewToShow: Dashboard());
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const Dashboard(),
+      );
     case RouteName.settings:
       return _getPageRoute(
         routeName: settings.name!,
@@ -114,17 +113,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.messages:
       return _getPageRoute(
         routeName: settings.name!,
-        viewToShow: messages.MessagesPage(),
+        viewToShow: const messages.MessagesPage(),
       );
     case RouteName.chat:
       return _getPageRoute(
         routeName: settings.name!,
-        viewToShow: chat.ChatPageEmpty(),
+        viewToShow: const chat.ChatPageEmpty(),
       );
     case RouteName.message:
       return _getPageRoute(
         routeName: settings.name!,
-        viewToShow: ChatPageUnavailable(),
+        viewToShow: const MessagePage(),
       );
     case RouteName.notification:
       return _getPageRoute(
@@ -142,13 +141,21 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         viewToShow: const ReminderPage(),
       );
     case RouteName.addReminder:
+      return _getPageRoute(
+        routeName: settings.name!,
         viewToShow: const RemindersPage(),
+      );
+    case RouteName.schedule:
+      return _getPageRoute(
+        routeName: settings.name!,
+        viewToShow: const SchedulePage(),
       );
     case RouteName.reminderEditor:
       final args = settings.arguments as ReminderEditorArgs?;
       return _getPageRoute(
         routeName: settings.name!,
         viewToShow: ReminderEditorPage(reminder: args?.reminder),
+      );
     case RouteName.readings:
       return _getPageRoute(
         routeName: settings.name!,
@@ -165,19 +172,16 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         routeName: settings.name!,
         viewToShow: ReadingMetricDetailPage(metric: metricById(args.metricId)),
       );
-
-    /*case RouteName.upload:
-      final args = settings.arguments! as UploadParams;
+    case RouteName.commentOnFeed:
       return _getPageRoute(
         routeName: settings.name!,
-        viewToShow: const AddReminderPage(),
+        viewToShow: const CommentOnFeedPage(),
       );
-    case RouteName.schedule:
+    case RouteName.articles:
       return _getPageRoute(
         routeName: settings.name!,
-        viewToShow: const SchedulePage(),
+        viewToShow: const ArticlesPage(),
       );
-
     default:
       return MaterialPageRoute<dynamic>(
         builder:

@@ -2,13 +2,14 @@ import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/model/drawer_item_model.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Home/presentation/widget/icon_listile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CarenetDraw extends StatelessWidget {
-  CarenetDraw({super.key});
+  const CarenetDraw({super.key});
 
   final String user = 'Dr. Lagbaja Tamedu';
   final int following = 22;
@@ -16,14 +17,23 @@ class CarenetDraw extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<DrawerItem> drawerItems = [
+    final drawerItems = <DrawerItem>[
       DrawerItem(
         label: 'Dashboard',
         assetPath: AssetsIcon.home,
-        actButton: null,
+        actButton: () {
+          Navigator.of(context).pop();
+        },
       ),
       DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
-      DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
+      DrawerItem(
+        label: 'Readings',
+        assetPath: AssetsIcon.content,
+        actButton: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushNamed(RouteName.readings);
+        },
+      ),
       DrawerItem(
         label: 'Reminders',
         assetPath: AssetsIcon.clock,
@@ -42,15 +52,29 @@ class CarenetDraw extends StatelessWidget {
       ),
       DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
       DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
-      DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
-      DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
+      DrawerItem(
+        label: 'Articles',
+        assetPath: AssetsIcon.notepad,
+        actButton: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushNamed(RouteName.articles);
+        },
+      ),
+      DrawerItem(
+        label: 'Messages',
+        assetPath: AssetsIcon.mail,
+        actButton: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushNamed(RouteName.messages);
+        },
+      ),
       DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
     ];
 
     return Drawer(
       backgroundColor: AppColors.kWhite,
       width: .63.sw,
-      child: RPadding(
+      child: Padding(
         padding: REdgeInsets.symmetric(horizontal: 12.w, vertical: .05.sh),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +161,7 @@ class CarenetDraw extends StatelessWidget {
                 ),
               ],
             ),
-            RPadding(
+            Padding(
               padding: REdgeInsets.only(top: 16.h),
               child: Divider(thickness: 1, color: AppColors.kPink),
             ),
@@ -148,21 +172,12 @@ class CarenetDraw extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: drawerItems.length,
-                // clipBehavior: Clip.hardEdge,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _drawerItems(context).length,
                 itemBuilder: (context, index) {
-                  final item = _drawerItems(context)[index];
+                  final item = drawerItems[index];
                   return IconListile(
-                    btnAction: drawerItems[index].actButton,
-                    assetPath: drawerItems[index].assetPath,
-                    label: drawerItems[index].label,
                     btnAction: item.actButton,
                     assetPath: item.assetPath,
                     label: item.label,
-                    btnAction: item.$3,
-                    assetPath: item.$2,
-                    label: item.$1,
                   );
                 },
               ),
@@ -176,53 +191,16 @@ class CarenetDraw extends StatelessWidget {
                 Navigator.of(context).pushNamed(RouteName.settings);
               },
             ),
-            IconListile(label: 'Rate the App', assetPath: AssetsIcon.star),
-            IconListile(label: 'Need help?', assetPath: AssetsIcon.help),
+            const IconListile(
+              label: 'Rate the App',
+              assetPath: AssetsIcon.star,
+            ),
+            const IconListile(label: 'Need help?', assetPath: AssetsIcon.help),
             SizedBox(height: .02.sh),
-            IconListile(label: 'Mode', assetPath: AssetsIcon.sunny),
+            const IconListile(label: 'Mode', assetPath: AssetsIcon.sunny),
           ],
         ),
       ),
     );
   }
-
-  List<DrawerItem> _drawerItems(BuildContext context) => [
-    DrawerItem(label: 'Dashboard', assetPath: AssetsIcon.home, actButton: null),
-    DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
-    DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
-    DrawerItem(
-      label: 'Reminders',
-      assetPath: AssetsIcon.clock,
-      actButton: () {
-        Navigator.of(context).pop();
-        Navigator.of(context).pushNamed(RouteName.reminders);
-      },
-    ),
-    DrawerItem(label: 'Schedule', assetPath: AssetsIcon.calendar),
-    DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
-    DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
-    DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
-    DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
-    DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
-  ];
-  List<(String, String, void Function()?)> _drawerItems(BuildContext context) =>
-      [
-        ('Dashboard', AssetsIcon.home, null),
-        ('Profile', AssetsIcon.personOutline, null),
-        (
-          'Readings',
-          AssetsIcon.content,
-          () {
-            Navigator.of(context).pop();
-            Navigator.of(context).pushNamed(RouteName.readings);
-          },
-        ),
-        ('Reminders', AssetsIcon.clock, null),
-        ('Schedule', AssetsIcon.calendar, null),
-        ('provider', AssetsIcon.umbrella_outline, null),
-        ('Premium', AssetsIcon.trophy, null),
-        ('Articles', AssetsIcon.notepad, null),
-        ('Messages', AssetsIcon.mail, null),
-        ('Events', AssetsIcon.mic, null),
-      ];
 }

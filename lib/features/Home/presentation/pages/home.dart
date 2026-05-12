@@ -2,7 +2,10 @@ import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Home/presentation/pages/article_detail_page.dart';
+import 'package:app_t/features/Home/presentation/pages/articles_tab.dart';
 import 'package:app_t/features/Home/presentation/pages/feed_tab.dart';
+import 'package:app_t/features/Messaging/presentation/pages/Messages.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,12 +19,12 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late final TabController _controller;
-  final List<String> _tabNames = ['Feed', 'Messages', 'Articles'];
+  final List<String> _tabNames = const ['Feed', 'Messages', 'Articles'];
 
   @override
   void initState() {
     super.initState();
-    _controller = TabController(length: 3, vsync: this);
+    _controller = TabController(length: _tabNames.length, vsync: this);
   }
 
   @override
@@ -33,7 +36,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: RPadding(
+      child: Padding(
         padding: REdgeInsets.symmetric(horizontal: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,24 +44,33 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                  child: CircleAvatar(
-                    backgroundColor: Colors.transparent,
-                    radius: 15,
-                    child: Image(image: AssetImage(AssetsImages.profileHandle)),
-                  ),
+                Builder(
+                  builder:
+                      (context) => GestureDetector(
+                        onTap: () {
+                          Scaffold.of(context).openDrawer();
+                        },
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 15.r,
+                          child: const Image(
+                            image: AssetImage(AssetsImages.profileHandle),
+                          ),
+                        ),
+                      ),
                 ),
-                SvgImage(imgName: AssetsImages.appLogoBlack),
+                SvgImage(imgName: AssetsImages.appLogoBlack, height: 24.h),
                 InkWell(
                   onTap: () {},
+                  borderRadius: BorderRadius.circular(5.r),
                   child: Container(
-                    padding: REdgeInsets.all(5.5),
+                    padding: REdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5.5,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primaryBlue5,
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(5.r),
                     ),
                     child: Text(
                       'Upgrade',
@@ -75,12 +87,10 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             ),
             SizedBox(height: 8.h),
             TabBar(
-              dividerHeight: 0,
               controller: _controller,
-              indicator: BoxDecoration(color: Colors.transparent),
               dividerColor: Colors.transparent,
-              // tabAlignment: TabAlignment.center,
-              padding: REdgeInsets.symmetric(horizontal: 20.w),
+              indicatorColor: Colors.transparent,
+              labelPadding: REdgeInsets.symmetric(horizontal: 18.w),
               tabs:
                   _tabNames
                       .map(
@@ -90,7 +100,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                             style: TextStyle(
                               fontFamily: AppFonts.montserrat,
                               fontWeight: FontWeight.w500,
-                              fontSize: FontSizes.body2,
+                              fontSize: FontSizes.footer1,
+                              color: AppColors.white06,
                             ),
                           ),
                         ),
@@ -100,7 +111,20 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             Expanded(
               child: TabBarView(
                 controller: _controller,
-                children: [FeedTab(), Placeholder(), Placeholder()],
+                children: [
+                  const FeedTab(),
+                  const MessagesTabContent(embedded: true),
+                  ArticlesTab(
+                    embedded: true,
+                    onOpenArticle: (article) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ArticleDetailPage(article: article),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ],

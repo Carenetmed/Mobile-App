@@ -2,7 +2,6 @@ import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/theme/textStyle.dart';
-import 'package:app_t/features/Home/presentation/model/reading_metric.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -14,12 +13,31 @@ class ManageReadings extends StatefulWidget {
 }
 
 class _ManageReadingsState extends State<ManageReadings> {
-  late final Set<String> _selectedOptions;
+  static const String _guidedReading = 'Blood Sugar';
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedOptions = {'blood_pressure', 'blood_sugar', 'weight'};
+  final List<String> options = [
+    'Steps',
+    'Blood Sugar',
+    'Weight',
+    'Oxygen Level',
+    'Heart Rate',
+    'Temperature',
+    'Respiration Rate',
+    'Body Mass Index',
+    'Bone Mass',
+    'Body Fat',
+    'Body Water',
+    'Visceral Fat Rating',
+  ];
+
+  Set<String> selectedOptions = {};
+
+  void _completeSelection() {
+    if (selectedOptions.contains(_guidedReading)) {
+      Navigator.pushNamed(context, RouteName.addDevice);
+      return;
+    }
+    Navigator.pop(context);
   }
 
   @override
@@ -38,7 +56,7 @@ class _ManageReadingsState extends State<ManageReadings> {
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    icon: const Icon(Icons.arrow_back),
+                    icon: Icon(Icons.arrow_back),
                   ),
                   Text(
                     'Manage Readings',
@@ -50,13 +68,7 @@ class _ManageReadingsState extends State<ManageReadings> {
                     ),
                   ),
                   InkWell(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Reading preferences saved'),
-                        ),
-                      );
-                    },
+                    onTap: _completeSelection,
                     child: Container(
                       padding: REdgeInsets.symmetric(
                         vertical: 5.5.h,
@@ -79,76 +91,71 @@ class _ManageReadingsState extends State<ManageReadings> {
                   ),
                 ],
               ),
+
               SizedBox(height: .02.sh),
-              Text(
-                'Choose which health records you want to keep handy in your readings section.',
-                style: TextStyle(
-                  fontFamily: AppFonts.montserrat,
-                  fontSize: FontSizes.footer2,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.white05,
-                  height: 1.5,
+              Container(
+                width: double.infinity,
+                padding: REdgeInsets.all(12.r),
+                decoration: BoxDecoration(
+                  color: AppColors.blue02,
+                  borderRadius: BorderRadius.circular(6.r),
+                  border: Border.all(color: AppColors.white04),
+                ),
+                child: Text(
+                  'Blood Sugar is the first guided readings lane. Selecting it continues into device/setup onboarding; the other reading types stay local until their slices are built.',
+                  style: TextStyle(
+                    fontFamily: AppFonts.montserrat,
+                    fontWeight: FontWeight.w400,
+                    fontSize: FontSizes.footer3,
+                    color: AppColors.primaryBlue11,
+                    height: 1.4,
+                  ),
                 ),
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 12.h),
               Expanded(
-                child: ListView.separated(
-                  itemCount: readingMetrics.length,
-                  separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                child: ListView.builder(
+                  itemCount: options.length,
                   itemBuilder: (context, index) {
-                    final metric = readingMetrics[index];
-                    final isSelected = _selectedOptions.contains(metric.id);
+                    final option = options[index];
+                    final isSelected = selectedOptions.contains(option);
 
                     return CheckboxListTile(
                       title: Text(
-                        metric.title,
+                        option,
                         style: TextStyle(
                           fontFamily: AppFonts.montserrat,
                           fontWeight: FontWeight.w500,
                           fontSize: FontSizes.footer2,
                         ),
                       ),
-                      subtitle: Text(
-                        metric.helperText,
-                        style: TextStyle(
-                          fontFamily: AppFonts.montserrat,
-                          fontWeight: FontWeight.w400,
-                          fontSize: FontSizes.footer3,
-                          color: AppColors.white05,
-                        ),
-                      ),
                       checkboxShape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(4.r),
                       ),
                       activeColor: AppColors.primaryBlue6,
-                      fillColor: const WidgetStatePropertyAll(
-                        AppColors.primaryBlue6,
-                      ),
+                      fillColor: WidgetStatePropertyAll(AppColors.primaryBlue6),
                       tileColor: AppColors.blue02,
-                      contentPadding: REdgeInsets.symmetric(horizontal: 12.w),
+
                       secondary: Container(
-                        height: 40.h,
-                        width: 40.w,
-                        padding: REdgeInsets.all(8),
+                        height: 36.h,
+                        width: 43.w,
+                        // padding: EdgeInsets.symmetric(vertical: 6),
                         decoration: BoxDecoration(
                           color: AppColors.kWhite,
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Image.asset(
-                          metric.iconAssetPath,
-                          fit: BoxFit.contain,
+                          borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
+
                       value: isSelected,
                       onChanged: (bool? checked) {
                         setState(() {
                           if (checked == true) {
-                            _selectedOptions.add(metric.id);
+                            selectedOptions.add(option);
                           } else {
-                            _selectedOptions.remove(metric.id);
+                            selectedOptions.remove(option);
                           }
                         });
                       },
@@ -156,15 +163,20 @@ class _ManageReadingsState extends State<ManageReadings> {
                     );
                   },
                 ),
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.of(context).pushNamed(RouteName.readings);
-                  },
-                  child: const Text('Open readings overview'),
-                ),
+
+                // ListView.builder(
+                //   itemCount: options.length,
+                //   itemBuilder: (context, index) {
+                //     final option = options[index];
+                //     return CustomRadioListTile(
+                //       title: option,
+                //       value: option,
+                //       groupValue: selectedValue,
+                //       onChanged: (value) => setState(() => selectedValue = value!),
+                //
+                //     );
+                //   },
+                // ),
               ),
             ],
           ),

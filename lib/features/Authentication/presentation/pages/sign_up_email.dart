@@ -3,19 +3,70 @@ import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/model/sign_in_model.dart';
+import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
-import 'package:app_t/features/Authentication/presentation/widget/bordered_keyboard_input.dart';
-import 'package:app_t/shared/widgets/app_button.dart';
 import 'package:app_t/shared/widgets/auth_widget.dart';
+import 'package:app_t/shared/widgets/carenet_button.dart';
+import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class SignUpEmail extends StatelessWidget {
-  SignUpEmail({super.key});
+class SignUpEmail extends StatefulWidget {
+  const SignUpEmail({super.key});
+
+  @override
+  State<SignUpEmail> createState() => _SignUpEmailState();
+}
+
+class _SignUpEmailState extends State<SignUpEmail> {
+  late final TextEditingController _emailController;
+  bool _attemptedSubmit = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+    _emailController.addListener(_handleInputChanged);
+  }
+
+  @override
+  void dispose() {
+    _emailController.removeListener(_handleInputChanged);
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  void _handleInputChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  String? get _emailError => Validators.validateEmail(_emailController.text);
+
+  CarenetTextFieldValidationState get _emailValidationState {
+    if (!_attemptedSubmit) {
+      return CarenetTextFieldValidationState.none;
+    }
+
+    return _emailError == null
+        ? CarenetTextFieldValidationState.valid
+        : CarenetTextFieldValidationState.invalid;
+  }
+
+  void _onContinue() {
+    setState(() {
+      _attemptedSubmit = true;
+    });
+
+    if (_emailError == null) {
+      Navigator.pushNamed(context, RouteName.finishSignUp);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    List<AuthenticationModel> _signUp = [
+    final List<AuthenticationModel> signUp = [
       AuthenticationModel(
         assetPath: AssetsIcon.phone,
         title: 'Continue with Phone',
@@ -23,12 +74,18 @@ class SignUpEmail extends StatelessWidget {
           Navigator.pushNamed(context, RouteName.signUpPhone);
         },
       ),
-      AuthenticationModel(assetPath: AssetsIcon.google, title: 'Continue with Google'),
+      AuthenticationModel(
+        assetPath: AssetsIcon.google,
+        title: 'Continue with Google',
+      ),
       AuthenticationModel(
         assetPath: AssetsIcon.facebook,
         title: 'Continue with Facebook',
       ),
-      AuthenticationModel(assetPath: AssetsIcon.apple, title: 'Continue with Apple'),
+      AuthenticationModel(
+        assetPath: AssetsIcon.apple,
+        title: 'Continue with Apple',
+      ),
     ];
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -51,12 +108,15 @@ class SignUpEmail extends StatelessWidget {
                 ),
               ),
               SizedBox(height: .05.sh),
-              TextInput(
+              CarenetTextField(
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 hintText: 'Email',
+                validationState: _emailValidationState,
+                errorText: _emailError,
               ),
               SizedBox(height: 15.h),
-              CarenetButtonFilled(btnAction: () {}, btnName: 'Continue'),
+              CarenetButton(label: 'Continue', onPressed: _onContinue),
               Padding(
                 padding: REdgeInsets.only(bottom: .052.sh, top: .15.sh),
                 child: Center(
@@ -74,21 +134,23 @@ class SignUpEmail extends StatelessWidget {
               SizedBox(
                 height: .27.sh,
                 child: ListView.builder(
-                  itemCount: _signUp.length,
+                  itemCount: signUp.length,
                   itemBuilder: (context, index) {
                     return AuthWidget(
-                      btnAction: _signUp[index].btnAction,
-                      assetPath: _signUp[index].assetPath,
-                      title: _signUp[index].title,
+                      btnAction: signUp[index].btnAction,
+                      assetPath: signUp[index].assetPath,
+                      title: signUp[index].title,
                     );
                   },
                 ),
               ),
               SizedBox(height: .045.sh),
-
-              CarenetButtonOutline(
-                btnAction: () {},
-                btnName: 'Already have an account? Sign in',
+              CarenetButton(
+                label: 'Already have an account? Sign in',
+                onPressed: () {
+                  Navigator.pushNamed(context, RouteName.signInEmail);
+                },
+                type: CarenetButtonType.outline,
               ),
             ],
           ),

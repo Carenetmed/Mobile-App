@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class BorderedListile extends StatelessWidget {
-  final VoidCallback btnAction1;
+  final VoidCallback? btnAction1;
   final String title1;
   final String subtitle1;
-  final VoidCallback btnAction2;
+  final VoidCallback? btnAction2;
   final String title2;
   final String subtitle2;
   const BorderedListile({
@@ -50,7 +50,10 @@ class BorderedListile extends StatelessWidget {
                 fontWeight: FontWeight.w400,
               ),
             ),
-            trailing: Icon(Icons.add, color: AppColors.white04),
+            trailing: Icon(
+              btnAction1 == null ? Icons.lock_outline : Icons.add,
+              color: AppColors.white04,
+            ),
             // shape: Border.all(),
           ),
           Divider(thickness: 1.8),
@@ -73,7 +76,10 @@ class BorderedListile extends StatelessWidget {
                 fontWeight: FontWeight.w400,
               ),
             ),
-            trailing: Icon(Icons.add, color: AppColors.white04),
+            trailing: Icon(
+              btnAction2 == null ? Icons.lock_outline : Icons.add,
+              color: AppColors.white04,
+            ),
             // shape: Border.all(),
           ),
         ],

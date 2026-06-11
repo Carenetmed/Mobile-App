@@ -59,7 +59,9 @@ class ProfessionScreen extends StatelessWidget {
                     ),
                   ),
                   OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(RouteName.medicalEdit);
+                    },
                     style: OutlinedButton.styleFrom(
                       padding: REdgeInsets.all(4),
                       shape: RoundedRectangleBorder(
@@ -86,7 +88,11 @@ class ProfessionScreen extends StatelessWidget {
                   itemCount: profession.length,
                   itemBuilder:
                       (context, index) => GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.of(
+                            context,
+                          ).pushNamed(RouteName.medicalEdit);
+                        },
                         child: Container(
                           height: 48.h,
                           width: double.infinity,

@@ -23,17 +23,20 @@ class IconListile extends StatelessWidget {
       child: RPadding(
         padding: REdgeInsets.only(bottom: 20),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             SvgImage(imgName: assetPath),
             SizedBox(width: 5.w),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: FontSizes.footer1,
-                fontWeight: FontWeight.w500,
-                fontFamily: AppFonts.montserrat,
-                color: AppColors.white06,
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: FontSizes.footer1,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: AppFonts.montserrat,
+                  color: AppColors.white06,
+                ),
               ),
             ),
           ],

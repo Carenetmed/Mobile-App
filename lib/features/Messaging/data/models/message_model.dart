@@ -2,26 +2,16 @@ import 'package:app_t/features/Messaging/domain/entities/message_entity.dart';
 
 class MessageModel extends MessageEntity {
   MessageModel({
-    required String id,
-    required String senderId,
-    required String senderName,
-    required String senderAvatar,
-    required String content,
-    required DateTime timestamp,
-    required bool isRead,
-    String? attachmentUrl,
-    required MessageType type,
-  }) : super(
-    id: id,
-    senderId: senderId,
-    senderName: senderName,
-    senderAvatar: senderAvatar,
-    content: content,
-    timestamp: timestamp,
-    isRead: isRead,
-    attachmentUrl: attachmentUrl,
-    type: type,
-  );
+    required super.id,
+    required super.senderId,
+    required super.senderName,
+    required super.senderAvatar,
+    required super.content,
+    required super.timestamp,
+    required super.isRead,
+    super.attachmentUrl,
+    required super.type,
+  });
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(

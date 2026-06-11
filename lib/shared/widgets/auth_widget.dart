@@ -18,31 +18,44 @@ class AuthWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: btnAction,
-      child: Container(
-        padding: REdgeInsets.symmetric(horizontal: 6.w, vertical: 13.h),
-        margin: REdgeInsets.only(bottom: 15.h),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(width: 1),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SvgImage(imgName: assetPath),
-            Spacer(),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: FontSizes.body3,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w400,
-                color: AppColors.primaryBlue11,
+    final isEnabled = btnAction != null;
+
+    return Semantics(
+      button: true,
+      enabled: isEnabled,
+      child: Opacity(
+        opacity: isEnabled ? 1 : 0.55,
+        child: InkWell(
+          onTap: btnAction,
+          child: Container(
+            padding: REdgeInsets.symmetric(horizontal: 6.w, vertical: 13.h),
+            margin: REdgeInsets.only(bottom: 15.h),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(
+                width: 1,
+                color: isEnabled ? AppColors.primaryBlue11 : AppColors.white04,
               ),
             ),
-            Spacer(),
-          ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SvgImage(imgName: assetPath),
+                Spacer(),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: FontSizes.body3,
+                    fontFamily: AppFonts.montserrat,
+                    fontWeight: FontWeight.w400,
+                    color:
+                        isEnabled ? AppColors.primaryBlue11 : AppColors.white04,
+                  ),
+                ),
+                Spacer(),
+              ],
+            ),
+          ),
         ),
       ),
     );

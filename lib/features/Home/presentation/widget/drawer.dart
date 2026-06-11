@@ -21,25 +21,23 @@ class CarenetDraw extends StatelessWidget {
       DrawerItem(
         label: 'Dashboard',
         assetPath: AssetsIcon.home,
-        actButton: () {
-          Navigator.of(context).pop();
-        },
+        actButton: () => Navigator.of(context).pop(),
       ),
-      DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
       DrawerItem(
-        label: 'Readings',
-        assetPath: AssetsIcon.content,
+        label: 'Profile',
+        assetPath: AssetsIcon.personOutline,
         actButton: () {
           Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(RouteName.readings);
+          Navigator.pushNamed(context, RouteName.account);
         },
       ),
+      DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
       DrawerItem(
         label: 'Reminders',
         assetPath: AssetsIcon.clock,
         actButton: () {
           Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(RouteName.reminders);
+          Navigator.pushNamed(context, RouteName.reminder);
         },
       ),
       DrawerItem(
@@ -47,34 +45,27 @@ class CarenetDraw extends StatelessWidget {
         assetPath: AssetsIcon.calendar,
         actButton: () {
           Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(RouteName.schedule);
-        },
-      ),
-      DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
-      DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
-      DrawerItem(
-        label: 'Articles',
-        assetPath: AssetsIcon.notepad,
-        actButton: () {
-          Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(RouteName.articles);
+          Navigator.pushNamed(context, RouteName.schedules);
         },
       ),
       DrawerItem(
-        label: 'Messages',
-        assetPath: AssetsIcon.mail,
+        label: 'Providers',
+        assetPath: AssetsIcon.umbrellaOutline,
         actButton: () {
           Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(RouteName.messages);
+          Navigator.pushNamed(context, RouteName.findMentor);
         },
       ),
+      DrawerItem(label: 'Switch to professional', assetPath: AssetsIcon.trophy),
+      DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
+      DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
       DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
     ];
 
     return Drawer(
       backgroundColor: AppColors.kWhite,
       width: .63.sw,
-      child: Padding(
+      child: RPadding(
         padding: REdgeInsets.symmetric(horizontal: 12.w, vertical: .05.sh),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,8 +75,9 @@ class CarenetDraw extends StatelessWidget {
               children: [
                 Image.asset(AssetsImages.firePlace),
                 IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.info_outline, size: 13),
+                  tooltip: 'Profile information unavailable',
+                  onPressed: null,
+                  icon: Icon(Icons.info_outline, size: 13),
                 ),
               ],
             ),
@@ -98,6 +90,9 @@ class CarenetDraw extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            // SizedBox(
+            //   height: 3.h,
+            // ),
             Text(
               'Resident Doctor at LUTH',
               style: TextStyle(
@@ -108,7 +103,9 @@ class CarenetDraw extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8.h),
-            Row(
+            Wrap(
+              spacing: 20.w,
+              runSpacing: 8.h,
               children: [
                 RichText(
                   text: TextSpan(
@@ -134,7 +131,6 @@ class CarenetDraw extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(width: 20.w),
                 RichText(
                   text: TextSpan(
                     children: [
@@ -161,8 +157,11 @@ class CarenetDraw extends StatelessWidget {
                 ),
               ],
             ),
-            Padding(
-              padding: REdgeInsets.only(top: 16.h),
+            RPadding(
+              padding: REdgeInsets.only(
+                top: 16.h,
+                // bottom: .01.sh
+              ),
               child: Divider(thickness: 1, color: AppColors.kPink),
             ),
             SizedBox(height: 25.h),
@@ -170,14 +169,14 @@ class CarenetDraw extends StatelessWidget {
               height: .45.sh,
               child: ListView.builder(
                 padding: EdgeInsets.zero,
-                physics: const NeverScrollableScrollPhysics(),
+                // clipBehavior: Clip.hardEdge,
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: drawerItems.length,
                 itemBuilder: (context, index) {
-                  final item = drawerItems[index];
                   return IconListile(
-                    btnAction: item.actButton,
-                    assetPath: item.assetPath,
-                    label: item.label,
+                    btnAction: drawerItems[index].actButton,
+                    assetPath: drawerItems[index].assetPath,
+                    label: drawerItems[index].label,
                   );
                 },
               ),
@@ -186,18 +185,11 @@ class CarenetDraw extends StatelessWidget {
             IconListile(
               label: 'Settings & Privacy',
               assetPath: AssetsIcon.settings,
-              btnAction: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pushNamed(RouteName.settings);
-              },
             ),
-            const IconListile(
-              label: 'Rate the App',
-              assetPath: AssetsIcon.star,
-            ),
-            const IconListile(label: 'Need help?', assetPath: AssetsIcon.help),
+            IconListile(label: 'Rate the App', assetPath: AssetsIcon.star),
+            IconListile(label: 'Need help?', assetPath: AssetsIcon.help),
             SizedBox(height: .02.sh),
-            const IconListile(label: 'Mode', assetPath: AssetsIcon.sunny),
+            IconListile(label: 'Mode', assetPath: AssetsIcon.sunny),
           ],
         ),
       ),

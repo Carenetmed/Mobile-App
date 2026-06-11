@@ -1,205 +1,264 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/routing/unknown_route_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
-import 'package:app_t/features/Home/presentation/model/reading_metric.dart';
-import 'package:app_t/features/Home/presentation/pages/articles_tab.dart';
-import 'package:app_t/features/Home/presentation/pages/comment_on_feed_page.dart';
+import 'package:app_t/features/Authentication/presentation/pages/enter_email.dart';
+import 'package:app_t/features/Authentication/presentation/pages/enter_password.dart';
+import 'package:app_t/features/Home/presentation/pages/add_device_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/add_description_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/add_email_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/add_phone_number_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/appointments_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/articles_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/blood_sug_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/case_studies_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/change_email_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/change_authentication_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/confirm_pin_save_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/confirm_phone_number_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/circles_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/community_profile_page.dart';
+import 'package:app_t/features/Home/presentation/pages/create_community_page.dart';
+import 'package:app_t/features/Home/presentation/pages/create_pin_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
+import 'package:app_t/features/Home/presentation/pages/edit_email_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/edit_your_name_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/edit_your_website_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/emergency_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/enter_password_to_save_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/health_record_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/find_mentor_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/manage_profile_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/manage_portfolio_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/manage_readings.dart';
-import 'package:app_t/features/Home/presentation/pages/reading_metric_detail_page.dart';
+import 'package:app_t/features/Home/presentation/pages/password_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/podcast_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/published_articles_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/public_profile_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/qa_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/readings.dart';
+import 'package:app_t/features/Home/presentation/pages/reminder_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/schedules_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/set_address_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/saved_articles_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/specialist_details_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/turn_on_authentication_shell.dart';
+import 'package:app_t/features/Home/presentation/state/communities_local_store.dart';
 import 'package:app_t/features/Messaging/presentation/pages/Chat.dart' as chat;
-import 'package:app_t/features/Messaging/presentation/pages/Message.dart';
 import 'package:app_t/features/Messaging/presentation/pages/Messages.dart'
     as messages;
 import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
-import 'package:app_t/features/Messaging/presentation/pages/notification_center_page.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/commitment_screen.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/onboarding.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/profession.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/user_edit.dart';
-import 'package:app_t/features/Reminders/presentation/model/reminder_item.dart';
-import 'package:app_t/features/Reminders/presentation/pages/reminder_editor_page.dart';
-import 'package:app_t/features/Reminders/presentation/pages/reminder_page.dart';
-import 'package:app_t/features/Reminders/presentation/pages/reminders_page.dart';
-import 'package:app_t/features/Reminders/presentation/pages/schedule_page.dart';
-import 'package:app_t/features/Settings/presentation/pages/deactivate_account_page.dart';
-import 'package:app_t/features/Settings/presentation/pages/delete_account_page.dart';
-import 'package:app_t/features/Settings/presentation/pages/settings_page.dart';
 import 'package:app_t/features/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 
+/// Central route table. Every [RouteName] used in the app must have a case here.
+/// See [docs/ROUTES.md] for the human-readable map.
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
     case RouteName.splash:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const SplashScreen(),
-      );
+      return _page(settings, const SplashScreen());
     case RouteName.onboarding:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: OnboardingView(),
-      );
+      return _page(settings, const OnboardingView());
     case RouteName.finishSignUp:
-      return _getPageRoute(routeName: settings.name!, viewToShow: FinSignUp());
+      return _page(settings, FinSignUp());
     case RouteName.communityAgreement:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: CommunityCommitment(),
-      );
+      return _page(settings, CommunityCommitment());
     case RouteName.notificationAgreement:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: NotificationScreen(),
-      );
+      return _page(settings, NotificationScreen());
     case RouteName.medicalAgreement:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: MedicalAgreement(),
-      );
+      return _page(settings, MedicalAgreement());
     case RouteName.medicalProfessional:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: ProfessionScreen(),
-      );
+      return _page(settings, ProfessionScreen());
     case RouteName.signUpPhone:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: SignUpPhone(),
-      );
-    case RouteName.medicalEdit:
-      return _getPageRoute(routeName: settings.name!, viewToShow: UserEdit());
-    case RouteName.dashboard:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const Dashboard(),
-      );
-    case RouteName.settings:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const SettingsPage(),
-      );
-    case RouteName.deactivateAccount:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const DeactivateAccountPage(),
-      );
-    case RouteName.deleteAccount:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const DeleteAccountPage(),
-      );
+      return _page(settings, SignUpPhone());
     case RouteName.signUpEmail:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: SignUpEmail(),
-      );
-    case RouteName.signInEmail:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: SignInEmail(),
-      );
+      return _page(settings, SignUpEmail());
     case RouteName.signInPhone:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: SignInPhone(),
+      return _page(settings, const SignInPhone());
+    case RouteName.signInEmail:
+      return _page(settings, const SignInEmail());
+    case RouteName.enterEmail:
+      return _page(settings, const EnterEmailPage());
+    case RouteName.enterPassword:
+      return _page(settings, const EnterPasswordPage());
+    case RouteName.medicalEdit:
+      return _page(settings, UserEdit());
+    case RouteName.dashboard:
+      return _page(settings, const Dashboard());
+    case RouteName.search:
+      return _page(settings, const SearchShellPage());
+    case RouteName.findMentor:
+      return _page(settings, const FindMentorShellPage());
+    case RouteName.specialistDetails:
+      final args = settings.arguments;
+      return _page(
+        settings,
+        SpecialistDetailsShellPage(specialistId: args is String ? args : null),
+      );
+    case RouteName.appointments:
+      return _page(settings, const AppointmentsShellPage());
+    case RouteName.bookAppointment:
+      return _page(settings, const BookAppointmentShellPage());
+    case RouteName.readings:
+      return _page(settings, VitalsReading());
+    case RouteName.healthRecord:
+      return _page(settings, const HealthRecordShellPage());
+    case RouteName.manageReadings:
+      return _page(settings, ManageReadings());
+    case RouteName.addDevice:
+      return _page(settings, const AddDeviceShellPage());
+    case RouteName.bloodSug:
+      return _page(settings, const BloodSugShellPage());
+    case RouteName.articles:
+      return _page(settings, const ArticlesShellPage());
+    case RouteName.savedArticles:
+      return _page(settings, const SavedArticlesShellPage());
+    case RouteName.publishedArticles:
+      return _page(settings, const PublishedArticlesShellPage());
+    case RouteName.caseStudies:
+      return _page(settings, const CaseStudiesShellPage());
+    case RouteName.podcast:
+      return _page(settings, const PodcastShellPage());
+    case RouteName.emergency:
+      return _page(settings, const EmergencyShellPage());
+    case RouteName.distressCall:
+      return _page(settings, const DistressCallPage());
+    case RouteName.account:
+      return _page(settings, const AccountShellPage());
+    case RouteName.deleteAccount:
+      return _page(settings, const DeleteAccountPage());
+    case RouteName.settings:
+      return _page(settings, const SettingsProfilePage());
+    case RouteName.changeAuthentication:
+      return _page(settings, const ChangeAuthenticationShellPage());
+    case RouteName.turnOnAuthentication:
+      return _page(settings, const TurnOnAuthenticationShellPage());
+    case RouteName.createPin:
+      return _page(settings, const CreatePinShellPage());
+    case RouteName.confirmPinSave:
+      final args = settings.arguments;
+      return _page(
+        settings,
+        ConfirmPinSaveShellPage(draftPin: args is String ? args : null),
+      );
+    case RouteName.addPhoneNumber:
+      return _page(settings, const AddPhoneNumberShellPage());
+    case RouteName.confirmPhoneNumber:
+      final args = settings.arguments;
+      return _page(
+        settings,
+        ConfirmPhoneNumberShellPage(
+          initialPhoneNumber: args is String ? args : null,
+        ),
+      );
+    case RouteName.addEmail:
+      return _page(settings, const AddEmailShellPage());
+    case RouteName.editEmail:
+      return _page(settings, const EditEmailShellPage());
+    case RouteName.changeEmail:
+      return _page(settings, const ChangeEmailShellPage());
+    case RouteName.enterPasswordToSave:
+      return _page(settings, const EnterPasswordToSaveShellPage());
+    case RouteName.password:
+      return _page(settings, const PasswordShellPage());
+    case RouteName.publicProfile:
+      return _page(settings, const PublicProfileShellPage());
+    case RouteName.manageProfile:
+      return _page(settings, const ManageProfileShellPage());
+    case RouteName.managePortfolio:
+      return _page(settings, const ManagePortfolioShellPage());
+    case RouteName.editYourName:
+      return _page(settings, const EditYourNameShellPage());
+    case RouteName.editYourWebsite:
+      return _page(settings, const EditYourWebsiteShellPage());
+    case RouteName.addDescription:
+      return _page(settings, const AddDescriptionShellPage());
+    case RouteName.setAddress:
+      return _page(settings, const SetAddressShellPage());
+    case RouteName.discoverCommunities:
+      return _page(settings, const DiscoverCommunitiesPage());
+    case RouteName.communityProfile:
+      final args = settings.arguments;
+      if (args is CommunityProfileRouteArgs) {
+        return _page(
+          settings,
+          CommunityProfilePage(profile: args.profile, isOwner: args.isOwner),
+        );
+      }
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => UnknownRoutePage(routeName: settings.name),
+      );
+    case RouteName.ownerCircleProfile:
+      final args = settings.arguments;
+      final profile =
+          args is CommunityProfileRouteArgs
+              ? args.profile
+              : CommunitiesLocalStore.ownerCircleProfile;
+      return _page(
+        settings,
+        CommunityProfilePage(profile: profile, isOwner: true),
+      );
+    case RouteName.createCommunity:
+      return _page(settings, const CreateCommunityPage());
+    case RouteName.qAAsk:
+      return _page(settings, const QaAskPage());
+    case RouteName.qAAnswerRequests:
+      return _page(settings, const QaAnswerRequestsPage());
+    case RouteName.qAAnswerForYou:
+      return _page(settings, const QaAnswerForYouPage());
+    case RouteName.commentAnswer:
+      final args = settings.arguments;
+      if (args is QaCommentRouteArgs) {
+        return _page(
+          settings,
+          QaCommentAnswerPage(questionId: args.questionId),
+        );
+      }
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => UnknownRoutePage(routeName: settings.name),
       );
     case RouteName.messages:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const messages.MessagesPage(),
-      );
+      return _page(settings, const messages.MessagesPage());
     case RouteName.chat:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const chat.ChatPageEmpty(),
-      );
+      return _page(settings, const chat.ChatPage());
     case RouteName.message:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const MessagePage(),
+      return _page(
+        settings,
+        const chat.ChatPage(variant: chat.ChatPageVariant.unavailableNotice),
       );
     case RouteName.notification:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: NotificationsPage(),
-      );
-    case RouteName.notificationCenter:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const NotificationCenterPage(),
-      );
-    case RouteName.reminders:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const ReminderPage(),
-      );
-    case RouteName.addReminder:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const RemindersPage(),
-      );
-    case RouteName.schedule:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const SchedulePage(),
-      );
-    case RouteName.reminderEditor:
-      final args = settings.arguments as ReminderEditorArgs?;
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: ReminderEditorPage(reminder: args?.reminder),
-      );
-    case RouteName.readings:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const VitalsReading(),
-      );
-    case RouteName.manageReadings:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const ManageReadings(),
-      );
-    case RouteName.readingMetricDetail:
-      final args = settings.arguments! as ReadingMetricRouteArgs;
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: ReadingMetricDetailPage(metric: metricById(args.metricId)),
-      );
-    case RouteName.commentOnFeed:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const CommentOnFeedPage(),
-      );
-    case RouteName.articles:
-      return _getPageRoute(
-        routeName: settings.name!,
-        viewToShow: const ArticlesPage(),
-      );
+      return _page(settings, const NotificationsPage());
+    case RouteName.reminder:
+      return _page(settings, const ReminderShellPage());
+    case RouteName.schedules:
+      return _page(settings, const SchedulesShellPage());
+    case RouteName.selectedDates:
+      return _page(settings, const SelectedDatesShellPage());
     default:
-      return MaterialPageRoute<dynamic>(
-        builder:
-            (_) => Scaffold(
-              body: Center(
-                child: Text('No route defined for ${settings.name}'),
-              ),
-            ),
+      return MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => UnknownRoutePage(routeName: settings.name),
       );
   }
 }
 
-Route<dynamic> _getPageRoute({
-  required String routeName,
-  required Widget viewToShow,
-}) {
-  return MaterialPageRoute(
-    settings: RouteSettings(name: routeName),
-    builder: (_) => viewToShow,
+MaterialPageRoute<void> _page(RouteSettings settings, Widget child) {
+  return MaterialPageRoute<void>(
+    settings: RouteSettings(name: settings.name, arguments: settings.arguments),
+    builder: (_) => child,
   );
 }

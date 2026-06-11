@@ -14,12 +14,18 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  /// Matches Figma prototype timeout (0.8s) on splash screen.
+  static const Duration _splashDuration = Duration(milliseconds: 800);
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 5), () {
-      Navigator.of(context).pushReplacementNamed(RouteName.onboarding);
-    });
+    Future.delayed(_splashDuration, _goToOnboarding);
+  }
+
+  void _goToOnboarding() {
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed(RouteName.onboarding);
   }
 
   @override
@@ -36,6 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 imgName: AssetsImages.appLogo,
               ),
               RPadding(
+                padding: EdgeInsets.symmetric(vertical: 3.h),
                 child: Text(
                   'CARENET',
                   style: TextStyle(
@@ -45,7 +52,6 @@ class _SplashScreenState extends State<SplashScreen> {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                padding: EdgeInsets.symmetric(vertical: 3.h),
               ),
               Text(
                 'HEALTH SERVICES',

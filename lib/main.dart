@@ -1,57 +1,17 @@
-import 'package:app_t/core/theme/bloc/theme_bloc.dart';
+import 'package:app_t/app.dart';
+import 'package:app_t/core/di/injection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'core/constants/navigators/routeName.dart';
-import 'core/constants/navigators/router.dart';
-import 'core/constants/strings.dart';
-import 'core/theme/theme.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+  await configureDependencies();
 
-    return GestureDetector(
-      onTap: () {
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: MultiBlocProvider(
-        providers: [BlocProvider(create: (context) => ThemeBloc())],
-        child: BlocBuilder<ThemeBloc, ThemeMode>(
-          builder: (context, state) {
-            return ScreenUtilInit(
-              useInheritedMediaQuery: true,
-              minTextAdapt: true,
-              splitScreenMode: true,
-              ensureScreenSize: true,
-              designSize: const Size(430, 932),
-              builder: (BuildContext context, Widget? child) {
-                return MaterialApp(
-                  title: Strings.appName,
-                  debugShowCheckedModeBanner: false,
-                  themeMode: state,
-                  theme: lightTheme,
-                  darkTheme: darkTheme,
-                  onGenerateRoute: generateRoute,
-                  initialRoute: RouteName.dashboard,
-                );
-              },
-            );
-          },
-        ),
-      ),
-    );
-  }
+  runApp(const CarenetApp());
 }

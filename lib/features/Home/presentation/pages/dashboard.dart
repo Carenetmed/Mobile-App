@@ -2,9 +2,12 @@ import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Home/presentation/pages/circles_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/home.dart';
+import 'package:app_t/features/Home/presentation/pages/post_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
+import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
 import 'package:app_t/features/Home/presentation/widget/drawer.dart';
-import 'package:app_t/features/Messaging/presentation/pages/notification_center_page.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +26,7 @@ class _DashboardState extends State<Dashboard> {
     "Search": SvgImage(imgName: AssetsIcon.searchOutline),
     "Post": SvgImage(imgName: AssetsIcon.add),
     "Circles": SvgImage(imgName: AssetsIcon.sunny),
-    "Notifications": SvgImage(imgName: AssetsIcon.phone),
+    "Notifications": const Icon(Icons.notifications_outlined),
   };
 
   @override
@@ -32,16 +35,12 @@ class _DashboardState extends State<Dashboard> {
     _index = 0;
   }
 
-  List<Widget> get navBarView => [
+  List<Widget> navBarView = [
     const Home(),
-    const Placeholder(),
-    const Placeholder(),
-    const Placeholder(),
-    NotificationCenterPage(
-      onBackTap: () {
-        setState(() => _index = 0);
-      },
-    ),
+    const SearchShellPage(),
+    const PostShellPage(),
+    const CirclesShellPage(),
+    const NotificationsPage(),
   ];
 
   @override

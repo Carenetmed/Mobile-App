@@ -1,4 +1,14 @@
 class Validators {
+  static String? validateRequiredField(
+    String? value, {
+    required String fieldName,
+  }) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName is required';
+    }
+    return null;
+  }
+
   static String? validateFirstName(String? value) {
     if (value == null || value.isEmpty) {
       return 'First name is required';
@@ -24,15 +34,24 @@ class Validators {
     return null;
   }
 
+  static String? validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Phone number is required';
+    }
+
+    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
+    if (digitsOnly.length < 7 || digitsOnly.length > 15) {
+      return 'Invalid phone number';
+    }
+
+    return null;
+  }
+
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your password';
     } else if (value.length < 8) {
       return 'Password must be at least 8 characters long';
-    } else if (value.isNotEmpty &&
-        value[0].toUpperCase() == value[0] &&
-        value.contains(RegExp(r'\d'))) {
-      return 'invalid password format';
     } else if (!RegExp(
       r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$&*~]).{8,}$',
     ).hasMatch(value)) {
@@ -41,19 +60,27 @@ class Validators {
     return null;
   }
 
-  static String? validateConfirmPassword(String? value) {
+  static String? validateConfirmPassword(
+    String? value, {
+    required String password,
+  }) {
     if (value == null || value.isEmpty) {
       return 'Please enter your password';
     } else if (value.length < 8) {
       return 'Password must be at least 8 characters long';
-    } else if (value.isNotEmpty &&
-        value[0].toUpperCase() == value[0] &&
-        value.contains(RegExp(r'\d'))) {
-      return 'invalid password format';
     } else if (!RegExp(
       r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$&*~]).{8,}$',
     ).hasMatch(value)) {
       return 'Must include uppercase, number, and special character';
+    } else if (value != password) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
+  static String? validateBirthday(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Birthday is required';
     }
     return null;
   }

@@ -86,7 +86,10 @@ class CommunityCommitment extends StatelessWidget {
                   btnName: 'Agree & Continue',
                 ),
                 SizedBox(height: 5.h),
-                CarenetButtonOutline(btnAction: () {}, btnName: 'Decline'),
+                CarenetButtonOutline(
+                  btnAction: () => Navigator.of(context).maybePop(),
+                  btnName: 'Decline',
+                ),
               ],
             ),
           ),

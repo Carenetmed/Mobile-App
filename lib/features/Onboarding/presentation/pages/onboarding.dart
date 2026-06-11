@@ -2,8 +2,9 @@ import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
-import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Onboarding/presentation/widget/onboarding_element.dart';
+import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -17,13 +18,12 @@ class OnboardingView extends StatefulWidget {
 class _OnboardingViewState extends State<OnboardingView> {
   late PageController _pageController;
   int _currentPage = 0;
-  int _lastPage = 2;
+  final int _lastPage = 2;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentPage);
-    _pageController.addListener(() {});
   }
 
   @override
@@ -81,8 +81,8 @@ class _OnboardingViewState extends State<OnboardingView> {
                     decoration: BoxDecoration(
                       color:
                           _currentPage == index
-                              ? AppColors.primaryBlue6
-                              : AppColors.blue02,
+                              ? CarenetColors.brand
+                              : CarenetColors.primary100,
                       borderRadius: BorderRadius.circular(6.w),
                     ),
                   ),
@@ -93,10 +93,11 @@ class _OnboardingViewState extends State<OnboardingView> {
               alignment: Alignment(.85, -.95),
               child: GestureDetector(
                 onTap: () {
+                  setState(() => _currentPage = _lastPage);
                   _pageController.animateToPage(
                     _lastPage,
                     duration: const Duration(milliseconds: 400),
-                    curve: Curves.bounceIn,
+                    curve: Curves.easeInOut,
                   );
                 },
                 child: Text(
@@ -114,122 +115,57 @@ class _OnboardingViewState extends State<OnboardingView> {
               alignment: Alignment(0, .67),
               child:
                   _currentPage == 0
-                      ? TextButton(
-                        onPressed: () {
-                          _pageController.nextPage(
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll(
-                            AppColors.primaryBlue6,
-                          ),
-                          elevation: WidgetStatePropertyAll(0),
-                          padding: WidgetStatePropertyAll(
-                            EdgeInsets.symmetric(
-                              horizontal: .09.sw,
-                              vertical: 10.h,
-                            ),
-                          ),
-                          shape: WidgetStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                          ),
-                        ),
-                        child: Text(
-                          'Next',
-                          style: TextStyle(
-                            fontSize: FontSizes.body3,
-                            color: AppColors.kWhite,
-                            fontFamily: AppFonts.montserrat,
-                            fontWeight: FontWeight.w400,
-                          ),
+                      ? SizedBox(
+                        width: 180.w,
+                        child: CarenetButton(
+                          label: 'Next',
+                          onPressed: () {
+                            _pageController.nextPage(
+                              duration: Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
                         ),
                       )
-                      : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              _pageController.previousPage(
-                                duration: Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStatePropertyAll(
-                                Colors.transparent,
-                              ),
-                              elevation: WidgetStatePropertyAll(0),
-                              padding: WidgetStatePropertyAll(
-                                EdgeInsets.symmetric(
-                                  horizontal: .14.sw,
-                                  vertical: 8.h,
-                                ),
-                              ),
-                              shape: WidgetStatePropertyAll(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
+                      : Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: CarenetButton(
+                                label: 'Go back',
+                                onPressed: () {
+                                  _pageController.previousPage(
+                                    duration: Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                  );
+                                },
+                                type: CarenetButtonType.outline,
                               ),
                             ),
-                            child: Text(
-                              'Go back',
-                              style: TextStyle(
-                                fontSize: FontSizes.body3,
-                                color: AppColors.primaryBlue10,
-                                fontFamily: AppFonts.montserrat,
-                                fontWeight: FontWeight.w400,
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: CarenetButton(
+                                label:
+                                    _currentPage == _lastPage
+                                        ? 'Get started'
+                                        : 'Next',
+                                onPressed: () {
+                                  if (_currentPage < _lastPage) {
+                                    _pageController.nextPage(
+                                      duration: Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  } else {
+                                    Navigator.of(context).pushReplacementNamed(
+                                      RouteName.signUpPhone,
+                                    );
+                                  }
+                                },
                               ),
                             ),
-                          ),
-                          SizedBox(width: 8),
-                          TextButton(
-                            onPressed: () {
-                              if (_currentPage < _lastPage) {
-                                _pageController.nextPage(
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              } else {
-                                Navigator.of(
-                                  context,
-                                ).pushReplacementNamed(RouteName.signUpPhone);
-                              }
-                            },
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStatePropertyAll(
-                                AppColors.primaryBlue6,
-                              ),
-                              elevation: WidgetStatePropertyAll(0),
-                              padding: WidgetStatePropertyAll(
-                                EdgeInsets.symmetric(
-                                  horizontal: .14.sw,
-                                  vertical: 8.h,
-                                ),
-                              ),
-                              shape: WidgetStatePropertyAll(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                              ),
-                            ),
-                            child: Text(
-                              _currentPage == _lastPage
-                                  ? 'Get started'
-                                  : 'Next',
-                              style: TextStyle(
-                                fontSize: FontSizes.body3,
-                                color: AppColors.kWhite,
-                                fontFamily: AppFonts.montserrat,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
             ),
           ],

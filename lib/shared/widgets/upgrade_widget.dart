@@ -28,23 +28,20 @@ class UpgradeWidget extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: InkWell(
-              onTap: () {},
-              child: Container(
-                padding: REdgeInsets.all(8),
-                margin: REdgeInsets.only(right: 6, top: 6),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  color: AppColors.primaryBlue5,
-                ),
-                child: Text(
-                  'Upgrade Now',
-                  style: TextStyle(
-                    fontFamily: AppFonts.montserrat,
-                    color: AppColors.white01,
-                    fontWeight: FontWeight.w500,
-                    fontSize: FontSizes.body3,
-                  ),
+            child: Container(
+              padding: REdgeInsets.all(8),
+              margin: REdgeInsets.only(right: 6, top: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: AppColors.primaryBlue5,
+              ),
+              child: Text(
+                'Upgrade Now',
+                style: TextStyle(
+                  fontFamily: AppFonts.montserrat,
+                  color: AppColors.white01,
+                  fontWeight: FontWeight.w500,
+                  fontSize: FontSizes.body3,
                 ),
               ),
             ),

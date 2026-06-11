@@ -1,0 +1,101 @@
+import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+const Size _phoneSize = Size(430, 932);
+
+Future<void> _pumpWithRoutes(
+  WidgetTester tester, {
+  required Widget home,
+}) async {
+  tester.view.physicalSize = _phoneSize;
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(
+    ScreenUtilInit(
+      designSize: _phoneSize,
+      builder:
+          (_, __) => MaterialApp(
+            home: home,
+            routes: {
+              RouteName.finishSignUp:
+                  (_) => const Scaffold(body: Text('finish-sign-up')),
+              RouteName.signInPhone:
+                  (_) => const Scaffold(body: Text('sign-in-phone')),
+              RouteName.signInEmail:
+                  (_) => const Scaffold(body: Text('sign-in-email')),
+            },
+          ),
+    ),
+  );
+  await tester.pump();
+}
+
+void main() {
+  group('Sign up flow', () {
+    testWidgets('sign up email blocks invalid input and navigates when valid', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(tester, home: SignUpEmail());
+
+      await tester.tap(find.text('Continue'));
+      await tester.pump();
+      expect(find.text('Email Address is required'), findsOneWidget);
+
+      await tester.enterText(
+        find.byType(EditableText).first,
+        'hello@example.com',
+      );
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('finish-sign-up'), findsOneWidget);
+    });
+
+    testWidgets('sign up phone validates fields before navigation', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(tester, home: SignUpPhone());
+
+      await tester.tap(find.text('Continue'));
+      await tester.pump();
+      expect(find.text('Country/Region is required'), findsOneWidget);
+      expect(find.text('Phone number is required'), findsOneWidget);
+
+      final fields = find.byType(EditableText);
+      await tester.enterText(fields.at(0), 'United States');
+      await tester.enterText(fields.at(1), '123');
+      await tester.tap(find.text('Continue'));
+      await tester.pump();
+      expect(find.text('Invalid phone number'), findsOneWidget);
+
+      await tester.enterText(fields.at(1), '+1 202 555 0199');
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('finish-sign-up'), findsOneWidget);
+    });
+
+    testWidgets('sign up phone routes to sign in phone entry', (tester) async {
+      await _pumpWithRoutes(tester, home: SignUpPhone());
+
+      await tester.tap(find.text('Already have an account? Sign in'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('sign-in-phone'), findsOneWidget);
+    });
+
+    testWidgets('sign up email routes to sign in email entry', (tester) async {
+      await _pumpWithRoutes(tester, home: SignUpEmail());
+
+      await tester.tap(find.text('Already have an account? Sign in'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('sign-in-email'), findsOneWidget);
+    });
+  });
+}

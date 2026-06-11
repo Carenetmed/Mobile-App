@@ -8,11 +8,11 @@ Start here: `docs/README.md` → then `docs/AI_HANDOFF.md` for the current task.
 
 ## What this project is
 
-**CareNet** — mobile healthcare + professional community app (Flutter).  
-UI spec from Figma export: `C:\Users\asd\Music\project-blueprint\project-blueprint\`  
+**CareNet** — mobile healthcare + professional community app (Flutter).
+UI spec from Figma export: `C:\Users\asd\Music\project-blueprint\project-blueprint\`
 Implementation repo: this folder (`Mobile-App-master`).
 
-See `BLUEPRINT_OVERVIEW.md` for export size, colors, and domains.  
+See `BLUEPRINT_OVERVIEW.md` for export size, colors, and domains.
 See `CODEBASE_STATUS.md` for what is already coded.
 
 ---

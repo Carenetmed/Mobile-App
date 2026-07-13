@@ -28,6 +28,8 @@ class RouteName {
   static const String signInEmail = 'signInEmail';
   static const String enterEmail = 'enterEmail';
   static const String enterPassword = 'enterPassword';
+  static const String resetPasswordConfirm = 'resetPasswordConfirm';
+  static const String emailVerificationConfirm = 'emailVerificationConfirm';
 
   /// Reserved for a combined login hub screen (not wired in Phase 0).
   static const String login = 'login';

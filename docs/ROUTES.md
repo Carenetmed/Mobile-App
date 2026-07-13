@@ -20,6 +20,8 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `signInEmail` | `signInEmail` | `SignInEmail` | `lib/features/Authentication/presentation/pages/sign_in_email.dart` |
 | `enterEmail` | `enterEmail` | `EnterEmailPage` | `lib/features/Authentication/presentation/pages/enter_email.dart` |
 | `enterPassword` | `enterPassword` | `EnterPasswordPage` | `lib/features/Authentication/presentation/pages/enter_password.dart` |
+| `resetPasswordConfirm` | `resetPasswordConfirm` | `ResetPasswordConfirmPage` | `lib/features/Authentication/presentation/pages/reset_password_confirm_page.dart` |
+| `emailVerificationConfirm` | `emailVerificationConfirm` | `EmailVerificationConfirmPage` | `lib/features/Authentication/presentation/pages/email_verification_confirm_page.dart` |
 | `dashboard` | `dashboard` | `Dashboard` | `lib/features/Home/presentation/pages/dashboard.dart` |
 | `search` | `search` | `SearchShellPage` | `lib/features/Home/presentation/pages/search_shell.dart` |
 | `findMentor` | `findMentor` | `FindMentorShellPage` | `lib/features/Home/presentation/pages/find_mentor_shell.dart` |
@@ -93,6 +95,8 @@ Figma `routes.json` uses paths like `/splash-screen`, `/sign-up-with-phone`. App
 | `/sign-up-with-email` | `signUpEmail` |
 | `/enter-email` | `enterEmail` |
 | `/enter-password` | `enterPassword` |
+| Backend reset link token landing | `resetPasswordConfirm` |
+| Backend verification link token landing | `emailVerificationConfirm` |
 | `/community-agreement` | `communityAgreement` |
 | `/notification-agreement` | `notificationAgreement` |
 | `/dashboard` | `dashboard` |

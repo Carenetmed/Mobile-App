@@ -57,7 +57,8 @@ dashboard
 splash → onboarding OR sign-in entry (TBD)
 signInPhone ←→ signInEmail
   Continue → dashboard
-  Forgot Password? → enterEmail → enterPassword → signInEmail
+  Forgot Password? → enterEmail → reset email sent → resetPasswordConfirm(token) → signInEmail
+  Legacy local review screen: enterEmail → enterPassword (explains token requirement when no token is present)
 ```
 
 ---
@@ -158,6 +159,7 @@ dashboard drawer -> account -> changeAuthentication -> turnOnAuthentication -> c
 dashboard drawer -> account -> addPhoneNumber
 dashboard drawer -> account -> addEmail
 dashboard drawer -> account -> addEmail -> editEmail
+dashboard drawer -> account -> addEmail -> editEmail -> emailVerificationConfirm(token)
 dashboard drawer -> account -> addEmail -> editEmail -> enterPasswordToSave
 dashboard drawer -> account -> addEmail -> changeEmail
 dashboard drawer -> account -> password

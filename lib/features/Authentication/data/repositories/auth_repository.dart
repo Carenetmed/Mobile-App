@@ -84,8 +84,9 @@ class AuthRepository {
   Future<void> confirmPasswordReset({
     required String token,
     required String password,
-  }) {
-    return _apiClient.confirmPasswordReset(token: token, password: password);
+  }) async {
+    await _apiClient.confirmPasswordReset(token: token, password: password);
+    await _sessionStore.clear();
   }
 
   Future<AuthSession> googleSignIn({required String idToken}) async {

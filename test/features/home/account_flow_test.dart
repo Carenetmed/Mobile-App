@@ -4,6 +4,7 @@ import 'package:app_t/features/Authentication/data/repositories/account_reposito
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
+import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_email_shell.dart';
@@ -666,6 +667,125 @@ void main() {
     },
   );
 
+  testWidgets('email verification confirm uses token and refreshes account', (
+    tester,
+  ) async {
+    final repository = _FakeAccountRepository(
+      user: const AuthUser(
+        id: 'user-1',
+        email: 'verified@carenet.app',
+        role: 'PATIENT',
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
+    );
+    tester.view.physicalSize = _phoneSize;
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: _phoneSize,
+        builder:
+            (_, __) => MaterialApp(
+              home: EmailVerificationConfirmPage(
+                token: 'opaque-verification-token',
+                accountRepository: repository,
+              ),
+              routes: <String, WidgetBuilder>{
+                RouteName.account: (_) => const Scaffold(body: Text('account')),
+              },
+            ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Confirm verification'));
+    await tester.pumpAndSettle();
+
+    expect(repository.confirmEmailVerificationCalls, 1);
+    expect(repository.lastVerificationToken, 'opaque-verification-token');
+    expect(repository.currentAccountCalls, 1);
+    expect(find.textContaining('Email verified'), findsOneWidget);
+
+    await tester.tap(find.text('Back to account'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('account'), findsOneWidget);
+  });
+
+  testWidgets('email verification confirm handles missing token', (
+    tester,
+  ) async {
+    final repository = _FakeAccountRepository();
+    tester.view.physicalSize = _phoneSize;
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: _phoneSize,
+        builder:
+            (_, __) => MaterialApp(
+              home: EmailVerificationConfirmPage(
+                token: null,
+                accountRepository: repository,
+              ),
+              routes: <String, WidgetBuilder>{
+                RouteName.editEmail:
+                    (_) => const Scaffold(body: Text('edit-email')),
+              },
+            ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Verification link is missing'), findsOneWidget);
+    expect(repository.confirmEmailVerificationCalls, 0);
+
+    await tester.tap(find.text('Back to account email'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('edit-email'), findsOneWidget);
+  });
+
+  testWidgets('email verification confirm shows safe token failure', (
+    tester,
+  ) async {
+    final repository = _FakeAccountRepository(
+      verificationFailure: const AuthFailure(
+        type: AuthFailureType.validation,
+        message: 'Verification link is invalid or expired.',
+      ),
+    );
+    tester.view.physicalSize = _phoneSize;
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: _phoneSize,
+        builder:
+            (_, __) => MaterialApp(
+              home: EmailVerificationConfirmPage(
+                token: 'opaque-verification-token',
+                accountRepository: repository,
+              ),
+            ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Confirm verification'));
+    await tester.pumpAndSettle();
+
+    expect(repository.confirmEmailVerificationCalls, 1);
+    expect(
+      find.text('Verification link is invalid or expired.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('password-to-save route prepares backend re-auth only', (
     tester,
   ) async {
@@ -765,12 +885,15 @@ class _FakeAuthRepository implements AuthRepository {
 }
 
 class _FakeAccountRepository implements AccountRepository {
-  _FakeAccountRepository({this.user, this.failure});
+  _FakeAccountRepository({this.user, this.failure, this.verificationFailure});
 
   final AuthUser? user;
   final AuthFailure? failure;
+  final AuthFailure? verificationFailure;
   int currentAccountCalls = 0;
   int requestEmailVerificationCalls = 0;
+  int confirmEmailVerificationCalls = 0;
+  String? lastVerificationToken;
 
   @override
   Future<AuthUser> currentAccount() async {
@@ -793,6 +916,16 @@ class _FakeAccountRepository implements AccountRepository {
   Future<void> requestEmailVerification() async {
     requestEmailVerificationCalls += 1;
     final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
+  }
+
+  @override
+  Future<void> confirmEmailVerification({required String token}) async {
+    confirmEmailVerificationCalls += 1;
+    lastVerificationToken = token;
+    final failure = verificationFailure;
     if (failure != null) {
       throw failure;
     }

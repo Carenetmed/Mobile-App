@@ -104,7 +104,7 @@ class AuthApiClient {
   }) async {
     await _post(
       passwordResetConfirmPath,
-      data: <String, dynamic>{'token': token, 'password': password},
+      data: <String, dynamic>{'token': token, 'newPassword': password},
     );
   }
 

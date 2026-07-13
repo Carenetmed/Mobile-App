@@ -7,6 +7,8 @@ import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.d
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_password.dart';
+import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
+import 'package:app_t/features/Authentication/presentation/pages/reset_password_confirm_page.dart';
 import 'package:app_t/features/Home/presentation/pages/add_device_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_description_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
@@ -101,6 +103,18 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _page(settings, const EnterEmailPage());
     case RouteName.enterPassword:
       return _page(settings, const EnterPasswordPage());
+    case RouteName.resetPasswordConfirm:
+      final args = settings.arguments;
+      return _page(
+        settings,
+        ResetPasswordConfirmPage(token: args is String ? args : null),
+      );
+    case RouteName.emailVerificationConfirm:
+      final args = settings.arguments;
+      return _page(
+        settings,
+        EmailVerificationConfirmPage(token: args is String ? args : null),
+      );
     case RouteName.medicalEdit:
       return _page(settings, UserEdit());
     case RouteName.dashboard:

@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.13** - frontend/backend integration checkpoint before more runtime wiring |
-| Last completed | **52.12** - selected checkpoint handoff before more runtime wiring |
+| NEXT task | **52.14** - decide next frontend/backend runtime target after checkpoint |
+| Last completed | **52.13** - frontend/backend integration checkpoint created |
 | Registered routes | **68 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -220,6 +220,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-13 | Task 52.10 DONE - selected workflow guardrail restoration as the next lane before more backend/account runtime wiring; DOC_SYNC NEXT -> 52.11 |
 | 2026-07-14 | Task 52.11 DONE - restored `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md`; DOC_SYNC NEXT -> 52.12 |
 | 2026-07-14 | Task 52.12 DONE - selected a frontend/backend integration checkpoint before more runtime wiring; DOC_SYNC NEXT -> 52.13 |
+| 2026-07-14 | Task 52.13 DONE - created frontend/backend integration checkpoint with completed wiring, blockers, and contract questions; DOC_SYNC NEXT -> 52.14 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

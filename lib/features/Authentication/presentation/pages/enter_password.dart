@@ -1,7 +1,6 @@
 import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
-import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
@@ -23,6 +22,7 @@ class _EnterPasswordPageState extends State<EnterPasswordPage> {
   bool _attemptedSubmit = false;
   bool _visiblePassword = true;
   bool _visibleConfirmPassword = true;
+  String? _resetBoundaryNotice;
 
   @override
   void initState() {
@@ -69,14 +69,14 @@ class _EnterPasswordPageState extends State<EnterPasswordPage> {
   void _onChangePassword() {
     setState(() {
       _attemptedSubmit = true;
+      _resetBoundaryNotice = null;
     });
 
     if (_passwordError == null && _confirmPasswordError == null) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        RouteName.signInEmail,
-        (route) => false,
-      );
+      setState(() {
+        _resetBoundaryNotice =
+            'Password reset confirmation needs the secure token from the reset email link. This screen does not have that token yet, so it cannot safely change the password.';
+      });
     }
   }
 
@@ -110,8 +110,8 @@ class _EnterPasswordPageState extends State<EnterPasswordPage> {
               SizedBox(height: 8.h),
               Text(
                 recoveryEmail == null || recoveryEmail.isEmpty
-                    ? 'Confirm your new password'
-                    : 'Confirm your new password for $recoveryEmail',
+                    ? 'Open the reset link from your email before changing your password'
+                    : 'We sent reset instructions to $recoveryEmail',
                 style: TextStyle(
                   fontSize: FontSizes.footer2,
                   fontFamily: AppFonts.montserrat,
@@ -161,7 +161,7 @@ class _EnterPasswordPageState extends State<EnterPasswordPage> {
               ),
               SizedBox(height: 15.h),
               Text(
-                'Your password must be at least 8 characters long including numbers and special characters.',
+                'Your password must be at least 8 characters long including numbers and special characters. Final password change requires the secure reset token from the email link.',
                 style: TextStyle(
                   fontSize: FontSizes.footer2,
                   fontFamily: AppFonts.montserrat,
@@ -170,8 +170,21 @@ class _EnterPasswordPageState extends State<EnterPasswordPage> {
                 ),
               ),
               SizedBox(height: .05.sh),
+              if (_resetBoundaryNotice != null) ...[
+                Text(
+                  _resetBoundaryNotice!,
+                  style: TextStyle(
+                    fontSize: FontSizes.footer4,
+                    fontFamily: AppFonts.montserrat,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.redAccent,
+                    height: 1.4,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+              ],
               CarenetButton(
-                label: 'Change password',
+                label: 'Review reset token requirement',
                 onPressed: _onChangePassword,
               ),
             ],

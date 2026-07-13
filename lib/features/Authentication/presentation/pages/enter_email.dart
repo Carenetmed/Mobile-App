@@ -1,15 +1,20 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class EnterEmailPage extends StatefulWidget {
-  const EnterEmailPage({super.key});
+  const EnterEmailPage({super.key, this.authRepository});
+
+  final AuthRepository? authRepository;
 
   @override
   State<EnterEmailPage> createState() => _EnterEmailPageState();
@@ -18,6 +23,11 @@ class EnterEmailPage extends StatefulWidget {
 class _EnterEmailPageState extends State<EnterEmailPage> {
   late final TextEditingController _emailController;
   bool _attemptedSubmit = false;
+  bool _isSubmitting = false;
+  String? _authError;
+
+  AuthRepository get _authRepository =>
+      widget.authRepository ?? sl<AuthRepository>();
 
   @override
   void initState() {
@@ -51,17 +61,37 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
         : CarenetTextFieldValidationState.invalid;
   }
 
-  void _onContinue() {
+  Future<void> _onContinue() async {
     setState(() {
       _attemptedSubmit = true;
+      _authError = null;
     });
 
-    if (_emailError == null) {
-      Navigator.pushNamed(
-        context,
-        RouteName.enterPassword,
-        arguments: _emailController.text.trim(),
-      );
+    if (_emailError != null) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final email = _emailController.text.trim();
+      await _authRepository.requestPasswordReset(email: email);
+      if (!mounted) return;
+      Navigator.pushNamed(context, RouteName.enterPassword, arguments: email);
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _authError = failure.message;
+        _isSubmitting = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _authError = 'Something went wrong. Please try again.';
+        _isSubmitting = false;
+      });
     }
   }
 
@@ -109,7 +139,22 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
                 errorText: _emailError,
               ),
               SizedBox(height: .05.sh),
-              CarenetButton(label: 'Continue', onPressed: _onContinue),
+              if (_authError != null) ...[
+                Text(
+                  _authError!,
+                  style: TextStyle(
+                    fontSize: FontSizes.footer4,
+                    fontFamily: AppFonts.montserrat,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.redAccent,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+              ],
+              CarenetButton(
+                label: _isSubmitting ? 'Sending reset link...' : 'Continue',
+                onPressed: _isSubmitting ? null : _onContinue,
+              ),
             ],
           ),
         ),

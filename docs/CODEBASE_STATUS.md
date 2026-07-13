@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-13 logout/session-clear slice.
+**Last updated:** 2026-07-13 password reset request boundary slice.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -29,7 +29,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Sign-up to sign-in links | "Already have an account? Sign in" routes to `signInPhone` / `signInEmail` from matching entry screens |
 | Sign-in phone | Validates country/region, phone, and password locally, then routes to `dashboard` |
 | Sign-in email | Validates email and password locally, then routes to `dashboard` |
-| Password recovery | `Forgot Password?` routes to `enterEmail`, then `enterPassword`, then returns to `signInEmail` after a valid reset |
+| Password recovery | `Forgot Password?` routes to `enterEmail`; valid email requests reset through `AuthRepository.requestPasswordReset`, then `enterPassword` explains that final confirmation needs the secure reset token from the email link before `confirmPasswordReset` can be called |
 | Finish sign-up | Validates required fields, date picker birthday, password strength, and confirm password match before routing to `communityAgreement` |
 | Social auth rows on sign-up | Google / Facebook / Apple render as explicitly disabled until backend/provider integration exists |
 | Dashboard shell | Bottom nav tabs all render real screens; Home tab keeps drawer; Notifications now opens the dedicated notifications feature screen directly |
@@ -262,6 +262,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.3 test/analyze | Passed: `flutter test test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on email sign-up, finish sign-up, router, and sign-up tests reports no issues |
 | Focused task 52.4 test/analyze | Passed: `flutter test test/features/authentication/session_restore_guard_test.dart test/features/authentication/sign_in_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on splash guard, session restore test, and auth repository reports no issues |
 | Focused task 52.5 test/analyze | Passed: `flutter test test/features/home/account_flow_test.dart`; focused `flutter analyze` on Account and account-flow tests reports no issues |
+| Focused task 52.6 test/analyze | Passed: `flutter test test/features/authentication/password_recovery_flow_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on password reset screens and password recovery tests reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

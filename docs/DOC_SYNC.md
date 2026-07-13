@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.9** - auth/session/account frontend integration regression pass |
-| Last completed | **52.8** - email verification request wired; confirmation blocked until secure token/deep-link/code boundary exists |
+| NEXT task | **52.10** - decide next backend-integration lane after auth/session/account regression |
+| Last completed | **52.9** - auth/session/account frontend integration regression pass |
 | Registered routes | **68 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -216,6 +216,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-13 | Task 52.6 DONE - password reset request now calls `AuthRepository.requestPasswordReset`; confirmation stops before fake success until a secure token/deep-link boundary exists; DOC_SYNC NEXT -> 52.7 |
 | 2026-07-13 | Task 52.7 DONE - Account now reads `AccountRepository.currentAccount` for safe email/status display while keeping profile edits, deletion, and security mutations local/deferred; DOC_SYNC NEXT -> 52.8 |
 | 2026-07-13 | Task 52.8 DONE - current-email verification request now calls `AccountRepository.requestEmailVerification`; confirmation remains blocked until secure token/deep-link/code handling exists; DOC_SYNC NEXT -> 52.9 |
+| 2026-07-13 | Task 52.9 DONE - auth/session/account regression pass covered sign-in, sign-up, restore, logout, password reset request, current account read, and email verification request; DOC_SYNC NEXT -> 52.10 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

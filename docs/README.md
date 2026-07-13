@@ -41,6 +41,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 17 | **BACKEND_COMPLETED_SURFACE_WIRING_MAP.md** | Completed backend surfaces and remaining frontend wiring order |
 | 18 | **AUTH_ACCOUNT_STAGING_CHECKPOINT.md** | Developer-private staging proxy/auth checkpoint for Phase 22 |
 | 19 | **GOOGLE_SIGN_IN_FOUNDATION.md** | Real app identifiers required before Google OAuth setup |
+| 20 | **GOOGLE_SIGN_IN_SETUP_PREREQUISITES.md** | Google OAuth client prerequisites and fingerprints |
 
 Current implementation policy:
 - Build frontend-complete, backend-ready slices.

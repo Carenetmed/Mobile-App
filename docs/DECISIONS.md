@@ -78,6 +78,7 @@ does not silently reinterpret established boundaries.
 | D071 | 2026-07-14 | Completed backend surface wiring order | Use `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md` to consume already-completed backend surfaces in a stable order: auth/account staging checkpoint first, then professional/profile/verification, then public professionals/availability, then appointment lifecycle. Do not start phone/OTP, MFA, production app links, payments, notifications, reviews, calls, calendar sync, prescriptions, medical notes, admin dashboard behavior, public staging access, or production-readiness work as the next runtime lane | Phase 22, task 52.17 |
 | D072 | 2026-07-14 | Auth account staging checkpoint | Developer-private staging proxy reached `/health` and `/health/ready`; database, migrations, and email are ready, while `googleAuth` and `verificationStorage` are disabled. Keep Google UI and verification upload deferred, keep `CARENET_API_BASE_URL` as the Flutter config key, and select profile/public professional contract work as the next frontend lane | Phase 22, task 52.18 |
 | D073 | 2026-07-14 | App identifiers for Google foundation | Use `com.carenet.app` for Android namespace/application ID and iOS bundle ID before creating or wiring Google OAuth credentials. Do not create OAuth clients against placeholder `com.example` IDs; Google UI remains disabled until OAuth clients, fingerprints, Flutter provider config, and backend `GOOGLE_OAUTH_CLIENT_ID` are ready | Phase 22, task 52.19 |
+| D074 | 2026-07-14 | Google OAuth prerequisite boundary | Collect Google OAuth prerequisites before runtime UI wiring: Android package `com.carenet.app`, iOS bundle `com.carenet.app`, debug SHA fingerprints, release fingerprint blocker, and backend readiness status. Do not add `google_sign_in` or enable Google buttons until OAuth client IDs are configured and backend readiness reports `googleAuth: ok` | Phase 22, task 52.20 |
 
 ## How to add a row
 
@@ -146,3 +147,22 @@ Reason: Creating Google OAuth clients against `com.example.app_t` or
 
 Next: 52.20 should define or collect Google OAuth prerequisites for
 `com.carenet.app` before runtime Google UI wiring.
+
+## D074 - Google OAuth prerequisite boundary
+
+Task: 52.20
+
+Decision: Collect the Google OAuth prerequisite package before runtime Google UI
+wiring. The app target is Android package `com.carenet.app` and iOS bundle
+`com.carenet.app`. The local Android debug SHA fingerprints are recorded in
+`GOOGLE_SIGN_IN_SETUP_PREREQUISITES.md`. Release fingerprints remain blocked
+until the release keystore password is intentionally available.
+
+Reason: Google UI wiring cannot be proven while staging readiness reports
+`googleAuth: disabled` and no Google OAuth client configuration is present.
+Adding a Flutter provider package before OAuth clients exist would create a
+mocked success path rather than real sign-in.
+
+Next: 52.21 should create or collect OAuth client IDs and configure backend
+staging `GOOGLE_OAUTH_CLIENT_ID`, then verify `/health/ready` reports
+`googleAuth: ok`.

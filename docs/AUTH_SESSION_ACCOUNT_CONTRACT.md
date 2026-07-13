@@ -1,7 +1,7 @@
 # Auth session account backend contract
 
 **Task:** 51.2
-**Status:** Accepted for the next implementation slice.
+**Status:** Contract accepted; infrastructure boundary implemented in task 52.1.
 **Scope:** Define the Flutter-side contract before wiring auth, session, or account screens to the backend.
 
 This contract is the source of truth for replacing the current local/client-only authentication and account behavior. It does not enable any locked controls by itself.
@@ -169,16 +169,25 @@ Do not implement these under task 51.2 or the immediate infrastructure slice unl
 
 ## Next implementation boundary
 
+Task `52.1` implemented:
+
+- `CareNetApiConfig` for environment API base URL config.
+- `AuthApiClient` for auth/account route calls with bearer-only headers.
+- `SessionStore`, `SecureSessionStore`, and `InMemorySessionStore`.
+- Auth user/session/failure models.
+- `AuthRepository` and `AccountRepository`.
+- DI registration without screen wiring.
+- Focused tests for missing config, bearer-only headers, session storage, refresh token rotation, and unauthorized session clearing.
+
 Recommended next task:
 
-`52.1 - Implement the auth/session/account infrastructure boundary: environment API config, safe auth API client, session store, auth/account models, repository interfaces, and focused tests without wiring screens to backend yet.`
+`52.2 - Wire the first auth screen to the repository boundary, starting with email sign-in only: preserve local validation, require backend config for backend success, show safe loading/error states, and keep phone/social/security flows deferred.`
 
 Definition of done for that next task should include:
 
-1. Backend base URL is configurable.
-2. Tokens are never logged.
-3. Bearer auth is the only auth header.
-4. Session secrets use secure storage.
-5. Missing config and refresh failure fail closed.
-6. Existing local screens are not rewritten broadly.
-7. Deferred provider/security controls remain visibly deferred.
+1. Email sign-in keeps existing client-side validation.
+2. Valid email sign-in calls `AuthRepository.login`.
+3. Missing backend config shows an honest error and does not navigate.
+4. Backend success stores session through the repository boundary and then navigates.
+5. Backend failure shows a safe generic error and does not log credentials/tokens.
+6. Phone sign-in, sign-up, social auth, password reset, and account-security screens remain unchanged unless explicitly scoped.

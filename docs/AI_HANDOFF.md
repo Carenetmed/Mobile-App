@@ -151,7 +151,8 @@
 | 52.8 | Wire the email verification request/confirmation boundary only where token handling is honest: allow requesting verification for the current account if session-backed, but do not fake confirmation without a secure token/deep-link or code-entry path | M | **DONE** |
 | 52.9 | Run an auth/session/account frontend integration regression pass: cover sign-in, sign-up, restore, logout, password reset request boundary, current account read, and email verification request boundary; document any remaining gaps before starting another feature lane | M | **DONE** |
 | 52.10 | Decide the next backend-integration lane after the auth/session/account regression pass: either close Phase 22 for now, continue remaining auth/account backend wiring, or select the next contract group from `DEFERRED_WORK.md` without implementing runtime behavior in the decision slice | S | **DONE** |
-| 52.11 | Restore the missing workflow guardrail docs referenced by `README.md`, `AI_HANDOFF.md`, and `DOC_SYNC.md`: recreate `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` from the active rules without changing runtime code | S | **NEXT** |
+| 52.11 | Restore the missing workflow guardrail docs referenced by `README.md`, `AI_HANDOFF.md`, and `DOC_SYNC.md`: recreate `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` from the active rules without changing runtime code | S | **DONE** |
+| 52.12 | Decide where backend-integration frontend work resumes after guardrails are restored: remaining auth/account token-confirmation flows, another contract group from `DEFERRED_WORK.md`, or a stop-and-handoff checkpoint | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -167,14 +168,14 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.10)
+## Manual test (last completed: task 52.11)
 
-Task `52.10` is a decision-only slice. It selects workflow guardrail restoration as the next lane before more backend/account feature wiring because multiple authoritative docs reference missing guardrail files.
+Task `52.11` restores the missing workflow guardrail docs referenced by `README.md`, `AI_HANDOFF.md`, and `DOC_SYNC.md`. No runtime behavior changed.
 
-1. Confirm `docs/WORKING_AGREEMENT.md`, `docs/TASK_TEMPLATE.md`, and `docs/DEFINITION_OF_DONE.md` are referenced but absent from this checkout
-2. Confirm `52.11` is queued to restore those guardrail docs before continuing auth/account wiring or selecting another product contract group
+1. Confirm `docs/WORKING_AGREEMENT.md`, `docs/TASK_TEMPLATE.md`, and `docs/DEFINITION_OF_DONE.md` exist
+2. `git diff --check docs/WORKING_AGREEMENT.md docs/TASK_TEMPLATE.md docs/DEFINITION_OF_DONE.md docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md` - passes
 3. Confirm no runtime code changed
-4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.11`
+4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.12`
 
 ## Previous runtime manual test baseline
 
@@ -481,6 +482,7 @@ Task `52.10` is a decision-only slice. It selects workflow guardrail restoration
 | 2026-07-13 | 52.8 | DONE - current-email verification request now uses the account repository, while final verification confirmation remains blocked until secure token/deep-link/code handling exists |
 | 2026-07-13 | 52.9 | DONE - auth/session/account regression pass proved the integrated frontend boundary across sign-in, sign-up, restore, logout, password reset request, current account read, and email verification request |
 | 2026-07-13 | 52.10 | DONE - next backend-integration lane selected: restore missing workflow guardrail docs before more runtime wiring |
+| 2026-07-14 | 52.11 | DONE - missing workflow guardrail docs restored: `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` |
 
 ---
 

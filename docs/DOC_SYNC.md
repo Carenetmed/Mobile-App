@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.11** - restore missing workflow guardrail docs before more runtime wiring |
-| Last completed | **52.10** - next backend-integration lane decision |
+| NEXT task | **52.12** - decide where backend-integration frontend work resumes after guardrails are restored |
+| Last completed | **52.11** - restored missing workflow guardrail docs |
 | Registered routes | **68 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -218,6 +218,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-13 | Task 52.8 DONE - current-email verification request now calls `AccountRepository.requestEmailVerification`; confirmation remains blocked until secure token/deep-link/code handling exists; DOC_SYNC NEXT -> 52.9 |
 | 2026-07-13 | Task 52.9 DONE - auth/session/account regression pass covered sign-in, sign-up, restore, logout, password reset request, current account read, and email verification request; DOC_SYNC NEXT -> 52.10 |
 | 2026-07-13 | Task 52.10 DONE - selected workflow guardrail restoration as the next lane before more backend/account runtime wiring; DOC_SYNC NEXT -> 52.11 |
+| 2026-07-14 | Task 52.11 DONE - restored `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md`; DOC_SYNC NEXT -> 52.12 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

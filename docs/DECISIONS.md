@@ -84,6 +84,7 @@ does not silently reinterpret established boundaries.
 | D077 | 2026-07-14 | Profile/public professional wiring contract | Define patient self profile, professional self profile, and public verified professional listing as the next profile lane. Add a repository/API boundary before screen wiring, keep public professional detail deferred until `GET /professionals/:id` exists, and keep verification upload, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions out of scope | Phase 22, task 52.23 |
 | D078 | 2026-07-14 | Profile repository boundary | Add `ProfileApiClient` and `ProfileRepository` for patient self profile, professional self profile, and public verified professional listing before screen wiring. Protected calls use stored-session bearer auth, self-profile 404 maps to an empty profile state, and public listing sends no auth header | Phase 22, task 52.24 |
 | D079 | 2026-07-14 | Manage Profile professional self read | Wire Manage Profile to `ProfileRepository.professionalMe` for professional self-profile read only. Replace only `displayName`, `category`, `specialty`, and `bio`; keep safe loading/error/empty states; leave profile mutations, patient profile UI, public listing UI, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions deferred | Phase 22, task 52.25 |
+| D080 | 2026-07-14 | First safe profile mutation UI | Select existing professional bio update from `addDescription` as the first safe profile mutation path. The next implementation must read an existing professional profile, preserve required `displayName` and `category` plus existing `specialty`, update only `bio`, and keep profile creation, name/category/specialty editing, website, address, patient profile, public listing, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions deferred | Phase 22, task 52.26 |
 
 ## How to add a row
 
@@ -260,3 +261,21 @@ notes, or prescriptions.
 
 Next: 52.26 should decide the first safe profile mutation UI slice before any
 runtime profile update button is wired.
+
+## D080 - First safe profile mutation UI
+
+Task: 52.26
+
+Decision: Use `PROFILE_MUTATION_UI_DECISION.md` as the source of truth for the
+first profile mutation UI. The next runtime slice should wire only
+`addDescription` to update the professional profile `bio`, and only after
+reading an existing professional profile.
+
+Reason: `PUT /professionals/me` requires `displayName` and `category`, while
+the existing edit screens do not all map to backend fields. The description
+screen is the narrowest safe mutation because it can preserve existing
+`displayName`, `category`, and `specialty` and change only `bio`. Website and
+address are not accepted by the current professional profile contract, and
+category/specialty editing has no current UI.
+
+Next: 52.27 should wire professional bio update from `addDescription` only.

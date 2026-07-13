@@ -179,6 +179,11 @@ Recommended next slice:
 
 `52.26 - Decide First Safe Profile Mutation UI Slice`
 
-Do not wire profile mutations until the UI target is constrained to backend
-allowed fields. Existing edit screens include local/draft fields that do not all
-map to the current backend profile contract.
+Implemented as a decision in `PROFILE_MUTATION_UI_DECISION.md`.
+
+Decision summary: the first safe mutation should be existing-professional bio
+update from `addDescription`, preserving existing `displayName`, `category`, and
+`specialty`. Profile creation, name/category/specialty editing, website,
+address, patient profile, public listing, verification, availability,
+appointments, payments, reviews, calls, calendar sync, notes, and prescriptions
+remain deferred.

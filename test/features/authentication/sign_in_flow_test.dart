@@ -1,4 +1,10 @@
+import 'dart:async';
+
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
 import 'package:flutter/material.dart';
@@ -39,16 +45,47 @@ Future<void> _pumpWithRoutes(
 
 void main() {
   group('Sign in flow', () {
-    testWidgets('sign in email blocks invalid input and navigates when valid', (
+    testWidgets(
+      'sign in email blocks invalid input and navigates after backend success',
+      (tester) async {
+        final repository = _FakeAuthRepository();
+        await _pumpWithRoutes(
+          tester,
+          home: SignInEmail(authRepository: repository),
+        );
+
+        await tester.tap(find.text('Continue'));
+        await tester.pump();
+
+        expect(find.text('Email Address is required'), findsOneWidget);
+        expect(find.text('Password is required'), findsOneWidget);
+
+        final fields = find.byType(EditableText);
+        await tester.enterText(fields.at(0), 'hello@example.com');
+        await tester.enterText(fields.at(1), 'secret123');
+        await tester.tap(find.text('Continue'));
+        await tester.pumpAndSettle();
+
+        expect(repository.loginCalls, 1);
+        expect(repository.lastEmail, 'hello@example.com');
+        expect(find.text('dashboard'), findsOneWidget);
+      },
+    );
+
+    testWidgets('sign in email shows safe backend error without navigation', (
       tester,
     ) async {
-      await _pumpWithRoutes(tester, home: const SignInEmail());
-
-      await tester.tap(find.text('Continue'));
-      await tester.pump();
-
-      expect(find.text('Email Address is required'), findsOneWidget);
-      expect(find.text('Password is required'), findsOneWidget);
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(
+          authRepository: _FakeAuthRepository(
+            failure: const AuthFailure(
+              type: AuthFailureType.missingConfiguration,
+              message: 'Backend is not configured yet.',
+            ),
+          ),
+        ),
+      );
 
       final fields = find.byType(EditableText);
       await tester.enterText(fields.at(0), 'hello@example.com');
@@ -56,8 +93,36 @@ void main() {
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
-      expect(find.text('dashboard'), findsOneWidget);
+      expect(find.text('Backend is not configured yet.'), findsOneWidget);
+      expect(find.text('dashboard'), findsNothing);
     });
+
+    testWidgets(
+      'sign in email shows loading state while repository is pending',
+      (tester) async {
+        final completer = Completer<AuthSession>();
+        await _pumpWithRoutes(
+          tester,
+          home: SignInEmail(
+            authRepository: _FakeAuthRepository(completer: completer),
+          ),
+        );
+
+        final fields = find.byType(EditableText);
+        await tester.enterText(fields.at(0), 'hello@example.com');
+        await tester.enterText(fields.at(1), 'secret123');
+        await tester.tap(find.text('Continue'));
+        await tester.pump();
+
+        expect(find.text('Signing in...'), findsOneWidget);
+        expect(find.text('dashboard'), findsNothing);
+
+        completer.complete(_session());
+        await tester.pumpAndSettle();
+
+        expect(find.text('dashboard'), findsOneWidget);
+      },
+    );
 
     testWidgets('sign in phone validates fields before navigation', (
       tester,
@@ -106,4 +171,50 @@ void main() {
       expect(find.text('sign-up-phone'), findsOneWidget);
     });
   });
+}
+
+class _FakeAuthRepository implements AuthRepository {
+  _FakeAuthRepository({this.failure, this.completer});
+
+  final AuthFailure? failure;
+  final Completer<AuthSession>? completer;
+  int loginCalls = 0;
+  String? lastEmail;
+
+  @override
+  Future<AuthSession> login({
+    required String email,
+    required String password,
+  }) async {
+    loginCalls += 1;
+    lastEmail = email;
+    final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
+    final completer = this.completer;
+    if (completer != null) {
+      return completer.future;
+    }
+    return _session();
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+AuthSession _session() {
+  return const AuthSession(
+    accessToken: 'access',
+    refreshToken: 'refresh',
+    tokenType: 'Bearer',
+    expiresIn: 900,
+    user: AuthUser(
+      id: 'user-1',
+      email: 'hello@example.com',
+      role: 'PATIENT',
+      status: 'ACTIVE',
+      emailVerified: false,
+    ),
+  );
 }

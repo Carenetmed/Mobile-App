@@ -76,6 +76,7 @@ does not silently reinterpret established boundaries.
 | D069 | 2026-07-14 | Reset and verification token-confirm contract | Use the backend bridge contract for password reset and email verification confirmation: public confirm routes accept opaque `token` values, password reset confirm also sends `newPassword`, request routes return generic `{ "success": true }`, reset confirmation revokes refresh sessions and does not issue a new session, and email verification confirmation requires current-account refresh if the app still has a session. Tokens stay transient and are never persisted or logged; production app-link setup remains deferred | Phase 22, task 52.15 |
 | D070 | 2026-07-14 | Reset and verification token-confirm wiring | Wire `resetPasswordConfirm` and `emailVerificationConfirm` as token-confirm landing routes that require transient token arguments. Password reset confirmation sends backend `newPassword`, clears local session after success, and returns to sign-in. Email verification confirmation sends only `token` and refreshes current account state when a session is still available. Do not claim production app-link setup, phone OTP, social auth, MFA/PIN, or profile persistence from this slice | Phase 22, task 52.16 |
 | D071 | 2026-07-14 | Completed backend surface wiring order | Use `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md` to consume already-completed backend surfaces in a stable order: auth/account staging checkpoint first, then professional/profile/verification, then public professionals/availability, then appointment lifecycle. Do not start phone/OTP, MFA, production app links, payments, notifications, reviews, calls, calendar sync, prescriptions, medical notes, admin dashboard behavior, public staging access, or production-readiness work as the next runtime lane | Phase 22, task 52.17 |
+| D072 | 2026-07-14 | Auth account staging checkpoint | Developer-private staging proxy reached `/health` and `/health/ready`; database, migrations, and email are ready, while `googleAuth` and `verificationStorage` are disabled. Keep Google UI and verification upload deferred, keep `CARENET_API_BASE_URL` as the Flutter config key, and select profile/public professional contract work as the next frontend lane | Phase 22, task 52.18 |
 
 ## How to add a row
 
@@ -111,3 +112,21 @@ remain the shared base for every protected route.
 Next: 52.18 should run an auth/account staging smoke and remaining-backend
 checkpoint, then queue broader professional/profile/verification,
 availability, and appointment wiring.
+
+## D072 - Auth account staging checkpoint
+
+Task: 52.18
+
+Decision: Use the developer-private Cloud Run Proxy path for frontend staging
+integration. The app already has the `CARENET_API_BASE_URL` compile-time config
+key. Current proxy evidence proves `/health` and `/health/ready` are reachable,
+with database, migrations, and email ready. Google UI and verification upload
+remain deferred because readiness reports `googleAuth: disabled` and
+`verificationStorage: disabled`.
+
+Reason: Profile/public professional reads can build on the existing auth/session
+base without requiring disabled providers. Google sign-in and verification
+document upload need separate provider/config decisions before runtime wiring.
+
+Next: 52.19 should define the profile and public professional wiring contract
+before runtime profile/discovery implementation.

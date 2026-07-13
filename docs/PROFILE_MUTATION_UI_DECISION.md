@@ -1,7 +1,7 @@
 # Profile mutation UI decision
 
 **Task:** 52.26
-**Status:** Accepted decision before mutation wiring
+**Status:** Accepted decision; first bio mutation path implemented in 52.27
 
 Purpose: decide the first safe profile update UI slice after Manage Profile
 professional self-read wiring without turning local draft screens into fake or
@@ -100,14 +100,21 @@ surface and avoids inventing missing category/name/profile-creation behavior.
 
 `52.27 - Wire Professional Bio Update From Add Description`
 
-Scope:
+Implemented:
 
 - inject/use `ProfileRepository` in `AddDescriptionShellPage`
 - read existing professional self profile before save
 - preserve existing `displayName`, `category`, and `specialty`
 - send only the new `bio` as the changed field through `updateProfessionalMe`
 - show safe loading/error/empty-profile states
-- update focused `manage_profile_flow_test` or add a focused profile mutation
-  widget test
+- update focused `manage_profile_flow_test`
 - keep name/category/specialty/website/address/patient/public listing and all
   wider product areas deferred
+
+Recommended follow-up:
+
+`52.28 - Decide Next Profile/Public-Professional Runtime Lane`
+
+Choose deliberately between public verified professional listing replacement,
+constrained name/category/specialty profile-edit UI, or pausing profile wiring.
+Do not start broader runtime work from this document without a new slice.

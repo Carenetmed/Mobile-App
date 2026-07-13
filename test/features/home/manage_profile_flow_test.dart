@@ -39,7 +39,11 @@ Future<void> _pumpManageProfile(
               RouteName.editYourName: (_) => const EditYourNameShellPage(),
               RouteName.editYourWebsite:
                   (_) => const EditYourWebsiteShellPage(),
-              RouteName.addDescription: (_) => const AddDescriptionShellPage(),
+              RouteName.addDescription:
+                  (_) => AddDescriptionShellPage(
+                    profileRepository:
+                        profileRepository ?? _FakeProfileRepository(),
+                  ),
               RouteName.setAddress: (_) => const SetAddressShellPage(),
               RouteName.messages: (_) => const MessagesPage(),
               RouteName.selectedDates: (_) => const SelectedDatesShellPage(),
@@ -51,10 +55,19 @@ Future<void> _pumpManageProfile(
 }
 
 class _FakeProfileRepository implements ProfileRepository {
-  _FakeProfileRepository({this.professionalProfile, this.failure});
+  _FakeProfileRepository({
+    this.professionalProfile,
+    this.failure,
+    this.updateFailure,
+  });
 
-  final ProfessionalProfile? professionalProfile;
+  ProfessionalProfile? professionalProfile;
   final Object? failure;
+  final Object? updateFailure;
+  String? lastDisplayName;
+  String? lastCategory;
+  String? lastSpecialty;
+  String? lastBio;
 
   @override
   Future<ProfessionalProfile?> professionalMe() async {
@@ -88,8 +101,25 @@ class _FakeProfileRepository implements ProfileRepository {
     required String category,
     String? specialty,
     String? bio,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final error = updateFailure;
+    if (error != null) {
+      throw error;
+    }
+    lastDisplayName = displayName;
+    lastCategory = category;
+    lastSpecialty = specialty;
+    lastBio = bio;
+    final updated = ProfessionalProfile(
+      id: professionalProfile?.id,
+      displayName: displayName,
+      category: category,
+      specialty: specialty,
+      bio: bio,
+      verificationStatus: professionalProfile?.verificationStatus,
+    );
+    professionalProfile = updated;
+    return updated;
   }
 }
 
@@ -288,10 +318,19 @@ void main() {
     );
   });
 
-  testWidgets('about action opens local description draft route', (
-    tester,
-  ) async {
-    await _pumpManageProfile(tester);
+  testWidgets('about action saves professional bio only', (tester) async {
+    final repository = _FakeProfileRepository(
+      professionalProfile: const ProfessionalProfile(
+        id: 'pro_1',
+        displayName: 'Dr Backend Profile',
+        category: 'Cardiology',
+        specialty: 'Heart health',
+        bio: 'Existing backend bio for the current professional profile.',
+        verificationStatus: 'VERIFIED',
+      ),
+    );
+
+    await _pumpManageProfile(tester, profileRepository: repository);
 
     await tester.tap(find.text('Edit description'));
     await tester.pumpAndSettle();
@@ -318,11 +357,84 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Description draft prepared'), findsOneWidget);
+    expect(find.text('Description saved'), findsOneWidget);
     expect(
-      find.textContaining('No profile description has been saved'),
+      find.textContaining('Only your professional bio was updated'),
       findsOneWidget,
     );
+    expect(repository.lastDisplayName, 'Dr Backend Profile');
+    expect(repository.lastCategory, 'Cardiology');
+    expect(repository.lastSpecialty, 'Heart health');
+    expect(
+      repository.lastBio,
+      'Experienced clinician focused on practical community care.',
+    );
+  });
+
+  testWidgets('about action does not create a partial professional profile', (
+    tester,
+  ) async {
+    await _pumpManageProfile(tester);
+
+    await tester.tap(find.text('Edit description'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Professional profile has not been created yet.'),
+      findsOneWidget,
+    );
+
+    await tester.enterText(
+      find.byType(TextFormField),
+      'Experienced clinician focused on practical community care.',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Description saved'), findsNothing);
+    expect(
+      find.text('Professional profile has not been created yet.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('about action shows safe professional bio save error', (
+    tester,
+  ) async {
+    await _pumpManageProfile(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        professionalProfile: const ProfessionalProfile(
+          id: 'pro_1',
+          displayName: 'Dr Backend Profile',
+          category: 'Cardiology',
+          specialty: 'Heart health',
+          bio: 'Existing backend bio for the current professional profile.',
+          verificationStatus: 'VERIFIED',
+        ),
+        updateFailure: const AuthFailure(
+          type: AuthFailureType.server,
+          message: 'raw server details',
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Edit description'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(TextFormField),
+      'Experienced clinician focused on practical community care.',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Service is unavailable. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw server details'), findsNothing);
+    expect(find.text('Description saved'), findsNothing);
   });
 
   testWidgets('message action uses existing honest route', (tester) async {

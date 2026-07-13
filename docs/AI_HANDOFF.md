@@ -162,8 +162,8 @@
 | 52.19 | Replace placeholder Android/iOS app identifiers with the accepted `com.carenet.app` foundation before Google OAuth setup; document remaining Google credential/provider prerequisites without wiring Google UI yet | S | **DONE** |
 | 52.20 | Define the next Google sign-in setup slice: create/collect OAuth client prerequisites for `com.carenet.app`, decide Flutter provider package/config, and enable backend readiness only when real client IDs/fingerprints are available; stop before fake Google UI success | M | **DONE** |
 | 52.21 | Add Google OAuth client IDs to staging: create/collect Android/iOS OAuth client IDs for `com.carenet.app`, configure backend staging `GOOGLE_OAUTH_CLIENT_ID` without committing secrets, and verify `/health/ready` reports `googleAuth: ok` before Flutter Google UI wiring | M | **DONE** |
-| 52.22 | Wire Flutter Google Sign-In provider for the now-ready Android debug/staging backend path: add provider package/config, obtain a real Google ID token, call `AuthRepository.googleSignIn`, preserve safe errors/loading, and keep linking/unlinking, phone/OTP, MFA, production OAuth, release signing, and profile wiring out of scope | L | **NEXT** |
-| 52.23 | Define the profile and public professional wiring contract: map patient self profile, professional self profile, and public verified professional listing into Flutter repository/screen boundaries before runtime wiring; keep verification upload, admin dashboard, availability, appointment lifecycle, payments, notifications, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **TODO** |
+| 52.22 | Wire Flutter Google Sign-In provider for the now-ready Android debug/staging backend path: add provider package/config, obtain a real Google ID token, call `AuthRepository.googleSignIn`, preserve safe errors/loading, and keep linking/unlinking, phone/OTP, MFA, production OAuth, release signing, and profile wiring out of scope | L | **DONE** |
+| 52.23 | Define the profile and public professional wiring contract: map patient self profile, professional self profile, and public verified professional listing into Flutter repository/screen boundaries before runtime wiring; keep verification upload, admin dashboard, availability, appointment lifecycle, payments, notifications, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -179,15 +179,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.21)
+## Manual test (last completed: task 52.22)
 
-Task `52.21` configured backend staging with the Android debug Google OAuth client ID through Secret Manager/Cloud Run and verified readiness. It does not wire Flutter Google UI yet.
+Task `52.22` wires configured Google sign-in rows on sign-in phone/email through `google_sign_in` and `AuthRepository.googleSignIn`. The runtime path requires `CARENET_API_BASE_URL` and `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` at build/run time; sign-up Google, link/unlink, iOS proof, release signing, production OAuth, phone/OTP, MFA, and profile wiring remain out of scope.
 
-1. Confirm Cloud Run latest ready revision is `carenet-backend-staging-00006-ph6`
-2. Confirm `GET /health/ready` through Cloud Run Proxy reports `googleAuth: ok`
-3. Confirm `verificationStorage` remains `disabled`
-4. Confirm `GOOGLE_SIGN_IN_SETUP_PREREQUISITES.md` records the readiness update without exposing the client ID secret as a secret value
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.22`
+1. `flutter test test/features/authentication/sign_in_flow_test.dart test/features/authentication/auth_infrastructure_test.dart` - passes
+2. `flutter analyze lib/core/di/injection.dart lib/features/Authentication/data/services/google_sign_in_provider.dart lib/features/Authentication/presentation/pages/sign_in_email.dart lib/features/Authentication/presentation/pages/sign_in_phone.dart test/features/authentication/sign_in_flow_test.dart` - no issues
+3. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=http://127.0.0.1:8080 --dart-define=GOOGLE_SIGN_IN_SERVER_CLIENT_ID=<web-client-id>` - passes after Maven/DNS recovered
+4. Confirm Cloud Run latest ready revision is `carenet-backend-staging-00008-5m9` at 100 percent traffic after staging was updated to the Web OAuth client ID
+5. Run Android debug/staging with both `--dart-define=CARENET_API_BASE_URL=...` and `--dart-define=GOOGLE_SIGN_IN_SERVER_CLIENT_ID=...`; sign-in phone/email Google rows are enabled only when the server client ID is configured
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.23`
 
 ## Previous runtime manual test baseline
 
@@ -505,6 +506,7 @@ Task `52.21` configured backend staging with the Android debug Google OAuth clie
 | 2026-07-14 | 52.19 | DONE - placeholder Android/iOS app identifiers replaced with `com.carenet.app` as the Google OAuth foundation; next lane is Google setup prerequisites |
 | 2026-07-14 | 52.20 | DONE - Google OAuth prerequisites collected for `com.carenet.app`; debug SHA fingerprints recorded; next lane is staging OAuth client/config setup |
 | 2026-07-14 | 52.21 | DONE - backend staging Google readiness enabled through Secret Manager/Cloud Run; `/health/ready` now reports `googleAuth: ok`; next lane is Flutter Google provider wiring |
+| 2026-07-14 | 52.22 | DONE - Flutter Google provider wiring added for configured sign-in phone/email rows; backend staging now trusts the Web OAuth client ID; next lane is profile/public professional contract definition |
 
 ---
 

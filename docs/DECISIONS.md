@@ -80,6 +80,7 @@ does not silently reinterpret established boundaries.
 | D073 | 2026-07-14 | App identifiers for Google foundation | Use `com.carenet.app` for Android namespace/application ID and iOS bundle ID before creating or wiring Google OAuth credentials. Do not create OAuth clients against placeholder `com.example` IDs; Google UI remains disabled until OAuth clients, fingerprints, Flutter provider config, and backend `GOOGLE_OAUTH_CLIENT_ID` are ready | Phase 22, task 52.19 |
 | D074 | 2026-07-14 | Google OAuth prerequisite boundary | Collect Google OAuth prerequisites before runtime UI wiring: Android package `com.carenet.app`, iOS bundle `com.carenet.app`, debug SHA fingerprints, release fingerprint blocker, and backend readiness status. Do not add `google_sign_in` or enable Google buttons until OAuth client IDs are configured and backend readiness reports `googleAuth: ok` | Phase 22, task 52.20 |
 | D075 | 2026-07-14 | Google staging readiness enabled | Backend staging now has Google OAuth client configuration through Secret Manager/Cloud Run; `/health/ready` reports `googleAuth: ok`. The next safe step is Flutter Google provider wiring for Android debug/staging only, while link/unlink, iOS proof, release signing, production OAuth, phone/OTP, and MFA stay deferred | Phase 22, task 52.21 |
+| D076 | 2026-07-14 | Flutter Google sign-in wiring | Use `google_sign_in` with `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` as the server client ID, obtain a real Google ID token, and call `AuthRepository.googleSignIn` only from sign-in phone/email rows when configured. Keep Google sign-up role selection, link/unlink, iOS proof, release signing, production OAuth, phone/OTP, MFA, and profile wiring deferred | Phase 22, task 52.22 |
 
 ## How to add a row
 
@@ -182,3 +183,25 @@ handoff without faking Google success.
 
 Next: 52.22 should add the Flutter Google Sign-In provider and wire the Google
 button to `AuthRepository.googleSignIn` with safe loading/error handling.
+
+## D076 - Flutter Google sign-in wiring
+
+Task: 52.22
+
+Decision: Add the Flutter `google_sign_in` provider boundary and wire only the
+sign-in phone/email Google rows. The provider initializes with
+`GOOGLE_SIGN_IN_SERVER_CLIENT_ID`, obtains a Google ID token, and sends that
+token through the existing `AuthRepository.googleSignIn` backend boundary.
+The Google row remains disabled when the server client ID is not configured.
+
+Reason: The current Google Sign-In package requires a server-side Web OAuth
+client ID for backend-verifiable ID tokens. Backend staging was updated to trust
+that Web client ID, so Flutter can perform a real provider-token handoff
+without committing secrets or faking success.
+
+Deferred: Google sign-up role-selection behavior, Google link/unlink UI, iOS
+OAuth proof, release/Play signing fingerprints, production OAuth consent/app
+verification, phone/OTP, MFA, and profile wiring.
+
+Next: 52.23 should define the profile and public professional wiring contract
+before runtime profile/listing work.

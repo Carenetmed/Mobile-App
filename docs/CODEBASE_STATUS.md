@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-14 reset/verification token-confirm routes wired.
+**Last updated:** 2026-07-14 Flutter Google sign-in provider wired.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -27,11 +27,11 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
 | Sign-up email | Validates email, then routes to `finishSignUp` |
 | Sign-up to sign-in links | "Already have an account? Sign in" routes to `signInPhone` / `signInEmail` from matching entry screens |
-| Sign-in phone | Validates country/region, phone, and password locally, then routes to `dashboard` |
-| Sign-in email | Validates email and password locally, then routes to `dashboard` |
+| Sign-in phone | Validates country/region, phone, and password locally, then routes to `dashboard`; configured Google sign-in obtains a real Google ID token and calls `AuthRepository.googleSignIn` |
+| Sign-in email | Validates email and password locally, then routes to `dashboard`; configured Google sign-in obtains a real Google ID token and calls `AuthRepository.googleSignIn` |
 | Password recovery | `Forgot Password?` routes to `enterEmail`; valid email requests reset through `AuthRepository.requestPasswordReset`; `resetPasswordConfirm` can complete password reset only when opened with a transient reset token, sends `{ token, newPassword }`, clears local session, and returns to email sign-in. Production app-link setup remains deferred |
 | Finish sign-up | Validates required fields, date picker birthday, password strength, and confirm password match before routing to `communityAgreement` |
-| Social auth rows on sign-up | Google / Facebook / Apple render as explicitly disabled until backend/provider integration exists |
+| Social auth rows on sign-up | Google / Facebook / Apple remain explicitly disabled until sign-up role-selection/provider rules exist |
 | Dashboard shell | Bottom nav tabs all render real screens; Home tab keeps drawer; Notifications now opens the dedicated notifications feature screen directly |
 | Search slice | The dashboard Search tab and `search` route now show real local consultant discovery with keyword filtering, category chips, specialist cards, local profile sheet, and local request state. The search lane intentionally stops here before live availability, appointment time/type selection, payment, real booking, and provider-profile APIs |
 | Home inner tabs | `Feed`, `Messages`, and `Articles` all render real content; Messages preview hands off to the dedicated `messages` route |
@@ -76,7 +76,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Auth/account staging checkpoint | `AUTH_ACCOUNT_STAGING_CHECKPOINT.md` records that the developer-private proxy reached staging through `http://127.0.0.1:8080`; `/health` returned `ok`, `/health/ready` returned database/migrations/email `ok`, and readiness reported `googleAuth: disabled` plus `verificationStorage: disabled`. Flutter config key remains `CARENET_API_BASE_URL`. No runtime Flutter code changed |
 | App identifiers | Android namespace/application ID and iOS bundle ID now use `com.carenet.app`; iOS test bundle uses `com.carenet.app.RunnerTests`. `GOOGLE_SIGN_IN_FOUNDATION.md` records the remaining OAuth/client/fingerprint/provider prerequisites before Google UI can be enabled |
 | Google OAuth prerequisites | `GOOGLE_SIGN_IN_SETUP_PREREQUISITES.md` records Android package `com.carenet.app`, iOS bundle `com.carenet.app`, local debug SHA-1/SHA-256 fingerprints, release fingerprint blocker, current staging `googleAuth: disabled`, and the need to configure backend `GOOGLE_OAUTH_CLIENT_ID` before Flutter Google UI wiring |
-| Google staging readiness | Backend staging now has Google OAuth client configuration through Secret Manager/Cloud Run. Revision `carenet-backend-staging-00006-ph6` serves all traffic, and `GET /health/ready` through the developer-private proxy reports `googleAuth: ok`. Flutter Google UI is still not wired |
+| Google sign-in wiring | `google_sign_in` is added behind `GoogleIdTokenProvider`; sign-in phone/email Google rows are enabled only when `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` is configured, then call `AuthRepository.googleSignIn` with safe loading/error handling. Backend staging now uses the Web OAuth client ID in Cloud Run revision `carenet-backend-staging-00008-5m9`. Google sign-up, link/unlink, iOS proof, release signing, production OAuth, phone/OTP, MFA, and profile wiring remain deferred |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
@@ -291,6 +291,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.19 test/analyze | Run `flutter analyze android/app/build.gradle.kts ios/Runner.xcodeproj/project.pbxproj` is not applicable because those are platform config files; use `rg "com\\.example\\.(app_t|appt)" android ios` to verify old app IDs are gone and `flutter test test/features/authentication/auth_infrastructure_test.dart` for a focused Dart sanity check |
 | Focused task 52.20 test/analyze | Not needed beyond prerequisite evidence: docs/setup slice. Verified `/health/ready` still reports `googleAuth: disabled`, listed staging secrets, collected debug SHA fingerprints with `keytool`, and `git diff --check` covers formatting |
 | Focused task 52.21 test/analyze | Not needed beyond staging readiness evidence: backend/config checkpoint. Verified Cloud Run revision `carenet-backend-staging-00006-ph6` at 100 percent traffic and `/health/ready` through Cloud Run Proxy reports `googleAuth: ok` |
+| Focused task 52.22 test/analyze | Passed: `flutter test test/features/authentication/sign_in_flow_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on Google provider DI, sign-in pages, and sign-in tests reports no issues; `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=http://127.0.0.1:8080 --dart-define=GOOGLE_SIGN_IN_SERVER_CLIENT_ID=<web-client-id>` passes after transient Maven/DNS recovery |
 
 ## Design debt (fix in Phase 2+)
 

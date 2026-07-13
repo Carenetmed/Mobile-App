@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-13 session restore launch guard slice.
+**Last updated:** 2026-07-13 logout/session-clear slice.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -64,6 +64,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Communities slice | `circles` now shows real local community content, routes into `discoverCommunities`, syncs joined communities back into `My communities`, opens a blueprint-backed local `communityProfile`, and supports a real local `createCommunity` flow that hands off into an owner profile note; the communities lane intentionally stops here before invitation acceptance and moderation workflows |
 | Q&A slice | The Post tab now hosts a real local Q&A feed with seeded questions, local follow toggles, and a working `qAAsk` form that validates question-style prompts and returns saved local questions back into the feed; the blueprint-backed answer lane now works locally through `qAAnswerRequests` -> `qAAnswerForYou` -> `commentAnswer`, with saved local answers feeding back into answer drafts. The Q&A lane intentionally stops here before the mixed `q-a-post` composer/distribution flow |
 | Account slice | The dashboard drawer `Profile` row now routes into a real local `account` screen with account rows and working `deleteAccount` plus `settings` handoffs. `Settings & Profile` now supports local validation and local save for core profile fields, while delete/deactivate remains an explicit local seam until real auth-change and destructive account APIs exist. The account lane intentionally stops here before public profile, scheduling, and auth-security flows |
+| Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
 | Turn on authentication scope boundary | The turn-on-authentication lane intentionally stops after the local two-step verification review route. PIN creation, secure PIN storage, session/device checks, audit/security notifications, recovery rules, and account persistence remain deferred until auth backend/provider contracts exist (`DECISIONS.md` D027) |
@@ -260,6 +261,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.2 test/analyze | Passed: `flutter test test/features/authentication/sign_in_flow_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on email sign-in, auth repository/failure, and sign-in tests reports no issues |
 | Focused task 52.3 test/analyze | Passed: `flutter test test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on email sign-up, finish sign-up, router, and sign-up tests reports no issues |
 | Focused task 52.4 test/analyze | Passed: `flutter test test/features/authentication/session_restore_guard_test.dart test/features/authentication/sign_in_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on splash guard, session restore test, and auth repository reports no issues |
+| Focused task 52.5 test/analyze | Passed: `flutter test test/features/home/account_flow_test.dart`; focused `flutter analyze` on Account and account-flow tests reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

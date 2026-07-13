@@ -1,15 +1,58 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/presentation/state/account_local_store.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class AccountShellPage extends StatelessWidget {
-  const AccountShellPage({super.key});
+class AccountShellPage extends StatefulWidget {
+  const AccountShellPage({super.key, this.authRepository});
+
+  final AuthRepository? authRepository;
+
+  @override
+  State<AccountShellPage> createState() => _AccountShellPageState();
+}
+
+class _AccountShellPageState extends State<AccountShellPage> {
+  bool _isLoggingOut = false;
+  String? _logoutError;
+
+  AuthRepository get _authRepository =>
+      widget.authRepository ?? sl<AuthRepository>();
+
+  Future<void> _logout() async {
+    setState(() {
+      _isLoggingOut = true;
+      _logoutError = null;
+    });
+
+    try {
+      await _authRepository.logout();
+      if (!mounted) return;
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(RouteName.onboarding, (route) => false);
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _logoutError = failure.message;
+        _isLoggingOut = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _logoutError = 'Could not log out. Please try again.';
+        _isLoggingOut = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,6 +154,27 @@ class AccountShellPage extends StatelessWidget {
                   subtitle: snapshot.helpLabel,
                   onTap: null,
                 ),
+                _AccountTile(
+                  icon: Icons.logout,
+                  title: _isLoggingOut ? 'Logging out...' : 'Log out',
+                  subtitle: 'Clear this device session',
+                  onTap: _isLoggingOut ? null : _logout,
+                ),
+                if (_logoutError != null) ...[
+                  SizedBox(height: 2.h),
+                  Padding(
+                    padding: REdgeInsets.only(bottom: 14.h),
+                    child: Text(
+                      _logoutError!,
+                      style: TextStyle(
+                        fontSize: FontSizes.footer4,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
+                ],
                 _AccountTile(
                   icon: Icons.delete_outline,
                   title: 'Delete account',

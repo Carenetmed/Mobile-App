@@ -1,6 +1,9 @@
 import 'package:app_t/core/constants/navigators/router.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
+import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/state/account_local_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -27,6 +30,31 @@ Future<void> _pumpDashboard(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _pumpAccount(
+  WidgetTester tester, {
+  required _FakeAuthRepository repository,
+}) async {
+  AccountLocalStore.reset();
+  tester.view.physicalSize = _phoneSize;
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(
+    ScreenUtilInit(
+      designSize: _phoneSize,
+      builder:
+          (_, __) => MaterialApp(
+            home: AccountShellPage(authRepository: repository),
+            routes: <String, WidgetBuilder>{
+              RouteName.onboarding:
+                  (_) => const Scaffold(body: Text('onboarding')),
+            },
+          ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('drawer profile opens the account page', (tester) async {
     await _pumpDashboard(tester);
@@ -39,6 +67,40 @@ void main() {
 
     expect(find.text('Account'), findsOneWidget);
     expect(find.text('Delete account'), findsWidgets);
+  });
+
+  testWidgets('logout clears session and returns to onboarding', (
+    tester,
+  ) async {
+    final repository = _FakeAuthRepository();
+    await _pumpAccount(tester, repository: repository);
+
+    await tester.tap(find.text('Log out'));
+    await tester.pumpAndSettle();
+
+    expect(repository.logoutCalls, 1);
+    expect(find.text('onboarding'), findsOneWidget);
+    expect(find.text('Account'), findsNothing);
+  });
+
+  testWidgets('logout failure shows safe error without navigation', (
+    tester,
+  ) async {
+    final repository = _FakeAuthRepository(
+      failure: const AuthFailure(
+        type: AuthFailureType.server,
+        message: 'Could not log out. Please try again.',
+      ),
+    );
+    await _pumpAccount(tester, repository: repository);
+
+    await tester.tap(find.text('Log out'));
+    await tester.pumpAndSettle();
+
+    expect(repository.logoutCalls, 1);
+    expect(find.text('Could not log out. Please try again.'), findsOneWidget);
+    expect(find.text('Account'), findsOneWidget);
+    expect(find.text('onboarding'), findsNothing);
   });
 
   testWidgets('delete account validates required fields', (tester) async {
@@ -565,4 +627,23 @@ void main() {
     expect(find.text('Edit password'), findsOneWidget);
     expect(find.byIcon(Icons.lock_outline), findsWidgets);
   });
+}
+
+class _FakeAuthRepository implements AuthRepository {
+  _FakeAuthRepository({this.failure});
+
+  final AuthFailure? failure;
+  int logoutCalls = 0;
+
+  @override
+  Future<void> logout() async {
+    logoutCalls += 1;
+    final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

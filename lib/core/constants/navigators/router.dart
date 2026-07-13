@@ -72,7 +72,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.onboarding:
       return _page(settings, const OnboardingView());
     case RouteName.finishSignUp:
-      return _page(settings, FinSignUp());
+      return _page(
+        settings,
+        FinSignUp(
+          initialEmail:
+              settings.arguments is String
+                  ? settings.arguments as String
+                  : null,
+        ),
+      );
     case RouteName.communityAgreement:
       return _page(settings, CommunityCommitment());
     case RouteName.notificationAgreement:

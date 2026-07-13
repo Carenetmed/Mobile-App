@@ -2,15 +2,21 @@ import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/presentation/widget/bordered_keyboard_input.dart';
-import 'package:app_t/shared/widgets/app_button.dart';
+import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class FinSignUp extends StatefulWidget {
-  const FinSignUp({super.key});
+  const FinSignUp({super.key, this.initialEmail, this.authRepository});
+
+  final String? initialEmail;
+  final AuthRepository? authRepository;
 
   @override
   State<FinSignUp> createState() => _FinSignUpState();
@@ -29,13 +35,18 @@ class _FinSignUpState extends State<FinSignUp> {
   late final TextEditingController _passwordController;
   late final TextEditingController _confirmPasswordController;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _isSubmitting = false;
+  String? _authError;
+
+  AuthRepository get _authRepository =>
+      widget.authRepository ?? sl<AuthRepository>();
 
   @override
   void initState() {
     super.initState();
     _firstNameController = TextEditingController();
     _lastNameController = TextEditingController();
-    _emailController = TextEditingController();
+    _emailController = TextEditingController(text: widget.initialEmail ?? '');
     _dateController = TextEditingController();
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
@@ -199,6 +210,18 @@ class _FinSignUpState extends State<FinSignUp> {
                 ),
               ),
               SizedBox(height: 50.h),
+              if (_authError != null) ...[
+                Text(
+                  _authError!,
+                  style: TextStyle(
+                    fontFamily: AppFonts.montserrat,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.red.shade700,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+              ],
               RichText(
                 text: TextSpan(
                   children: [
@@ -246,20 +269,66 @@ class _FinSignUpState extends State<FinSignUp> {
               ),
 
               SizedBox(height: 5.h),
-              CarenetButtonFilled(
-                btnAction: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.of(
-                      context,
-                    ).popAndPushNamed(RouteName.communityAgreement);
-                  }
-                },
-                btnName: ' Agree & continue',
+              CarenetButton(
+                onPressed: _isSubmitting ? null : _onAgreeAndContinue,
+                label:
+                    _isSubmitting ? 'Creating account...' : ' Agree & continue',
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _onAgreeAndContinue() async {
+    setState(() {
+      _authError = null;
+    });
+
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      await _authRepository.register(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        role: 'PATIENT',
+        profile: <String, dynamic>{
+          'firstName': _firstNameController.text.trim(),
+          'lastName': _lastNameController.text.trim(),
+          'birthday': _dateController.text.trim(),
+        },
+      );
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).popAndPushNamed(RouteName.communityAgreement);
+    } on AuthFailure catch (failure) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _authError = failure.message;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _authError = 'Something went wrong. Please try again.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 }

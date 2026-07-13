@@ -153,7 +153,8 @@
 | 52.10 | Decide the next backend-integration lane after the auth/session/account regression pass: either close Phase 22 for now, continue remaining auth/account backend wiring, or select the next contract group from `DEFERRED_WORK.md` without implementing runtime behavior in the decision slice | S | **DONE** |
 | 52.11 | Restore the missing workflow guardrail docs referenced by `README.md`, `AI_HANDOFF.md`, and `DOC_SYNC.md`: recreate `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` from the active rules without changing runtime code | S | **DONE** |
 | 52.12 | Decide where backend-integration frontend work resumes after guardrails are restored: remaining auth/account token-confirmation flows, another contract group from `DEFERRED_WORK.md`, or a stop-and-handoff checkpoint | S | **DONE** |
-| 52.13 | Create a frontend/backend integration checkpoint handoff: summarize the auth/session/account frontend wiring that is complete, list the exact remaining frontend blockers, and state what backend/deep-link contracts are needed before more runtime wiring | S | **NEXT** |
+| 52.13 | Create a frontend/backend integration checkpoint handoff: summarize the auth/session/account frontend wiring that is complete, list the exact remaining frontend blockers, and state what backend/deep-link contracts are needed before more runtime wiring | S | **DONE** |
+| 52.14 | Decide the next frontend/backend runtime target after the checkpoint: define password reset/email verification deep-link contract, define phone OTP/MFA contract, pick another backend contract group, or pause frontend integration until backend contracts are ready | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -169,15 +170,15 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.12)
+## Manual test (last completed: task 52.13)
 
-Task `52.12` is a decision-only slice. It chooses a frontend/backend integration checkpoint before more runtime wiring, so reset/verification token handling and any next contract group are not guessed from the frontend.
+Task `52.13` creates the frontend/backend integration checkpoint. No runtime behavior changed.
 
-1. Confirm `DEFERRED_WORK.md` still lists password reset confirmation and email verification confirmation as token/deep-link/code-entry dependent
-2. Confirm the next slice is a handoff/checkpoint, not runtime implementation
+1. Confirm `docs/FRONTEND_BACKEND_INTEGRATION_CHECKPOINT.md` exists and lists complete auth/session/account wiring
+2. Confirm the checkpoint lists blocked reset confirmation, email verification confirmation, phone/social auth, MFA/PIN, profile persistence, destructive account APIs, and other contract groups
 3. Confirm no runtime code changed
-4. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md` - passes
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.13`
+4. `git diff --check docs/FRONTEND_BACKEND_INTEGRATION_CHECKPOINT.md docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md` - passes
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.14`
 
 ## Previous runtime manual test baseline
 
@@ -486,6 +487,7 @@ Task `52.12` is a decision-only slice. It chooses a frontend/backend integration
 | 2026-07-13 | 52.10 | DONE - next backend-integration lane selected: restore missing workflow guardrail docs before more runtime wiring |
 | 2026-07-14 | 52.11 | DONE - missing workflow guardrail docs restored: `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` |
 | 2026-07-14 | 52.12 | DONE - next integration lane selected: create a frontend/backend checkpoint before more runtime wiring |
+| 2026-07-14 | 52.13 | DONE - frontend/backend integration checkpoint created with completed auth wiring, blocked items, and contract questions |
 
 ---
 

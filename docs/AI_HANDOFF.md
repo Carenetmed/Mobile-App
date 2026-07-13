@@ -141,7 +141,8 @@
 | 50.1 | Run the final handoff review across docs and route status, then mark frontend route coverage ready for backend/product contract selection if no drift is found | S | **DONE** |
 | 51.1 | Choose the first backend/product contract group to integrate, using `DEFERRED_WORK.md` readiness buckets and keeping locked controls disabled until real contracts exist | S | **DONE** |
 | 51.2 | Define the auth/session/account backend contract before implementation: API style, environment/base URL rules, session storage, auth/account models, validation/error states, OTP/email-code provider boundaries, and repository replacement plan | M | **DONE** |
-| 52.1 | Implement the auth/session/account infrastructure boundary: environment API config, safe auth API client, session store, auth/account models, repository interfaces, and focused tests without wiring screens to backend yet | M | **NEXT** |
+| 52.1 | Implement the auth/session/account infrastructure boundary: environment API config, safe auth API client, session store, auth/account models, repository interfaces, and focused tests without wiring screens to backend yet | M | **DONE** |
+| 52.2 | Wire the first auth screen to the repository boundary, starting with email sign-in only: preserve local validation, require backend config for backend success, show safe loading/error states, and keep phone/social/security flows deferred | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -157,14 +158,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 51.2)
+## Manual test (last completed: task 52.1)
 
-Task `51.2` is a documentation-only backend contract slice. No runtime behavior changed.
+Task `52.1` adds the auth/session/account infrastructure boundary only. Existing auth screens are not wired to backend yet.
 
-1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/README.md docs/AUTH_SESSION_ACCOUNT_CONTRACT.md` - passes
-2. Confirm `AI_HANDOFF.md` has exactly one `**NEXT**` row: `52.1`
-3. Confirm `docs/AUTH_SESSION_ACCOUNT_CONTRACT.md` defines API style, base URL rules, session storage, auth/account models, validation/error behavior, provider boundaries, and repository replacement plan
-4. Confirm task `52.1` is infrastructure-boundary work only and does not wire screens or enable locked controls yet
+1. `flutter test test/features/authentication/auth_infrastructure_test.dart` - passes
+2. `flutter analyze lib/core/config/carenet_api_config.dart lib/core/di/injection.dart lib/features/Authentication/domain/entities/auth_user.dart lib/features/Authentication/domain/entities/auth_session.dart lib/features/Authentication/domain/entities/auth_failure.dart lib/features/Authentication/data/models/auth_user_model.dart lib/features/Authentication/data/models/auth_session_model.dart lib/features/Authentication/data/storage/session_store.dart lib/features/Authentication/data/services/auth_api_client.dart lib/features/Authentication/data/repositories/auth_repository.dart lib/features/Authentication/data/repositories/account_repository.dart test/features/authentication/auth_infrastructure_test.dart` - no issues
+3. Confirm `AuthApiClient` uses bearer headers only and does not send cookie auth
+4. Confirm `SessionStore` persists session secrets through `flutter_secure_storage` in production code and focused tests use `InMemorySessionStore`
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.2`
+6. Confirm existing sign-in/sign-up/password screens are still local/client-only and no locked controls were enabled
 
 ## Previous runtime manual test baseline
 
@@ -461,6 +464,7 @@ Task `51.2` is a documentation-only backend contract slice. No runtime behavior 
 | 2026-06-09 | 50.1 | DONE - final frontend handoff review completed; route coverage is ready for backend/product contract selection |
 | 2026-06-09 | 51.1 | DONE - first backend/product contract group selected: auth/session/account persistence |
 | 2026-07-13 | 51.2 | DONE - auth/session/account backend contract defined before implementation; next work is infrastructure boundary only |
+| 2026-07-13 | 52.1 | DONE - auth/session/account infrastructure boundary added with config, safe API client, session store, models, repositories, and focused tests; screens are not wired yet |
 
 ---
 

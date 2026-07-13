@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-13 auth/session/account contract slice.
+**Last updated:** 2026-07-13 auth/session/account infrastructure boundary slice.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -101,6 +101,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Final frontend handoff review | Frontend route coverage is ready for backend/product contract selection. Docs/router status agree on 68 wired routes, `login` remains the only reserved unwired constant, and no additional honest frontend-only route slice is selected before backend/product contracts (`DECISIONS.md` D052) |
 | First backend contract selection | Backend/product integration starts with `Auth/session/account persistence`. The next slice must define the API/session/provider/repository contract before implementation; no locked controls are enabled by this decision (`DECISIONS.md` D053) |
 | Auth/session/account contract | `docs/AUTH_SESSION_ACCOUNT_CONTRACT.md` defines the Flutter-side backend contract: environment/base URL rules, REST API style, bearer-token auth, secure refresh-token storage, auth/account models, validation/error behavior, provider boundaries, and repository replacement plan. Runtime screens remain local/client-only until the next infrastructure slice (`DECISIONS.md` D054) |
+| Auth/session/account infrastructure | The app now has a backend-ready auth boundary without screen wiring: `CareNetApiConfig`, `AuthApiClient`, secure/in-memory session stores, auth/session/user models, `AuthRepository`, `AccountRepository`, DI registration, and focused tests. Existing auth screens still use local/client-only behavior until a later wiring slice (`DECISIONS.md` D055) |
 | Change authentication scope boundary | The change-authentication lane intentionally stops after the local two-step verification information route. PIN creation/confirmation, disabling two-step verification, password re-authentication, secure PIN storage, device/session checks, audit logs, phone/email verification, and security help copy remain deferred until auth backend/product contracts exist (`DECISIONS.md` D019) |
 | Add phone number slice | `addPhoneNumber` is now a registered route from Account -> Phone number. It validates a local phone-entry draft and shows a ready-for-SMS-verification summary without changing the account phone number or pretending to send an OTP |
 | Add phone number scope boundary | The add-phone lane intentionally stops after the local phone-entry draft. OTP/SMS delivery, code verification, phone uniqueness checks, password re-authentication, rate limiting, account-session updates, recovery rules, and account persistence remain deferred until auth backend/provider contracts exist (`DECISIONS.md` D020) |
@@ -253,6 +254,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 48.1 test/analyze | Not needed: documentation/router coverage audit only; checked route constants vs router cases and docs/deferred-work consistency without runtime code changes |
 | Focused task 49.1 test/analyze | Not needed: documentation-only backend/product readiness handoff; no runtime code changed |
 | Focused task 50.1 test/analyze | Not needed: documentation-only final handoff review; checked docs/router status and deferred-work readiness without runtime code changes |
+| Focused task 52.1 test/analyze | Passed: `flutter test test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on the auth config/client/session/model/repository files and auth infrastructure test reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

@@ -82,6 +82,7 @@ does not silently reinterpret established boundaries.
 | D075 | 2026-07-14 | Google staging readiness enabled | Backend staging now has Google OAuth client configuration through Secret Manager/Cloud Run; `/health/ready` reports `googleAuth: ok`. The next safe step is Flutter Google provider wiring for Android debug/staging only, while link/unlink, iOS proof, release signing, production OAuth, phone/OTP, and MFA stay deferred | Phase 22, task 52.21 |
 | D076 | 2026-07-14 | Flutter Google sign-in wiring | Use `google_sign_in` with `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` as the server client ID, obtain a real Google ID token, and call `AuthRepository.googleSignIn` only from sign-in phone/email rows when configured. Keep Google sign-up role selection, link/unlink, iOS proof, release signing, production OAuth, phone/OTP, MFA, and profile wiring deferred | Phase 22, task 52.22 |
 | D077 | 2026-07-14 | Profile/public professional wiring contract | Define patient self profile, professional self profile, and public verified professional listing as the next profile lane. Add a repository/API boundary before screen wiring, keep public professional detail deferred until `GET /professionals/:id` exists, and keep verification upload, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions out of scope | Phase 22, task 52.23 |
+| D078 | 2026-07-14 | Profile repository boundary | Add `ProfileApiClient` and `ProfileRepository` for patient self profile, professional self profile, and public verified professional listing before screen wiring. Protected calls use stored-session bearer auth, self-profile 404 maps to an empty profile state, and public listing sends no auth header | Phase 22, task 52.24 |
 
 ## How to add a row
 
@@ -223,3 +224,19 @@ the repository first lets later screen slices replace local stores without
 rewriting the UI or leaking private fields.
 
 Next: 52.24 should add the profile repository boundary only.
+
+## D078 - Profile repository boundary
+
+Task: 52.24
+
+Decision: Add a profile repository/API boundary before screen wiring. The
+boundary covers patient self read/update, professional self read/update, and
+public verified professional listing only.
+
+Reason: Focused repository tests prove ownership-safe payloads, bearer-only
+protected calls, empty-profile handling, and public projection parsing before
+any UI starts depending on the backend. This keeps the next screen slice small
+and avoids mixing profile read wiring with profile mutation, verification,
+availability, or appointment behavior.
+
+Next: 52.25 should wire professional self profile read to Manage Profile only.

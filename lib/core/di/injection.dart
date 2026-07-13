@@ -6,6 +6,8 @@ import '../../features/Authentication/data/repositories/auth_repository.dart';
 import '../../features/Authentication/data/services/auth_api_client.dart';
 import '../../features/Authentication/data/services/google_sign_in_provider.dart';
 import '../../features/Authentication/data/storage/session_store.dart';
+import '../../features/Home/data/repositories/profile_repository.dart';
+import '../../features/Home/data/services/profile_api_client.dart';
 
 /// Global service locator. Register dependencies here as features are built.
 final GetIt sl = GetIt.instance;
@@ -35,6 +37,11 @@ Future<void> configureDependencies() async {
   if (!sl.isRegistered<SessionStore>()) {
     sl.registerLazySingleton<SessionStore>(SecureSessionStore.new);
   }
+  if (!sl.isRegistered<ProfileApiClient>()) {
+    sl.registerLazySingleton<ProfileApiClient>(
+      () => ProfileApiClient(config: sl<CareNetApiConfig>()),
+    );
+  }
   if (!sl.isRegistered<AuthRepository>()) {
     sl.registerLazySingleton<AuthRepository>(
       () => AuthRepository(
@@ -47,6 +54,14 @@ Future<void> configureDependencies() async {
     sl.registerLazySingleton<AccountRepository>(
       () => AccountRepository(
         apiClient: sl<AuthApiClient>(),
+        sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<ProfileRepository>()) {
+    sl.registerLazySingleton<ProfileRepository>(
+      () => ProfileRepository(
+        apiClient: sl<ProfileApiClient>(),
         sessionStore: sl<SessionStore>(),
       ),
     );

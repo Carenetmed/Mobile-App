@@ -164,7 +164,8 @@
 | 52.21 | Add Google OAuth client IDs to staging: create/collect Android/iOS OAuth client IDs for `com.carenet.app`, configure backend staging `GOOGLE_OAUTH_CLIENT_ID` without committing secrets, and verify `/health/ready` reports `googleAuth: ok` before Flutter Google UI wiring | M | **DONE** |
 | 52.22 | Wire Flutter Google Sign-In provider for the now-ready Android debug/staging backend path: add provider package/config, obtain a real Google ID token, call `AuthRepository.googleSignIn`, preserve safe errors/loading, and keep linking/unlinking, phone/OTP, MFA, production OAuth, release signing, and profile wiring out of scope | L | **DONE** |
 | 52.23 | Define the profile and public professional wiring contract: map patient self profile, professional self profile, and public verified professional listing into Flutter repository/screen boundaries before runtime wiring; keep verification upload, admin dashboard, availability, appointment lifecycle, payments, notifications, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **DONE** |
-| 52.24 | Add the profile repository boundary for patient self profile, professional self profile, and public verified professional listing: API client, entities, repository, and focused tests only; do not wire screens, verification upload, availability, appointments, public detail, payments, reviews, calls, calendar sync, notes, or prescriptions | M | **NEXT** |
+| 52.24 | Add the profile repository boundary for patient self profile, professional self profile, and public verified professional listing: API client, entities, repository, and focused tests only; do not wire screens, verification upload, availability, appointments, public detail, payments, reviews, calls, calendar sync, notes, or prescriptions | M | **DONE** |
+| 52.25 | Wire professional self profile read to Manage Profile using `ProfileRepository.professionalMe`: show safe loading/error/empty-profile states and replace only matching allowed fields; keep profile mutations, patient profile, public listing, verification upload, availability, appointments, public detail, payments, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -180,14 +181,14 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.23)
+## Manual test (last completed: task 52.24)
 
-Task `52.23` is a contract-only profile/public professional slice. No runtime behavior changed.
+Task `52.24` adds the profile repository/API boundary only. No screens were wired.
 
-1. Confirm `PROFILE_PUBLIC_PROFESSIONAL_CONTRACT.md` defines patient self, professional self, and public verified professional listing boundaries.
-2. Confirm verification upload, admin dashboard, availability, appointment lifecycle, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, and public detail are explicitly deferred.
-3. `git diff --check docs/PROFILE_PUBLIC_PROFESSIONAL_CONTRACT.md docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md` - passes
-4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.24`
+1. `flutter test test/features/home/profile_repository_test.dart` - passes
+2. `flutter analyze lib/core/di/injection.dart lib/features/Home/data/models/patient_profile_model.dart lib/features/Home/data/models/professional_profile_model.dart lib/features/Home/data/models/public_professional_model.dart lib/features/Home/data/repositories/profile_repository.dart lib/features/Home/data/services/profile_api_client.dart lib/features/Home/domain/entities/patient_profile.dart lib/features/Home/domain/entities/professional_profile.dart lib/features/Home/domain/entities/public_professional.dart test/features/home/profile_repository_test.dart` - no issues
+3. Confirm protected self-profile calls use bearer auth, `404` self-read maps to empty profile, updates send only allowed fields, and public listing sends no auth header.
+4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.25`
 
 ## Previous runtime manual test baseline
 
@@ -507,6 +508,7 @@ Task `52.23` is a contract-only profile/public professional slice. No runtime be
 | 2026-07-14 | 52.21 | DONE - backend staging Google readiness enabled through Secret Manager/Cloud Run; `/health/ready` now reports `googleAuth: ok`; next lane is Flutter Google provider wiring |
 | 2026-07-14 | 52.22 | DONE - Flutter Google provider wiring added for configured sign-in phone/email rows; backend staging now trusts the Web OAuth client ID; next lane is profile/public professional contract definition |
 | 2026-07-14 | 52.23 | DONE - profile/public professional contract defined; next lane is a repository boundary without screen wiring |
+| 2026-07-14 | 52.24 | DONE - profile repository/API boundary added with focused tests; next lane is professional self profile read wiring to Manage Profile |
 
 ---
 

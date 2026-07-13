@@ -79,6 +79,7 @@ does not silently reinterpret established boundaries.
 | D072 | 2026-07-14 | Auth account staging checkpoint | Developer-private staging proxy reached `/health` and `/health/ready`; database, migrations, and email are ready, while `googleAuth` and `verificationStorage` are disabled. Keep Google UI and verification upload deferred, keep `CARENET_API_BASE_URL` as the Flutter config key, and select profile/public professional contract work as the next frontend lane | Phase 22, task 52.18 |
 | D073 | 2026-07-14 | App identifiers for Google foundation | Use `com.carenet.app` for Android namespace/application ID and iOS bundle ID before creating or wiring Google OAuth credentials. Do not create OAuth clients against placeholder `com.example` IDs; Google UI remains disabled until OAuth clients, fingerprints, Flutter provider config, and backend `GOOGLE_OAUTH_CLIENT_ID` are ready | Phase 22, task 52.19 |
 | D074 | 2026-07-14 | Google OAuth prerequisite boundary | Collect Google OAuth prerequisites before runtime UI wiring: Android package `com.carenet.app`, iOS bundle `com.carenet.app`, debug SHA fingerprints, release fingerprint blocker, and backend readiness status. Do not add `google_sign_in` or enable Google buttons until OAuth client IDs are configured and backend readiness reports `googleAuth: ok` | Phase 22, task 52.20 |
+| D075 | 2026-07-14 | Google staging readiness enabled | Backend staging now has Google OAuth client configuration through Secret Manager/Cloud Run; `/health/ready` reports `googleAuth: ok`. The next safe step is Flutter Google provider wiring for Android debug/staging only, while link/unlink, iOS proof, release signing, production OAuth, phone/OTP, and MFA stay deferred | Phase 22, task 52.21 |
 
 ## How to add a row
 
@@ -166,3 +167,18 @@ mocked success path rather than real sign-in.
 Next: 52.21 should create or collect OAuth client IDs and configure backend
 staging `GOOGLE_OAUTH_CLIENT_ID`, then verify `/health/ready` reports
 `googleAuth: ok`.
+
+## D075 - Google staging readiness enabled
+
+Task: 52.21
+
+Decision: Treat backend staging Google auth as ready for the Android debug
+frontend wiring path after Secret Manager/Cloud Run configuration and readiness
+verification. `/health/ready` now reports `googleAuth: ok`.
+
+Reason: The backend can now verify Google ID tokens against the configured
+client ID. Flutter can proceed to real provider-token acquisition and backend
+handoff without faking Google success.
+
+Next: 52.22 should add the Flutter Google Sign-In provider and wire the Google
+button to `AuthRepository.googleSignIn` with safe loading/error handling.

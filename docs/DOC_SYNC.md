@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.21** - add Google OAuth client IDs to staging and verify backend `googleAuth: ok` before Flutter UI wiring |
-| Last completed | **52.20** - collected Google OAuth prerequisites and Android debug fingerprints for `com.carenet.app` |
+| NEXT task | **52.22** - wire Flutter Google Sign-In provider against the now-ready Android debug/staging backend path |
+| Last completed | **52.21** - backend staging Google readiness enabled and verified as `googleAuth: ok` |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -228,6 +228,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-14 | Task 52.18 DONE - recorded auth/account staging checkpoint with proxy health/readiness evidence and deferred Google/verification upload until provider readiness; DOC_SYNC NEXT -> 52.19 |
 | 2026-07-14 | Task 52.19 DONE - replaced placeholder Android/iOS app identifiers with `com.carenet.app` and documented Google OAuth prerequisites; DOC_SYNC NEXT -> 52.20 |
 | 2026-07-14 | Task 52.20 DONE - collected Google OAuth prerequisites and debug SHA fingerprints for `com.carenet.app`; DOC_SYNC NEXT -> 52.21 |
+| 2026-07-14 | Task 52.21 DONE - enabled backend staging Google readiness through Secret Manager/Cloud Run and verified `googleAuth: ok`; DOC_SYNC NEXT -> 52.22 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

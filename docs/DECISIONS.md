@@ -81,6 +81,7 @@ does not silently reinterpret established boundaries.
 | D074 | 2026-07-14 | Google OAuth prerequisite boundary | Collect Google OAuth prerequisites before runtime UI wiring: Android package `com.carenet.app`, iOS bundle `com.carenet.app`, debug SHA fingerprints, release fingerprint blocker, and backend readiness status. Do not add `google_sign_in` or enable Google buttons until OAuth client IDs are configured and backend readiness reports `googleAuth: ok` | Phase 22, task 52.20 |
 | D075 | 2026-07-14 | Google staging readiness enabled | Backend staging now has Google OAuth client configuration through Secret Manager/Cloud Run; `/health/ready` reports `googleAuth: ok`. The next safe step is Flutter Google provider wiring for Android debug/staging only, while link/unlink, iOS proof, release signing, production OAuth, phone/OTP, and MFA stay deferred | Phase 22, task 52.21 |
 | D076 | 2026-07-14 | Flutter Google sign-in wiring | Use `google_sign_in` with `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` as the server client ID, obtain a real Google ID token, and call `AuthRepository.googleSignIn` only from sign-in phone/email rows when configured. Keep Google sign-up role selection, link/unlink, iOS proof, release signing, production OAuth, phone/OTP, MFA, and profile wiring deferred | Phase 22, task 52.22 |
+| D077 | 2026-07-14 | Profile/public professional wiring contract | Define patient self profile, professional self profile, and public verified professional listing as the next profile lane. Add a repository/API boundary before screen wiring, keep public professional detail deferred until `GET /professionals/:id` exists, and keep verification upload, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions out of scope | Phase 22, task 52.23 |
 
 ## How to add a row
 
@@ -205,3 +206,20 @@ verification, phone/OTP, MFA, and profile wiring.
 
 Next: 52.23 should define the profile and public professional wiring contract
 before runtime profile/listing work.
+
+## D077 - Profile/public professional wiring contract
+
+Task: 52.23
+
+Decision: Use `PROFILE_PUBLIC_PROFESSIONAL_CONTRACT.md` as the source of truth
+for the next profile lane. The first implementation should add a repository/API
+boundary for `GET/PUT /patients/me`, `GET/PUT /professionals/me`, and public
+`GET /professionals`, with focused tests and no screen wiring.
+
+Reason: The backend supports patient/professional self profile routes and public
+verified professional listing, but public professional detail, verification
+upload UX, availability, and appointments each need separate boundaries. Adding
+the repository first lets later screen slices replace local stores without
+rewriting the UI or leaking private fields.
+
+Next: 52.24 should add the profile repository boundary only.

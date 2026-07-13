@@ -143,7 +143,8 @@
 | 51.2 | Define the auth/session/account backend contract before implementation: API style, environment/base URL rules, session storage, auth/account models, validation/error states, OTP/email-code provider boundaries, and repository replacement plan | M | **DONE** |
 | 52.1 | Implement the auth/session/account infrastructure boundary: environment API config, safe auth API client, session store, auth/account models, repository interfaces, and focused tests without wiring screens to backend yet | M | **DONE** |
 | 52.2 | Wire the first auth screen to the repository boundary, starting with email sign-in only: preserve local validation, require backend config for backend success, show safe loading/error states, and keep phone/social/security flows deferred | M | **DONE** |
-| 52.3 | Wire email sign-up to the repository boundary only: preserve current validation, submit backend registration through `AuthRepository`, show safe loading/error states, and keep social/phone/security flows deferred | M | **NEXT** |
+| 52.3 | Wire email sign-up to the repository boundary only: preserve current validation, submit backend registration through `AuthRepository`, show safe loading/error states, and keep social/phone/security flows deferred | M | **DONE** |
+| 52.4 | Add session restore/app launch guard: restore stored auth session through `AuthRepository`, route authenticated users to dashboard, route missing/invalid sessions to onboarding/auth, and keep refresh/staging smoke separate if not fully scoped | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -159,18 +160,20 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.2)
+## Manual test (last completed: task 52.3)
 
-Task `52.2` wires email sign-in to the auth repository boundary only. Phone sign-in, sign-up, social auth, password reset, and account-security screens remain unchanged/deferred unless separately scoped.
+Task `52.3` wires email sign-up completion to the auth repository boundary only. Phone sign-up, social auth, password reset, and account-security screens remain unchanged/deferred unless separately scoped.
 
-1. `flutter test test/features/authentication/sign_in_flow_test.dart test/features/authentication/auth_infrastructure_test.dart` - passes
-2. `flutter analyze lib/features/Authentication/presentation/pages/sign_in_email.dart lib/features/Authentication/data/repositories/auth_repository.dart lib/features/Authentication/domain/entities/auth_failure.dart test/features/authentication/sign_in_flow_test.dart` - no issues
-3. Confirm email sign-in still blocks invalid local input before repository calls
-4. Confirm valid email sign-in navigates only after `AuthRepository.login` succeeds
-5. Confirm missing backend config/backend failure shows a safe error and does not navigate
-6. Confirm loading state disables the continue action while login is pending
-7. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.3`
-8. Confirm phone sign-in, sign-up, social auth, password reset, and account-security flows were not wired or enabled in this slice
+1. `flutter test test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/auth_infrastructure_test.dart` - passes
+2. `flutter analyze lib/features/Authentication/presentation/pages/sign_up_email.dart lib/features/Authentication/presentation/pages/sign_up_con.dart lib/core/constants/navigators/router.dart test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart` - no issues
+3. Confirm email sign-up entry still blocks invalid email before opening finish-sign-up
+4. Confirm email sign-up passes the validated email into `finishSignUp`
+5. Confirm finish-sign-up calls `AuthRepository.register` only after full local form validation succeeds
+6. Confirm repository success navigates to `communityAgreement`
+7. Confirm missing backend config/backend failure shows a safe error and does not navigate
+8. Confirm loading state disables the agree action while registration is pending
+9. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.4`
+10. Confirm phone sign-up, social auth, password reset, and account-security flows were not wired or enabled in this slice
 
 ## Previous runtime manual test baseline
 
@@ -469,6 +472,7 @@ Task `52.2` wires email sign-in to the auth repository boundary only. Phone sign
 | 2026-07-13 | 51.2 | DONE - auth/session/account backend contract defined before implementation; next work is infrastructure boundary only |
 | 2026-07-13 | 52.1 | DONE - auth/session/account infrastructure boundary added with config, safe API client, session store, models, repositories, and focused tests; screens are not wired yet |
 | 2026-07-13 | 52.2 | DONE - email sign-in now uses the auth repository boundary after local validation, with safe loading/error states and no broad auth wiring |
+| 2026-07-13 | 52.3 | DONE - email sign-up completion now uses the auth repository boundary after local validation, with safe loading/error states and no broad auth wiring |
 
 ---
 

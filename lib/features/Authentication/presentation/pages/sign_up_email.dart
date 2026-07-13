@@ -60,7 +60,11 @@ class _SignUpEmailState extends State<SignUpEmail> {
     });
 
     if (_emailError == null) {
-      Navigator.pushNamed(context, RouteName.finishSignUp);
+      Navigator.pushNamed(
+        context,
+        RouteName.finishSignUp,
+        arguments: _emailController.text.trim(),
+      );
     }
   }
 

@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-13 next backend-integration lane decision.
+**Last updated:** 2026-07-14 workflow guardrail docs restored.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -68,6 +68,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Email verification request | The current email review screen can call `AccountRepository.requestEmailVerification` for the signed-in account. Success explains that confirmation still needs the secure token from the email link; failures show safe copy. No email verification confirmation is faked without token/deep-link/code handling |
 | Auth/session/account regression | The current backend-ready auth/account frontend boundary has a focused regression pass covering auth infrastructure, email sign-in, email sign-up completion, session restore, logout/session clear, password reset request boundary, current account read, and email verification request. Remaining auth/account gaps stay deferred instead of being faked |
 | Next integration lane | After the auth/session/account regression pass, the next selected lane is workflow guardrail restoration. `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` are referenced by authoritative docs but missing from this checkout, so restore those before more auth/account wiring or another backend contract group |
+| Workflow guardrails | `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` are restored and match the current one-slice, honest-backend-ready workflow. Future work should read those docs before implementation |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
@@ -271,6 +272,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.8 test/analyze | Passed: `flutter test test/features/home/account_flow_test.dart`; focused `flutter analyze` on current-email review and account-flow tests reports no issues |
 | Focused task 52.9 test/analyze | Passed: `flutter test test/features/authentication/auth_infrastructure_test.dart test/features/authentication/sign_in_flow_test.dart test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/password_recovery_flow_test.dart test/features/authentication/session_restore_guard_test.dart test/features/home/account_flow_test.dart`; focused `flutter analyze` on auth data, auth screens, splash guard, Account/Edit Email, and related tests reports no issues |
 | Focused task 52.10 test/analyze | Not needed: decision-only docs slice. Checked current docs and selected guardrail-doc restoration as `52.11`; no runtime code changed |
+| Focused task 52.11 test/analyze | Not needed: docs-only guardrail restoration. `git diff --check` passes for changed docs; no runtime code changed |
 
 ## Design debt (fix in Phase 2+)
 

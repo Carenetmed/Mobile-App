@@ -1,8 +1,8 @@
 # Frontend Backend Integration Checkpoint
 
 **Date:** 2026-07-14
-**Task:** 52.13, updated by 52.15
-**Status:** Checkpoint plus reset/verification contract pointer before more runtime wiring.
+**Task:** 52.13, updated by 52.15 and 52.16
+**Status:** Checkpoint plus reset/verification token-confirm wiring status.
 
 This checkpoint summarizes the frontend auth/session/account integration work
 that is complete, what is intentionally not wired, and what backend/deep-link
@@ -22,9 +22,9 @@ screens are already wired to it.
 | Email sign-up completion | Wired to `AuthRepository.register` after local validation; uses validated email passed from email entry |
 | Session restore | Splash calls `AuthRepository.restore`; usable sessions go to dashboard, missing/invalid/failed restore goes to onboarding |
 | Logout | Account calls `AuthRepository.logout`; success clears navigation back to onboarding |
-| Password reset request | Email request calls `AuthRepository.requestPasswordReset`; final reset is blocked without secure token handling |
+| Password reset request/confirm | Email request calls `AuthRepository.requestPasswordReset`; `resetPasswordConfirm` calls `AuthRepository.confirmPasswordReset` only when opened with a transient token |
 | Current account read | Account can read `AccountRepository.currentAccount` for safe display-only identity fields |
-| Email verification request | Current email review can call `AccountRepository.requestEmailVerification`; final verification is blocked without secure token/code handling |
+| Email verification request/confirm | Current email review can call `AccountRepository.requestEmailVerification`; `emailVerificationConfirm` calls `AccountRepository.confirmEmailVerification` only when opened with a transient token and then attempts account refresh |
 | Regression proof | Focused auth/session/account regression pass covers the scoped wiring above |
 
 Source docs:
@@ -32,7 +32,7 @@ Source docs:
 - `AUTH_SESSION_ACCOUNT_CONTRACT.md`
 - `PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md`
 - `DEFERRED_WORK.md`
-- `DECISIONS.md` D054-D069
+- `DECISIONS.md` D054-D070
 - `CODEBASE_STATUS.md`
 
 ---
@@ -48,6 +48,13 @@ flutter test test/features/authentication/auth_infrastructure_test.dart test/fea
 Focused analyze also passed on auth data, auth screens, splash guard,
 Account/Edit Email, and related tests.
 
+Task `52.16` additionally passed:
+
+```bash
+flutter test test/features/authentication/auth_infrastructure_test.dart test/features/authentication/password_recovery_flow_test.dart test/features/home/account_flow_test.dart
+flutter analyze lib/core/constants/navigators/routeName.dart lib/core/constants/navigators/router.dart lib/features/Authentication/data/services/auth_api_client.dart lib/features/Authentication/data/repositories/auth_repository.dart lib/features/Authentication/presentation/pages/reset_password_confirm_page.dart lib/features/Authentication/presentation/pages/email_verification_confirm_page.dart test/features/authentication/auth_infrastructure_test.dart test/features/authentication/password_recovery_flow_test.dart test/features/home/account_flow_test.dart
+```
+
 ---
 
 ## Do Not Wire Yet
@@ -57,8 +64,7 @@ contracts are explicit.
 
 | Blocked item | Why blocked |
 |--------------|-------------|
-| Password reset confirmation | Contract is now defined in `PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md`; runtime wiring still needs a reset-confirm route that receives a transient token safely |
-| Email verification confirmation | Contract is now defined in `PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md`; runtime wiring still needs a verification-confirm route that receives a transient token safely |
+| Production reset/verification app links | Token-confirm routes exist, but Android App Links/iOS Universal Links, domain association, and staging link smoke are not completed |
 | Phone sign-in/sign-up | Needs OTP/SMS provider, delivery behavior, code confirmation API, rate limits, phone uniqueness, and session-update behavior |
 | Social auth | Needs provider setup, token handoff contract, account linking rules, and failure states |
 | MFA/PIN activation | Needs backend MFA model, secure PIN storage rules, recovery behavior, audit/security notifications, and session/device checks |
@@ -68,17 +74,17 @@ contracts are explicit.
 
 ---
 
-## Backend/Contract Questions To Resolve Before Runtime Wiring
+## Backend/Contract Questions To Resolve Before More Runtime Wiring
 
 1. Password reset confirmation:
    - Backend route and fields are confirmed: `POST /auth/password-reset/confirm` with `token` and `newPassword`.
-   - The next frontend slice must choose/reset-confirm route ownership.
+   - `resetPasswordConfirm` owns the token-confirm route.
    - Production app-link setup is still separate.
 
 2. Email verification confirmation:
    - Backend route and fields are confirmed: `POST /auth/email-verification/confirm` with `token`.
-   - The next frontend slice must choose verification-confirm route ownership.
-   - After success, refresh current-account state if the app still has a session.
+   - `emailVerificationConfirm` owns the token-confirm route.
+   - After success, the app attempts current-account refresh if it still has a session.
 
 3. Phone OTP:
    - Which provider is used?
@@ -99,17 +105,17 @@ contracts are explicit.
 
 ## Recommended Next Step
 
-Do not start runtime wiring from the original checkpoint alone. Runtime wiring
-must now use the task `52.15` contract.
+Do not start the next runtime area from the original checkpoint alone. Use the
+task `52.15` contract and task `52.16` wiring status.
 
-Selected next path after task `52.15`:
+Selected next path after task `52.16`:
 
 ```text
-52.16 - Implement reset and email verification token-confirm route wiring from the confirmed backend contract, or stop if platform deep-link setup is required first
+52.17 - Decide the next backend-integration lane after reset/verification token-confirm wiring
 ```
 
-Task `52.15` recorded the contract in
-`PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md`. The next slice may wire the
-token-confirm Flutter routes, but must not claim production app-link setup,
-phone OTP, social auth, MFA/PIN, or profile persistence.
+The next slice should decide between production app-link setup, phone OTP/MFA
+contracting, an auth/account regression checkpoint, another backend contract
+group, or pausing frontend integration. It must not silently broaden runtime
+scope.
 

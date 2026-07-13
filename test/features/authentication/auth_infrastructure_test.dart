@@ -147,6 +147,42 @@ void main() {
         expect(await store.read(), isNull);
       },
     );
+
+    test(
+      'password reset confirm sends newPassword and clears session',
+      () async {
+        final store = InMemorySessionStore();
+        await store.save(
+          _session(
+            accessToken: 'stored-access',
+            refreshToken: 'stored-refresh',
+          ),
+        );
+        final adapter = _FakeAdapter(responseJson: <String, dynamic>{});
+        final repository = AuthRepository(
+          apiClient: AuthApiClient(
+            config: const CareNetApiConfig(baseUrl: 'http://127.0.0.1:8080'),
+            dio: Dio()..httpClientAdapter = adapter,
+          ),
+          sessionStore: store,
+        );
+
+        await repository.confirmPasswordReset(
+          token: 'opaque-reset-token',
+          password: 'CareNet@123',
+        );
+
+        expect(
+          adapter.lastOptions?.uri.toString(),
+          endsWith('/auth/password-reset/confirm'),
+        );
+        expect(adapter.lastOptions?.data, <String, dynamic>{
+          'token': 'opaque-reset-token',
+          'newPassword': 'CareNet@123',
+        });
+        expect(await store.read(), isNull);
+      },
+    );
   });
 }
 

@@ -5,6 +5,7 @@ import 'package:app_t/features/Authentication/data/repositories/auth_repository.
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_password.dart';
+import 'package:app_t/features/Authentication/presentation/pages/reset_password_confirm_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
 import 'package:flutter/material.dart';
@@ -206,16 +207,140 @@ void main() {
         expect(find.text('sign-in-email'), findsNothing);
       },
     );
+
+    testWidgets('reset confirmation requires token before calling backend', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository();
+      tester.view.physicalSize = _phoneSize;
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: _phoneSize,
+          builder:
+              (_, __) => MaterialApp(
+                home: ResetPasswordConfirmPage(
+                  token: null,
+                  authRepository: repository,
+                ),
+                routes: <String, WidgetBuilder>{
+                  RouteName.enterEmail:
+                      (_) => const Scaffold(body: Text('enter-email')),
+                },
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Reset password'), findsOneWidget);
+      expect(find.textContaining('Reset link is missing'), findsOneWidget);
+      expect(repository.confirmPasswordResetCalls, 0);
+    });
+
+    testWidgets('reset confirmation submits token and new password', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository();
+      tester.view.physicalSize = _phoneSize;
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: _phoneSize,
+          builder:
+              (_, __) => MaterialApp(
+                home: ResetPasswordConfirmPage(
+                  token: 'opaque-reset-token',
+                  authRepository: repository,
+                ),
+                routes: <String, WidgetBuilder>{
+                  RouteName.signInEmail:
+                      (_) => const Scaffold(body: Text('sign-in-email')),
+                },
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Update password'));
+      await tester.pump();
+      expect(find.text('Please enter your password'), findsNWidgets(2));
+
+      final fields = find.byType(EditableText);
+      await tester.enterText(fields.at(0), 'CareNet@123');
+      await tester.enterText(fields.at(1), 'Mismatch@123');
+      await tester.tap(find.text('Update password'));
+      await tester.pump();
+      expect(find.text('Passwords do not match'), findsOneWidget);
+
+      await tester.enterText(fields.at(1), 'CareNet@123');
+      await tester.tap(find.text('Update password'));
+      await tester.pumpAndSettle();
+
+      expect(repository.confirmPasswordResetCalls, 1);
+      expect(repository.lastResetToken, 'opaque-reset-token');
+      expect(repository.lastResetPassword, 'CareNet@123');
+      expect(find.textContaining('Password updated'), findsOneWidget);
+
+      await tester.tap(find.text('Back to sign in'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('sign-in-email'), findsOneWidget);
+    });
+
+    testWidgets('reset confirmation shows safe backend failure', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository(
+        confirmFailure: const AuthFailure(
+          type: AuthFailureType.validation,
+          message: 'Reset link is invalid or expired.',
+        ),
+      );
+      tester.view.physicalSize = _phoneSize;
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: _phoneSize,
+          builder:
+              (_, __) => MaterialApp(
+                home: ResetPasswordConfirmPage(
+                  token: 'opaque-reset-token',
+                  authRepository: repository,
+                ),
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final fields = find.byType(EditableText);
+      await tester.enterText(fields.at(0), 'CareNet@123');
+      await tester.enterText(fields.at(1), 'CareNet@123');
+      await tester.tap(find.text('Update password'));
+      await tester.pumpAndSettle();
+
+      expect(repository.confirmPasswordResetCalls, 1);
+      expect(find.text('Reset link is invalid or expired.'), findsOneWidget);
+    });
   });
 }
 
 class _FakeAuthRepository implements AuthRepository {
-  _FakeAuthRepository({this.failure, this.completer});
+  _FakeAuthRepository({this.failure, this.confirmFailure, this.completer});
 
   final AuthFailure? failure;
+  final AuthFailure? confirmFailure;
   final Completer<void>? completer;
   int requestPasswordResetCalls = 0;
+  int confirmPasswordResetCalls = 0;
   String? lastResetEmail;
+  String? lastResetToken;
+  String? lastResetPassword;
 
   @override
   Future<void> requestPasswordReset({required String email}) async {
@@ -228,6 +353,20 @@ class _FakeAuthRepository implements AuthRepository {
     final completer = this.completer;
     if (completer != null) {
       return completer.future;
+    }
+  }
+
+  @override
+  Future<void> confirmPasswordReset({
+    required String token,
+    required String password,
+  }) async {
+    confirmPasswordResetCalls += 1;
+    lastResetToken = token;
+    lastResetPassword = password;
+    final failure = confirmFailure;
+    if (failure != null) {
+      throw failure;
     }
   }
 

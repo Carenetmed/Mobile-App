@@ -51,9 +51,9 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.16** - implement reset and email verification token-confirm route wiring from the confirmed backend contract, or stop if platform deep-link setup is required first |
-| Last completed | **52.15** - defined reset/verification token-confirm contract before runtime wiring |
-| Registered routes | **68 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
+| NEXT task | **52.17** - decide the next backend-integration lane after reset/verification token-confirm wiring |
+| Last completed | **52.16** - wired reset/verification token-confirm routes from the confirmed backend contract |
+| Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
 ---
@@ -223,6 +223,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-14 | Task 52.13 DONE - created frontend/backend integration checkpoint with completed wiring, blockers, and contract questions; DOC_SYNC NEXT -> 52.14 |
 | 2026-07-14 | Task 52.14 DONE - selected password reset and email verification deep-link/code contract as the next target; DOC_SYNC NEXT -> 52.15 |
 | 2026-07-14 | Task 52.15 DONE - defined password reset and email verification token-confirm contract from backend bridge docs; DOC_SYNC NEXT -> 52.16 |
+| 2026-07-14 | Task 52.16 DONE - wired reset and email verification token-confirm routes; DOC_SYNC NEXT -> 52.17 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

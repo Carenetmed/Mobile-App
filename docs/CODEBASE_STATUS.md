@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-14 reset/verification token-confirm contract defined.
+**Last updated:** 2026-07-14 reset/verification token-confirm routes wired.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -22,14 +22,14 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | App entry | `lib/main.dart` -> `CarenetApp` in `lib/app.dart` |
 | Start screen | `RouteName.splash` (not notifications) |
 | Splash -> session guard | 800ms then `AuthRepository.restore()` routes usable stored sessions to `dashboard`; missing, invalid, or failed restore falls back to `onboarding` |
-| Named routes | **68 wired routes** in `router.dart` plus the reserved unused `login` constant (see `ROUTES.md`) |
+| Named routes | **70 wired routes** in `router.dart` plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Onboarding UI | 3 pages, skip, next, get started -> sign up phone |
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
 | Sign-up email | Validates email, then routes to `finishSignUp` |
 | Sign-up to sign-in links | "Already have an account? Sign in" routes to `signInPhone` / `signInEmail` from matching entry screens |
 | Sign-in phone | Validates country/region, phone, and password locally, then routes to `dashboard` |
 | Sign-in email | Validates email and password locally, then routes to `dashboard` |
-| Password recovery | `Forgot Password?` routes to `enterEmail`; valid email requests reset through `AuthRepository.requestPasswordReset`, then `enterPassword` explains that final confirmation needs the secure reset token from the email link before `confirmPasswordReset` can be called |
+| Password recovery | `Forgot Password?` routes to `enterEmail`; valid email requests reset through `AuthRepository.requestPasswordReset`; `resetPasswordConfirm` can complete password reset only when opened with a transient reset token, sends `{ token, newPassword }`, clears local session, and returns to email sign-in. Production app-link setup remains deferred |
 | Finish sign-up | Validates required fields, date picker birthday, password strength, and confirm password match before routing to `communityAgreement` |
 | Social auth rows on sign-up | Google / Facebook / Apple render as explicitly disabled until backend/provider integration exists |
 | Dashboard shell | Bottom nav tabs all render real screens; Home tab keeps drawer; Notifications now opens the dedicated notifications feature screen directly |
@@ -65,13 +65,13 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Q&A slice | The Post tab now hosts a real local Q&A feed with seeded questions, local follow toggles, and a working `qAAsk` form that validates question-style prompts and returns saved local questions back into the feed; the blueprint-backed answer lane now works locally through `qAAnswerRequests` -> `qAAnswerForYou` -> `commentAnswer`, with saved local answers feeding back into answer drafts. The Q&A lane intentionally stops here before the mixed `q-a-post` composer/distribution flow |
 | Account slice | The dashboard drawer `Profile` row now routes into a real local `account` screen with account rows and working `deleteAccount` plus `settings` handoffs. `Settings & Profile` now supports local validation and local save for core profile fields, while delete/deactivate remains an explicit local seam until real auth-change and destructive account APIs exist. The account lane intentionally stops here before public profile, scheduling, and auth-security flows |
 | Account current read | Account can read `AccountRepository.currentAccount` for safe display-only identity fields. Backend account email/status can replace local display when available; failures show a safe message and keep local display. Profile editing, delete/deactivate, phone/email drafts, password, and security mutations remain local/deferred |
-| Email verification request | The current email review screen can call `AccountRepository.requestEmailVerification` for the signed-in account. Success explains that confirmation still needs the secure token from the email link; failures show safe copy. No email verification confirmation is faked without token/deep-link/code handling |
+| Email verification request/confirm | The current email review screen can call `AccountRepository.requestEmailVerification` for the signed-in account. `emailVerificationConfirm` can complete verification only when opened with a transient verification token, then attempts current-account refresh if a session exists. Production app-link setup remains deferred |
 | Auth/session/account regression | The current backend-ready auth/account frontend boundary has a focused regression pass covering auth infrastructure, email sign-in, email sign-up completion, session restore, logout/session clear, password reset request boundary, current account read, and email verification request. Remaining auth/account gaps stay deferred instead of being faked |
 | Next integration lane | After the auth/session/account regression pass, the next selected lane is workflow guardrail restoration. `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` are referenced by authoritative docs but missing from this checkout, so restore those before more auth/account wiring or another backend contract group |
 | Workflow guardrails | `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` are restored and match the current one-slice, honest-backend-ready workflow. Future work should read those docs before implementation |
 | Next frontend integration step | Do not add more runtime backend wiring immediately. The next selected slice is a frontend/backend integration checkpoint that summarizes what auth/session/account wiring is complete and what backend/deep-link contracts are needed before password reset confirmation, email verification confirmation, or another contract group is wired |
 | Frontend/backend checkpoint | `FRONTEND_BACKEND_INTEGRATION_CHECKPOINT.md` records the completed auth/session/account frontend wiring, remaining blockers, and backend/deep-link questions needed before more runtime wiring |
-| Reset/verification token contract | `PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md` defines the frontend boundary for reset and verification confirmation. Backend route and field names are confirmed from backend bridge docs: password reset request/confirm and email verification request/confirm. Runtime Flutter route wiring is next, but platform deep-link production setup remains out of scope |
+| Reset/verification token wiring | `PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md` defines the frontend boundary for reset and verification confirmation. Runtime Flutter token-confirm routes are wired behind `resetPasswordConfirm` and `emailVerificationConfirm`; tokens are passed as transient route arguments and are not persisted or logged. Platform deep-link production setup remains out of scope |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
@@ -280,6 +280,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.13 test/analyze | Not needed: docs-only checkpoint. `git diff --check` passes for changed docs; no runtime code changed |
 | Focused task 52.14 test/analyze | Not needed: decision-only docs slice. User selected password reset + email verification deep-link/code contract as the next target; no runtime code changed |
 | Focused task 52.15 test/analyze | Not needed: contract-only docs slice. `git diff --check` passes for changed docs; no runtime code changed |
+| Focused task 52.16 test/analyze | Passed: `flutter test test/features/authentication/auth_infrastructure_test.dart test/features/authentication/password_recovery_flow_test.dart test/features/home/account_flow_test.dart`; focused `flutter analyze` on reset/verification routes, auth client/repository, router, and related tests reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

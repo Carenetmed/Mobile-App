@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.8** - wire email verification request/confirmation boundary without fake token success |
-| Last completed | **52.7** - current-account read wired for safe Account display fields only |
+| NEXT task | **52.9** - auth/session/account frontend integration regression pass |
+| Last completed | **52.8** - email verification request wired; confirmation blocked until secure token/deep-link/code boundary exists |
 | Registered routes | **68 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -215,6 +215,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-13 | Task 52.5 DONE - Account logout now calls `AuthRepository.logout`, clears navigation to onboarding on success, and keeps delete/security/password flows deferred; DOC_SYNC NEXT -> 52.6 |
 | 2026-07-13 | Task 52.6 DONE - password reset request now calls `AuthRepository.requestPasswordReset`; confirmation stops before fake success until a secure token/deep-link boundary exists; DOC_SYNC NEXT -> 52.7 |
 | 2026-07-13 | Task 52.7 DONE - Account now reads `AccountRepository.currentAccount` for safe email/status display while keeping profile edits, deletion, and security mutations local/deferred; DOC_SYNC NEXT -> 52.8 |
+| 2026-07-13 | Task 52.8 DONE - current-email verification request now calls `AccountRepository.requestEmailVerification`; confirmation remains blocked until secure token/deep-link/code handling exists; DOC_SYNC NEXT -> 52.9 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

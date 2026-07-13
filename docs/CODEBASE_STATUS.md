@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-13 current-account read boundary slice.
+**Last updated:** 2026-07-13 email verification request boundary slice.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -65,6 +65,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Q&A slice | The Post tab now hosts a real local Q&A feed with seeded questions, local follow toggles, and a working `qAAsk` form that validates question-style prompts and returns saved local questions back into the feed; the blueprint-backed answer lane now works locally through `qAAnswerRequests` -> `qAAnswerForYou` -> `commentAnswer`, with saved local answers feeding back into answer drafts. The Q&A lane intentionally stops here before the mixed `q-a-post` composer/distribution flow |
 | Account slice | The dashboard drawer `Profile` row now routes into a real local `account` screen with account rows and working `deleteAccount` plus `settings` handoffs. `Settings & Profile` now supports local validation and local save for core profile fields, while delete/deactivate remains an explicit local seam until real auth-change and destructive account APIs exist. The account lane intentionally stops here before public profile, scheduling, and auth-security flows |
 | Account current read | Account can read `AccountRepository.currentAccount` for safe display-only identity fields. Backend account email/status can replace local display when available; failures show a safe message and keep local display. Profile editing, delete/deactivate, phone/email drafts, password, and security mutations remain local/deferred |
+| Email verification request | The current email review screen can call `AccountRepository.requestEmailVerification` for the signed-in account. Success explains that confirmation still needs the secure token from the email link; failures show safe copy. No email verification confirmation is faked without token/deep-link/code handling |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
@@ -265,6 +266,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.5 test/analyze | Passed: `flutter test test/features/home/account_flow_test.dart`; focused `flutter analyze` on Account and account-flow tests reports no issues |
 | Focused task 52.6 test/analyze | Passed: `flutter test test/features/authentication/password_recovery_flow_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on password reset screens and password recovery tests reports no issues |
 | Focused task 52.7 test/analyze | Passed: `flutter test test/features/home/account_flow_test.dart`; focused `flutter analyze` on Account and account-flow tests reports no issues |
+| Focused task 52.8 test/analyze | Passed: `flutter test test/features/home/account_flow_test.dart`; focused `flutter analyze` on current-email review and account-flow tests reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

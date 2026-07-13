@@ -6,6 +6,7 @@ import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart'
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/edit_email_shell.dart';
 import 'package:app_t/features/Home/presentation/state/account_local_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -54,6 +55,33 @@ Future<void> _pumpAccount(
             routes: <String, WidgetBuilder>{
               RouteName.onboarding:
                   (_) => const Scaffold(body: Text('onboarding')),
+            },
+          ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _pumpEditEmail(
+  WidgetTester tester, {
+  required _FakeAccountRepository repository,
+}) async {
+  AccountLocalStore.reset();
+  tester.view.physicalSize = _phoneSize;
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(
+    ScreenUtilInit(
+      designSize: _phoneSize,
+      builder:
+          (_, __) => MaterialApp(
+            home: EditEmailShellPage(accountRepository: repository),
+            routes: <String, WidgetBuilder>{
+              RouteName.changeEmail:
+                  (_) => const Scaffold(body: Text('change-email')),
+              RouteName.enterPasswordToSave:
+                  (_) => const Scaffold(body: Text('password-step')),
             },
           ),
     ),
@@ -601,6 +629,43 @@ void main() {
     expect(find.text('Change your email address'), findsOneWidget);
   });
 
+  testWidgets('review current email requests verification through repository', (
+    tester,
+  ) async {
+    final repository = _FakeAccountRepository();
+    await _pumpEditEmail(tester, repository: repository);
+
+    await tester.tap(find.text('Send verification email'));
+    await tester.pumpAndSettle();
+
+    expect(repository.requestEmailVerificationCalls, 1);
+    expect(find.textContaining('Verification email requested'), findsOneWidget);
+    expect(
+      find.textContaining('secure token from the email link'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'review current email shows verification request failure safely',
+    (tester) async {
+      final repository = _FakeAccountRepository(
+        failure: const AuthFailure(
+          type: AuthFailureType.unauthorized,
+          message: 'Please sign in again.',
+        ),
+      );
+      await _pumpEditEmail(tester, repository: repository);
+
+      await tester.tap(find.text('Send verification email'));
+      await tester.pumpAndSettle();
+
+      expect(repository.requestEmailVerificationCalls, 1);
+      expect(find.text('Please sign in again.'), findsOneWidget);
+      expect(find.text('Email address'), findsWidgets);
+    },
+  );
+
   testWidgets('password-to-save route prepares backend re-auth only', (
     tester,
   ) async {
@@ -705,6 +770,7 @@ class _FakeAccountRepository implements AccountRepository {
   final AuthUser? user;
   final AuthFailure? failure;
   int currentAccountCalls = 0;
+  int requestEmailVerificationCalls = 0;
 
   @override
   Future<AuthUser> currentAccount() async {
@@ -721,6 +787,15 @@ class _FakeAccountRepository implements AccountRepository {
           status: 'ACTIVE',
           emailVerified: false,
         );
+  }
+
+  @override
+  Future<void> requestEmailVerification() async {
+    requestEmailVerificationCalls += 1;
+    final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
   }
 
   @override

@@ -148,7 +148,8 @@
 | 52.5 | Add a real logout/session-clear action from the authenticated app shell: call `AuthRepository.logout`, clear stored session, return to onboarding/auth, and keep destructive account deletion, MFA, phone, and password-reset flows deferred | M | **DONE** |
 | 52.6 | Wire password reset screens to the auth repository boundary: request reset from email entry, confirm reset from password entry only if the existing flow can pass the required token honestly; otherwise document the missing token/email-link boundary and stop before fake reset success | M | **DONE** |
 | 52.7 | Define and wire the current-account read boundary for the Account shell: use `AccountRepository.currentAccount` only where it can safely replace local account display, keep profile editing/deletion/security mutations deferred, and document any remaining local profile seams | M | **DONE** |
-| 52.8 | Wire the email verification request/confirmation boundary only where token handling is honest: allow requesting verification for the current account if session-backed, but do not fake confirmation without a secure token/deep-link or code-entry path | M | **NEXT** |
+| 52.8 | Wire the email verification request/confirmation boundary only where token handling is honest: allow requesting verification for the current account if session-backed, but do not fake confirmation without a secure token/deep-link or code-entry path | M | **DONE** |
+| 52.9 | Run an auth/session/account frontend integration regression pass: cover sign-in, sign-up, restore, logout, password reset request boundary, current account read, and email verification request boundary; document any remaining gaps before starting another feature lane | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -164,18 +165,18 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.7)
+## Manual test (last completed: task 52.8)
 
-Task `52.7` wires current-account read to the Account shell only for safe display fields. Local profile editing, delete/deactivate, phone/email drafts, password, MFA/PIN, and security mutations remain separate local/deferred seams.
+Task `52.8` wires email verification request for the current saved email only. Confirmation remains deferred because there is no secure token/deep-link/code-entry path yet.
 
 1. `flutter test test/features/home/account_flow_test.dart` - passes
-2. `flutter analyze lib/features/Home/presentation/pages/account_shell.dart test/features/home/account_flow_test.dart` - no issues
-3. Confirm Account calls `AccountRepository.currentAccount` when the repository is registered/injected
-4. Confirm successful current-account read replaces safe display fields: account email and authentication status label
-5. Confirm read failure shows a safe message and keeps the local account display
-6. Confirm Settings/Profile editing remains local and does not call account mutation APIs
-7. Confirm delete/deactivate/security/phone/password/MFA flows remain unchanged/deferred
-8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.8`
+2. `flutter analyze lib/features/Home/presentation/pages/edit_email_shell.dart test/features/home/account_flow_test.dart` - no issues
+3. Confirm `EditEmailShellPage` calls `AccountRepository.requestEmailVerification` only through the session-backed repository
+4. Confirm successful request shows that confirmation still needs the secure email-link token
+5. Confirm request failure shows a safe message and stays on the email review screen
+6. Confirm no `confirmEmailVerification` call is made without a token/deep-link/code-entry path
+7. Confirm remove email, edit email, password step, phone, MFA/PIN, and destructive account actions remain unchanged/deferred
+8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.9`
 
 ## Previous runtime manual test baseline
 

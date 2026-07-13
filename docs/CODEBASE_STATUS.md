@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-14 reset/verification contract target selected.
+**Last updated:** 2026-07-14 reset/verification token-confirm contract defined.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -71,7 +71,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Workflow guardrails | `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` are restored and match the current one-slice, honest-backend-ready workflow. Future work should read those docs before implementation |
 | Next frontend integration step | Do not add more runtime backend wiring immediately. The next selected slice is a frontend/backend integration checkpoint that summarizes what auth/session/account wiring is complete and what backend/deep-link contracts are needed before password reset confirmation, email verification confirmation, or another contract group is wired |
 | Frontend/backend checkpoint | `FRONTEND_BACKEND_INTEGRATION_CHECKPOINT.md` records the completed auth/session/account frontend wiring, remaining blockers, and backend/deep-link questions needed before more runtime wiring |
-| Next selected runtime target | Password reset confirmation and email verification confirmation are the next target, but only after a dedicated contract slice defines deep-link/code handling, route ownership, backend fields, expired-token behavior, and refresh rules |
+| Reset/verification token contract | `PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md` defines the frontend boundary for reset and verification confirmation. Backend route and field names are confirmed from backend bridge docs: password reset request/confirm and email verification request/confirm. Runtime Flutter route wiring is next, but platform deep-link production setup remains out of scope |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
@@ -279,6 +279,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.12 test/analyze | Not needed: decision-only docs slice. Checked `DEFERRED_WORK.md` and selected a frontend/backend checkpoint as `52.13`; no runtime code changed |
 | Focused task 52.13 test/analyze | Not needed: docs-only checkpoint. `git diff --check` passes for changed docs; no runtime code changed |
 | Focused task 52.14 test/analyze | Not needed: decision-only docs slice. User selected password reset + email verification deep-link/code contract as the next target; no runtime code changed |
+| Focused task 52.15 test/analyze | Not needed: contract-only docs slice. `git diff --check` passes for changed docs; no runtime code changed |
 
 ## Design debt (fix in Phase 2+)
 

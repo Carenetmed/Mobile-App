@@ -1,8 +1,8 @@
 # Frontend Backend Integration Checkpoint
 
 **Date:** 2026-07-14
-**Task:** 52.13
-**Status:** Checkpoint for frontend/backend alignment before more runtime wiring.
+**Task:** 52.13, updated by 52.15
+**Status:** Checkpoint plus reset/verification contract pointer before more runtime wiring.
 
 This checkpoint summarizes the frontend auth/session/account integration work
 that is complete, what is intentionally not wired, and what backend/deep-link
@@ -30,8 +30,9 @@ screens are already wired to it.
 Source docs:
 
 - `AUTH_SESSION_ACCOUNT_CONTRACT.md`
+- `PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md`
 - `DEFERRED_WORK.md`
-- `DECISIONS.md` D054-D066
+- `DECISIONS.md` D054-D069
 - `CODEBASE_STATUS.md`
 
 ---
@@ -56,8 +57,8 @@ contracts are explicit.
 
 | Blocked item | Why blocked |
 |--------------|-------------|
-| Password reset confirmation | Needs secure reset token/deep-link/code-entry contract, token parsing/storage rules, expired-token behavior, and route ownership |
-| Email verification confirmation | Needs secure verification token/deep-link/code-entry contract, expired-token behavior, and route ownership |
+| Password reset confirmation | Contract is now defined in `PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md`; runtime wiring still needs a reset-confirm route that receives a transient token safely |
+| Email verification confirmation | Contract is now defined in `PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md`; runtime wiring still needs a verification-confirm route that receives a transient token safely |
 | Phone sign-in/sign-up | Needs OTP/SMS provider, delivery behavior, code confirmation API, rate limits, phone uniqueness, and session-update behavior |
 | Social auth | Needs provider setup, token handoff contract, account linking rules, and failure states |
 | MFA/PIN activation | Needs backend MFA model, secure PIN storage rules, recovery behavior, audit/security notifications, and session/device checks |
@@ -70,15 +71,14 @@ contracts are explicit.
 ## Backend/Contract Questions To Resolve Before Runtime Wiring
 
 1. Password reset confirmation:
-   - Will the app receive a universal/app link, a custom scheme link, or a manual code?
-   - What exact route/screen owns the token entry or link landing?
-   - What fields does the confirm endpoint require?
-   - What are expired/invalid/already-used token responses?
+   - Backend route and fields are confirmed: `POST /auth/password-reset/confirm` with `token` and `newPassword`.
+   - The next frontend slice must choose/reset-confirm route ownership.
+   - Production app-link setup is still separate.
 
 2. Email verification confirmation:
-   - Will verification use a deep link, app link, or code-entry screen?
-   - Does confirmation happen automatically on link open or after user action?
-   - How should the app refresh current-account/email-verified state afterward?
+   - Backend route and fields are confirmed: `POST /auth/email-verification/confirm` with `token`.
+   - The next frontend slice must choose verification-confirm route ownership.
+   - After success, refresh current-account state if the app still has a session.
 
 3. Phone OTP:
    - Which provider is used?
@@ -99,19 +99,17 @@ contracts are explicit.
 
 ## Recommended Next Step
 
-Do not start runtime wiring from this checkpoint.
+Do not start runtime wiring from the original checkpoint alone. Runtime wiring
+must now use the task `52.15` contract.
 
-Selected next path:
+Selected next path after task `52.15`:
 
 ```text
-52.15 - Define password reset and email verification deep-link/code contract
+52.16 - Implement reset and email verification token-confirm route wiring from the confirmed backend contract, or stop if platform deep-link setup is required first
 ```
 
-The user selected option 1 from task `52.14`: define the password reset and
-email verification deep-link/code contract. Do not wire runtime behavior until
-that contract is recorded.
-
-The contract must define route ownership, token/code source, backend request and
-response fields, expired-token behavior, current-account refresh after
-verification, and explicit out-of-scope items.
+Task `52.15` recorded the contract in
+`PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md`. The next slice may wire the
+token-confirm Flutter routes, but must not claim production app-link setup,
+phone OTP, social auth, MFA/PIN, or profile persistence.
 

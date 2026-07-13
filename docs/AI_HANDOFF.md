@@ -155,7 +155,8 @@
 | 52.12 | Decide where backend-integration frontend work resumes after guardrails are restored: remaining auth/account token-confirmation flows, another contract group from `DEFERRED_WORK.md`, or a stop-and-handoff checkpoint | S | **DONE** |
 | 52.13 | Create a frontend/backend integration checkpoint handoff: summarize the auth/session/account frontend wiring that is complete, list the exact remaining frontend blockers, and state what backend/deep-link contracts are needed before more runtime wiring | S | **DONE** |
 | 52.14 | Decide the next frontend/backend runtime target after the checkpoint: define password reset/email verification deep-link contract, define phone OTP/MFA contract, pick another backend contract group, or pause frontend integration until backend contracts are ready | S | **DONE** |
-| 52.15 | Define the password reset and email verification deep-link/code contract before runtime wiring: route ownership, token/code source, backend request/response fields, expired-token behavior, current-account refresh, and explicit out-of-scope items | M | **NEXT** |
+| 52.15 | Define the password reset and email verification deep-link/code contract before runtime wiring: route ownership, token/code source, backend request/response fields, expired-token behavior, current-account refresh, and explicit out-of-scope items | M | **DONE** |
+| 52.16 | Implement reset and email verification token-confirm route wiring from the confirmed backend contract, or stop if platform deep-link setup is required first | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -171,15 +172,15 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.14)
+## Manual test (last completed: task 52.15)
 
-Task `52.14` is a decision-only slice. User selected password reset + email verification deep-link/code contract as the next frontend/backend runtime target.
+Task `52.15` is a contract-only docs slice. `PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md` defines the token-confirm boundary using the backend bridge docs and source, without runtime Flutter wiring.
 
-1. Confirm the selected option is password reset + email verification deep-link/code contract
-2. Confirm `52.15` is queued as a contract-definition slice, not runtime wiring
+1. Confirm the contract points to `POST /auth/password-reset/request`, `POST /auth/password-reset/confirm`, `POST /auth/email-verification/request`, and `POST /auth/email-verification/confirm`
+2. Confirm reset/verification tokens remain transient and are never persisted or logged
 3. Confirm no runtime code changed
-4. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/FRONTEND_BACKEND_INTEGRATION_CHECKPOINT.md` - passes
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.15`
+4. `git diff --check docs/PASSWORD_RESET_EMAIL_VERIFICATION_CONTRACT.md docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/FRONTEND_BACKEND_INTEGRATION_CHECKPOINT.md` - passes
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.16`
 
 ## Previous runtime manual test baseline
 
@@ -490,6 +491,7 @@ Task `52.14` is a decision-only slice. User selected password reset + email veri
 | 2026-07-14 | 52.12 | DONE - next integration lane selected: create a frontend/backend checkpoint before more runtime wiring |
 | 2026-07-14 | 52.13 | DONE - frontend/backend integration checkpoint created with completed auth wiring, blocked items, and contract questions |
 | 2026-07-14 | 52.14 | DONE - next runtime target selected: define password reset and email verification deep-link/code contract |
+| 2026-07-14 | 52.15 | DONE - password reset and email verification token-confirm contract defined from backend bridge docs before runtime wiring |
 
 ---
 

@@ -150,7 +150,8 @@
 | 52.7 | Define and wire the current-account read boundary for the Account shell: use `AccountRepository.currentAccount` only where it can safely replace local account display, keep profile editing/deletion/security mutations deferred, and document any remaining local profile seams | M | **DONE** |
 | 52.8 | Wire the email verification request/confirmation boundary only where token handling is honest: allow requesting verification for the current account if session-backed, but do not fake confirmation without a secure token/deep-link or code-entry path | M | **DONE** |
 | 52.9 | Run an auth/session/account frontend integration regression pass: cover sign-in, sign-up, restore, logout, password reset request boundary, current account read, and email verification request boundary; document any remaining gaps before starting another feature lane | M | **DONE** |
-| 52.10 | Decide the next backend-integration lane after the auth/session/account regression pass: either close Phase 22 for now, continue remaining auth/account backend wiring, or select the next contract group from `DEFERRED_WORK.md` without implementing runtime behavior in the decision slice | S | **NEXT** |
+| 52.10 | Decide the next backend-integration lane after the auth/session/account regression pass: either close Phase 22 for now, continue remaining auth/account backend wiring, or select the next contract group from `DEFERRED_WORK.md` without implementing runtime behavior in the decision slice | S | **DONE** |
+| 52.11 | Restore the missing workflow guardrail docs referenced by `README.md`, `AI_HANDOFF.md`, and `DOC_SYNC.md`: recreate `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` from the active rules without changing runtime code | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -166,16 +167,14 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.9)
+## Manual test (last completed: task 52.10)
 
-Task `52.9` is a regression gate for the auth/session/account frontend integration work completed in tasks `52.1` through `52.8`. No runtime behavior was added in this slice.
+Task `52.10` is a decision-only slice. It selects workflow guardrail restoration as the next lane before more backend/account feature wiring because multiple authoritative docs reference missing guardrail files.
 
-1. `flutter test test/features/authentication/auth_infrastructure_test.dart test/features/authentication/sign_in_flow_test.dart test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/password_recovery_flow_test.dart test/features/authentication/session_restore_guard_test.dart test/features/home/account_flow_test.dart` - passes, 50 tests
-2. `flutter analyze lib/features/Authentication/data lib/features/Authentication/presentation/pages/sign_in_email.dart lib/features/Authentication/presentation/pages/sign_up_email.dart lib/features/Authentication/presentation/pages/sign_up_con.dart lib/features/Authentication/presentation/pages/enter_email.dart lib/features/Authentication/presentation/pages/enter_password.dart lib/features/splash/presentation/pages/splash_screen.dart lib/features/Home/presentation/pages/account_shell.dart lib/features/Home/presentation/pages/edit_email_shell.dart test/features/authentication test/features/home/account_flow_test.dart` - no issues
-3. Confirm covered flows include email sign-in, email sign-up completion, stored-session restore, logout/session clear, password reset request boundary, current account read, and email verification request boundary
-4. Confirm no `confirmPasswordReset` or `confirmEmailVerification` success path is faked without secure token/deep-link/code-entry handling
-5. Confirm phone sign-in/up, social auth, MFA/PIN activation, destructive account APIs, profile persistence, and account-security mutations remain deferred in `DEFERRED_WORK.md`
-6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.10`
+1. Confirm `docs/WORKING_AGREEMENT.md`, `docs/TASK_TEMPLATE.md`, and `docs/DEFINITION_OF_DONE.md` are referenced but absent from this checkout
+2. Confirm `52.11` is queued to restore those guardrail docs before continuing auth/account wiring or selecting another product contract group
+3. Confirm no runtime code changed
+4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.11`
 
 ## Previous runtime manual test baseline
 
@@ -481,6 +480,7 @@ Task `52.9` is a regression gate for the auth/session/account frontend integrati
 | 2026-07-13 | 52.7 | DONE - Account can read backend current-account display fields while local profile/security mutations remain deferred |
 | 2026-07-13 | 52.8 | DONE - current-email verification request now uses the account repository, while final verification confirmation remains blocked until secure token/deep-link/code handling exists |
 | 2026-07-13 | 52.9 | DONE - auth/session/account regression pass proved the integrated frontend boundary across sign-in, sign-up, restore, logout, password reset request, current account read, and email verification request |
+| 2026-07-13 | 52.10 | DONE - next backend-integration lane selected: restore missing workflow guardrail docs before more runtime wiring |
 
 ---
 

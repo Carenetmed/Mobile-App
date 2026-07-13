@@ -1,4 +1,9 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
+import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
+import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_description_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_your_name_shell.dart';
@@ -13,7 +18,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 const Size _phoneSize = Size(430, 1200);
 
-Future<void> _pumpManageProfile(WidgetTester tester) async {
+Future<void> _pumpManageProfile(
+  WidgetTester tester, {
+  ProfileRepository? profileRepository,
+}) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
@@ -23,7 +31,9 @@ Future<void> _pumpManageProfile(WidgetTester tester) async {
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
-            home: const ManageProfileShellPage(),
+            home: ManageProfileShellPage(
+              profileRepository: profileRepository ?? _FakeProfileRepository(),
+            ),
             routes: <String, WidgetBuilder>{
               RouteName.settings: (_) => const SettingsProfilePage(),
               RouteName.editYourName: (_) => const EditYourNameShellPage(),
@@ -40,6 +50,49 @@ Future<void> _pumpManageProfile(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+class _FakeProfileRepository implements ProfileRepository {
+  _FakeProfileRepository({this.professionalProfile, this.failure});
+
+  final ProfessionalProfile? professionalProfile;
+  final Object? failure;
+
+  @override
+  Future<ProfessionalProfile?> professionalMe() async {
+    final error = failure;
+    if (error != null) {
+      throw error;
+    }
+    return professionalProfile;
+  }
+
+  @override
+  Future<PatientProfile?> patientMe() => throw UnimplementedError();
+
+  @override
+  Future<List<PublicProfessional>> publicProfessionals() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<PatientProfile> updatePatientMe({
+    required String name,
+    int? age,
+    String? location,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ProfessionalProfile> updateProfessionalMe({
+    required String displayName,
+    required String category,
+    String? specialty,
+    String? bio,
+  }) {
+    throw UnimplementedError();
+  }
+}
+
 void main() {
   testWidgets('manage profile shows local profile management sections', (
     tester,
@@ -48,6 +101,10 @@ void main() {
 
     expect(find.text('Manage Profile'), findsOneWidget);
     expect(find.text('Old People Circle'), findsOneWidget);
+    expect(
+      find.text('Professional profile has not been created yet.'),
+      findsOneWidget,
+    );
     expect(find.text('Basic'), findsOneWidget);
     expect(find.text('Dr. Lagbaja Omo Tamedu'), findsOneWidget);
     expect(find.text('Lagbaja Eye Clinic & Consulting firm'), findsOneWidget);
@@ -58,6 +115,53 @@ void main() {
 
     expect(find.text('Articles'), findsOneWidget);
     expect(find.text('Migrating to Linear 101'), findsOneWidget);
+  });
+
+  testWidgets('manage profile reads professional self profile', (tester) async {
+    await _pumpManageProfile(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        professionalProfile: const ProfessionalProfile(
+          id: 'pro_1',
+          displayName: 'Dr Backend Profile',
+          category: 'Cardiology',
+          specialty: 'Heart health',
+          bio: 'Backend-owned professional bio for patient-facing care.',
+          verificationStatus: 'VERIFIED',
+        ),
+      ),
+    );
+
+    expect(find.text('Dr Backend Profile'), findsWidgets);
+    expect(find.text('Cardiology'), findsWidgets);
+    expect(find.text('Heart health'), findsOneWidget);
+    expect(
+      find.text('Backend-owned professional bio for patient-facing care.'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Professional profile has not been created yet.'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('manage profile keeps local screen when profile read fails', (
+    tester,
+  ) async {
+    await _pumpManageProfile(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        failure: const AuthFailure(
+          type: AuthFailureType.missingConfiguration,
+          message: 'raw config message',
+        ),
+      ),
+    );
+
+    expect(find.text('Backend is not configured yet.'), findsOneWidget);
+    expect(find.text('Manage Profile'), findsOneWidget);
+    expect(find.text('Dr. Lagbaja Omo Tamedu'), findsOneWidget);
+    expect(find.text('raw config message'), findsNothing);
   });
 
   testWidgets('business hours opens a route-local selected-date draft', (

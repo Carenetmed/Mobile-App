@@ -83,6 +83,7 @@ does not silently reinterpret established boundaries.
 | D076 | 2026-07-14 | Flutter Google sign-in wiring | Use `google_sign_in` with `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` as the server client ID, obtain a real Google ID token, and call `AuthRepository.googleSignIn` only from sign-in phone/email rows when configured. Keep Google sign-up role selection, link/unlink, iOS proof, release signing, production OAuth, phone/OTP, MFA, and profile wiring deferred | Phase 22, task 52.22 |
 | D077 | 2026-07-14 | Profile/public professional wiring contract | Define patient self profile, professional self profile, and public verified professional listing as the next profile lane. Add a repository/API boundary before screen wiring, keep public professional detail deferred until `GET /professionals/:id` exists, and keep verification upload, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions out of scope | Phase 22, task 52.23 |
 | D078 | 2026-07-14 | Profile repository boundary | Add `ProfileApiClient` and `ProfileRepository` for patient self profile, professional self profile, and public verified professional listing before screen wiring. Protected calls use stored-session bearer auth, self-profile 404 maps to an empty profile state, and public listing sends no auth header | Phase 22, task 52.24 |
+| D079 | 2026-07-14 | Manage Profile professional self read | Wire Manage Profile to `ProfileRepository.professionalMe` for professional self-profile read only. Replace only `displayName`, `category`, `specialty`, and `bio`; keep safe loading/error/empty states; leave profile mutations, patient profile UI, public listing UI, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions deferred | Phase 22, task 52.25 |
 
 ## How to add a row
 
@@ -240,3 +241,22 @@ and avoids mixing profile read wiring with profile mutation, verification,
 availability, or appointment behavior.
 
 Next: 52.25 should wire professional self profile read to Manage Profile only.
+
+## D079 - Manage Profile professional self read
+
+Task: 52.25
+
+Decision: Wire Manage Profile to read the current professional profile through
+`ProfileRepository.professionalMe`, but only replace backend-owned profile
+fields: `displayName`, `category`, `specialty`, and `bio`. The page keeps safe
+loading, empty-profile, and error states, and preserves local/deferred content
+for fields the backend contract does not currently own.
+
+Reason: This is the smallest real screen replacement after the repository
+boundary. It proves the protected self-profile read path without mixing in
+profile saves, patient profile UI, public listing replacement, verification
+documents, availability, appointments, payments, reviews, calls, calendar sync,
+notes, or prescriptions.
+
+Next: 52.26 should decide the first safe profile mutation UI slice before any
+runtime profile update button is wired.

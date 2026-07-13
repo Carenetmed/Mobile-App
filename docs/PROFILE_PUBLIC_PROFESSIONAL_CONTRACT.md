@@ -1,7 +1,7 @@
 # Profile and public professional frontend contract
 
 **Task:** 52.23
-**Status:** Accepted contract before runtime wiring
+**Status:** Accepted contract; repository boundary and Manage Profile professional read are implemented
 
 Purpose: define how the Flutter app should consume the backend profile and
 public professional surfaces without guessing screen behavior or exposing
@@ -171,4 +171,14 @@ Then follow with one runtime screen slice:
 
 `52.25 - Wire Professional Self Profile Read To Manage Profile`
 
-Only after the repository boundary is proven.
+Implemented: Manage Profile reads `ProfileRepository.professionalMe`, shows
+safe loading/error/empty-profile states, and replaces only `displayName`,
+`category`, `specialty`, and `bio`.
+
+Recommended next slice:
+
+`52.26 - Decide First Safe Profile Mutation UI Slice`
+
+Do not wire profile mutations until the UI target is constrained to backend
+allowed fields. Existing edit screens include local/draft fields that do not all
+map to the current backend profile contract.

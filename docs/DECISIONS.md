@@ -77,6 +77,7 @@ does not silently reinterpret established boundaries.
 | D070 | 2026-07-14 | Reset and verification token-confirm wiring | Wire `resetPasswordConfirm` and `emailVerificationConfirm` as token-confirm landing routes that require transient token arguments. Password reset confirmation sends backend `newPassword`, clears local session after success, and returns to sign-in. Email verification confirmation sends only `token` and refreshes current account state when a session is still available. Do not claim production app-link setup, phone OTP, social auth, MFA/PIN, or profile persistence from this slice | Phase 22, task 52.16 |
 | D071 | 2026-07-14 | Completed backend surface wiring order | Use `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md` to consume already-completed backend surfaces in a stable order: auth/account staging checkpoint first, then professional/profile/verification, then public professionals/availability, then appointment lifecycle. Do not start phone/OTP, MFA, production app links, payments, notifications, reviews, calls, calendar sync, prescriptions, medical notes, admin dashboard behavior, public staging access, or production-readiness work as the next runtime lane | Phase 22, task 52.17 |
 | D072 | 2026-07-14 | Auth account staging checkpoint | Developer-private staging proxy reached `/health` and `/health/ready`; database, migrations, and email are ready, while `googleAuth` and `verificationStorage` are disabled. Keep Google UI and verification upload deferred, keep `CARENET_API_BASE_URL` as the Flutter config key, and select profile/public professional contract work as the next frontend lane | Phase 22, task 52.18 |
+| D073 | 2026-07-14 | App identifiers for Google foundation | Use `com.carenet.app` for Android namespace/application ID and iOS bundle ID before creating or wiring Google OAuth credentials. Do not create OAuth clients against placeholder `com.example` IDs; Google UI remains disabled until OAuth clients, fingerprints, Flutter provider config, and backend `GOOGLE_OAUTH_CLIENT_ID` are ready | Phase 22, task 52.19 |
 
 ## How to add a row
 
@@ -130,3 +131,18 @@ document upload need separate provider/config decisions before runtime wiring.
 
 Next: 52.19 should define the profile and public professional wiring contract
 before runtime profile/discovery implementation.
+
+## D073 - App identifiers for Google foundation
+
+Task: 52.19
+
+Decision: Replace placeholder Android/iOS identifiers with `com.carenet.app`
+before Google OAuth setup. Android namespace and application ID should be
+`com.carenet.app`; iOS app bundle ID should be `com.carenet.app`; iOS tests
+should use `com.carenet.app.RunnerTests`.
+
+Reason: Creating Google OAuth clients against `com.example.app_t` or
+`com.example.appt` would create avoidable rework and stale provider setup.
+
+Next: 52.20 should define or collect Google OAuth prerequisites for
+`com.carenet.app` before runtime Google UI wiring.

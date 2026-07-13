@@ -149,7 +149,8 @@
 | 52.6 | Wire password reset screens to the auth repository boundary: request reset from email entry, confirm reset from password entry only if the existing flow can pass the required token honestly; otherwise document the missing token/email-link boundary and stop before fake reset success | M | **DONE** |
 | 52.7 | Define and wire the current-account read boundary for the Account shell: use `AccountRepository.currentAccount` only where it can safely replace local account display, keep profile editing/deletion/security mutations deferred, and document any remaining local profile seams | M | **DONE** |
 | 52.8 | Wire the email verification request/confirmation boundary only where token handling is honest: allow requesting verification for the current account if session-backed, but do not fake confirmation without a secure token/deep-link or code-entry path | M | **DONE** |
-| 52.9 | Run an auth/session/account frontend integration regression pass: cover sign-in, sign-up, restore, logout, password reset request boundary, current account read, and email verification request boundary; document any remaining gaps before starting another feature lane | M | **NEXT** |
+| 52.9 | Run an auth/session/account frontend integration regression pass: cover sign-in, sign-up, restore, logout, password reset request boundary, current account read, and email verification request boundary; document any remaining gaps before starting another feature lane | M | **DONE** |
+| 52.10 | Decide the next backend-integration lane after the auth/session/account regression pass: either close Phase 22 for now, continue remaining auth/account backend wiring, or select the next contract group from `DEFERRED_WORK.md` without implementing runtime behavior in the decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -165,18 +166,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.8)
+## Manual test (last completed: task 52.9)
 
-Task `52.8` wires email verification request for the current saved email only. Confirmation remains deferred because there is no secure token/deep-link/code-entry path yet.
+Task `52.9` is a regression gate for the auth/session/account frontend integration work completed in tasks `52.1` through `52.8`. No runtime behavior was added in this slice.
 
-1. `flutter test test/features/home/account_flow_test.dart` - passes
-2. `flutter analyze lib/features/Home/presentation/pages/edit_email_shell.dart test/features/home/account_flow_test.dart` - no issues
-3. Confirm `EditEmailShellPage` calls `AccountRepository.requestEmailVerification` only through the session-backed repository
-4. Confirm successful request shows that confirmation still needs the secure email-link token
-5. Confirm request failure shows a safe message and stays on the email review screen
-6. Confirm no `confirmEmailVerification` call is made without a token/deep-link/code-entry path
-7. Confirm remove email, edit email, password step, phone, MFA/PIN, and destructive account actions remain unchanged/deferred
-8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.9`
+1. `flutter test test/features/authentication/auth_infrastructure_test.dart test/features/authentication/sign_in_flow_test.dart test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/password_recovery_flow_test.dart test/features/authentication/session_restore_guard_test.dart test/features/home/account_flow_test.dart` - passes, 50 tests
+2. `flutter analyze lib/features/Authentication/data lib/features/Authentication/presentation/pages/sign_in_email.dart lib/features/Authentication/presentation/pages/sign_up_email.dart lib/features/Authentication/presentation/pages/sign_up_con.dart lib/features/Authentication/presentation/pages/enter_email.dart lib/features/Authentication/presentation/pages/enter_password.dart lib/features/splash/presentation/pages/splash_screen.dart lib/features/Home/presentation/pages/account_shell.dart lib/features/Home/presentation/pages/edit_email_shell.dart test/features/authentication test/features/home/account_flow_test.dart` - no issues
+3. Confirm covered flows include email sign-in, email sign-up completion, stored-session restore, logout/session clear, password reset request boundary, current account read, and email verification request boundary
+4. Confirm no `confirmPasswordReset` or `confirmEmailVerification` success path is faked without secure token/deep-link/code-entry handling
+5. Confirm phone sign-in/up, social auth, MFA/PIN activation, destructive account APIs, profile persistence, and account-security mutations remain deferred in `DEFERRED_WORK.md`
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.10`
 
 ## Previous runtime manual test baseline
 
@@ -476,6 +475,12 @@ Task `52.8` wires email verification request for the current saved email only. C
 | 2026-07-13 | 52.1 | DONE - auth/session/account infrastructure boundary added with config, safe API client, session store, models, repositories, and focused tests; screens are not wired yet |
 | 2026-07-13 | 52.2 | DONE - email sign-in now uses the auth repository boundary after local validation, with safe loading/error states and no broad auth wiring |
 | 2026-07-13 | 52.3 | DONE - email sign-up completion now uses the auth repository boundary after local validation, with safe loading/error states and no broad auth wiring |
+| 2026-07-13 | 52.4 | DONE - splash now restores stored sessions through the auth repository and routes usable sessions to dashboard, otherwise onboarding |
+| 2026-07-13 | 52.5 | DONE - Account logout now clears the repository session and returns to onboarding while destructive account actions remain deferred |
+| 2026-07-13 | 52.6 | DONE - password reset request now uses the auth repository, while final reset confirmation remains blocked until secure token/deep-link handling exists |
+| 2026-07-13 | 52.7 | DONE - Account can read backend current-account display fields while local profile/security mutations remain deferred |
+| 2026-07-13 | 52.8 | DONE - current-email verification request now uses the account repository, while final verification confirmation remains blocked until secure token/deep-link/code handling exists |
+| 2026-07-13 | 52.9 | DONE - auth/session/account regression pass proved the integrated frontend boundary across sign-in, sign-up, restore, logout, password reset request, current account read, and email verification request |
 
 ---
 

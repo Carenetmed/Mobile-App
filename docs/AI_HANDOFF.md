@@ -160,8 +160,9 @@
 | 52.17 | Decide the next backend-integration lane after reset/verification token-confirm wiring: production app-link setup, phone OTP/MFA contract, auth/account regression checkpoint, another contract group, or pause | S | **DONE** |
 | 52.18 | Run an auth/account staging smoke and remaining-backend checkpoint: verify the wired auth/session/account boundary against the backend bridge/proxy docs, decide whether Google sign-in/link is ready or deferred, and keep profile/verification/availability/appointment wiring queued behind this shared base | M | **DONE** |
 | 52.19 | Replace placeholder Android/iOS app identifiers with the accepted `com.carenet.app` foundation before Google OAuth setup; document remaining Google credential/provider prerequisites without wiring Google UI yet | S | **DONE** |
-| 52.20 | Define the next Google sign-in setup slice: create/collect OAuth client prerequisites for `com.carenet.app`, decide Flutter provider package/config, and enable backend readiness only when real client IDs/fingerprints are available; stop before fake Google UI success | M | **NEXT** |
-| 52.21 | Define the profile and public professional wiring contract: map patient self profile, professional self profile, and public verified professional listing into Flutter repository/screen boundaries before runtime wiring; keep verification upload, admin dashboard, availability, appointment lifecycle, payments, notifications, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **TODO** |
+| 52.20 | Define the next Google sign-in setup slice: create/collect OAuth client prerequisites for `com.carenet.app`, decide Flutter provider package/config, and enable backend readiness only when real client IDs/fingerprints are available; stop before fake Google UI success | M | **DONE** |
+| 52.21 | Add Google OAuth client IDs to staging: create/collect Android/iOS OAuth client IDs for `com.carenet.app`, configure backend staging `GOOGLE_OAUTH_CLIENT_ID` without committing secrets, and verify `/health/ready` reports `googleAuth: ok` before Flutter Google UI wiring | M | **NEXT** |
+| 52.22 | Define the profile and public professional wiring contract: map patient self profile, professional self profile, and public verified professional listing into Flutter repository/screen boundaries before runtime wiring; keep verification upload, admin dashboard, availability, appointment lifecycle, payments, notifications, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **TODO** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -177,16 +178,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.19)
+## Manual test (last completed: task 52.20)
 
-Task `52.19` replaces placeholder mobile identifiers with `com.carenet.app` before Google OAuth setup. It does not enable Google sign-in UI or backend Google readiness.
+Task `52.20` collects Google OAuth prerequisites for `com.carenet.app`. It records the Android debug SHA fingerprints, confirms staging still has `googleAuth: disabled`, and keeps Google UI disabled until real OAuth client IDs/backend readiness exist.
 
-1. Confirm Android `namespace` is `com.carenet.app`
-2. Confirm Android `applicationId` is `com.carenet.app`
-3. Confirm iOS app bundle ID is `com.carenet.app`
-4. Confirm iOS test bundle ID is `com.carenet.app.RunnerTests`
-5. Confirm `GOOGLE_SIGN_IN_FOUNDATION.md` lists remaining OAuth/provider prerequisites
-6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.20`
+1. Confirm `GOOGLE_SIGN_IN_SETUP_PREREQUISITES.md` records Android package `com.carenet.app`
+2. Confirm it records iOS bundle ID `com.carenet.app`
+3. Confirm it records debug SHA-1 and SHA-256 fingerprints
+4. Confirm it states release fingerprints are not collected without the keystore password
+5. Confirm it records staging readiness still reports `googleAuth: disabled`
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.21`
 
 ## Previous runtime manual test baseline
 
@@ -502,6 +503,7 @@ Task `52.19` replaces placeholder mobile identifiers with `com.carenet.app` befo
 | 2026-07-14 | 52.17 | DONE - completed backend surface wiring map added; next lane selected as auth/account staging smoke and remaining-backend checkpoint before broader profile/verification/availability/appointment wiring |
 | 2026-07-14 | 52.18 | DONE - auth/account staging checkpoint recorded developer-private proxy health/readiness evidence; Google and verification upload stay deferred; next lane is profile/public professional contract |
 | 2026-07-14 | 52.19 | DONE - placeholder Android/iOS app identifiers replaced with `com.carenet.app` as the Google OAuth foundation; next lane is Google setup prerequisites |
+| 2026-07-14 | 52.20 | DONE - Google OAuth prerequisites collected for `com.carenet.app`; debug SHA fingerprints recorded; next lane is staging OAuth client/config setup |
 
 ---
 

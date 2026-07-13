@@ -39,6 +39,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 15 | **DOC_SYNC.md** | Which doc wins if confused; last audit |
 | 16 | **AUTH_SESSION_ACCOUNT_CONTRACT.md** | Auth/session/account backend contract for Phase 22 integration |
 | 17 | **BACKEND_COMPLETED_SURFACE_WIRING_MAP.md** | Completed backend surfaces and remaining frontend wiring order |
+| 18 | **AUTH_ACCOUNT_STAGING_CHECKPOINT.md** | Developer-private staging proxy/auth checkpoint for Phase 22 |
 
 Current implementation policy:
 - Build frontend-complete, backend-ready slices.

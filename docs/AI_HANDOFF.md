@@ -158,7 +158,8 @@
 | 52.15 | Define the password reset and email verification deep-link/code contract before runtime wiring: route ownership, token/code source, backend request/response fields, expired-token behavior, current-account refresh, and explicit out-of-scope items | M | **DONE** |
 | 52.16 | Implement reset and email verification token-confirm route wiring from the confirmed backend contract, or stop if platform deep-link setup is required first | M | **DONE** |
 | 52.17 | Decide the next backend-integration lane after reset/verification token-confirm wiring: production app-link setup, phone OTP/MFA contract, auth/account regression checkpoint, another contract group, or pause | S | **DONE** |
-| 52.18 | Run an auth/account staging smoke and remaining-backend checkpoint: verify the wired auth/session/account boundary against the backend bridge/proxy docs, decide whether Google sign-in/link is ready or deferred, and keep profile/verification/availability/appointment wiring queued behind this shared base | M | **NEXT** |
+| 52.18 | Run an auth/account staging smoke and remaining-backend checkpoint: verify the wired auth/session/account boundary against the backend bridge/proxy docs, decide whether Google sign-in/link is ready or deferred, and keep profile/verification/availability/appointment wiring queued behind this shared base | M | **DONE** |
+| 52.19 | Define the profile and public professional wiring contract: map patient self profile, professional self profile, and public verified professional listing into Flutter repository/screen boundaries before runtime wiring; keep verification upload, admin dashboard, availability, appointment lifecycle, payments, notifications, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -174,13 +175,15 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.17)
+## Manual test (last completed: task 52.18)
 
-Task `52.17` is a decision/map slice. It records the already-completed backend surfaces, current frontend wiring status, remaining frontend wiring estimate, and the next integration lane in `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md`. No runtime code changed.
+Task `52.18` is a staging checkpoint slice. It records developer-private Cloud Run Proxy evidence, confirms the Flutter API config key, records backend readiness status, and defers Google UI plus verification upload until their providers/config are ready. No runtime Flutter code changed.
 
-1. Confirm `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md` exists and lists auth/account, professional/profile/verification, public professionals, availability, appointment lifecycle, admin verification, and staging access separately
-2. Confirm phone/OTP, MFA, payments, notifications, reviews, calls, calendar sync, medical notes, prescriptions, admin dashboard behavior, public staging access, and production readiness remain non-claims/deferred
-3. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.18`
+1. Confirm `AUTH_ACCOUNT_STAGING_CHECKPOINT.md` records proxy access through `http://127.0.0.1:8080`
+2. Confirm `/health` and `/health/ready` evidence is documented without secrets
+3. Confirm Google remains deferred because readiness reports `googleAuth: disabled`
+4. Confirm verification upload remains deferred because readiness reports `verificationStorage: disabled`
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.19`
 
 ## Previous runtime manual test baseline
 
@@ -494,6 +497,7 @@ Task `52.17` is a decision/map slice. It records the already-completed backend s
 | 2026-07-14 | 52.15 | DONE - password reset and email verification token-confirm contract defined from backend bridge docs before runtime wiring |
 | 2026-07-14 | 52.16 | DONE - reset and email verification token-confirm routes wired from the confirmed backend contract; production app-link setup remains deferred |
 | 2026-07-14 | 52.17 | DONE - completed backend surface wiring map added; next lane selected as auth/account staging smoke and remaining-backend checkpoint before broader profile/verification/availability/appointment wiring |
+| 2026-07-14 | 52.18 | DONE - auth/account staging checkpoint recorded developer-private proxy health/readiness evidence; Google and verification upload stay deferred; next lane is profile/public professional contract |
 
 ---
 

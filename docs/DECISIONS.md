@@ -86,6 +86,7 @@ does not silently reinterpret established boundaries.
 | D079 | 2026-07-14 | Manage Profile professional self read | Wire Manage Profile to `ProfileRepository.professionalMe` for professional self-profile read only. Replace only `displayName`, `category`, `specialty`, and `bio`; keep safe loading/error/empty states; leave profile mutations, patient profile UI, public listing UI, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions deferred | Phase 22, task 52.25 |
 | D080 | 2026-07-14 | First safe profile mutation UI | Select existing professional bio update from `addDescription` as the first safe profile mutation path. The next implementation must read an existing professional profile, preserve required `displayName` and `category` plus existing `specialty`, update only `bio`, and keep profile creation, name/category/specialty editing, website, address, patient profile, public listing, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions deferred | Phase 22, task 52.26 |
 | D081 | 2026-07-14 | Professional bio update wiring | Wire `addDescription` to update only the current professional profile `bio` after reading an existing professional profile. The update preserves existing `displayName`, `category`, and `specialty`; safe loading/error/empty states are shown; profile creation and wider profile/public-professional work remain deferred | Phase 22, task 52.27 |
+| D082 | 2026-07-14 | Next profile public listing lane | Select public verified professional listing into `SearchShellPage` as the next runtime lane. Replace only list-card name/category/specialty/bio data through `ProfileRepository.publicProfessionals`; keep public detail, Find Mentor, Specialist Details, availability, appointments, booking, reviews, ratings, prices, payments, calls, calendar sync, verification, patient profile, profile creation, and profile edit expansion deferred | Phase 22, task 52.28 |
 
 ## How to add a row
 
@@ -298,3 +299,19 @@ non-creation, and safe save-error messaging.
 
 Next: 52.28 should decide the next profile/public-professional runtime lane
 before any further runtime wiring.
+
+## D082 - Next profile public listing lane
+
+Task: 52.28
+
+Decision: Use `PROFILE_PUBLIC_LISTING_NEXT_LANE_DECISION.md` as the source of
+truth for the next runtime lane. The next implementation should wire
+`ProfileRepository.publicProfessionals` into `SearchShellPage` list cards only.
+
+Reason: Public verified professional listing is already supported by the
+repository and backend route, and it maps cleanly to public list fields:
+`displayName`, `category`, `specialty`, and `bio`. The current Find Mentor and
+Specialist Details surfaces include availability, booking, ratings, prices, and
+detail data that are not provided by the public listing contract.
+
+Next: 52.29 should wire public verified professional listing to Search only.

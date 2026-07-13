@@ -3,13 +3,12 @@
 Owner task: `52.20`
 
 Status: Accepted prerequisites; staging backend readiness enabled in task
-`52.21`
+`52.21`; Flutter sign-in provider wiring completed in task `52.22`
 
 Purpose: collect the exact Google OAuth prerequisites for `com.carenet.app`
 before enabling Google sign-in UI.
 
-This slice does not wire the Google button and does not claim backend Google
-readiness.
+This setup record distinguishes provider readiness from production readiness.
 
 ## Current staging status
 
@@ -36,9 +35,11 @@ public-app-base-url
 resend-api-key
 ```
 
-Task `52.21` added the Android debug OAuth client ID to backend staging as
+Task `52.21` added the first Google OAuth client ID to backend staging as
 `GOOGLE_OAUTH_CLIENT_ID` through Secret Manager and redeployed Cloud Run.
-Readiness now reports `googleAuth: ok`.
+Task `52.22` then corrected the staging backend and Flutter app to use the Web
+OAuth client ID required by `google_sign_in` server-client ID configuration.
+Readiness reports `googleAuth: ok`.
 
 Latest verified readiness excerpt:
 
@@ -102,9 +103,8 @@ Minimum staging/client setup:
 1. Android OAuth client for package `com.carenet.app` with the debug SHA-1
    above.
 2. iOS OAuth client for bundle ID `com.carenet.app`.
-3. A backend-accepted Google OAuth client ID configured as
-   `GOOGLE_OAUTH_CLIENT_ID` in staging. Done for the Android debug client in
-   task `52.21`.
+3. A backend-accepted Web OAuth client ID configured as
+   `GOOGLE_OAUTH_CLIENT_ID` in staging. Updated in task `52.22`.
 4. Flutter frontend provider config that can obtain a Google ID token for the
    same accepted audience.
 
@@ -133,44 +133,54 @@ Platform, or provide a supported API/script path in a future setup slice.
 ## Flutter package decision
 
 Use the maintained `google_sign_in` Flutter plugin for Google ID-token
-acquisition, but do not add it until OAuth client IDs/config are available.
+acquisition. Task `52.22` added the package and introduced
+`GOOGLE_SIGN_IN_SERVER_CLIENT_ID` as the Flutter compile-time config key.
 
 Reason:
 
-- adding the package without client IDs would not make the button work
-- tests would have to mock success without provider proof
-- backend readiness would still report `googleAuth: disabled`
+- `google_sign_in` v7 initializes with `serverClientId` for backend-verifiable
+  ID tokens
+- the value is a client ID, not a client secret, but should still stay
+  environment-specific rather than hardcoded into app source
+- if `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` is missing, the Flutter sign-in Google
+  rows stay disabled instead of faking success
 
 ## Next slice
 
-Completed follow-up:
+Completed follow-ups:
 
 `52.21 - Add Google OAuth Client IDs To Staging`
 
 Result:
 
-- Android debug OAuth client ID was provided out-of-band and stored in
-  Secret Manager as `google-oauth-client-id`
-- Cloud Run revision `carenet-backend-staging-00006-ph6` serves 100 percent
-  of traffic
+- initial Google OAuth client ID was provided out-of-band and stored in Secret
+  Manager as `google-oauth-client-id`
 - `/health/ready` through Cloud Run Proxy reports `googleAuth: ok`
-
-Next queue:
 
 `52.22 - Wire Flutter Google Sign-In Provider`
 
-Goal:
+Result:
 
-- add the Flutter Google sign-in provider package/config
-- obtain a Google ID token from the real provider
-- call the existing `AuthRepository.googleSignIn` backend boundary
-- keep Google link/unlink, phone/OTP, MFA, production OAuth, and release
-  signing out of scope
+- Web OAuth client ID was provided out-of-band through the downloaded client
+  config file; the client secret was not committed or recorded
+- Secret Manager version 3 now carries the Web OAuth client ID
+- Cloud Run revision `carenet-backend-staging-00008-5m9` serves 100 percent of
+  traffic
+- Flutter sign-in phone/email Google rows call `AuthRepository.googleSignIn`
+  after obtaining a real Google ID token when
+  `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` is configured
+
+Next queue:
+
+`52.23 - Define Profile And Public Professional Wiring Contract`
 
 ## Non-claims
 
-This slice does not claim:
+This setup does not claim:
 
-- Google sign-in UI works
+- production Google sign-in works
+- Google sign-up role selection is defined
+- Google account link/unlink UI is wired
+- iOS Google sign-in is proven
 - release signing is ready
 - production OAuth consent/app verification is complete

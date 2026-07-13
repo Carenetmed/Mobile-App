@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
@@ -30,8 +31,14 @@ Future<void> _pumpWithRoutes(
             routes: {
               RouteName.dashboard:
                   (_) => const Scaffold(body: Text('dashboard')),
-              RouteName.signInPhone: (_) => const SignInPhone(),
-              RouteName.signInEmail: (_) => const SignInEmail(),
+              RouteName.signInPhone:
+                  (_) => SignInPhone(
+                    googleIdTokenProvider: _disabledGoogleProvider,
+                  ),
+              RouteName.signInEmail:
+                  (_) => SignInEmail(
+                    googleIdTokenProvider: _disabledGoogleProvider,
+                  ),
               RouteName.signUpPhone:
                   (_) => const Scaffold(body: Text('sign-up-phone')),
               RouteName.signUpEmail:
@@ -51,7 +58,10 @@ void main() {
         final repository = _FakeAuthRepository();
         await _pumpWithRoutes(
           tester,
-          home: SignInEmail(authRepository: repository),
+          home: SignInEmail(
+            authRepository: repository,
+            googleIdTokenProvider: _disabledGoogleProvider,
+          ),
         );
 
         await tester.tap(find.text('Continue'));
@@ -84,6 +94,7 @@ void main() {
               message: 'Backend is not configured yet.',
             ),
           ),
+          googleIdTokenProvider: _disabledGoogleProvider,
         ),
       );
 
@@ -105,6 +116,7 @@ void main() {
           tester,
           home: SignInEmail(
             authRepository: _FakeAuthRepository(completer: completer),
+            googleIdTokenProvider: _disabledGoogleProvider,
           ),
         );
 
@@ -124,10 +136,81 @@ void main() {
       },
     );
 
+    testWidgets(
+      'sign in email Google button authenticates with backend token',
+      (tester) async {
+        final repository = _FakeAuthRepository();
+        await _pumpWithRoutes(
+          tester,
+          home: SignInEmail(
+            authRepository: repository,
+            googleIdTokenProvider: _FakeGoogleIdTokenProvider(
+              idToken: 'id-token',
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Continue with Google'));
+        await tester.pumpAndSettle();
+
+        expect(repository.googleSignInCalls, 1);
+        expect(repository.lastGoogleIdToken, 'id-token');
+        expect(find.text('dashboard'), findsOneWidget);
+      },
+    );
+
+    testWidgets('sign in email Google button shows safe provider failure', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(
+          authRepository: _FakeAuthRepository(),
+          googleIdTokenProvider: _FakeGoogleIdTokenProvider(
+            failure: const AuthFailure(
+              type: AuthFailureType.validation,
+              message: 'Google sign-in was cancelled.',
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Google sign-in was cancelled.'), findsOneWidget);
+      expect(find.text('dashboard'), findsNothing);
+    });
+
+    testWidgets('sign in email Google button stays disabled without config', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository();
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(
+          authRepository: repository,
+          googleIdTokenProvider: _FakeGoogleIdTokenProvider(
+            isConfigured: false,
+            idToken: 'id-token',
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pumpAndSettle();
+
+      expect(repository.googleSignInCalls, 0);
+      expect(find.text('dashboard'), findsNothing);
+    });
+
     testWidgets('sign in phone validates fields before navigation', (
       tester,
     ) async {
-      await _pumpWithRoutes(tester, home: const SignInPhone());
+      await _pumpWithRoutes(
+        tester,
+        home: SignInPhone(googleIdTokenProvider: _disabledGoogleProvider),
+      );
 
       await tester.tap(find.text('Continue'));
       await tester.pump();
@@ -153,8 +236,33 @@ void main() {
       expect(find.text('dashboard'), findsOneWidget);
     });
 
+    testWidgets('sign in phone Google button uses backend Google sign-in', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository();
+      await _pumpWithRoutes(
+        tester,
+        home: SignInPhone(
+          authRepository: repository,
+          googleIdTokenProvider: _FakeGoogleIdTokenProvider(
+            idToken: 'phone-id',
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pumpAndSettle();
+
+      expect(repository.googleSignInCalls, 1);
+      expect(repository.lastGoogleIdToken, 'phone-id');
+      expect(find.text('dashboard'), findsOneWidget);
+    });
+
     testWidgets('sign in email routes to sign up email entry', (tester) async {
-      await _pumpWithRoutes(tester, home: const SignInEmail());
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(googleIdTokenProvider: _disabledGoogleProvider),
+      );
 
       await tester.tap(find.text('Don\'t have an account? Sign up'));
       await tester.pumpAndSettle();
@@ -163,7 +271,10 @@ void main() {
     });
 
     testWidgets('sign in phone routes to sign up phone entry', (tester) async {
-      await _pumpWithRoutes(tester, home: const SignInPhone());
+      await _pumpWithRoutes(
+        tester,
+        home: SignInPhone(googleIdTokenProvider: _disabledGoogleProvider),
+      );
 
       await tester.tap(find.text('Don\'t have an account? Sign up'));
       await tester.pumpAndSettle();
@@ -173,13 +284,17 @@ void main() {
   });
 }
 
+const _disabledGoogleProvider = _FakeGoogleIdTokenProvider(isConfigured: false);
+
 class _FakeAuthRepository implements AuthRepository {
   _FakeAuthRepository({this.failure, this.completer});
 
   final AuthFailure? failure;
   final Completer<AuthSession>? completer;
   int loginCalls = 0;
+  int googleSignInCalls = 0;
   String? lastEmail;
+  String? lastGoogleIdToken;
 
   @override
   Future<AuthSession> login({
@@ -200,7 +315,40 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<AuthSession> googleSignIn({required String idToken}) async {
+    googleSignInCalls += 1;
+    lastGoogleIdToken = idToken;
+    final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
+    return _session();
+  }
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeGoogleIdTokenProvider implements GoogleIdTokenProvider {
+  const _FakeGoogleIdTokenProvider({
+    this.isConfigured = true,
+    this.idToken,
+    this.failure,
+  });
+
+  @override
+  final bool isConfigured;
+  final String? idToken;
+  final AuthFailure? failure;
+
+  @override
+  Future<String> signInIdToken() async {
+    final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
+    return idToken ?? 'google-id-token';
+  }
 }
 
 AuthSession _session() {

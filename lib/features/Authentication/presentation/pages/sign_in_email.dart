@@ -7,6 +7,7 @@ import 'package:app_t/core/model/sign_in_model.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/shared/widgets/auth_widget.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
@@ -16,9 +17,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SignInEmail extends StatefulWidget {
-  const SignInEmail({super.key, this.authRepository});
+  const SignInEmail({
+    super.key,
+    this.authRepository,
+    this.googleIdTokenProvider,
+  });
 
   final AuthRepository? authRepository;
+  final GoogleIdTokenProvider? googleIdTokenProvider;
 
   @override
   State<SignInEmail> createState() => _SignInEmailState();
@@ -65,6 +71,9 @@ class _SignInEmailState extends State<SignInEmail> {
 
   AuthRepository get _authRepository =>
       widget.authRepository ?? sl<AuthRepository>();
+
+  GoogleIdTokenProvider get _googleIdTokenProvider =>
+      widget.googleIdTokenProvider ?? sl<GoogleIdTokenProvider>();
 
   CarenetTextFieldValidationState _validationStateFor(String? error) {
     if (!_attemptedSubmit) {
@@ -122,6 +131,42 @@ class _SignInEmailState extends State<SignInEmail> {
     }
   }
 
+  Future<void> _onGoogleSignIn() async {
+    setState(() {
+      _authError = null;
+      _isSubmitting = true;
+    });
+
+    try {
+      final idToken = await _googleIdTokenProvider.signInIdToken();
+      await _authRepository.googleSignIn(idToken: idToken);
+      if (!mounted) {
+        return;
+      }
+      Navigator.pushNamed(context, RouteName.dashboard);
+    } on AuthFailure catch (failure) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _authError = failure.message;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _authError = 'Google sign-in failed. Please try again.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final signInOptions = [
@@ -135,6 +180,10 @@ class _SignInEmailState extends State<SignInEmail> {
       AuthenticationModel(
         assetPath: AssetsIcon.google,
         title: 'Continue with Google',
+        btnAction:
+            _isSubmitting || !_googleIdTokenProvider.isConfigured
+                ? null
+                : _onGoogleSignIn,
       ),
       AuthenticationModel(
         assetPath: AssetsIcon.facebook,

@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.24** - add profile repository boundary before runtime screen wiring |
-| Last completed | **52.23** - profile/public professional wiring contract defined |
+| NEXT task | **52.25** - wire professional self profile read to Manage Profile |
+| Last completed | **52.24** - profile repository/API boundary added with focused tests |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -231,6 +231,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-14 | Task 52.21 DONE - enabled backend staging Google readiness through Secret Manager/Cloud Run and verified `googleAuth: ok`; DOC_SYNC NEXT -> 52.22 |
 | 2026-07-14 | Task 52.22 DONE - wired Flutter Google Sign-In provider and sign-in Google rows with safe config/error/loading behavior; DOC_SYNC NEXT -> 52.23 |
 | 2026-07-14 | Task 52.23 DONE - defined profile/public professional contract and queued repository boundary before screen wiring; DOC_SYNC NEXT -> 52.24 |
+| 2026-07-14 | Task 52.24 DONE - added profile repository/API boundary for patient self, professional self, and public professional listing; DOC_SYNC NEXT -> 52.25 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

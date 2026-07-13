@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-14 profile/public professional contract defined.
+**Last updated:** 2026-07-14 profile repository boundary added.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -78,6 +78,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Google OAuth prerequisites | `GOOGLE_SIGN_IN_SETUP_PREREQUISITES.md` records Android package `com.carenet.app`, iOS bundle `com.carenet.app`, local debug SHA-1/SHA-256 fingerprints, release fingerprint blocker, current staging `googleAuth: disabled`, and the need to configure backend `GOOGLE_OAUTH_CLIENT_ID` before Flutter Google UI wiring |
 | Google sign-in wiring | `google_sign_in` is added behind `GoogleIdTokenProvider`; sign-in phone/email Google rows are enabled only when `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` is configured, then call `AuthRepository.googleSignIn` with safe loading/error handling. Backend staging now uses the Web OAuth client ID in Cloud Run revision `carenet-backend-staging-00008-5m9`. Google sign-up, link/unlink, iOS proof, release signing, production OAuth, phone/OTP, MFA, and profile wiring remain deferred |
 | Profile/public professional contract | `PROFILE_PUBLIC_PROFESSIONAL_CONTRACT.md` defines the next backend-backed profile lane: patient self profile, professional self profile, and public verified professional listing. The next implementation should add a repository/API boundary only, then wire screens later. Verification upload, admin dashboard, availability, appointment lifecycle, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, and public professional detail remain deferred |
+| Profile repository boundary | `ProfileApiClient` and `ProfileRepository` now cover `GET/PUT /patients/me`, `GET/PUT /professionals/me`, and public `GET /professionals` behind safe models/entities and focused tests. Protected calls require a stored session and bearer headers; `404` self-profile reads become empty-profile states; public listing sends no auth header. No screens are wired yet |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
@@ -294,6 +295,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.21 test/analyze | Not needed beyond staging readiness evidence: backend/config checkpoint. Verified Cloud Run revision `carenet-backend-staging-00006-ph6` at 100 percent traffic and `/health/ready` through Cloud Run Proxy reports `googleAuth: ok` |
 | Focused task 52.22 test/analyze | Passed: `flutter test test/features/authentication/sign_in_flow_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on Google provider DI, sign-in pages, and sign-in tests reports no issues; `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=http://127.0.0.1:8080 --dart-define=GOOGLE_SIGN_IN_SERVER_CLIENT_ID=<web-client-id>` passes after transient Maven/DNS recovery |
 | Focused task 52.23 test/analyze | Not needed: contract-only docs slice. `git diff --check` covers changed docs; no runtime code changed |
+| Focused task 52.24 test/analyze | Passed: `flutter test test/features/home/profile_repository_test.dart`; focused `flutter analyze` on profile API client, repository, entities/models, DI, and test reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

@@ -75,6 +75,7 @@ does not silently reinterpret established boundaries.
 | D068 | 2026-07-14 | Next runtime target after checkpoint | User selected password reset confirmation and email verification confirmation as the next target; define the deep-link/code contract first, including route ownership, token/code source, backend request/response fields, expired-token behavior, current-account refresh, and out-of-scope items, before any runtime wiring | Phase 22, task 52.14 |
 | D069 | 2026-07-14 | Reset and verification token-confirm contract | Use the backend bridge contract for password reset and email verification confirmation: public confirm routes accept opaque `token` values, password reset confirm also sends `newPassword`, request routes return generic `{ "success": true }`, reset confirmation revokes refresh sessions and does not issue a new session, and email verification confirmation requires current-account refresh if the app still has a session. Tokens stay transient and are never persisted or logged; production app-link setup remains deferred | Phase 22, task 52.15 |
 | D070 | 2026-07-14 | Reset and verification token-confirm wiring | Wire `resetPasswordConfirm` and `emailVerificationConfirm` as token-confirm landing routes that require transient token arguments. Password reset confirmation sends backend `newPassword`, clears local session after success, and returns to sign-in. Email verification confirmation sends only `token` and refreshes current account state when a session is still available. Do not claim production app-link setup, phone OTP, social auth, MFA/PIN, or profile persistence from this slice | Phase 22, task 52.16 |
+| D071 | 2026-07-14 | Completed backend surface wiring order | Use `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md` to consume already-completed backend surfaces in a stable order: auth/account staging checkpoint first, then professional/profile/verification, then public professionals/availability, then appointment lifecycle. Do not start phone/OTP, MFA, production app links, payments, notifications, reviews, calls, calendar sync, prescriptions, medical notes, admin dashboard behavior, public staging access, or production-readiness work as the next runtime lane | Phase 22, task 52.17 |
 
 ## How to add a row
 
@@ -90,3 +91,23 @@ Example:
 
 When a decision is confirmed, move the answer into the table above and clear
 the open question.
+## D071 - Completed backend surface wiring order
+
+Task: 52.17
+
+Decision: After reset/password and email-verification token-confirm wiring, do
+not jump directly into phone/OTP, MFA, production app links, payments,
+notifications, reviews, calls, calendar sync, prescriptions, medical notes,
+admin dashboard behavior, public staging access, or production-readiness work.
+Use `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md` as the frontend map for consuming
+already-completed backend surfaces.
+
+Reason: The backend has completed more than auth, including professional/profile
+verification, public professional/availability surfaces, and appointment
+lifecycle routes. The frontend should consume them in a stable order rather than
+starting random screens. Auth/session/account and staging/proxy configuration
+remain the shared base for every protected route.
+
+Next: 52.18 should run an auth/account staging smoke and remaining-backend
+checkpoint, then queue broader professional/profile/verification,
+availability, and appointment wiring.

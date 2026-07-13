@@ -157,7 +157,8 @@
 | 52.14 | Decide the next frontend/backend runtime target after the checkpoint: define password reset/email verification deep-link contract, define phone OTP/MFA contract, pick another backend contract group, or pause frontend integration until backend contracts are ready | S | **DONE** |
 | 52.15 | Define the password reset and email verification deep-link/code contract before runtime wiring: route ownership, token/code source, backend request/response fields, expired-token behavior, current-account refresh, and explicit out-of-scope items | M | **DONE** |
 | 52.16 | Implement reset and email verification token-confirm route wiring from the confirmed backend contract, or stop if platform deep-link setup is required first | M | **DONE** |
-| 52.17 | Decide the next backend-integration lane after reset/verification token-confirm wiring: production app-link setup, phone OTP/MFA contract, auth/account regression checkpoint, another contract group, or pause | S | **NEXT** |
+| 52.17 | Decide the next backend-integration lane after reset/verification token-confirm wiring: production app-link setup, phone OTP/MFA contract, auth/account regression checkpoint, another contract group, or pause | S | **DONE** |
+| 52.18 | Run an auth/account staging smoke and remaining-backend checkpoint: verify the wired auth/session/account boundary against the backend bridge/proxy docs, decide whether Google sign-in/link is ready or deferred, and keep profile/verification/availability/appointment wiring queued behind this shared base | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -173,17 +174,13 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.16)
+## Manual test (last completed: task 52.17)
 
-Task `52.16` wires reset and email verification token-confirm routes from the confirmed backend contract. Production app-link setup is still deferred; these routes require a transient token argument from a future link/platform entry point or internal handoff.
+Task `52.17` is a decision/map slice. It records the already-completed backend surfaces, current frontend wiring status, remaining frontend wiring estimate, and the next integration lane in `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md`. No runtime code changed.
 
-1. `resetPasswordConfirm` with a token validates the new password, calls `AuthRepository.confirmPasswordReset`, clears local session through the repository, and returns to `signInEmail`
-2. `resetPasswordConfirm` without a token shows an invalid/missing reset-link state and does not call the backend
-3. `emailVerificationConfirm` with a token calls `AccountRepository.confirmEmailVerification`, then attempts current-account refresh
-4. `emailVerificationConfirm` without a token shows an invalid/missing verification-link state and does not call the backend
-5. Focused verification: `flutter test test/features/authentication/auth_infrastructure_test.dart test/features/authentication/password_recovery_flow_test.dart test/features/home/account_flow_test.dart`
-6. Focused analyze: `flutter analyze lib/core/constants/navigators/routeName.dart lib/core/constants/navigators/router.dart lib/features/Authentication/data/services/auth_api_client.dart lib/features/Authentication/data/repositories/auth_repository.dart lib/features/Authentication/presentation/pages/reset_password_confirm_page.dart lib/features/Authentication/presentation/pages/email_verification_confirm_page.dart test/features/authentication/auth_infrastructure_test.dart test/features/authentication/password_recovery_flow_test.dart test/features/home/account_flow_test.dart`
-7. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.17`
+1. Confirm `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md` exists and lists auth/account, professional/profile/verification, public professionals, availability, appointment lifecycle, admin verification, and staging access separately
+2. Confirm phone/OTP, MFA, payments, notifications, reviews, calls, calendar sync, medical notes, prescriptions, admin dashboard behavior, public staging access, and production readiness remain non-claims/deferred
+3. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.18`
 
 ## Previous runtime manual test baseline
 
@@ -496,6 +493,7 @@ Task `52.16` wires reset and email verification token-confirm routes from the co
 | 2026-07-14 | 52.14 | DONE - next runtime target selected: define password reset and email verification deep-link/code contract |
 | 2026-07-14 | 52.15 | DONE - password reset and email verification token-confirm contract defined from backend bridge docs before runtime wiring |
 | 2026-07-14 | 52.16 | DONE - reset and email verification token-confirm routes wired from the confirmed backend contract; production app-link setup remains deferred |
+| 2026-07-14 | 52.17 | DONE - completed backend surface wiring map added; next lane selected as auth/account staging smoke and remaining-backend checkpoint before broader profile/verification/availability/appointment wiring |
 
 ---
 

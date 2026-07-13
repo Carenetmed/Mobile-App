@@ -165,7 +165,8 @@
 | 52.22 | Wire Flutter Google Sign-In provider for the now-ready Android debug/staging backend path: add provider package/config, obtain a real Google ID token, call `AuthRepository.googleSignIn`, preserve safe errors/loading, and keep linking/unlinking, phone/OTP, MFA, production OAuth, release signing, and profile wiring out of scope | L | **DONE** |
 | 52.23 | Define the profile and public professional wiring contract: map patient self profile, professional self profile, and public verified professional listing into Flutter repository/screen boundaries before runtime wiring; keep verification upload, admin dashboard, availability, appointment lifecycle, payments, notifications, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **DONE** |
 | 52.24 | Add the profile repository boundary for patient self profile, professional self profile, and public verified professional listing: API client, entities, repository, and focused tests only; do not wire screens, verification upload, availability, appointments, public detail, payments, reviews, calls, calendar sync, notes, or prescriptions | M | **DONE** |
-| 52.25 | Wire professional self profile read to Manage Profile using `ProfileRepository.professionalMe`: show safe loading/error/empty-profile states and replace only matching allowed fields; keep profile mutations, patient profile, public listing, verification upload, availability, appointments, public detail, payments, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **NEXT** |
+| 52.25 | Wire professional self profile read to Manage Profile using `ProfileRepository.professionalMe`: show safe loading/error/empty-profile states and replace only matching allowed fields; keep profile mutations, patient profile, public listing, verification upload, availability, appointments, public detail, payments, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **DONE** |
+| 52.26 | Decide the first safe profile mutation UI slice after Manage Profile read wiring: choose a constrained professional self update path for only backend-allowed fields, or defer mutations until the edit screens are redesigned around the contract; do not implement runtime mutations in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -181,14 +182,14 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.24)
+## Manual test (last completed: task 52.25)
 
-Task `52.24` adds the profile repository/API boundary only. No screens were wired.
+Task `52.25` wires professional self-profile read into Manage Profile only. It does not save profile edits or wire patient profile, public listing, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, or prescriptions.
 
-1. `flutter test test/features/home/profile_repository_test.dart` - passes
-2. `flutter analyze lib/core/di/injection.dart lib/features/Home/data/models/patient_profile_model.dart lib/features/Home/data/models/professional_profile_model.dart lib/features/Home/data/models/public_professional_model.dart lib/features/Home/data/repositories/profile_repository.dart lib/features/Home/data/services/profile_api_client.dart lib/features/Home/domain/entities/patient_profile.dart lib/features/Home/domain/entities/professional_profile.dart lib/features/Home/domain/entities/public_professional.dart test/features/home/profile_repository_test.dart` - no issues
-3. Confirm protected self-profile calls use bearer auth, `404` self-read maps to empty profile, updates send only allowed fields, and public listing sends no auth header.
-4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.25`
+1. `flutter test test/features/home/manage_profile_flow_test.dart test/features/home/profile_repository_test.dart` - passes
+2. `flutter analyze lib/features/Home/presentation/pages/manage_profile_shell.dart test/features/home/manage_profile_flow_test.dart` - no issues
+3. Confirm Manage Profile reads `ProfileRepository.professionalMe`, replaces only `displayName`, `category`, `specialty`, and `bio`, and keeps local fallback/deferred controls for fields outside the backend profile contract.
+4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.26`
 
 ## Previous runtime manual test baseline
 
@@ -509,6 +510,7 @@ Task `52.24` adds the profile repository/API boundary only. No screens were wire
 | 2026-07-14 | 52.22 | DONE - Flutter Google provider wiring added for configured sign-in phone/email rows; backend staging now trusts the Web OAuth client ID; next lane is profile/public professional contract definition |
 | 2026-07-14 | 52.23 | DONE - profile/public professional contract defined; next lane is a repository boundary without screen wiring |
 | 2026-07-14 | 52.24 | DONE - profile repository/API boundary added with focused tests; next lane is professional self profile read wiring to Manage Profile |
+| 2026-07-14 | 52.25 | DONE - Manage Profile now reads professional self profile through `ProfileRepository.professionalMe`, with safe loading/error/empty states and only allowed field replacement |
 
 ---
 

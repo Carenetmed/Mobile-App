@@ -1,17 +1,95 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/presentation/state/public_profile_local_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class ManageProfileShellPage extends StatelessWidget {
-  const ManageProfileShellPage({super.key});
+class ManageProfileShellPage extends StatefulWidget {
+  const ManageProfileShellPage({super.key, this.profileRepository});
+
+  final ProfileRepository? profileRepository;
+
+  @override
+  State<ManageProfileShellPage> createState() => _ManageProfileShellPageState();
+}
+
+class _ManageProfileShellPageState extends State<ManageProfileShellPage> {
+  ProfessionalProfile? _professionalProfile;
+  bool _isLoadingProfile = true;
+  String? _profileError;
+  bool _profileLoadCompleted = false;
+
+  ProfileRepository get _profileRepository =>
+      widget.profileRepository ?? sl<ProfileRepository>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfessionalProfile();
+  }
+
+  Future<void> _loadProfessionalProfile() async {
+    setState(() {
+      _isLoadingProfile = true;
+      _profileError = null;
+    });
+
+    try {
+      final profile = await _profileRepository.professionalMe();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _professionalProfile = profile;
+        _profileLoadCompleted = true;
+      });
+    } on AuthFailure catch (failure) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _profileError = _safeProfileError(failure);
+        _profileLoadCompleted = true;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _profileError = 'Something went wrong. Please try again.';
+        _profileLoadCompleted = true;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingProfile = false;
+        });
+      }
+    }
+  }
+
+  String _safeProfileError(AuthFailure failure) {
+    return switch (failure.type) {
+      AuthFailureType.missingConfiguration => 'Backend is not configured yet.',
+      AuthFailureType.unauthorized => 'Please sign in again.',
+      AuthFailureType.validation => 'Please check the details and try again.',
+      AuthFailureType.server ||
+      AuthFailureType.network => 'Service is unavailable. Please try again.',
+      AuthFailureType.invalidCredentials ||
+      AuthFailureType.unknown => 'Something went wrong. Please try again.',
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     const profile = PublicProfileLocalStore.profile;
+    final professional = _professionalProfile;
 
     return Scaffold(
       backgroundColor: AppColors.kWhite,
@@ -38,7 +116,17 @@ class ManageProfileShellPage extends StatelessWidget {
         child: ListView(
           padding: REdgeInsets.fromLTRB(16.w, 12.h, 16.w, 28.h),
           children: [
-            const _ProfileHeader(profile: profile),
+            _ProfileHeader(profile: profile, professional: professional),
+            SizedBox(height: 16.h),
+            _ProfileReadStateBanner(
+              isLoading: _isLoadingProfile,
+              error: _profileError,
+              isEmpty:
+                  _profileLoadCompleted &&
+                  !_isLoadingProfile &&
+                  _profileError == null &&
+                  professional == null,
+            ),
             SizedBox(height: 16.h),
             _ManageActions(
               onEditBasic:
@@ -49,6 +137,7 @@ class ManageProfileShellPage extends StatelessWidget {
             SizedBox(height: 16.h),
             _BasicSection(
               profile: profile,
+              professional: professional,
               onEditAddress:
                   () => Navigator.pushNamed(context, RouteName.setAddress),
               onEditWebsite:
@@ -57,6 +146,7 @@ class ManageProfileShellPage extends StatelessWidget {
             SizedBox(height: 16.h),
             _AboutSection(
               profile: profile,
+              professional: professional,
               onEdit:
                   () => Navigator.pushNamed(context, RouteName.addDescription),
             ),
@@ -76,12 +166,24 @@ class ManageProfileShellPage extends StatelessWidget {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader({required this.profile});
+  const _ProfileHeader({required this.profile, required this.professional});
 
   final PublicProfileContent profile;
+  final ProfessionalProfile? professional;
 
   @override
   Widget build(BuildContext context) {
+    final displayName = professional?.displayName.trim();
+    final category = professional?.category.trim();
+    final title =
+        displayName == null || displayName.isEmpty
+            ? 'Old People Circle'
+            : displayName;
+    final subtitle =
+        category == null || category.isEmpty
+            ? 'Circle - ${profile.rating} - 120 members - ${profile.memberSince}'
+            : category;
+
     return Container(
       width: double.infinity,
       padding: REdgeInsets.all(18.r),
@@ -97,7 +199,7 @@ class _ProfileHeader extends StatelessWidget {
             radius: 34.r,
             backgroundColor: AppColors.primaryBlue5,
             child: Text(
-              profile.name.characters.first,
+              title.characters.first,
               style: TextStyle(
                 fontSize: FontSizes.body2,
                 fontFamily: AppFonts.montserrat,
@@ -111,7 +213,7 @@ class _ProfileHeader extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Old People Circle',
+                  title,
                   style: TextStyle(
                     fontSize: FontSizes.body2,
                     fontFamily: AppFonts.montserrat,
@@ -125,7 +227,7 @@ class _ProfileHeader extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            'Circle - ${profile.rating} - 120 members - ${profile.memberSince}',
+            subtitle,
             style: TextStyle(
               fontSize: FontSizes.footer4,
               fontFamily: AppFonts.montserrat,
@@ -134,6 +236,51 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ProfileReadStateBanner extends StatelessWidget {
+  const _ProfileReadStateBanner({
+    required this.isLoading,
+    required this.error,
+    required this.isEmpty,
+  });
+
+  final bool isLoading;
+  final String? error;
+  final bool isEmpty;
+
+  @override
+  Widget build(BuildContext context) {
+    final message =
+        isLoading
+            ? 'Loading professional profile...'
+            : error ??
+                (isEmpty
+                    ? 'Professional profile has not been created yet.'
+                    : null);
+    if (message == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: REdgeInsets.all(12.r),
+      decoration: BoxDecoration(
+        color: AppColors.blue02,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.white04),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          fontSize: FontSizes.footer4,
+          fontFamily: AppFonts.montserrat,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primaryBlue5,
+        ),
       ),
     );
   }
@@ -260,28 +407,49 @@ class _Section extends StatelessWidget {
 class _BasicSection extends StatelessWidget {
   const _BasicSection({
     required this.profile,
+    required this.professional,
     required this.onEditAddress,
     required this.onEditWebsite,
   });
 
   final PublicProfileContent profile;
+  final ProfessionalProfile? professional;
   final VoidCallback onEditAddress;
   final VoidCallback onEditWebsite;
 
   @override
   Widget build(BuildContext context) {
+    final displayName = professional?.displayName.trim();
+    final category = professional?.category.trim();
+    final specialty = professional?.specialty?.trim();
+
     return _Section(
       title: 'Basic',
       actionLabel: 'Edit address',
       onAction: onEditAddress,
       child: Column(
         children: [
-          _InfoRow(label: 'Personal name', value: 'Dr. ${profile.name}'),
-          const _InfoRow(
-            label: 'Business name',
-            value: 'Lagbaja Eye Clinic & Consulting firm',
+          _InfoRow(
+            label: 'Personal name',
+            value:
+                displayName == null || displayName.isEmpty
+                    ? 'Dr. ${profile.name}'
+                    : displayName,
           ),
-          _InfoRow(label: 'Category', value: profile.role),
+          _InfoRow(
+            label: 'Business name',
+            value:
+                displayName == null || displayName.isEmpty
+                    ? 'Lagbaja Eye Clinic & Consulting firm'
+                    : displayName,
+          ),
+          _InfoRow(
+            label: 'Category',
+            value:
+                category == null || category.isEmpty ? profile.role : category,
+          ),
+          if (specialty != null && specialty.isNotEmpty)
+            _InfoRow(label: 'Specialty', value: specialty),
           _InfoRow(label: 'Contact Address', value: profile.address),
           _InfoRow(label: 'Website', value: profile.website),
           _InlineActionRow(label: 'Edit website', onPressed: onEditWebsite),
@@ -294,19 +462,26 @@ class _BasicSection extends StatelessWidget {
 }
 
 class _AboutSection extends StatelessWidget {
-  const _AboutSection({required this.profile, required this.onEdit});
+  const _AboutSection({
+    required this.profile,
+    required this.professional,
+    required this.onEdit,
+  });
 
   final PublicProfileContent profile;
+  final ProfessionalProfile? professional;
   final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
+    final bio = professional?.bio?.trim();
+
     return _Section(
       title: 'About',
       actionLabel: 'Edit description',
       onAction: onEdit,
       child: Text(
-        profile.about,
+        bio == null || bio.isEmpty ? profile.about : bio,
         style: TextStyle(
           fontSize: FontSizes.footer3,
           fontFamily: AppFonts.montserrat,

@@ -3,8 +3,10 @@ import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Home/presentation/state/account_local_store.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
@@ -12,9 +14,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AccountShellPage extends StatefulWidget {
-  const AccountShellPage({super.key, this.authRepository});
+  const AccountShellPage({
+    super.key,
+    this.authRepository,
+    this.accountRepository,
+  });
 
   final AuthRepository? authRepository;
+  final AccountRepository? accountRepository;
 
   @override
   State<AccountShellPage> createState() => _AccountShellPageState();
@@ -22,10 +29,53 @@ class AccountShellPage extends StatefulWidget {
 
 class _AccountShellPageState extends State<AccountShellPage> {
   bool _isLoggingOut = false;
+  bool _isLoadingCurrentAccount = true;
   String? _logoutError;
+  String? _currentAccountError;
+  AuthUser? _currentAccount;
 
   AuthRepository get _authRepository =>
       widget.authRepository ?? sl<AuthRepository>();
+  AccountRepository get _accountRepository =>
+      widget.accountRepository ?? sl<AccountRepository>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentAccount();
+  }
+
+  Future<void> _loadCurrentAccount() async {
+    if (widget.accountRepository == null &&
+        !sl.isRegistered<AccountRepository>()) {
+      setState(() {
+        _isLoadingCurrentAccount = false;
+      });
+      return;
+    }
+
+    try {
+      final account = await _accountRepository.currentAccount();
+      if (!mounted) return;
+      setState(() {
+        _currentAccount = account;
+        _currentAccountError = null;
+        _isLoadingCurrentAccount = false;
+      });
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _currentAccountError = failure.message;
+        _isLoadingCurrentAccount = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _currentAccountError = 'Could not load account details.';
+        _isLoadingCurrentAccount = false;
+      });
+    }
+  }
 
   Future<void> _logout() async {
     setState(() {
@@ -81,9 +131,37 @@ class _AccountShellPageState extends State<AccountShellPage> {
         child: ValueListenableBuilder<AccountProfileSnapshot>(
           valueListenable: AccountLocalStore.snapshot,
           builder: (context, snapshot, _) {
+            final accountEmail = _currentAccount?.email ?? snapshot.email;
+            final authenticationLabel =
+                _isLoadingCurrentAccount
+                    ? 'Loading account session...'
+                    : _currentAccount == null
+                    ? snapshot.authenticationLabel
+                    : '${_currentAccount!.role} account - ${_currentAccount!.status.toLowerCase()}';
             return ListView(
               padding: REdgeInsets.all(16.r),
               children: [
+                if (_currentAccountError != null) ...[
+                  Container(
+                    margin: REdgeInsets.only(bottom: 16.h),
+                    padding: REdgeInsets.all(14.r),
+                    decoration: BoxDecoration(
+                      color: AppColors.blue02,
+                      borderRadius: BorderRadius.circular(12.r),
+                      border: Border.all(color: AppColors.white04),
+                    ),
+                    child: Text(
+                      _currentAccountError!,
+                      style: TextStyle(
+                        fontSize: FontSizes.footer3,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.primaryBlue5,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
                 if (snapshot.deactivationNotice != null) ...[
                   Container(
                     margin: REdgeInsets.only(bottom: 16.h),
@@ -108,7 +186,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
                 _AccountTile(
                   icon: Icons.lock_outline,
                   title: 'Authentication',
-                  subtitle: snapshot.authenticationLabel,
+                  subtitle: authenticationLabel,
                   onTap: () {
                     Navigator.pushNamed(
                       context,
@@ -127,7 +205,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
                 _AccountTile(
                   icon: Icons.mail_outline,
                   title: 'Email address',
-                  subtitle: snapshot.email,
+                  subtitle: accountEmail,
                   onTap: () {
                     Navigator.pushNamed(context, RouteName.addEmail);
                   },

@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.7** - define and wire current-account read boundary without account mutation expansion |
-| Last completed | **52.6** - password reset request wired; reset confirmation blocked until secure token/deep-link boundary exists |
+| NEXT task | **52.8** - wire email verification request/confirmation boundary without fake token success |
+| Last completed | **52.7** - current-account read wired for safe Account display fields only |
 | Registered routes | **68 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -214,6 +214,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-13 | Task 52.4 DONE - splash now restores stored sessions through `AuthRepository.restore` and routes usable sessions to dashboard while missing/invalid restore falls back to onboarding; DOC_SYNC NEXT -> 52.5 |
 | 2026-07-13 | Task 52.5 DONE - Account logout now calls `AuthRepository.logout`, clears navigation to onboarding on success, and keeps delete/security/password flows deferred; DOC_SYNC NEXT -> 52.6 |
 | 2026-07-13 | Task 52.6 DONE - password reset request now calls `AuthRepository.requestPasswordReset`; confirmation stops before fake success until a secure token/deep-link boundary exists; DOC_SYNC NEXT -> 52.7 |
+| 2026-07-13 | Task 52.7 DONE - Account now reads `AccountRepository.currentAccount` for safe email/status display while keeping profile edits, deletion, and security mutations local/deferred; DOC_SYNC NEXT -> 52.8 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

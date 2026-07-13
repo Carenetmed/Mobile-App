@@ -1,7 +1,9 @@
 import 'package:app_t/core/constants/navigators/router.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/state/account_local_store.dart';
@@ -33,6 +35,7 @@ Future<void> _pumpDashboard(WidgetTester tester) async {
 Future<void> _pumpAccount(
   WidgetTester tester, {
   required _FakeAuthRepository repository,
+  _FakeAccountRepository? accountRepository,
 }) async {
   AccountLocalStore.reset();
   tester.view.physicalSize = _phoneSize;
@@ -44,7 +47,10 @@ Future<void> _pumpAccount(
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
-            home: AccountShellPage(authRepository: repository),
+            home: AccountShellPage(
+              authRepository: repository,
+              accountRepository: accountRepository,
+            ),
             routes: <String, WidgetBuilder>{
               RouteName.onboarding:
                   (_) => const Scaffold(body: Text('onboarding')),
@@ -81,6 +87,51 @@ void main() {
     expect(repository.logoutCalls, 1);
     expect(find.text('onboarding'), findsOneWidget);
     expect(find.text('Account'), findsNothing);
+  });
+
+  testWidgets('account displays backend current account when available', (
+    tester,
+  ) async {
+    final repository = _FakeAccountRepository(
+      user: const AuthUser(
+        id: 'user-1',
+        email: 'backend-patient@carenet.app',
+        role: 'PATIENT',
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
+    );
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: repository,
+    );
+
+    expect(repository.currentAccountCalls, 1);
+    expect(find.text('backend-patient@carenet.app'), findsOneWidget);
+    expect(find.text('PATIENT account - active'), findsOneWidget);
+    expect(find.text('doctor@carenet.app'), findsNothing);
+  });
+
+  testWidgets('account read failure keeps local account display', (
+    tester,
+  ) async {
+    final repository = _FakeAccountRepository(
+      failure: const AuthFailure(
+        type: AuthFailureType.unauthorized,
+        message: 'Please sign in again.',
+      ),
+    );
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: repository,
+    );
+
+    expect(repository.currentAccountCalls, 1);
+    expect(find.text('Please sign in again.'), findsOneWidget);
+    expect(find.text('doctor@carenet.app'), findsOneWidget);
+    expect(find.text('Email + phone login is active'), findsOneWidget);
   });
 
   testWidgets('logout failure shows safe error without navigation', (
@@ -642,6 +693,34 @@ class _FakeAuthRepository implements AuthRepository {
     if (failure != null) {
       throw failure;
     }
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeAccountRepository implements AccountRepository {
+  _FakeAccountRepository({this.user, this.failure});
+
+  final AuthUser? user;
+  final AuthFailure? failure;
+  int currentAccountCalls = 0;
+
+  @override
+  Future<AuthUser> currentAccount() async {
+    currentAccountCalls += 1;
+    final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
+    return user ??
+        const AuthUser(
+          id: 'user-1',
+          email: 'backend-user@carenet.app',
+          role: 'PATIENT',
+          status: 'ACTIVE',
+          emailVerified: false,
+        );
   }
 
   @override

@@ -147,7 +147,8 @@
 | 52.4 | Add session restore/app launch guard: restore stored auth session through `AuthRepository`, route authenticated users to dashboard, route missing/invalid sessions to onboarding/auth, and keep refresh/staging smoke separate if not fully scoped | M | **DONE** |
 | 52.5 | Add a real logout/session-clear action from the authenticated app shell: call `AuthRepository.logout`, clear stored session, return to onboarding/auth, and keep destructive account deletion, MFA, phone, and password-reset flows deferred | M | **DONE** |
 | 52.6 | Wire password reset screens to the auth repository boundary: request reset from email entry, confirm reset from password entry only if the existing flow can pass the required token honestly; otherwise document the missing token/email-link boundary and stop before fake reset success | M | **DONE** |
-| 52.7 | Define and wire the current-account read boundary for the Account shell: use `AccountRepository.currentAccount` only where it can safely replace local account display, keep profile editing/deletion/security mutations deferred, and document any remaining local profile seams | M | **NEXT** |
+| 52.7 | Define and wire the current-account read boundary for the Account shell: use `AccountRepository.currentAccount` only where it can safely replace local account display, keep profile editing/deletion/security mutations deferred, and document any remaining local profile seams | M | **DONE** |
+| 52.8 | Wire the email verification request/confirmation boundary only where token handling is honest: allow requesting verification for the current account if session-backed, but do not fake confirmation without a secure token/deep-link or code-entry path | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -163,19 +164,18 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.6)
+## Manual test (last completed: task 52.7)
 
-Task `52.6` wires password reset request to the auth repository and stops before fake reset confirmation. The app still needs a secure reset-token/deep-link boundary before final password change can call `confirmPasswordReset`.
+Task `52.7` wires current-account read to the Account shell only for safe display fields. Local profile editing, delete/deactivate, phone/email drafts, password, MFA/PIN, and security mutations remain separate local/deferred seams.
 
-1. `flutter test test/features/authentication/password_recovery_flow_test.dart test/features/authentication/auth_infrastructure_test.dart` - passes
-2. `flutter analyze lib/features/Authentication/presentation/pages/enter_email.dart lib/features/Authentication/presentation/pages/enter_password.dart test/features/authentication/password_recovery_flow_test.dart` - no issues
-3. Confirm forgot-password email entry calls `AuthRepository.requestPasswordReset` after local email validation
-4. Confirm backend/config failures show a safe error and do not navigate to password entry
-5. Confirm request pending state disables the continue action and shows `Sending reset link...`
-6. Confirm password-entry validation still checks password and confirmation fields
-7. Confirm valid password fields do not navigate to sign-in or claim success without a reset token
-8. Confirm the missing secure reset-token/deep-link boundary is documented
-9. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.7`
+1. `flutter test test/features/home/account_flow_test.dart` - passes
+2. `flutter analyze lib/features/Home/presentation/pages/account_shell.dart test/features/home/account_flow_test.dart` - no issues
+3. Confirm Account calls `AccountRepository.currentAccount` when the repository is registered/injected
+4. Confirm successful current-account read replaces safe display fields: account email and authentication status label
+5. Confirm read failure shows a safe message and keeps the local account display
+6. Confirm Settings/Profile editing remains local and does not call account mutation APIs
+7. Confirm delete/deactivate/security/phone/password/MFA flows remain unchanged/deferred
+8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.8`
 
 ## Previous runtime manual test baseline
 

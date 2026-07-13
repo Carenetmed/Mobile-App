@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-13 email sign-up backend-boundary wiring slice.
+**Last updated:** 2026-07-13 session restore launch guard slice.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -21,7 +21,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 |------|---------|
 | App entry | `lib/main.dart` -> `CarenetApp` in `lib/app.dart` |
 | Start screen | `RouteName.splash` (not notifications) |
-| Splash -> onboarding | 800ms then `pushReplacementNamed` |
+| Splash -> session guard | 800ms then `AuthRepository.restore()` routes usable stored sessions to `dashboard`; missing, invalid, or failed restore falls back to `onboarding` |
 | Named routes | **68 wired routes** in `router.dart` plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Onboarding UI | 3 pages, skip, next, get started -> sign up phone |
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
@@ -259,6 +259,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.1 test/analyze | Passed: `flutter test test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on the auth config/client/session/model/repository files and auth infrastructure test reports no issues |
 | Focused task 52.2 test/analyze | Passed: `flutter test test/features/authentication/sign_in_flow_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on email sign-in, auth repository/failure, and sign-in tests reports no issues |
 | Focused task 52.3 test/analyze | Passed: `flutter test test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on email sign-up, finish sign-up, router, and sign-up tests reports no issues |
+| Focused task 52.4 test/analyze | Passed: `flutter test test/features/authentication/session_restore_guard_test.dart test/features/authentication/sign_in_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/auth_infrastructure_test.dart`; focused `flutter analyze` on splash guard, session restore test, and auth repository reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

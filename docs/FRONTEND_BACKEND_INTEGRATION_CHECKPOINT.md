@@ -101,19 +101,17 @@ contracts are explicit.
 
 Do not start runtime wiring from this checkpoint.
 
-Recommended next slice:
+Selected next path:
 
 ```text
-52.14 - Decide the next frontend/backend runtime target after checkpoint
+52.15 - Define password reset and email verification deep-link/code contract
 ```
 
-Options:
+The user selected option 1 from task `52.14`: define the password reset and
+email verification deep-link/code contract. Do not wire runtime behavior until
+that contract is recorded.
 
-1. Define password reset/email verification deep-link contract.
-2. Define phone OTP/MFA contract.
-3. Pick another backend contract group from `DEFERRED_WORK.md`.
-4. Pause frontend integration and wait for backend contract completion.
-
-The safest next runtime path is password reset/email verification only after the
-deep-link/code contract is explicit.
+The contract must define route ownership, token/code source, backend request and
+response fields, expired-token behavior, current-account refresh after
+verification, and explicit out-of-scope items.
 

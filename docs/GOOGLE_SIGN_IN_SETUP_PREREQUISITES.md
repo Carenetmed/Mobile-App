@@ -2,7 +2,8 @@
 
 Owner task: `52.20`
 
-Status: Accepted prerequisites
+Status: Accepted prerequisites; staging backend readiness enabled in task
+`52.21`
 
 Purpose: collect the exact Google OAuth prerequisites for `com.carenet.app`
 before enabling Google sign-in UI.
@@ -35,8 +36,21 @@ public-app-base-url
 resend-api-key
 ```
 
-There is no `GOOGLE_OAUTH_CLIENT_ID` secret/config currently present in the
-staging project evidence.
+Task `52.21` added the Android debug OAuth client ID to backend staging as
+`GOOGLE_OAUTH_CLIENT_ID` through Secret Manager and redeployed Cloud Run.
+Readiness now reports `googleAuth: ok`.
+
+Latest verified readiness excerpt:
+
+```json
+{
+  "providers": {
+    "email": "ok",
+    "googleAuth": "ok",
+    "verificationStorage": "disabled"
+  }
+}
+```
 
 ## App identifiers
 
@@ -89,7 +103,8 @@ Minimum staging/client setup:
    above.
 2. iOS OAuth client for bundle ID `com.carenet.app`.
 3. A backend-accepted Google OAuth client ID configured as
-   `GOOGLE_OAUTH_CLIENT_ID` in staging.
+   `GOOGLE_OAUTH_CLIENT_ID` in staging. Done for the Android debug client in
+   task `52.21`.
 4. Flutter frontend provider config that can obtain a Google ID token for the
    same accepted audience.
 
@@ -128,24 +143,34 @@ Reason:
 
 ## Next slice
 
-Queue:
+Completed follow-up:
 
 `52.21 - Add Google OAuth Client IDs To Staging`
 
+Result:
+
+- Android debug OAuth client ID was provided out-of-band and stored in
+  Secret Manager as `google-oauth-client-id`
+- Cloud Run revision `carenet-backend-staging-00006-ph6` serves 100 percent
+  of traffic
+- `/health/ready` through Cloud Run Proxy reports `googleAuth: ok`
+
+Next queue:
+
+`52.22 - Wire Flutter Google Sign-In Provider`
+
 Goal:
 
-- create or collect OAuth client IDs for `com.carenet.app`
-- configure backend staging `GOOGLE_OAUTH_CLIENT_ID` without committing secrets
-- verify `/health/ready` reports `googleAuth: ok`
-- only then add Flutter Google provider package/config and wire UI in a later
-  runtime slice
+- add the Flutter Google sign-in provider package/config
+- obtain a Google ID token from the real provider
+- call the existing `AuthRepository.googleSignIn` backend boundary
+- keep Google link/unlink, phone/OTP, MFA, production OAuth, and release
+  signing out of scope
 
 ## Non-claims
 
 This slice does not claim:
 
-- Google OAuth clients exist
-- backend Google readiness is enabled
 - Google sign-in UI works
 - release signing is ready
 - production OAuth consent/app verification is complete

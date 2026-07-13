@@ -3,10 +3,11 @@ import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/model/sign_in_model.dart';
+import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
-import 'package:app_t/features/Authentication/presentation/widget/bordered_keyboard_input.dart';
-import 'package:app_t/shared/widgets/app_button.dart';
 import 'package:app_t/shared/widgets/auth_widget.dart';
+import 'package:app_t/shared/widgets/carenet_button.dart';
+import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,10 +20,65 @@ class SignInEmail extends StatefulWidget {
 }
 
 class _SignInEmailState extends State<SignInEmail> {
+  late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
+  bool _attemptedSubmit = false;
   bool _visiblePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+    _emailController.addListener(_handleInputChanged);
+    _passwordController.addListener(_handleInputChanged);
+  }
+
+  @override
+  void dispose() {
+    _emailController.removeListener(_handleInputChanged);
+    _passwordController.removeListener(_handleInputChanged);
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _handleInputChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  String? get _emailError => Validators.validateEmail(_emailController.text);
+
+  String? get _passwordError => Validators.validateRequiredField(
+    _passwordController.text,
+    fieldName: 'Password',
+  );
+
+  CarenetTextFieldValidationState _validationStateFor(String? error) {
+    if (!_attemptedSubmit) {
+      return CarenetTextFieldValidationState.none;
+    }
+
+    return error == null
+        ? CarenetTextFieldValidationState.valid
+        : CarenetTextFieldValidationState.invalid;
+  }
+
+  void _onContinue() {
+    setState(() {
+      _attemptedSubmit = true;
+    });
+
+    if (_emailError == null && _passwordError == null) {
+      Navigator.pushNamed(context, RouteName.dashboard);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<AuthenticationModel> _signUp = [
+    final signInOptions = [
       AuthenticationModel(
         assetPath: AssetsIcon.phone,
         title: 'Continue with Phone',
@@ -30,12 +86,18 @@ class _SignInEmailState extends State<SignInEmail> {
           Navigator.pushNamed(context, RouteName.signInPhone);
         },
       ),
-      AuthenticationModel(assetPath: AssetsIcon.google, title: 'Continue with Google'),
+      AuthenticationModel(
+        assetPath: AssetsIcon.google,
+        title: 'Continue with Google',
+      ),
       AuthenticationModel(
         assetPath: AssetsIcon.facebook,
         title: 'Continue with Facebook',
       ),
-      AuthenticationModel(assetPath: AssetsIcon.apple, title: 'Continue with Apple'),
+      AuthenticationModel(
+        assetPath: AssetsIcon.apple,
+        title: 'Continue with Apple',
+      ),
     ];
 
     return Scaffold(
@@ -58,14 +120,21 @@ class _SignInEmailState extends State<SignInEmail> {
                 ),
               ),
               SizedBox(height: .05.sh),
-              TextInput(
+              CarenetTextField(
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 hintText: 'Email',
+                validationState: _validationStateFor(_emailError),
+                errorText: _emailError,
               ),
-              SizedBox(height: 15.h,),
-              TextInput(
+              SizedBox(height: 15.h),
+              CarenetTextField(
+                controller: _passwordController,
                 keyboardType: TextInputType.visiblePassword,
                 hintText: 'Password',
+                obscureText: _visiblePassword,
+                validationState: _validationStateFor(_passwordError),
+                errorText: _passwordError,
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
@@ -73,16 +142,32 @@ class _SignInEmailState extends State<SignInEmail> {
                     });
                   },
                   icon:
-                  _visiblePassword
-                      ? SvgImage(imgName: AssetsIcon.visible)
-                      : Icon(Icons.visibility_off),
+                      _visiblePassword
+                          ? SvgImage(imgName: AssetsIcon.visible)
+                          : const Icon(Icons.visibility_off),
                 ),
               ),
-
+              SizedBox(height: 15.h),
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, RouteName.enterEmail);
+                  },
+                  child: Text(
+                    'Forgot Password?',
+                    style: TextStyle(
+                      fontSize: FontSizes.footer2,
+                      fontFamily: AppFonts.montserrat,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.primaryBlue5,
+                    ),
+                  ),
+                ),
+              ),
               SizedBox(height: .03.sh),
-              CarenetButtonFilled(btnAction: () {}, btnName: 'Continue'),
+              CarenetButton(label: 'Continue', onPressed: _onContinue),
               RPadding(
-                padding: REdgeInsets.only(top: 15.h,bottom:  .05.sh),
+                padding: REdgeInsets.only(top: 15.h, bottom: .05.sh),
                 child: Center(
                   child: Text(
                     'Other sign in options',
@@ -109,26 +194,27 @@ class _SignInEmailState extends State<SignInEmail> {
                   ),
                 ),
               ),
-              SizedBox(height: .03.sh,),
+              SizedBox(height: .03.sh),
               SizedBox(
                 height: .27.sh,
                 child: ListView.builder(
-                  itemCount: _signUp.length,
+                  itemCount: signInOptions.length,
                   itemBuilder: (context, index) {
                     return AuthWidget(
-                      btnAction: _signUp[index].btnAction,
-                      assetPath: _signUp[index].assetPath,
-                      title: _signUp[index].title,
+                      btnAction: signInOptions[index].btnAction,
+                      assetPath: signInOptions[index].assetPath,
+                      title: signInOptions[index].title,
                     );
                   },
                 ),
               ),
               SizedBox(height: .045.sh),
-              CarenetButtonOutline(
-                btnAction: () {
+              CarenetButton(
+                label: 'Don\'t have an account? Sign up',
+                onPressed: () {
                   Navigator.pushNamed(context, RouteName.signUpEmail);
                 },
-                btnName: 'Don\'t have an account? Sign up',
+                type: CarenetButtonType.outline,
               ),
             ],
           ),

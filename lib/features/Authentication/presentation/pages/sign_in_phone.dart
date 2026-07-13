@@ -3,10 +3,11 @@ import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/model/sign_in_model.dart';
+import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
-import 'package:app_t/features/Authentication/presentation/widget/bordered_keyboard_input.dart';
-import 'package:app_t/shared/widgets/app_button.dart';
 import 'package:app_t/shared/widgets/auth_widget.dart';
+import 'package:app_t/shared/widgets/carenet_button.dart';
+import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,10 +20,78 @@ class SignInPhone extends StatefulWidget {
 }
 
 class _SignInPhoneState extends State<SignInPhone> {
+  late final TextEditingController _countryController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _passwordController;
+  bool _attemptedSubmit = false;
   bool _visiblePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _countryController = TextEditingController();
+    _phoneController = TextEditingController();
+    _passwordController = TextEditingController();
+    _countryController.addListener(_handleInputChanged);
+    _phoneController.addListener(_handleInputChanged);
+    _passwordController.addListener(_handleInputChanged);
+  }
+
+  @override
+  void dispose() {
+    _countryController.removeListener(_handleInputChanged);
+    _phoneController.removeListener(_handleInputChanged);
+    _passwordController.removeListener(_handleInputChanged);
+    _countryController.dispose();
+    _phoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _handleInputChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  String? get _countryError => Validators.validateRequiredField(
+    _countryController.text,
+    fieldName: 'Country/Region',
+  );
+
+  String? get _phoneError => Validators.validatePhone(_phoneController.text);
+
+  String? get _passwordError => Validators.validateRequiredField(
+    _passwordController.text,
+    fieldName: 'Password',
+  );
+
+  bool get _canContinue =>
+      _countryError == null && _phoneError == null && _passwordError == null;
+
+  CarenetTextFieldValidationState _validationStateFor(String? error) {
+    if (!_attemptedSubmit) {
+      return CarenetTextFieldValidationState.none;
+    }
+
+    return error == null
+        ? CarenetTextFieldValidationState.valid
+        : CarenetTextFieldValidationState.invalid;
+  }
+
+  void _onContinue() {
+    setState(() {
+      _attemptedSubmit = true;
+    });
+
+    if (_canContinue) {
+      Navigator.pushNamed(context, RouteName.dashboard);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final List<AuthenticationModel> _signUp = [
+    final signInOptions = [
       AuthenticationModel(
         assetPath: AssetsIcon.mail,
         title: 'Continue with Email',
@@ -30,18 +99,24 @@ class _SignInPhoneState extends State<SignInPhone> {
           Navigator.pushNamed(context, RouteName.signInEmail);
         },
       ),
-      AuthenticationModel(assetPath: AssetsIcon.google, title: 'Continue with Google'),
+      AuthenticationModel(
+        assetPath: AssetsIcon.google,
+        title: 'Continue with Google',
+      ),
       AuthenticationModel(
         assetPath: AssetsIcon.facebook,
         title: 'Continue with Facebook',
       ),
-      AuthenticationModel(assetPath: AssetsIcon.apple, title: 'Continue with Apple'),
+      AuthenticationModel(
+        assetPath: AssetsIcon.apple,
+        title: 'Continue with Apple',
+      ),
     ];
 
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           padding: REdgeInsets.only(left: 15.w, right: 15.w, top: .04.sh),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,18 +134,32 @@ class _SignInPhoneState extends State<SignInPhone> {
                 ),
               ),
               SizedBox(height: .05.sh),
-              BorderedTextInput(
-                keyboardType2: TextInputType.phone,
-                hintText1: 'Country/Region',
-                hintText2: 'Phone Number',
-                suffixIcon1: GestureDetector(
-                    onTap: (){},
-                    child: Icon(Icons.keyboard_arrow_down_rounded, size: 35.sp,)),
+              CarenetTextField(
+                controller: _countryController,
+                hintText: 'Country/Region',
+                validationState: _validationStateFor(_countryError),
+                errorText: _countryError,
+                suffixIcon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 24.sp,
+                ),
               ),
-              SizedBox(height: 15.h,),
-              TextInput(
+              SizedBox(height: 15.h),
+              CarenetTextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                hintText: 'Phone Number',
+                validationState: _validationStateFor(_phoneError),
+                errorText: _phoneError,
+              ),
+              SizedBox(height: 15.h),
+              CarenetTextField(
+                controller: _passwordController,
                 keyboardType: TextInputType.visiblePassword,
                 hintText: 'Password',
+                obscureText: _visiblePassword,
+                validationState: _validationStateFor(_passwordError),
+                errorText: _passwordError,
                 suffixIcon: IconButton(
                   onPressed: () {
                     setState(() {
@@ -78,15 +167,17 @@ class _SignInPhoneState extends State<SignInPhone> {
                     });
                   },
                   icon:
-                  _visiblePassword
-                      ? SvgImage(imgName: AssetsIcon.visible)
-                      : Icon(Icons.visibility_off),
+                      _visiblePassword
+                          ? SvgImage(imgName: AssetsIcon.visible)
+                          : const Icon(Icons.visibility_off),
                 ),
               ),
               SizedBox(height: 15.h),
               Center(
                 child: GestureDetector(
-                  onTap: (){},
+                  onTap: () {
+                    Navigator.pushNamed(context, RouteName.enterEmail);
+                  },
                   child: Text(
                     'Forgot Password?',
                     style: TextStyle(
@@ -99,7 +190,7 @@ class _SignInPhoneState extends State<SignInPhone> {
                 ),
               ),
               SizedBox(height: .03.sh),
-              CarenetButtonFilled(btnAction: () {}, btnName: 'Continue'),
+              CarenetButton(label: 'Continue', onPressed: _onContinue),
               Center(
                 child: Padding(
                   padding: REdgeInsets.symmetric(vertical: .03.sh),
@@ -117,22 +208,23 @@ class _SignInPhoneState extends State<SignInPhone> {
               SizedBox(
                 height: .27.sh,
                 child: ListView.builder(
-                  itemCount: _signUp.length,
+                  itemCount: signInOptions.length,
                   itemBuilder: (context, index) {
                     return AuthWidget(
-                      btnAction: _signUp[index].btnAction,
-                      assetPath: _signUp[index].assetPath,
-                      title: _signUp[index].title,
+                      btnAction: signInOptions[index].btnAction,
+                      assetPath: signInOptions[index].assetPath,
+                      title: signInOptions[index].title,
                     );
                   },
                 ),
               ),
               SizedBox(height: .045.sh),
-              CarenetButtonOutline(
-                btnAction: () {
+              CarenetButton(
+                label: 'Don\'t have an account? Sign up',
+                onPressed: () {
                   Navigator.pushNamed(context, RouteName.signUpPhone);
                 },
-                btnName: 'Don\'t have an account? Sign up',
+                type: CarenetButtonType.outline,
               ),
             ],
           ),

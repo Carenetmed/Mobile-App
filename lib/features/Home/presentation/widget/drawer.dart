@@ -2,13 +2,14 @@ import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/model/drawer_item_model.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Home/presentation/widget/icon_listile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CarenetDraw extends StatelessWidget {
-  CarenetDraw({super.key});
+  const CarenetDraw({super.key});
 
   final String user = 'Dr. Lagbaja Tamedu';
   final int following = 22;
@@ -16,20 +17,27 @@ class CarenetDraw extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<DrawerItem> drawerItems = [
+    final drawerItems = <DrawerItem>[
       DrawerItem(
         label: 'Dashboard',
         assetPath: AssetsIcon.home,
-        actButton: null,
+        actButton: () => Navigator.of(context).pop(),
       ),
-      DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
+      DrawerItem(
+        label: 'Profile',
+        assetPath: AssetsIcon.personOutline,
+        actButton: () {
+          Navigator.of(context).pop();
+          Navigator.pushNamed(context, RouteName.account);
+        },
+      ),
       DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
       DrawerItem(
         label: 'Reminders',
         assetPath: AssetsIcon.clock,
         actButton: () {
           Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(RouteName.reminders);
+          Navigator.pushNamed(context, RouteName.reminder);
         },
       ),
       DrawerItem(
@@ -37,11 +45,18 @@ class CarenetDraw extends StatelessWidget {
         assetPath: AssetsIcon.calendar,
         actButton: () {
           Navigator.of(context).pop();
-          Navigator.of(context).pushNamed(RouteName.schedule);
+          Navigator.pushNamed(context, RouteName.schedules);
         },
       ),
-      DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
-      DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
+      DrawerItem(
+        label: 'Providers',
+        assetPath: AssetsIcon.umbrellaOutline,
+        actButton: () {
+          Navigator.of(context).pop();
+          Navigator.pushNamed(context, RouteName.findMentor);
+        },
+      ),
+      DrawerItem(label: 'Switch to professional', assetPath: AssetsIcon.trophy),
       DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
       DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
       DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
@@ -60,8 +75,9 @@ class CarenetDraw extends StatelessWidget {
               children: [
                 Image.asset(AssetsImages.firePlace),
                 IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.info_outline, size: 13),
+                  tooltip: 'Profile information unavailable',
+                  onPressed: null,
+                  icon: Icon(Icons.info_outline, size: 13),
                 ),
               ],
             ),
@@ -74,6 +90,9 @@ class CarenetDraw extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            // SizedBox(
+            //   height: 3.h,
+            // ),
             Text(
               'Resident Doctor at LUTH',
               style: TextStyle(
@@ -84,7 +103,9 @@ class CarenetDraw extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8.h),
-            Row(
+            Wrap(
+              spacing: 20.w,
+              runSpacing: 8.h,
               children: [
                 RichText(
                   text: TextSpan(
@@ -110,7 +131,6 @@ class CarenetDraw extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(width: 20.w),
                 RichText(
                   text: TextSpan(
                     children: [
@@ -138,7 +158,10 @@ class CarenetDraw extends StatelessWidget {
               ],
             ),
             RPadding(
-              padding: REdgeInsets.only(top: 16.h),
+              padding: REdgeInsets.only(
+                top: 16.h,
+                // bottom: .01.sh
+              ),
               child: Divider(thickness: 1, color: AppColors.kPink),
             ),
             SizedBox(height: 25.h),
@@ -146,23 +169,14 @@ class CarenetDraw extends StatelessWidget {
               height: .45.sh,
               child: ListView.builder(
                 padding: EdgeInsets.zero,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: drawerItems.length,
                 // clipBehavior: Clip.hardEdge,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: _drawerItems(context).length,
+                itemCount: drawerItems.length,
                 itemBuilder: (context, index) {
-                  final item = _drawerItems(context)[index];
                   return IconListile(
                     btnAction: drawerItems[index].actButton,
                     assetPath: drawerItems[index].assetPath,
                     label: drawerItems[index].label,
-                    btnAction: item.actButton,
-                    assetPath: item.assetPath,
-                    label: item.label,
-                    btnAction: item.$3,
-                    assetPath: item.$2,
-                    label: item.$1,
                   );
                 },
               ),
@@ -171,10 +185,6 @@ class CarenetDraw extends StatelessWidget {
             IconListile(
               label: 'Settings & Privacy',
               assetPath: AssetsIcon.settings,
-              btnAction: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pushNamed(RouteName.settings);
-              },
             ),
             IconListile(label: 'Rate the App', assetPath: AssetsIcon.star),
             IconListile(label: 'Need help?', assetPath: AssetsIcon.help),
@@ -185,44 +195,4 @@ class CarenetDraw extends StatelessWidget {
       ),
     );
   }
-
-  List<DrawerItem> _drawerItems(BuildContext context) => [
-    DrawerItem(label: 'Dashboard', assetPath: AssetsIcon.home, actButton: null),
-    DrawerItem(label: 'Profile', assetPath: AssetsIcon.personOutline),
-    DrawerItem(label: 'Readings', assetPath: AssetsIcon.content),
-    DrawerItem(
-      label: 'Reminders',
-      assetPath: AssetsIcon.clock,
-      actButton: () {
-        Navigator.of(context).pop();
-        Navigator.of(context).pushNamed(RouteName.reminders);
-      },
-    ),
-    DrawerItem(label: 'Schedule', assetPath: AssetsIcon.calendar),
-    DrawerItem(label: 'provider', assetPath: AssetsIcon.umbrella_outline),
-    DrawerItem(label: 'Premium', assetPath: AssetsIcon.trophy),
-    DrawerItem(label: 'Articles', assetPath: AssetsIcon.notepad),
-    DrawerItem(label: 'Messages', assetPath: AssetsIcon.mail),
-    DrawerItem(label: 'Events', assetPath: AssetsIcon.mic),
-  ];
-  List<(String, String, void Function()?)> _drawerItems(BuildContext context) =>
-      [
-        ('Dashboard', AssetsIcon.home, null),
-        ('Profile', AssetsIcon.personOutline, null),
-        (
-          'Readings',
-          AssetsIcon.content,
-          () {
-            Navigator.of(context).pop();
-            Navigator.of(context).pushNamed(RouteName.readings);
-          },
-        ),
-        ('Reminders', AssetsIcon.clock, null),
-        ('Schedule', AssetsIcon.calendar, null),
-        ('provider', AssetsIcon.umbrella_outline, null),
-        ('Premium', AssetsIcon.trophy, null),
-        ('Articles', AssetsIcon.notepad, null),
-        ('Messages', AssetsIcon.mail, null),
-        ('Events', AssetsIcon.mic, null),
-      ];
 }

@@ -1,8 +1,10 @@
 import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
+import 'package:app_t/features/Home/presentation/pages/home_articles_tab.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Home/presentation/pages/feed_tab.dart';
+import 'package:app_t/features/Home/presentation/pages/home_messages_tab.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -41,33 +43,34 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Scaffold.of(context).openDrawer();
+                Builder(
+                  builder: (context) {
+                    return GestureDetector(
+                      onTap: () => Scaffold.of(context).openDrawer(),
+                      child: CircleAvatar(
+                        backgroundColor: Colors.transparent,
+                        radius: 15,
+                        child: Image(
+                          image: AssetImage(AssetsImages.profileHandle),
+                        ),
+                      ),
+                    );
                   },
-                  child: CircleAvatar(
-                    backgroundColor: Colors.transparent,
-                    radius: 15,
-                    child: Image(image: AssetImage(AssetsImages.profileHandle)),
-                  ),
                 ),
                 SvgImage(imgName: AssetsImages.appLogoBlack),
-                InkWell(
-                  onTap: () {},
-                  child: Container(
-                    padding: REdgeInsets.all(5.5),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryBlue5,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      'Upgrade',
-                      style: TextStyle(
-                        fontFamily: AppFonts.montserrat,
-                        color: AppColors.white01,
-                        fontWeight: FontWeight.w500,
-                        fontSize: FontSizes.footer3,
-                      ),
+                Container(
+                  padding: REdgeInsets.all(5.5),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue5,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    'Upgrade',
+                    style: TextStyle(
+                      fontFamily: AppFonts.montserrat,
+                      color: AppColors.white01,
+                      fontWeight: FontWeight.w500,
+                      fontSize: FontSizes.footer3,
                     ),
                   ),
                 ),
@@ -100,7 +103,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             Expanded(
               child: TabBarView(
                 controller: _controller,
-                children: [FeedTab(), Placeholder(), Placeholder()],
+                children: [
+                  FeedTab(),
+                  const HomeMessagesTab(),
+                  const HomeArticlesTab(),
+                ],
               ),
             ),
           ],

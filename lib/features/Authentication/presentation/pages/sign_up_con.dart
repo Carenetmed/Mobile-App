@@ -49,7 +49,6 @@ class _FinSignUpState extends State<FinSignUp> {
     _emailController.dispose();
     _dateController.dispose();
     _confirmPasswordController.dispose();
-    _formKey.currentState?.dispose();
     super.dispose();
   }
 
@@ -67,7 +66,9 @@ class _FinSignUpState extends State<FinSignUp> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).maybePop();
+                    },
                     icon: const Icon(Icons.arrow_back_ios),
                   ),
                   const Spacer(),
@@ -116,20 +117,21 @@ class _FinSignUpState extends State<FinSignUp> {
                       suffixIcon1: Icon(Icons.keyboard_arrow_down_rounded),
                       controller1: _dateController,
                       controller2: _emailController,
+                      validator1: Validators.validateBirthday,
                       validator2: Validators.validateEmail,
                       suffixIcon2: SizedBox(),
                       readOnly1: true,
                       onTap1: () async {
-                        DateTime? _picker = await showDatePicker(
+                        final picker = await showDatePicker(
                           context: context,
                           initialDate: DateTime.now(),
                           firstDate: DateTime(2000),
                           lastDate: DateTime(3000),
                         );
-                        if (_picker != null) {
+                        if (picker != null) {
                           setState(() {
                             _dateController.text =
-                                _picker.toString().split(' ')[0];
+                                picker.toString().split(' ')[0];
                           });
                         }
                       },
@@ -154,7 +156,11 @@ class _FinSignUpState extends State<FinSignUp> {
                       controller1: _passwordController,
                       controller2: _confirmPasswordController,
                       validator1: Validators.validatePassword,
-                      validator2: Validators.validateConfirmPassword,
+                      validator2:
+                          (value) => Validators.validateConfirmPassword(
+                            value,
+                            password: _passwordController.text,
+                          ),
                       hintText1: 'Password',
                       hintText2: 'Confirm password',
                       suffixIcon1: IconButton(
@@ -242,12 +248,11 @@ class _FinSignUpState extends State<FinSignUp> {
               SizedBox(height: 5.h),
               CarenetButtonFilled(
                 btnAction: () {
-                  Navigator.of(
-                    context,
-                  ).popAndPushNamed(RouteName.communityAgreement);
-                  // if (_formKey.currentState!.validate()){
-                  //   Navigator.of(context).popAndPushNamed(RouteName.communityAgreement);
-                  // }
+                  if (_formKey.currentState!.validate()) {
+                    Navigator.of(
+                      context,
+                    ).popAndPushNamed(RouteName.communityAgreement);
+                  }
                 },
                 btnName: ' Agree & continue',
               ),

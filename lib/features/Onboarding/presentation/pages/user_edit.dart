@@ -13,7 +13,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UserEdit extends StatefulWidget {
-  UserEdit({super.key});
+  const UserEdit({super.key});
 
   @override
   State<UserEdit> createState() => _UserEditState();
@@ -114,7 +114,11 @@ class _UserEditState extends State<UserEdit> {
                     ),
                   ),
                   OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(
+                        context,
+                      ).pushReplacementNamed(RouteName.dashboard);
+                    },
                     style: OutlinedButton.styleFrom(
                       padding: REdgeInsets.all(4),
                       shape: RoundedRectangleBorder(
@@ -135,7 +139,7 @@ class _UserEditState extends State<UserEdit> {
                 ],
               ),
               SizedBox(height: 16.h),
-              Container(
+              SizedBox(
                 height: .3.sh,
                 child: Stack(
                   children: [
@@ -243,19 +247,19 @@ class _UserEditState extends State<UserEdit> {
               ),
               SizedBox(height: 5.h),
               BorderedListile(
-                btnAction1: () {},
+                btnAction1: null,
                 title1: 'My interests',
                 subtitle1: 'Add interests',
-                btnAction2: () {},
+                btnAction2: null,
                 title2: 'My speciality',
                 subtitle2: 'Add speciality',
               ),
               SizedBox(height: 6.h),
               BorderedListile(
-                btnAction1: () {},
+                btnAction1: null,
                 title1: 'Bio',
                 subtitle1: 'Write a short story about you',
-                btnAction2: () {},
+                btnAction2: null,
                 title2: 'Level of experience',
                 subtitle2: 'Add speciality',
               ),
@@ -271,7 +275,9 @@ class _UserEditState extends State<UserEdit> {
               SizedBox(height: 5.h),
               CarenetButtonOutline(
                 btnAction: () {
-                  // Navigator.of(context).pushReplacementNamed(RouteName.dashboard);
+                  Navigator.of(
+                    context,
+                  ).pushReplacementNamed(RouteName.dashboard);
                 },
                 btnName: 'No,skip',
               ),

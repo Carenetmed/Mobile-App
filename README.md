@@ -1,96 +1,74 @@
-# 🩺 Carenet
+# Carenet
 
-Carenet is a digital health platform designed to connect patients with licensed health practitioners and grant access to reliable healthcare systems. It streamlines patient–doctor interactions, appointment scheduling, and medical data management—all in one unified platform.
+Carenet is a cross-platform Flutter application for healthcare discovery,
+appointments, health readings, professional profiles, communities, content,
+messaging, reminders, and account management.
 
----
+## Current Status
 
-## 🚀 Features
+The repository currently contains the frontend-ready application surface:
 
-- 📱 Connect with licensed health practitioners
-- 🏥 Book appointments with hospitals and clinics
-- 🧾 Maintain and access medical records securely
-- 🔔 Get reminders for medications and check-ups
-- 📊 Monitor and track personal health metrics
+- Shared Flutter code for Android and iOS.
+- Named-route navigation and documented user flows.
+- Reusable design tokens, buttons, and text fields.
+- Local validation and honest local state for frontend-only workflows.
+- Disabled or documented controls where real backend contracts are required.
+- Widget and flow tests for key user journeys.
 
----
+The Android debug build is verified during milestone checks. iOS remains a
+supported Flutter target but must be built and tested on macOS with Xcode.
 
-## 🧱 Project Architecture
+Real authentication, account persistence, server-backed health records,
+appointments, messaging, notifications, payments, media, and other remote
+features are not represented as completed backend behavior.
 
-This project follows the **Clean Architecture** pattern for improved scalability, modularity, and testability.
+## Architecture
 
-### 🧭 Layered Structure
-
-- **Presentation Layer**  
-  UI components, view models, and state management.
-
-- **Domain Layer**  
-  Core business logic, use cases, and entities.
-
-- **Data Layer**  
-  Network services, repositories, and data models.
-
-- **Shared Layer** *(optional)*  
-  Common themes, constants, utilities, and resources.
-
-### 📁 Sample Folder Structure
-
+```text
 lib/
-├── core/
-├── features/
-│   ├── authentication/
-│   │   ├── data/
-│   │   ├── domain/
-│   │   └── presentation/
-│   └── ...
-├── shared/
-└── main.dart
+  core/       app-wide routing, services, tokens, models, and configuration
+  features/   feature-owned presentation, state, data, and domain code
+  shared/     reusable widgets
+  app.dart    MaterialApp ownership
+  main.dart   single application entry point
+```
 
+The current implementation uses named routes and feature-local state. Backend
+integration should replace local stores through repository boundaries without
+rewriting completed screens or route flows.
 
----
+## Development
 
-## 🌿 Branching Strategy
+Prerequisites:
 
-To maintain a clean and stable repository, we follow these rules:
-
-### `main` Branch
-- The **stable** and **production-ready** branch.
-- No direct commits—only pull requests (PRs) after peer review and successful testing.
-
-### Developer Feature Branches
-- Each developer must work on their **own branch**, using this naming format:
-- Branch name <feature name>
-- All feature development, testing, and debugging must occur here.
-
-### Pull Request Guidelines
-- Once a feature is complete, submit a **PR to the `main` branch**.
-- Ensure your branch is **up to date** with `main` before submitting.
-- All PRs must:
-- Be reviewed by at least one other contributor.
-- Pass all tests.
-- Contain meaningful commit messages.
-- Once merged, branch must be replaced by next feature
-
----
-
-## 🛠️ Tech Stack
-
-- **Flutter**: `>=3.27.0`
-- **Dart**
-- **BLOC State Management**
-- **REST API** (for external integrations)
-
----
-
-## 🧪 Testing
-
-Carenet uses layered testing for each part of the architecture:
-
-### ✅ What to Test
-- **Unit tests** for domain logic (use cases, entities)
-- **Widget tests** for UI
-- **Integration tests** for external service interaction
-
-### 🧪 Run Tests
+- Flutter stable with a Dart SDK compatible with `pubspec.yaml`
+- Android Studio/Android SDK for Android builds
+- macOS and Xcode for iOS builds
 
 ```bash
+flutter pub get
+flutter analyze
 flutter test
+flutter build apk --debug
+```
+
+## Project Documentation
+
+The durable engineering references are:
+
+- [Architecture rules](docs/ARCHITECTURE_RULES.md)
+- [Route inventory](docs/ROUTES.md)
+- [User-flow map](docs/FLOW_MAP.md)
+- [Product and technical decisions](docs/DECISIONS.md)
+- [Deferred backend and product work](docs/DEFERRED_WORK.md)
+
+## Contribution Workflow
+
+1. Create a focused feature or milestone branch.
+2. Complete one documented task at a time.
+3. Run relevant tests, analysis, and build checks.
+4. Update the companion documentation.
+5. Open a pull request into `main` for review.
+
+Do not commit API secrets, signing keys, provider credentials, generated build
+output, or local project archives.

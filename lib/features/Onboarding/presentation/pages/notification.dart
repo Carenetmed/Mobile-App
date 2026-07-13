@@ -84,7 +84,12 @@ class NotificationScreen extends StatelessWidget {
                   btnName: 'Yes, notify me',
                 ),
                 SizedBox(height: 5.h),
-                CarenetButtonOutline(btnAction: () {}, btnName: 'Skip'),
+                CarenetButtonOutline(
+                  btnAction: () {
+                    Navigator.of(context).pushNamed(RouteName.medicalAgreement);
+                  },
+                  btnName: 'Skip',
+                ),
               ],
             ),
           ),

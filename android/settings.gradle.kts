@@ -10,8 +10,10 @@ pluginManagement {
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
 
     repositories {
-        google()
-        mavenCentral()
+        // Google Maven mirror (workaround for SSL download issues against dl.google.com).
+        maven(url = "https://maven.aliyun.com/repository/google")
+        // Maven Central mirror (workaround for SSL "Tag mismatch" errors on repo.maven.apache.org).
+        maven(url = "https://maven.aliyun.com/repository/central")
         gradlePluginPortal()
     }
 }
@@ -19,7 +21,7 @@ pluginManagement {
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("com.android.application") version "8.7.0" apply false
-    id("org.jetbrains.kotlin.android") version "1.8.22" apply false
+    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
 }
 
 include(":app")

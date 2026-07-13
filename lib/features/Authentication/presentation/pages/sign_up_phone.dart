@@ -3,19 +3,82 @@ import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/model/sign_in_model.dart';
+import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
-import 'package:app_t/features/Authentication/presentation/widget/bordered_keyboard_input.dart';
-import 'package:app_t/shared/widgets/app_button.dart';
 import 'package:app_t/shared/widgets/auth_widget.dart';
+import 'package:app_t/shared/widgets/carenet_button.dart';
+import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class SignUpPhone extends StatelessWidget {
-  SignUpPhone({super.key});
+class SignUpPhone extends StatefulWidget {
+  const SignUpPhone({super.key});
+
+  @override
+  State<SignUpPhone> createState() => _SignUpPhoneState();
+}
+
+class _SignUpPhoneState extends State<SignUpPhone> {
+  late final TextEditingController _countryController;
+  late final TextEditingController _phoneController;
+  bool _attemptedSubmit = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _countryController = TextEditingController();
+    _phoneController = TextEditingController();
+    _countryController.addListener(_handleInputChanged);
+    _phoneController.addListener(_handleInputChanged);
+  }
+
+  @override
+  void dispose() {
+    _countryController.removeListener(_handleInputChanged);
+    _phoneController.removeListener(_handleInputChanged);
+    _countryController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  void _handleInputChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  String? get _countryError => Validators.validateRequiredField(
+    _countryController.text,
+    fieldName: 'Country/Region',
+  );
+
+  String? get _phoneError => Validators.validatePhone(_phoneController.text);
+
+  bool get _canContinue => _countryError == null && _phoneError == null;
+
+  CarenetTextFieldValidationState _validationStateFor(String? error) {
+    if (!_attemptedSubmit) {
+      return CarenetTextFieldValidationState.none;
+    }
+
+    return error == null
+        ? CarenetTextFieldValidationState.valid
+        : CarenetTextFieldValidationState.invalid;
+  }
+
+  void _onContinue() {
+    setState(() {
+      _attemptedSubmit = true;
+    });
+
+    if (_canContinue) {
+      Navigator.pushNamed(context, RouteName.finishSignUp);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<AuthenticationModel> _signUp = [
+    final List<AuthenticationModel> signUp = [
       AuthenticationModel(
         assetPath: AssetsIcon.mail,
         title: 'Continue with Email',
@@ -23,18 +86,24 @@ class SignUpPhone extends StatelessWidget {
           Navigator.pushNamed(context, RouteName.signUpEmail);
         },
       ),
-      AuthenticationModel(assetPath: AssetsIcon.google, title: 'Continue with Google'),
+      AuthenticationModel(
+        assetPath: AssetsIcon.google,
+        title: 'Continue with Google',
+      ),
       AuthenticationModel(
         assetPath: AssetsIcon.facebook,
         title: 'Continue with Facebook',
       ),
-      AuthenticationModel(assetPath: AssetsIcon.apple, title: 'Continue with Apple'),
+      AuthenticationModel(
+        assetPath: AssetsIcon.apple,
+        title: 'Continue with Apple',
+      ),
     ];
 
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          physics: NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           padding: REdgeInsets.only(left: 15.w, right: 15.w, top: .04.sh),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,13 +121,23 @@ class SignUpPhone extends StatelessWidget {
                 ),
               ),
               SizedBox(height: .05.sh),
-              BorderedTextInput(
-                keyboardType2: TextInputType.phone,
-                hintText1: 'Country/Region',
-                hintText2: 'Phone Number',
-                suffixIcon1: GestureDetector(
-                    onTap: (){},
-                    child: Icon(Icons.keyboard_arrow_down_rounded, size: 35.sp,)),
+              CarenetTextField(
+                controller: _countryController,
+                hintText: 'Country/Region',
+                validationState: _validationStateFor(_countryError),
+                errorText: _countryError,
+                suffixIcon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 24.sp,
+                ),
+              ),
+              SizedBox(height: 15.h),
+              CarenetTextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                hintText: 'Phone Number',
+                validationState: _validationStateFor(_phoneError),
+                errorText: _phoneError,
               ),
               SizedBox(height: 15.h),
               Text(
@@ -71,7 +150,7 @@ class SignUpPhone extends StatelessWidget {
                 ),
               ),
               SizedBox(height: .05.sh),
-              CarenetButtonFilled(btnAction: () {}, btnName: 'Continue'),
+              CarenetButton(label: 'Continue', onPressed: _onContinue),
               Center(
                 child: Padding(
                   padding: REdgeInsets.symmetric(vertical: .06.sh),
@@ -89,20 +168,23 @@ class SignUpPhone extends StatelessWidget {
               SizedBox(
                 height: .27.sh,
                 child: ListView.builder(
-                  itemCount: _signUp.length,
+                  itemCount: signUp.length,
                   itemBuilder: (context, index) {
                     return AuthWidget(
-                      btnAction: _signUp[index].btnAction,
-                      assetPath: _signUp[index].assetPath,
-                      title: _signUp[index].title,
+                      btnAction: signUp[index].btnAction,
+                      assetPath: signUp[index].assetPath,
+                      title: signUp[index].title,
                     );
                   },
                 ),
               ),
               SizedBox(height: .045.sh),
-              CarenetButtonOutline(
-                btnAction: () {},
-                btnName: 'Already have an account? Sign in',
+              CarenetButton(
+                label: 'Already have an account? Sign in',
+                onPressed: () {
+                  Navigator.pushNamed(context, RouteName.signInPhone);
+                },
+                type: CarenetButtonType.outline,
               ),
             ],
           ),

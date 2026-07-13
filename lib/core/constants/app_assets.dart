@@ -1,10 +1,10 @@
 class AssetsImages {
-
   //SVG IMAGES
   static const String appLogo = 'assets/images/svg/carenet_logo.svg';
   static const String onboardingOne = 'assets/images/svg/onboarding_one.svg';
   static const String onboardingTwo = 'assets/images/svg/onboarding_two.svg';
-  static const String onboardingThree = 'assets/images/svg/onboarding_three.svg';
+  static const String onboardingThree =
+      'assets/images/svg/onboarding_three.svg';
   static const String appLogoBlack = 'assets/images/svg/black_carenet_logo.svg';
   static const String pinStack = 'assets/images/svg/pin_stack.svg';
   static const String profilePic = 'assets/images/svg/profile_pic.svg';
@@ -13,13 +13,15 @@ class AssetsImages {
   static const String upgrade = 'assets/images/png/upgrade_stock.png';
   static const String profileHandle = 'assets/images/png/profile_handle.png';
   static const String firePlace = 'assets/images/png/fire_place.png';
-  static const String professionalOne = 'assets/images/png/professional_one.png';
-  static const String professionalTwo = 'assets/images/png/professional_two.png';
-  static const String professionalThree = 'assets/images/png/professional_three.png';
+  static const String professionalOne =
+      'assets/images/png/professional_one.png';
+  static const String professionalTwo =
+      'assets/images/png/professional_two.png';
+  static const String professionalThree =
+      'assets/images/png/professional_three.png';
 }
 
 class AssetsIcon {
-
   //SVG ICONS
   static const String visible = 'assets/icons/svg/visible.svg';
   static const String pen = 'assets/icons/svg/pen.svg';
@@ -37,7 +39,7 @@ class AssetsIcon {
   static const String settings = 'assets/icons/svg/settings.svg';
   static const String star = 'assets/icons/svg/star.svg';
   static const String trophy = 'assets/icons/svg/trophy.svg';
-  static const String umbrella_outline = 'assets/icons/svg/umbrella_outline.svg';
+  static const String umbrellaOutline = 'assets/icons/svg/umbrella_outline.svg';
   static const String add = 'assets/icons/svg/add.svg';
   static const String home = 'assets/icons/svg/home.svg';
   static const String phone = 'assets/icons/svg/phone.svg';
@@ -53,7 +55,6 @@ class AssetsIcon {
   static const String facebook = 'assets/icons/svg/facebook.svg';
   static const String apple = 'assets/icons/svg/apple.svg';
   static const String heartRate = 'assets/icons/svg/heart_rate.svg';
-
 
   //PNG ICONS
   static const String bloodPressure = 'assets/icons/png/blood_pressure.png';

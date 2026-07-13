@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CompleteProfileAlert extends StatefulWidget {
-  CompleteProfileAlert({super.key});
+  const CompleteProfileAlert({super.key});
 
   @override
   State<CompleteProfileAlert> createState() => _CompleteProfileAlertState();
@@ -23,18 +23,19 @@ class _CompleteProfileAlertState extends State<CompleteProfileAlert> {
         width: double.infinity,
         color: AppColors.primaryBlue11,
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Please complete your info.',
-              style: TextStyle(
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w500,
-                fontSize: FontSizes.footer2,
-                color: AppColors.kWhite,
+            Expanded(
+              child: Text(
+                'Please complete your info.',
+                style: TextStyle(
+                  fontFamily: AppFonts.montserrat,
+                  fontWeight: FontWeight.w500,
+                  fontSize: FontSizes.footer2,
+                  color: AppColors.kWhite,
+                ),
               ),
             ),
-
+            SizedBox(width: 8.w),
             InkWell(
               onTap: () {
                 setState(() {

@@ -2,22 +2,14 @@ import 'package:app_t/features/Messaging/domain/entities/notification_entity.dar
 
 class NotificationModel extends NotificationEntity {
   NotificationModel({
-    required String id,
-    required String title,
-    required String message,
-    required DateTime timestamp,
-    required bool isRead,
-    required String type,
-    String? actionUrl,
-  }) : super(
-    id: id,
-    title: title,
-    message: message,
-    timestamp: timestamp,
-    isRead: isRead,
-    type: type,
-    actionUrl: actionUrl,
-  );
+    required super.id,
+    required super.title,
+    required super.message,
+    required super.timestamp,
+    required super.isRead,
+    required super.type,
+    super.actionUrl,
+  });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(

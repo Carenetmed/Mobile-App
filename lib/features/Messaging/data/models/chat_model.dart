@@ -2,26 +2,16 @@ import 'package:app_t/features/Messaging/domain/entities/chat_entity.dart';
 
 class ChatModel extends ChatEntity {
   ChatModel({
-    required String id,
-    required String participantId,
-    required String participantName,
-    required String participantAvatar,
-    required String lastMessage,
-    required DateTime lastMessageTime,
-    required int unreadCount,
-    required bool isOnline,
-    String? profession,
-  }) : super(
-    id: id,
-    participantId: participantId,
-    participantName: participantName,
-    participantAvatar: participantAvatar,
-    lastMessage: lastMessage,
-    lastMessageTime: lastMessageTime,
-    unreadCount: unreadCount,
-    isOnline: isOnline,
-    profession: profession,
-  );
+    required super.id,
+    required super.participantId,
+    required super.participantName,
+    required super.participantAvatar,
+    required super.lastMessage,
+    required super.lastMessageTime,
+    required super.unreadCount,
+    required super.isOnline,
+    super.profession,
+  });
 
   factory ChatModel.fromJson(Map<String, dynamic> json) {
     return ChatModel(

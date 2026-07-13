@@ -146,7 +146,8 @@
 | 52.3 | Wire email sign-up to the repository boundary only: preserve current validation, submit backend registration through `AuthRepository`, show safe loading/error states, and keep social/phone/security flows deferred | M | **DONE** |
 | 52.4 | Add session restore/app launch guard: restore stored auth session through `AuthRepository`, route authenticated users to dashboard, route missing/invalid sessions to onboarding/auth, and keep refresh/staging smoke separate if not fully scoped | M | **DONE** |
 | 52.5 | Add a real logout/session-clear action from the authenticated app shell: call `AuthRepository.logout`, clear stored session, return to onboarding/auth, and keep destructive account deletion, MFA, phone, and password-reset flows deferred | M | **DONE** |
-| 52.6 | Wire password reset screens to the auth repository boundary: request reset from email entry, confirm reset from password entry only if the existing flow can pass the required token honestly; otherwise document the missing token/email-link boundary and stop before fake reset success | M | **NEXT** |
+| 52.6 | Wire password reset screens to the auth repository boundary: request reset from email entry, confirm reset from password entry only if the existing flow can pass the required token honestly; otherwise document the missing token/email-link boundary and stop before fake reset success | M | **DONE** |
+| 52.7 | Define and wire the current-account read boundary for the Account shell: use `AccountRepository.currentAccount` only where it can safely replace local account display, keep profile editing/deletion/security mutations deferred, and document any remaining local profile seams | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -162,18 +163,19 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.5)
+## Manual test (last completed: task 52.6)
 
-Task `52.5` adds logout/session clearing from the authenticated Account shell only. It does not enable destructive account deletion, password reset, phone auth, social auth, MFA/PIN, or account-security APIs.
+Task `52.6` wires password reset request to the auth repository and stops before fake reset confirmation. The app still needs a secure reset-token/deep-link boundary before final password change can call `confirmPasswordReset`.
 
-1. `flutter test test/features/home/account_flow_test.dart` - passes
-2. `flutter analyze lib/features/Home/presentation/pages/account_shell.dart test/features/home/account_flow_test.dart` - no issues
-3. Confirm Account shows a separate `Log out` action distinct from `Delete account`
-4. Confirm successful logout calls `AuthRepository.logout`, clears the route stack, and returns to `onboarding`
-5. Confirm logout failure shows a safe inline error and does not navigate away from Account
-6. Confirm Delete account/deactivate behavior remains unchanged and backend-blocked
-7. Confirm phone/social/MFA/PIN/password-reset behavior was not enabled in this slice
-8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.6`
+1. `flutter test test/features/authentication/password_recovery_flow_test.dart test/features/authentication/auth_infrastructure_test.dart` - passes
+2. `flutter analyze lib/features/Authentication/presentation/pages/enter_email.dart lib/features/Authentication/presentation/pages/enter_password.dart test/features/authentication/password_recovery_flow_test.dart` - no issues
+3. Confirm forgot-password email entry calls `AuthRepository.requestPasswordReset` after local email validation
+4. Confirm backend/config failures show a safe error and do not navigate to password entry
+5. Confirm request pending state disables the continue action and shows `Sending reset link...`
+6. Confirm password-entry validation still checks password and confirmation fields
+7. Confirm valid password fields do not navigate to sign-in or claim success without a reset token
+8. Confirm the missing secure reset-token/deep-link boundary is documented
+9. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.7`
 
 ## Previous runtime manual test baseline
 

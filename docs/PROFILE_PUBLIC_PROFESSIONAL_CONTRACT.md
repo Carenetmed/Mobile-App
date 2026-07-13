@@ -187,3 +187,13 @@ update from `addDescription`, preserving existing `displayName`, `category`, and
 address, patient profile, public listing, verification, availability,
 appointments, payments, reviews, calls, calendar sync, notes, and prescriptions
 remain deferred.
+
+Next lane decision:
+
+`52.28 - Decide Next Profile/Public-Professional Runtime Lane`
+
+Implemented as a decision in `PROFILE_PUBLIC_LISTING_NEXT_LANE_DECISION.md`.
+Decision summary: wire public verified professional listing to Search list cards
+only. Public detail, Find Mentor, Specialist Details, availability,
+appointments, booking, ratings, prices, payments, reviews, calls, calendar sync,
+verification, patient profile, and broader profile edits remain deferred.

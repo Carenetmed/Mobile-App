@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.28** - decide the next profile/public-professional runtime lane |
-| Last completed | **52.27** - professional bio update wired from Add Description |
+| NEXT task | **52.29** - wire public verified professional listing to Search |
+| Last completed | **52.28** - next profile/public-professional runtime lane selected |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -235,6 +235,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-14 | Task 52.25 DONE - wired professional self profile read to Manage Profile with safe loading/error/empty states and allowed-field replacement only; DOC_SYNC NEXT -> 52.26 |
 | 2026-07-14 | Task 52.26 DONE - selected existing professional bio update from Add Description as the first safe profile mutation path; DOC_SYNC NEXT -> 52.27 |
 | 2026-07-14 | Task 52.27 DONE - wired Add Description to update existing professional profile bio only, preserving backend-required profile fields; DOC_SYNC NEXT -> 52.28 |
+| 2026-07-14 | Task 52.28 DONE - selected public verified professional listing into Search as the next runtime lane; DOC_SYNC NEXT -> 52.29 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

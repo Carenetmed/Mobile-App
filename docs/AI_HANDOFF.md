@@ -168,7 +168,8 @@
 | 52.25 | Wire professional self profile read to Manage Profile using `ProfileRepository.professionalMe`: show safe loading/error/empty-profile states and replace only matching allowed fields; keep profile mutations, patient profile, public listing, verification upload, availability, appointments, public detail, payments, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **DONE** |
 | 52.26 | Decide the first safe profile mutation UI slice after Manage Profile read wiring: choose a constrained professional self update path for only backend-allowed fields, or defer mutations until the edit screens are redesigned around the contract; do not implement runtime mutations in this decision slice | S | **DONE** |
 | 52.27 | Wire professional bio update from `addDescription` for existing professional profiles only: read `professionalMe`, preserve existing `displayName`, `category`, and `specialty`, call `updateProfessionalMe` with the new `bio`, show safe loading/error/empty-profile states, and keep profile creation, name/category/specialty editing, website, address, patient profile, public listing, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **DONE** |
-| 52.28 | Decide the next profile/public-professional runtime lane after professional bio update: choose public verified professional listing replacement, a constrained name/category/specialty profile-edit UI, or pause profile wiring; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.28 | Decide the next profile/public-professional runtime lane after professional bio update: choose public verified professional listing replacement, a constrained name/category/specialty profile-edit UI, or pause profile wiring; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.29 | Wire public verified professional listing to Search specialists using `ProfileRepository.publicProfessionals`: replace list-card name/category/specialty/bio data only, keep safe loading/error/empty states, do not send auth headers, and keep public detail, Find Mentor, Specialist Details, availability, appointments, booking, reviews, ratings, prices, payments, calls, calendar sync, verification upload/admin, patient profile, profile creation, name/category/specialty editing, website, address, notifications, notes, and prescriptions out of scope | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -184,14 +185,14 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.27)
+## Manual test (last completed: task 52.28)
 
-Task `52.27` wires professional bio update from Add Description for existing professional profiles only. It does not create profiles or wire name/category/specialty, website, address, patient profile, public listing, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, or prescriptions.
+Task `52.28` is a decision-only profile/public-professional lane selection. No runtime behavior changed.
 
-1. `flutter test test/features/home/manage_profile_flow_test.dart test/features/home/profile_repository_test.dart` - passes
-2. `flutter analyze lib/features/Home/presentation/pages/add_description_shell.dart lib/features/Home/presentation/pages/manage_profile_shell.dart lib/features/Home/data/repositories/profile_repository.dart lib/features/Home/data/services/profile_api_client.dart lib/features/Home/domain/entities/professional_profile.dart test/features/home/manage_profile_flow_test.dart test/features/home/profile_repository_test.dart` - no issues
-3. Confirm Add Description reads `professionalMe`, preserves existing `displayName`, `category`, and `specialty`, updates only `bio`, shows safe save errors, and does not create a partial profile when no professional profile exists.
-4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.28`
+1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/PROFILE_PUBLIC_LISTING_NEXT_LANE_DECISION.md` - passes
+2. Confirm `PROFILE_PUBLIC_LISTING_NEXT_LANE_DECISION.md` selects Search public listing replacement as the next runtime lane.
+3. Confirm public detail, Find Mentor, Specialist Details, availability, appointments, reviews, ratings, prices, payments, and verification remain out of scope.
+4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.29`
 
 ## Previous runtime manual test baseline
 
@@ -515,6 +516,7 @@ Task `52.27` wires professional bio update from Add Description for existing pro
 | 2026-07-14 | 52.25 | DONE - Manage Profile now reads professional self profile through `ProfileRepository.professionalMe`, with safe loading/error/empty states and only allowed field replacement |
 | 2026-07-14 | 52.26 | DONE - first safe profile mutation path selected: existing professional bio update from `addDescription` only, preserving backend-required profile fields |
 | 2026-07-14 | 52.27 | DONE - Add Description now updates existing professional profile bio only, preserving required profile fields and refusing partial profile creation |
+| 2026-07-14 | 52.28 | DONE - next profile/public-professional runtime lane selected: public verified professional listing into Search only |
 
 ---
 

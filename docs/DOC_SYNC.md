@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.4** - add session restore/app launch guard without broad auth expansion |
-| Last completed | **52.3** - email sign-up completion wired to the auth repository boundary |
+| NEXT task | **52.5** - add logout/session-clear action without destructive account or security expansion |
+| Last completed | **52.4** - session restore app launch guard added through the auth repository boundary |
 | Registered routes | **68 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -211,6 +211,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-13 | Task 52.1 DONE - auth/session/account infrastructure boundary added with config, safe API client, session store, models, repositories, and focused tests; DOC_SYNC NEXT -> 52.2 |
 | 2026-07-13 | Task 52.2 DONE - email sign-in now calls `AuthRepository.login` after local validation and keeps failure/loading states honest; DOC_SYNC NEXT -> 52.3 |
 | 2026-07-13 | Task 52.3 DONE - email sign-up completion now calls `AuthRepository.register` after local validation and keeps failure/loading states honest; DOC_SYNC NEXT -> 52.4 |
+| 2026-07-13 | Task 52.4 DONE - splash now restores stored sessions through `AuthRepository.restore` and routes usable sessions to dashboard while missing/invalid restore falls back to onboarding; DOC_SYNC NEXT -> 52.5 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

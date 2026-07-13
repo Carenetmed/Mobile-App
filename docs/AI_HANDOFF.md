@@ -144,7 +144,8 @@
 | 52.1 | Implement the auth/session/account infrastructure boundary: environment API config, safe auth API client, session store, auth/account models, repository interfaces, and focused tests without wiring screens to backend yet | M | **DONE** |
 | 52.2 | Wire the first auth screen to the repository boundary, starting with email sign-in only: preserve local validation, require backend config for backend success, show safe loading/error states, and keep phone/social/security flows deferred | M | **DONE** |
 | 52.3 | Wire email sign-up to the repository boundary only: preserve current validation, submit backend registration through `AuthRepository`, show safe loading/error states, and keep social/phone/security flows deferred | M | **DONE** |
-| 52.4 | Add session restore/app launch guard: restore stored auth session through `AuthRepository`, route authenticated users to dashboard, route missing/invalid sessions to onboarding/auth, and keep refresh/staging smoke separate if not fully scoped | M | **NEXT** |
+| 52.4 | Add session restore/app launch guard: restore stored auth session through `AuthRepository`, route authenticated users to dashboard, route missing/invalid sessions to onboarding/auth, and keep refresh/staging smoke separate if not fully scoped | M | **DONE** |
+| 52.5 | Add a real logout/session-clear action from the authenticated app shell: call `AuthRepository.logout`, clear stored session, return to onboarding/auth, and keep destructive account deletion, MFA, phone, and password-reset flows deferred | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -160,20 +161,18 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.3)
+## Manual test (last completed: task 52.4)
 
-Task `52.3` wires email sign-up completion to the auth repository boundary only. Phone sign-up, social auth, password reset, and account-security screens remain unchanged/deferred unless separately scoped.
+Task `52.4` adds the session restore launch guard only. It does not call refresh, staging smoke, logout, password reset, phone auth, social auth, MFA/PIN, or account-security APIs.
 
-1. `flutter test test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/auth_infrastructure_test.dart` - passes
-2. `flutter analyze lib/features/Authentication/presentation/pages/sign_up_email.dart lib/features/Authentication/presentation/pages/sign_up_con.dart lib/core/constants/navigators/router.dart test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart` - no issues
-3. Confirm email sign-up entry still blocks invalid email before opening finish-sign-up
-4. Confirm email sign-up passes the validated email into `finishSignUp`
-5. Confirm finish-sign-up calls `AuthRepository.register` only after full local form validation succeeds
-6. Confirm repository success navigates to `communityAgreement`
-7. Confirm missing backend config/backend failure shows a safe error and does not navigate
-8. Confirm loading state disables the agree action while registration is pending
-9. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.4`
-10. Confirm phone sign-up, social auth, password reset, and account-security flows were not wired or enabled in this slice
+1. `flutter test test/features/authentication/session_restore_guard_test.dart test/features/authentication/sign_in_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/auth_infrastructure_test.dart` - passes
+2. `flutter analyze lib/features/splash/presentation/pages/splash_screen.dart test/features/authentication/session_restore_guard_test.dart lib/features/Authentication/data/repositories/auth_repository.dart` - no issues
+3. Confirm splash waits the existing 800ms before routing
+4. Confirm a usable restored session routes to `dashboard`
+5. Confirm missing, invalid, or failed restore routes to `onboarding`
+6. Confirm restore uses `AuthRepository.restore()` and does not trust client-provided route arguments
+7. Confirm refresh/staging smoke/logout/password-reset/social/phone/MFA/account-security behavior was not enabled in this slice
+8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.5`
 
 ## Previous runtime manual test baseline
 

@@ -2,12 +2,17 @@ import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({super.key, this.authRepository});
+
+  final AuthRepository? authRepository;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -17,15 +22,34 @@ class _SplashScreenState extends State<SplashScreen> {
   /// Matches Figma prototype timeout (0.8s) on splash screen.
   static const Duration _splashDuration = Duration(milliseconds: 800);
 
+  AuthRepository get _authRepository =>
+      widget.authRepository ?? sl<AuthRepository>();
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(_splashDuration, _goToOnboarding);
+    Future.delayed(_splashDuration, _restoreSessionAndRoute);
   }
 
-  void _goToOnboarding() {
+  Future<void> _restoreSessionAndRoute() async {
+    AuthSession? session;
+    try {
+      session = await _authRepository.restore();
+    } catch (_) {
+      session = null;
+    }
+
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed(RouteName.onboarding);
+    final routeName =
+        _hasUsableSession(session) ? RouteName.dashboard : RouteName.onboarding;
+    Navigator.of(context).pushReplacementNamed(routeName);
+  }
+
+  bool _hasUsableSession(AuthSession? session) {
+    if (session == null) return false;
+    return session.accessToken.trim().isNotEmpty &&
+        session.refreshToken.trim().isNotEmpty &&
+        session.user.id.trim().isNotEmpty;
   }
 
   @override

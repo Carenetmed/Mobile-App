@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.2** - wire email sign-in to the repository boundary with safe loading/error states |
-| Last completed | **52.1** - auth/session/account infrastructure boundary implemented without wiring screens yet |
+| NEXT task | **52.3** - wire email sign-up to the repository boundary without enabling social/phone/security flows |
+| Last completed | **52.2** - email sign-in wired to the auth repository boundary |
 | Registered routes | **68 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -209,6 +209,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-06-09 | Task 51.1 DONE - first backend/product contract group selected: auth/session/account persistence; DOC_SYNC NEXT -> 51.2 |
 | 2026-07-13 | Task 51.2 DONE - auth/session/account backend contract defined in `AUTH_SESSION_ACCOUNT_CONTRACT.md`; DOC_SYNC NEXT -> 52.1 |
 | 2026-07-13 | Task 52.1 DONE - auth/session/account infrastructure boundary added with config, safe API client, session store, models, repositories, and focused tests; DOC_SYNC NEXT -> 52.2 |
+| 2026-07-13 | Task 52.2 DONE - email sign-in now calls `AuthRepository.login` after local validation and keeps failure/loading states honest; DOC_SYNC NEXT -> 52.3 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

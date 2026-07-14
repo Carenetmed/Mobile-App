@@ -1105,3 +1105,22 @@ prescriptions, and production release work remain larger separate lanes.
 Next: 52.72 should wire Find Mentor to public professionals, preserving
 local-only compatibility only when no repository is available and avoiding
 local slot fallback in the backend path.
+
+## D126 - Find Mentor public professionals wired
+
+Task: 52.72
+
+Decision: Find Mentor now uses the existing public professional repository
+boundary when available.
+
+Reason: This removes the last visible provider-discovery local-card seam in the
+current public-professional lane without inventing backend behavior. The
+backend-capable path reads `ProfileRepository.publicProfessionals`, renders
+safe loading/error/empty states, filters public professionals by category or
+specialty, and routes `View details` to `specialistDetails` with the backend
+public professional id. It does not fall back to seeded local mentors after
+backend failure, does not expose local slot chips in the backend path, and does
+not claim direct booking from Find Mentor.
+
+Next: 52.73 should run a focused Find Mentor public professionals regression
+checkpoint before selecting another surface.

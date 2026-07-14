@@ -212,7 +212,8 @@
 | 52.69 | Wire Specialist Details To Public Professional Availability: replace the local-only specialist details data path with backend public-professional/public-availability data where a backend professional id can be resolved honestly, show safe loading/error/empty states, keep the existing route, avoid local slot fallback, and do not invent a public detail endpoint, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, or staging data | M | **DONE** |
 | 52.70 | Run Specialist Details Public Availability Regression Checkpoint: verify backend id resolution, safe loading/error/empty states, no local slot fallback, generated request payload, request failure behavior, Search handoff, dashboard local compatibility, docs/deferred-work accuracy, and absence of public-detail endpoint invention, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing the next surface | M | **DONE** |
 | 52.71 | Decide Next Surface After Specialist Details Regression: review Specialist Details regression, Find Mentor remaining local seam, verification upload/list blockers, scheduling staging-data blocker, deferred-work map, and completed backend surfaces before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.72 | Wire Find Mentor To Public Professionals: replace the backend-capable Find Mentor path with public verified professionals from `ProfileRepository.publicProfessionals`, show safe loading/error/empty states, pass backend public professional ids into `specialistDetails`, keep local mentor behavior only for local-only test/dev navigation without a repository, and do not add public detail endpoint invention, local slot fallback, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **NEXT** |
+| 52.72 | Wire Find Mentor To Public Professionals: replace the backend-capable Find Mentor path with public verified professionals from `ProfileRepository.publicProfessionals`, show safe loading/error/empty states, pass backend public professional ids into `specialistDetails`, keep local mentor behavior only for local-only test/dev navigation without a repository, and do not add public detail endpoint invention, local slot fallback, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **DONE** |
+| 52.73 | Run Find Mentor Public Professionals Regression Checkpoint: verify backend public listing, safe loading/error/empty states, category filtering, no local slot fallback/direct fake booking in the backend path, backend id handoff to Specialist Details, dashboard local compatibility, docs/deferred-work accuracy, and absence of public-detail endpoint invention, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing the next surface | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -228,15 +229,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.71)
+## Manual test (last completed: task 52.72)
 
-Task `52.71` decides the next surface after Specialist Details regression.
+Task `52.72` wires Find Mentor to public verified professionals when `ProfileRepository` is available.
 
-1. Confirm `NEXT_SURFACE_AFTER_SPECIALIST_DETAILS_DECISION.md` selects Find Mentor public professional replacement next.
-2. Confirm verification upload/list, admin dashboard, scheduling staging data, Google link/unlink, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain out of scope.
-3. Confirm no runtime Dart, Android, iOS, or test files changed in this decision-only slice.
-4. `git diff --check` - no whitespace errors.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.72`
+1. `flutter test test/features/home/find_mentor_flow_test.dart -r compact` - proves backend public professional read, category filter, backend id handoff to `specialistDetails`, and safe failure without seeded local fallback.
+2. `flutter test test/features/home/dashboard_shell_test.dart test/features/home/specialist_details_flow_test.dart -r compact` - prove dashboard local compatibility and Specialist Details regression after the Find Mentor handoff change.
+3. `flutter analyze lib/features/Home/presentation/pages/find_mentor_shell.dart test/features/home/find_mentor_flow_test.dart test/features/home/dashboard_shell_test.dart test/features/home/specialist_details_flow_test.dart` - no issues.
+4. Confirm `FIND_MENTOR_PUBLIC_PROFESSIONALS_WIRING.md` records the repository boundary, no-local-fallback backend path, disabled direct booking, and deferred public-detail/verification/admin/payment/review/call/calendar/notes/prescriptions/staging work.
+5. `git diff --check` - no whitespace errors.
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.73`
 
 ## Previous runtime manual test baseline
 
@@ -585,6 +587,7 @@ Task `52.71` decides the next surface after Specialist Details regression.
 | 2026-07-15 | 52.69 | DONE - Specialist Details can now render backend public professional detail, public availability, generated request options, and backend appointment request results without inventing a detail endpoint or falling back to local slots in the backend path |
 | 2026-07-15 | 52.70 | DONE - Specialist Details public availability regression passed for backend id resolution, no local slot fallback, request payload/failure behavior, Search handoff, dashboard compatibility, and deferred-work accuracy |
 | 2026-07-15 | 52.71 | DONE - selected Find Mentor public professional replacement as the next narrow surface while keeping verification/admin/staging/payments/reviews/calls/calendar out of scope |
+| 2026-07-15 | 52.72 | DONE - Find Mentor now reads backend public professionals where available, routes backend ids to Specialist Details, and avoids local fallback/direct fake booking in the backend path |
 
 ---
 

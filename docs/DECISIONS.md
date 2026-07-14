@@ -598,3 +598,19 @@ Next: 52.45 should wire `selectedDates` to backend own-availability
 read/replace with safe states, preserve existing windows where safe, and keep
 appointment lifecycle, payments, notifications, calls, calendar, notes, and
 prescriptions deferred.
+
+## D099 - Professional availability management wired before lifecycle UI
+
+Task: 52.45
+
+Decision: Replace the selected-dates local-only business-hours draft with
+backend own-availability read/replace before starting professional appointment
+lifecycle controls.
+
+Reason: Professionals need a real backend-owned availability surface before
+accept/decline/reschedule/complete UI can be responsibly exposed. The
+implementation preserves other existing backend weekdays during a selected-day
+save, avoids profile mutation, and shows success only after repository success.
+
+Next: 52.46 should decide the professional appointment lifecycle UI boundary
+before adding accept/decline/reschedule/complete controls.

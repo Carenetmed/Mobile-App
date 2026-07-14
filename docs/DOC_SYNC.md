@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.51** - appointment completion regression |
-| Last completed | **52.50** - professional appointment completion wiring |
+| NEXT task | **52.52** - post-completion scheduling lane decision |
+| Last completed | **52.51** - appointment completion regression |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -258,6 +258,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-14 | Task 52.48 DONE - added professional appointment lifecycle regression proof; DOC_SYNC NEXT -> 52.49 |
 | 2026-07-14 | Task 52.49 DONE - selected professional completion before reschedule; DOC_SYNC NEXT -> 52.50 |
 | 2026-07-14 | Task 52.50 DONE - wired professional appointment completion for accepted appointments after scheduled end; DOC_SYNC NEXT -> 52.51 |
+| 2026-07-14 | Task 52.51 DONE - added appointment completion regression proof and post-completion checkpoint; DOC_SYNC NEXT -> 52.52 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

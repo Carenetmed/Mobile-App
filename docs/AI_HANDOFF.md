@@ -191,7 +191,8 @@
 | 52.48 | Run Professional Appointment Lifecycle Regression: verify role-aware Appointments behavior for patient cancel, professional accept/decline, safe errors, terminal states, and no reschedule/complete/payment/calendar/notes UI before deciding any broader lifecycle action | M | **DONE** |
 | 52.49 | Decide Appointment Reschedule Or Completion Boundary: inspect current lifecycle proof, backend rules, Appointments UI readiness, and deferred risks before choosing reschedule, completion, or another regression/fix pass; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.50 | Wire Professional Appointment Completion: show Complete only for professional users on accepted appointments whose scheduled end time has passed, call SchedulingRepository.completeAppointment, update visible status from backend response, and keep reschedule/payments/notifications/calendar/reviews/notes/prescriptions deferred | L | **DONE** |
-| 52.51 | Run Appointment Completion Regression: verify professional completion role/timing/state/failure behavior, prove no reschedule/payment/calendar/review/notes/prescription UI slipped in, and decide whether reschedule needs a separate UX decision or the scheduling lane should pause for a broader regression checkpoint | M | **NEXT** |
+| 52.51 | Run Appointment Completion Regression: verify professional completion role/timing/state/failure behavior, prove no reschedule/payment/calendar/review/notes/prescription UI slipped in, and decide whether reschedule needs a separate UX decision or the scheduling lane should pause for a broader regression checkpoint | M | **DONE** |
+| 52.52 | Decide Post-Completion Scheduling Lane: review appointment request/list/cancel/accept/decline/availability/completion coverage, regression evidence, and remaining risks before choosing a broader scheduling regression checkpoint or a dedicated reschedule UX decision; do not implement runtime behavior in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -207,21 +208,19 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.50)
+## Manual test (last completed: task 52.51)
 
-Task `52.50` wires professional appointment completion into the Appointments
-screen only for accepted backend appointments whose scheduled end time has
-passed. The backend remains authority for ownership, status transition, and
-timing.
+Task `52.51` strengthens regression proof for professional appointment
+completion and records the post-completion scheduling checkpoint. It does not
+add new lifecycle behavior.
 
 1. `dart format lib\features\Home\presentation\pages\appointments_shell.dart test\features\home\appointments_flow_test.dart` - passes
 2. `flutter test test\features\home\appointments_flow_test.dart test\features\home\scheduling_repository_test.dart` - passes
 3. `flutter analyze lib\features\Home\presentation\pages\appointments_shell.dart test\features\home\appointments_flow_test.dart lib\features\Home\data\repositories\scheduling_repository.dart lib\features\Home\data\services\scheduling_api_client.dart test\features\home\scheduling_repository_test.dart` - no issues
-4. Confirm professional users see `Complete` only for accepted appointments after scheduled end time.
-5. Confirm patient users, premature appointments, and completed appointments do not expose `Complete`.
-6. Confirm completion success updates visible status only from the backend response and completion failures show safe errors without raw backend text.
-7. Confirm reschedule, payments, notifications, calendar sync, reviews, notes, and prescriptions remain deferred.
-8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.51`
+4. `git diff --check` - passes
+5. Confirm `APPOINTMENT_COMPLETION_REGRESSION.md` records exact-end timing, patient denial, terminal-state denial, safe failure behavior, and deferred broader controls.
+6. Confirm reschedule, payments, notifications, calendar sync, reviews, notes, and prescriptions remain deferred.
+7. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.52`
 
 ## Previous runtime manual test baseline
 

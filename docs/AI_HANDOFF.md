@@ -172,7 +172,8 @@
 | 52.29 | Wire public verified professional listing to Search specialists using `ProfileRepository.publicProfessionals`: replace list-card name/category/specialty/bio data only, keep safe loading/error/empty states, do not send auth headers, and keep public detail, Find Mentor, Specialist Details, availability, appointments, booking, reviews, ratings, prices, payments, calls, calendar sync, verification upload/admin, patient profile, profile creation, name/category/specialty editing, website, address, notifications, notes, and prescriptions out of scope | M | **DONE** |
 | 52.30 | Decide the next backend-integration lane after Search public listing: either continue profile/public-professional work only if a real backend contract exists, select another completed backend surface, or pause for regression; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.31 | Define the scheduling/availability/appointment frontend contract before runtime wiring: map completed backend availability and appointment routes into Flutter repository/entities/screen boundaries, preserve no-local-fallback behavior, and queue the first repository/runtime slice only after the contract is clear | M | **DONE** |
-| 52.32 | Add the scheduling repository boundary for availability and appointment routes: entities, models, API client, repository, DI registration, and focused tests only; do not wire UI screens, booking success, public detail, payments, notifications, reviews, calls, calendar sync, notes, or prescriptions | M | **NEXT** |
+| 52.32 | Add the scheduling repository boundary for availability and appointment routes: entities, models, API client, repository, DI registration, and focused tests only; do not wire UI screens, booking success, public detail, payments, notifications, reviews, calls, calendar sync, notes, or prescriptions | M | **DONE** |
+| 52.33 | Wire public availability read as the first scheduling UI surface: use `SchedulingRepository.publicAvailability` only for a selected public professional, show real loading/error/empty availability states, keep appointment request disabled/deferred, and do not reintroduce local specialist/slot fallback, public detail invention, payments, reviews, calls, calendar sync, notes, or prescriptions | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -188,14 +189,14 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.31)
+## Manual test (last completed: task 52.32)
 
-Task `52.31` is a contract-only scheduling/availability/appointment slice. No runtime behavior changed.
+Task `52.32` adds the scheduling repository boundary only. No UI screen is wired yet.
 
-1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/SCHEDULING_AVAILABILITY_APPOINTMENT_CONTRACT.md` - passes
-2. Confirm `SCHEDULING_AVAILABILITY_APPOINTMENT_CONTRACT.md` maps backend availability and appointment routes into Flutter repository/entity/screen boundaries.
-3. Confirm the next implementation is repository/API boundary only, with no UI wiring or local fallback success.
-4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.32`
+1. `flutter test test/features/home/scheduling_repository_test.dart` - passes
+2. `flutter analyze lib/core/di/injection.dart lib/features/Home/domain/entities/availability_window.dart lib/features/Home/domain/entities/appointment_summary.dart lib/features/Home/data/models/availability_window_model.dart lib/features/Home/data/models/appointment_summary_model.dart lib/features/Home/data/services/scheduling_api_client.dart lib/features/Home/data/repositories/scheduling_repository.dart test/features/home/scheduling_repository_test.dart` - no issues
+3. Confirm no UI screens are wired to scheduling yet.
+4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.33`
 
 ## Previous runtime manual test baseline
 
@@ -523,6 +524,7 @@ Task `52.31` is a contract-only scheduling/availability/appointment slice. No ru
 | 2026-07-14 | 52.29 | DONE - Search now reads public verified professionals without local fallback, exposes real errors/empty states, and keeps booking/detail expansion deferred |
 | 2026-07-14 | 52.30 | DONE - next backend-integration lane selected: scheduling availability and appointment contract definition before runtime wiring |
 | 2026-07-14 | 52.31 | DONE - scheduling/availability/appointment frontend contract defined; next slice is repository boundary only |
+| 2026-07-14 | 52.32 | DONE - scheduling repository boundary added for availability and appointment routes without UI wiring |
 
 ---
 

@@ -1,7 +1,7 @@
 # Scheduling, availability, and appointment frontend contract
 
 **Task:** 52.31
-**Status:** Accepted contract before repository/runtime wiring
+**Status:** Accepted contract; repository boundary implemented in 52.32
 
 Purpose: define how the Flutter app should consume the completed backend
 availability and appointment surfaces without seeded fallback, fake booking
@@ -58,6 +58,18 @@ Recommended files:
 
 The first implementation slice should add the API client, repository, entities,
 models, DI registration, and tests only. It should not wire UI screens yet.
+
+Implemented in 52.32:
+
+- `AvailabilityWindow` and `AvailabilityWindowDraft`
+- `AppointmentSummary` and `AppointmentStatus`
+- availability and appointment JSON models
+- `SchedulingApiClient`
+- `SchedulingRepository`
+- DI registration
+- focused repository tests for public no-auth availability, protected bearer
+  calls, allowed payloads, lifecycle actions without trusted status bodies,
+  missing config, missing session, and safe conflict mapping
 
 ---
 
@@ -232,6 +244,8 @@ Scope:
 - add focused repository/API tests for headers, payloads, parsing, safe errors,
   and no client-owned authority fields
 - no UI wiring
+
+Implemented in 52.32.
 
 Then:
 

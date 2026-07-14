@@ -7,7 +7,9 @@ import '../../features/Authentication/data/services/auth_api_client.dart';
 import '../../features/Authentication/data/services/google_sign_in_provider.dart';
 import '../../features/Authentication/data/storage/session_store.dart';
 import '../../features/Home/data/repositories/profile_repository.dart';
+import '../../features/Home/data/repositories/scheduling_repository.dart';
 import '../../features/Home/data/services/profile_api_client.dart';
+import '../../features/Home/data/services/scheduling_api_client.dart';
 
 /// Global service locator. Register dependencies here as features are built.
 final GetIt sl = GetIt.instance;
@@ -42,6 +44,11 @@ Future<void> configureDependencies() async {
       () => ProfileApiClient(config: sl<CareNetApiConfig>()),
     );
   }
+  if (!sl.isRegistered<SchedulingApiClient>()) {
+    sl.registerLazySingleton<SchedulingApiClient>(
+      () => SchedulingApiClient(config: sl<CareNetApiConfig>()),
+    );
+  }
   if (!sl.isRegistered<AuthRepository>()) {
     sl.registerLazySingleton<AuthRepository>(
       () => AuthRepository(
@@ -62,6 +69,14 @@ Future<void> configureDependencies() async {
     sl.registerLazySingleton<ProfileRepository>(
       () => ProfileRepository(
         apiClient: sl<ProfileApiClient>(),
+        sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<SchedulingRepository>()) {
+    sl.registerLazySingleton<SchedulingRepository>(
+      () => SchedulingRepository(
+        apiClient: sl<SchedulingApiClient>(),
         sessionStore: sl<SessionStore>(),
       ),
     );

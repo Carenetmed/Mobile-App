@@ -214,7 +214,8 @@
 | 52.71 | Decide Next Surface After Specialist Details Regression: review Specialist Details regression, Find Mentor remaining local seam, verification upload/list blockers, scheduling staging-data blocker, deferred-work map, and completed backend surfaces before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.72 | Wire Find Mentor To Public Professionals: replace the backend-capable Find Mentor path with public verified professionals from `ProfileRepository.publicProfessionals`, show safe loading/error/empty states, pass backend public professional ids into `specialistDetails`, keep local mentor behavior only for local-only test/dev navigation without a repository, and do not add public detail endpoint invention, local slot fallback, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **DONE** |
 | 52.73 | Run Find Mentor Public Professionals Regression Checkpoint: verify backend public listing, safe loading/error/empty states, category filtering, no local slot fallback/direct fake booking in the backend path, backend id handoff to Specialist Details, dashboard local compatibility, docs/deferred-work accuracy, and absence of public-detail endpoint invention, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing the next surface | M | **DONE** |
-| 52.74 | Decide Next Backend-Completed Flutter Surface After Find Mentor Regression: review Find Mentor regression, completed backend surface map, deferred-work register, verification upload/list blockers, scheduling staging-data blocker, profile mutation gaps, and release/staging risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.74 | Decide Next Backend-Completed Flutter Surface After Find Mentor Regression: review Find Mentor regression, completed backend surface map, deferred-work register, verification upload/list blockers, scheduling staging-data blocker, profile mutation gaps, and release/staging risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.75 | Define Professional Verification Upload/List UI Boundary: review backend verification upload-init, upload-complete, owner document list, storage-readiness, private-document rules, existing app entry points, and file-picker constraints before choosing the first runtime verification implementation shape; do not implement runtime behavior in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -230,16 +231,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.73)
+## Manual test (last completed: task 52.74)
 
-Task `52.73` runs the Find Mentor public professionals regression checkpoint.
+Task `52.74` decides the next backend-completed Flutter surface after Find Mentor regression.
 
-1. `flutter test test/features/home/find_mentor_flow_test.dart -r compact` - proves backend public professional read, loading, empty, category filter, backend id handoff to `specialistDetails`, and safe failure without seeded local fallback.
-2. `flutter test test/features/home/find_mentor_flow_test.dart test/features/home/dashboard_shell_test.dart test/features/home/specialist_details_flow_test.dart -r compact` - proves Find Mentor regression plus dashboard local compatibility and Specialist Details compatibility.
-3. `flutter analyze lib/features/Home/presentation/pages/find_mentor_shell.dart test/features/home/find_mentor_flow_test.dart test/features/home/dashboard_shell_test.dart test/features/home/specialist_details_flow_test.dart` - no issues.
-4. Confirm `FIND_MENTOR_PUBLIC_PROFESSIONALS_REGRESSION.md` records the evidence table and keeps public-detail/verification/admin/payment/review/call/calendar/notes/prescriptions/staging work deferred.
+1. Confirm `NEXT_SURFACE_AFTER_FIND_MENTOR_DECISION.md` selects professional verification upload/list as the next lane, with a decision-only boundary slice first.
+2. Confirm scheduling staging smoke remains blocked on deliberate backend/staging test data, not more Flutter runtime feature work.
+3. Confirm profile edit expansion, Google link/unlink/sign-up, admin verification dashboard, public detail endpoint, payments, reviews, calls, calendar sync, notes, prescriptions, and release/staging access remain deferred.
+4. Confirm no runtime Dart, Android, iOS, or test files changed in this decision-only slice.
 5. `git diff --check` - no whitespace errors.
-6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.74`
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.75`
 
 ## Previous runtime manual test baseline
 
@@ -590,6 +591,7 @@ Task `52.73` runs the Find Mentor public professionals regression checkpoint.
 | 2026-07-15 | 52.71 | DONE - selected Find Mentor public professional replacement as the next narrow surface while keeping verification/admin/staging/payments/reviews/calls/calendar out of scope |
 | 2026-07-15 | 52.72 | DONE - Find Mentor now reads backend public professionals where available, routes backend ids to Specialist Details, and avoids local fallback/direct fake booking in the backend path |
 | 2026-07-15 | 52.73 | DONE - Find Mentor public professionals regression passed for loading, empty, success, category filter, backend id handoff, safe failure, no local slot fallback, dashboard compatibility, and Specialist Details compatibility |
+| 2026-07-15 | 52.74 | DONE - selected professional verification upload/list as the next backend-completed Flutter lane, with a required boundary decision before runtime upload/list wiring |
 
 ---
 

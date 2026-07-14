@@ -874,3 +874,24 @@ reschedule are not end-to-end staging-proven.
 Next: 52.60 should decide whether to create deliberate scheduling staging test
 data/accounts or move to another backend-completed surface while keeping
 scheduling smoke blocked on data.
+
+## D114 - Scheduling smoke requires deliberate staging data
+
+Task: 52.60
+
+Decision: Do not create ad hoc scheduling staging data from the Flutter repo.
+Keep full scheduling end-to-end staging smoke blocked until a deliberate
+backend/staging data setup exists, and choose the next Flutter lane in a
+separate decision slice.
+
+Reason: Task 52.59 proved backend reachability, provider readiness, protected
+route guards, and the staging-configured APK build, but the missing proof is
+owned staging state: patient/professional accounts, a verified public
+professional, availability windows, and an appointment path. Creating one-off
+users or appointments from the Flutter repo would hide data ownership and make
+the smoke hard to reproduce.
+
+Next: 52.61 should decide the next backend-completed Flutter surface after
+reviewing the completed surface map, deferred-work register, current
+profile/verification/auth/account status, and the scheduling staging-data
+blocker. It should not implement runtime behavior.

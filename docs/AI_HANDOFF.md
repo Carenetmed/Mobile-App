@@ -222,7 +222,8 @@
 | 52.79 | Wire Professional Verification Upload Flow: add the selected PDF-capable file picker dependency, let professionals choose `LICENSE`/`IDENTITY`/`CERTIFICATION`, select one PDF/JPEG/PNG file, enforce safe type and 10 MB size validation, call `VerificationRepository.uploadDocument`, show loading/success/safe-error states, reload owner documents after success, and do not expose signed URLs, object keys, local full paths, file previews, raw checksums, admin review data, public document access, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **DONE** |
 | 52.80 | Run Professional Verification Upload Regression Checkpoint: verify document list loading/empty/error, upload success with list reload, picker cancellation, invalid type, 10 MB size guard, safe backend upload failure, no signed URL/object-key/local path/raw checksum/admin/public exposure, docs/deferred-work accuracy, and absence of previews, admin review, rejection reasons, scanning claims, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing the next surface | M | **DONE** |
 | 52.81 | Decide Next Backend-Completed Flutter Surface After Verification Regression: review the verification upload regression, completed backend surface map, deferred-work register, scheduling staging-data blocker, remaining profile/account gaps, and release/staging risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.82 | Define Professional Basic Profile Edit Boundary: decide whether the next runtime slice should update professional `displayName` only or `displayName`/`category`/`specialty` together, how existing professional profile fields and `bio` are preserved, whether empty-profile creation is allowed, and how `editYourName`/Manage Profile should stay separate from website, address, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.82 | Define Professional Basic Profile Edit Boundary: decide whether the next runtime slice should update professional `displayName` only or `displayName`/`category`/`specialty` together, how existing professional profile fields and `bio` are preserved, whether empty-profile creation is allowed, and how `editYourName`/Manage Profile should stay separate from website, address, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.83 | Wire Professional Display Name Update From Edit Your Name: update the existing `editYourName` route to read an existing professional self profile, prefill backend `displayName`, save only the changed `displayName` through `ProfileRepository.updateProfessionalMe` while preserving existing `category`, `specialty`, and `bio`, block empty-profile saves, keep validation/loading/safe-error states honest, and do not create a profile or send website, address, account, verification, availability, appointment, payment, review, call, calendar, note, prescription, staging, or production data | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -238,16 +239,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.81)
+## Manual test (last completed: task 52.82)
 
-Task `52.81` is a decision-only slice selecting the next backend-completed
-Flutter surface after verification upload regression.
+Task `52.82` is a decision-only boundary slice for professional basic profile
+editing.
 
-1. Confirm `NEXT_SURFACE_AFTER_VERIFICATION_UPLOAD_REGRESSION_DECISION.md` reviews verification regression, scheduling staging-data blocker, admin verification boundary, verification follow-ups, patient profile expansion, Google auth expansion, professional website/address, and professional basic profile fields.
-2. Confirm the selected next lane is professional basic profile editing, with 52.82 as a boundary decision before runtime wiring.
-3. Confirm website/address, verification expansion, admin review, scheduling staging data, payments, reviews, calls, calendar sync, notes, prescriptions, staging, and production claims remain deferred.
+1. Confirm `PROFESSIONAL_BASIC_PROFILE_EDIT_BOUNDARY.md` selects display-name-only update from `editYourName`.
+2. Confirm the runtime rule preserves existing `category`, `specialty`, and `bio` when saving a new `displayName`.
+3. Confirm empty-profile creation, category/specialty editing, website/address persistence, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging, and production claims remain deferred.
 4. `git diff --check` - no whitespace errors.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.82`
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.83`
 
 ## Previous runtime manual test baseline
 
@@ -606,6 +607,7 @@ Flutter surface after verification upload regression.
 | 2026-07-15 | 52.79 | DONE - professional verification upload flow wired with file picker, document type selection, PDF/JPEG/PNG validation, 10 MB guard, safe upload states, repository call, and list reload |
 | 2026-07-15 | 52.80 | DONE - professional verification upload regression passed for list states, upload success/reload, cancellation, invalid type, size guard, safe failure, and private-data non-exposure |
 | 2026-07-15 | 52.81 | DONE - selected professional basic profile field editing as the next backend-completed Flutter surface, with a required boundary decision before runtime name/category/specialty wiring |
+| 2026-07-15 | 52.82 | DONE - accepted display-name-only professional profile edit boundary for `editYourName`, preserving existing category/specialty/bio and deferring profile creation plus broader profile fields |
 
 ---
 

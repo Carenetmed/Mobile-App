@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 next backend-completed surface selected after verification regression.
+**Last updated:** 2026-07-15 professional basic profile edit boundary accepted.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -132,6 +132,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Professional verification upload flow | `professionalVerificationDocuments` now supports one controlled upload flow with `file_picker`, document type selection, PDF/JPEG/PNG validation, 10 MB app-side size guard, safe cancel/error/success states, `VerificationRepository.uploadDocument`, and owner document reload. Checksum, previews/downloads, admin review, rejection reasons, scanning claims, public exposure, staging data, and production claims remain deferred |
 | Professional verification upload regression | `PROFESSIONAL_VERIFICATION_UPLOAD_REGRESSION.md` records focused proof for owner list success/empty/error, upload success with reload, picker cancellation, invalid type, 10 MB guard, safe backend failure, dependency presence, and private-data non-exposure |
 | Next surface after verification regression | `NEXT_SURFACE_AFTER_VERIFICATION_UPLOAD_REGRESSION_DECISION.md` selects professional basic profile field editing as the next backend-completed Flutter surface, with a boundary decision before runtime `displayName`/`category`/`specialty` wiring. Website/address, verification expansion, admin review, scheduling staging data, payments, reviews, calls, calendar sync, notes, prescriptions, staging, and production claims remain deferred |
+| Professional basic profile edit boundary | `PROFESSIONAL_BASIC_PROFILE_EDIT_BOUNDARY.md` selects `editYourName` as a display-name-only runtime update. The next implementation must read an existing professional profile, preserve category/specialty/bio, block empty-profile creation, and keep website/address/account/verification/availability/appointment/payment/review/call/calendar/note/prescription data out |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

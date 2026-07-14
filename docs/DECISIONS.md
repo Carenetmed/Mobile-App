@@ -1306,3 +1306,23 @@ professional profile fields in the current contract and must remain deferred.
 
 Next: 52.82 should define the professional basic profile edit boundary before
 runtime name/category/specialty wiring.
+
+## D136 - Professional display name update boundary accepted
+
+Task: 52.82
+
+Decision: Wire the next professional profile runtime slice as a display-name-only
+update from the existing `editYourName` route.
+
+Reason: `editYourName` has a single name field, while the backend professional
+profile update route requires the existing `category` and can preserve
+`specialty` and `bio`. Updating category or specialty from that screen would
+require new UI or hidden assumptions. The safe runtime shape is to read the
+existing professional profile, block empty-profile creation, save only the new
+`displayName`, and preserve existing `category`, `specialty`, and `bio`.
+Website, address, account identity, verification, availability, appointment,
+payment, review, call, calendar, note, prescription, staging, and production
+claims remain out of scope.
+
+Next: 52.83 should wire professional display name update from `editYourName`
+with focused Manage Profile tests.

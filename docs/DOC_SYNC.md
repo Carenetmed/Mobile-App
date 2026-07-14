@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.43** - scheduling patient-path regression |
-| Last completed | **52.42** - scheduling regression checkpoint selected |
+| NEXT task | **52.44** - decide professional availability management UI boundary |
+| Last completed | **52.43** - scheduling patient-path regression |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -250,6 +250,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-14 | Task 52.40 DONE - selected patient appointment cancellation as the next narrow scheduling UI lane; DOC_SYNC NEXT -> 52.41 |
 | 2026-07-14 | Task 52.41 DONE - wired eligible own appointment cancellation through the scheduling repository; DOC_SYNC NEXT -> 52.42 |
 | 2026-07-14 | Task 52.42 DONE - selected scheduling patient-path regression before professional availability management; DOC_SYNC NEXT -> 52.43 |
+| 2026-07-14 | Task 52.43 DONE - added scheduling patient-path regression proof and documented request/list/cancel coverage; DOC_SYNC NEXT -> 52.44 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

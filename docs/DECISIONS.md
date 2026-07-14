@@ -87,6 +87,7 @@ does not silently reinterpret established boundaries.
 | D080 | 2026-07-14 | First safe profile mutation UI | Select existing professional bio update from `addDescription` as the first safe profile mutation path. The next implementation must read an existing professional profile, preserve required `displayName` and `category` plus existing `specialty`, update only `bio`, and keep profile creation, name/category/specialty editing, website, address, patient profile, public listing, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions deferred | Phase 22, task 52.26 |
 | D081 | 2026-07-14 | Professional bio update wiring | Wire `addDescription` to update only the current professional profile `bio` after reading an existing professional profile. The update preserves existing `displayName`, `category`, and `specialty`; safe loading/error/empty states are shown; profile creation and wider profile/public-professional work remain deferred | Phase 22, task 52.27 |
 | D082 | 2026-07-14 | Next profile public listing lane | Select public verified professional listing into `SearchShellPage` as the next runtime lane. Replace only list-card name/category/specialty/bio data through `ProfileRepository.publicProfessionals`; keep public detail, Find Mentor, Specialist Details, availability, appointments, booking, reviews, ratings, prices, payments, calls, calendar sync, verification, patient profile, profile creation, and profile edit expansion deferred | Phase 22, task 52.28 |
+| D083 | 2026-07-14 | Search public listing wiring without fallback | Wire `SearchShellPage` to `ProfileRepository.publicProfessionals` and remove local specialist fallback for backend listing failures. Search now shows real loading/error/empty states, maps only public display/category/specialty/bio fields, keeps booking disabled, and keeps public detail, Find Mentor, Specialist Details, availability, appointments, ratings, prices, payments, reviews, calls, calendar sync, verification, and profile edit expansion deferred | Phase 22, task 52.29 |
 
 ## How to add a row
 
@@ -315,3 +316,21 @@ Specialist Details surfaces include availability, booking, ratings, prices, and
 detail data that are not provided by the public listing contract.
 
 Next: 52.29 should wire public verified professional listing to Search only.
+
+## D083 - Search public listing wiring without fallback
+
+Task: 52.29
+
+Decision: Wire `SearchShellPage` directly to
+`ProfileRepository.publicProfessionals` for public verified professional list
+cards. Do not fall back to `SearchLocalStore` when the backend listing fails.
+Backend errors and empty results must stay visible so integration failures can
+be debugged instead of hidden behind seeded data.
+
+Reason: Once a screen is backend-wired, seeded local backup data creates false
+confidence and can hide real configuration/API failures. The Search slice now
+uses only public backend fields for displayed provider data and keeps booking
+disabled because availability/appointment contracts are separate.
+
+Next: 52.30 should decide the next backend-integration lane before more runtime
+wiring.

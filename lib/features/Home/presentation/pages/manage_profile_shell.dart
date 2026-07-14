@@ -177,11 +177,11 @@ class _ProfileHeader extends StatelessWidget {
     final category = professional?.category.trim();
     final title =
         displayName == null || displayName.isEmpty
-            ? 'Old People Circle'
+            ? 'Professional profile'
             : displayName;
     final subtitle =
         category == null || category.isEmpty
-            ? 'Circle - ${profile.rating} - 120 members - ${profile.memberSince}'
+            ? 'Profile details unavailable'
             : category;
 
     return Container(
@@ -433,20 +433,22 @@ class _BasicSection extends StatelessWidget {
             label: 'Personal name',
             value:
                 displayName == null || displayName.isEmpty
-                    ? 'Dr. ${profile.name}'
+                    ? 'Not available'
                     : displayName,
           ),
           _InfoRow(
             label: 'Business name',
             value:
                 displayName == null || displayName.isEmpty
-                    ? 'Lagbaja Eye Clinic & Consulting firm'
+                    ? 'Not available'
                     : displayName,
           ),
           _InfoRow(
             label: 'Category',
             value:
-                category == null || category.isEmpty ? profile.role : category,
+                category == null || category.isEmpty
+                    ? 'Not available'
+                    : category,
           ),
           if (specialty != null && specialty.isNotEmpty)
             _InfoRow(label: 'Specialty', value: specialty),
@@ -481,7 +483,7 @@ class _AboutSection extends StatelessWidget {
       actionLabel: 'Edit description',
       onAction: onEdit,
       child: Text(
-        bio == null || bio.isEmpty ? profile.about : bio,
+        bio == null || bio.isEmpty ? 'Not available' : bio,
         style: TextStyle(
           fontSize: FontSizes.footer3,
           fontFamily: AppFonts.montserrat,

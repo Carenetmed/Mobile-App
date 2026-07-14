@@ -1,13 +1,19 @@
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
+import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
+import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
-import 'package:app_t/features/Home/presentation/state/search_local_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const Size _phoneSize = Size(430, 1200);
 
-Future<void> _pumpSearch(WidgetTester tester) async {
-  SearchLocalStore.reset();
+Future<void> _pumpSearch(
+  WidgetTester tester, {
+  ProfileRepository? profileRepository,
+}) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
@@ -15,65 +21,253 @@ Future<void> _pumpSearch(WidgetTester tester) async {
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
-      builder: (_, __) => const MaterialApp(home: SearchShellPage()),
+      builder:
+          (_, __) => MaterialApp(
+            home: SearchShellPage(
+              profileRepository:
+                  profileRepository ?? _FakeProfileRepository(failure: null),
+            ),
+          ),
     ),
   );
   await tester.pumpAndSettle();
 }
 
+class _FakeProfileRepository implements ProfileRepository {
+  _FakeProfileRepository({this.publicListing, this.failure});
+
+  final List<PublicProfessional>? publicListing;
+  final Object? failure;
+
+  @override
+  Future<List<PublicProfessional>> publicProfessionals() async {
+    final error = failure;
+    if (error != null) {
+      throw error;
+    }
+    return publicListing ?? const <PublicProfessional>[];
+  }
+
+  @override
+  Future<PatientProfile?> patientMe() => throw UnimplementedError();
+
+  @override
+  Future<ProfessionalProfile?> professionalMe() => throw UnimplementedError();
+
+  @override
+  Future<PatientProfile> updatePatientMe({
+    required String name,
+    int? age,
+    String? location,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<ProfessionalProfile> updateProfessionalMe({
+    required String displayName,
+    required String category,
+    String? specialty,
+    String? bio,
+  }) {
+    throw UnimplementedError();
+  }
+}
+
 void main() {
-  testWidgets('search tab shows real local specialist content', (tester) async {
-    await _pumpSearch(tester);
+  testWidgets('search tab shows backend error without fallback content', (
+    tester,
+  ) async {
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        failure: const AuthFailure(
+          type: AuthFailureType.missingConfiguration,
+          message: 'raw config message',
+        ),
+      ),
+    );
 
     expect(find.text('Search specialists'), findsOneWidget);
     expect(find.text('Available specialists'), findsOneWidget);
-    expect(find.text('Dr. Uzo Blessing'), findsOneWidget);
-    expect(find.text('Dr. Chris Amaka'), findsOneWidget);
+    expect(find.text('Backend is not configured yet.'), findsOneWidget);
+    expect(find.text('0 found'), findsOneWidget);
+    expect(find.text('Dr. Uzo Blessing'), findsNothing);
+    expect(find.text('Dr. Chris Amaka'), findsNothing);
   });
 
-  testWidgets('search field filters specialist results', (tester) async {
-    await _pumpSearch(tester);
+  testWidgets('search tab reads public verified professionals', (tester) async {
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[
+          PublicProfessional(
+            id: 'pro_1',
+            displayName: 'Dr Backend Public',
+            category: 'Cardiology',
+            specialty: 'Heart health',
+            bio: 'Backend public bio for verified care.',
+            verified: true,
+          ),
+        ],
+      ),
+    );
 
-    await tester.enterText(find.byType(TextFormField), 'psychologist');
-    await tester.pumpAndSettle();
-
-    expect(find.text('Dr. Lakasegbe'), findsOneWidget);
+    expect(find.text('Dr Backend Public'), findsOneWidget);
+    expect(find.text('Cardiology - Heart health'), findsOneWidget);
+    expect(find.text('Verified'), findsOneWidget);
     expect(find.text('Dr. Uzo Blessing'), findsNothing);
   });
 
-  testWidgets('category chip filters specialist results', (tester) async {
-    await _pumpSearch(tester);
-
-    await tester.tap(find.text('Generalist'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Dr. Uzo Blessing'), findsOneWidget);
-    expect(find.text('Dr. Chris Amaka'), findsOneWidget);
-    expect(find.text('Dr. Lakasegbe'), findsNothing);
-  });
-
-  testWidgets('schedule action marks a specialist locally', (tester) async {
-    await _pumpSearch(tester);
-
-    await tester.tap(find.text('Schedule').first);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Requested locally'), findsOneWidget);
-  });
-
-  testWidgets('profile action opens local specialist profile sheet', (
+  testWidgets('search filters public professionals by specialty', (
     tester,
   ) async {
-    await _pumpSearch(tester);
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[
+          PublicProfessional(
+            id: 'pro_1',
+            displayName: 'Dr Heart',
+            category: 'Cardiology',
+            specialty: 'Heart health',
+            bio: 'Backend public bio for cardiology.',
+            verified: true,
+          ),
+          PublicProfessional(
+            id: 'pro_2',
+            displayName: 'Dr Mind',
+            category: 'Psychology',
+            specialty: 'Mental wellness',
+            bio: 'Backend public bio for psychology.',
+            verified: true,
+          ),
+        ],
+      ),
+    );
+
+    await tester.enterText(find.byType(TextFormField), 'mental');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dr Mind'), findsOneWidget);
+    expect(find.text('Dr Heart'), findsNothing);
+  });
+
+  testWidgets('search field filters public professional results', (
+    tester,
+  ) async {
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[
+          PublicProfessional(
+            id: 'pro_1',
+            displayName: 'Dr Backend Heart',
+            category: 'Cardiology',
+            specialty: 'Heart health',
+            bio: 'Backend public bio for cardiology.',
+            verified: true,
+          ),
+          PublicProfessional(
+            id: 'pro_2',
+            displayName: 'Dr Backend Mind',
+            category: 'Psychology',
+            specialty: 'Mental wellness',
+            bio: 'Backend public bio for psychology.',
+            verified: true,
+          ),
+        ],
+      ),
+    );
+
+    await tester.enterText(find.byType(TextFormField), 'psychology');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dr Backend Mind'), findsOneWidget);
+    expect(find.text('Dr Backend Heart'), findsNothing);
+  });
+
+  testWidgets('category chip filters public professional results', (
+    tester,
+  ) async {
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[
+          PublicProfessional(
+            id: 'pro_1',
+            displayName: 'Dr Backend Heart',
+            category: 'Cardiology',
+            specialty: 'Heart health',
+            bio: 'Backend public bio for cardiology.',
+            verified: true,
+          ),
+          PublicProfessional(
+            id: 'pro_2',
+            displayName: 'Dr Backend Mind',
+            category: 'Psychology',
+            specialty: 'Mental wellness',
+            bio: 'Backend public bio for psychology.',
+            verified: true,
+          ),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text('Cardiology'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dr Backend Heart'), findsOneWidget);
+    expect(find.text('Dr Backend Mind'), findsNothing);
+  });
+
+  testWidgets('booking action remains disabled for public listing', (
+    tester,
+  ) async {
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[
+          PublicProfessional(
+            id: 'pro_1',
+            displayName: 'Dr Backend Public',
+            category: 'Cardiology',
+            specialty: 'Heart health',
+            bio: 'Backend public bio for verified care.',
+            verified: true,
+          ),
+        ],
+      ),
+    );
+
+    final button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Booking deferred'),
+    );
+    expect(button.onPressed, isNull);
+  });
+
+  testWidgets('profile action opens public listing profile sheet', (
+    tester,
+  ) async {
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[
+          PublicProfessional(
+            id: 'pro_1',
+            displayName: 'Dr Backend Public',
+            category: 'Cardiology',
+            specialty: 'Heart health',
+            bio: 'Backend public bio for verified care.',
+            verified: true,
+          ),
+        ],
+      ),
+    );
 
     await tester.tap(find.text('View profile').first);
     await tester.pumpAndSettle();
 
-    expect(
-      find.text(
-        'Available for general care, ENT concerns, neurological reviews, and first-line triage.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Backend public bio for verified care.'), findsOneWidget);
   });
 }

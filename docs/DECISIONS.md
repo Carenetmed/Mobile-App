@@ -527,3 +527,20 @@ calendar, provider workspace, and professional scheduling complexity.
 
 Next: 52.41 should add a cancel action only for eligible own appointment cards
 and update the visible status from the backend response.
+
+## D095 - Patient appointment cancellation
+
+Task: 52.41
+
+Decision: Add patient-side cancellation from the backend-backed Appointments
+screen only for eligible upcoming `REQUESTED` and `ACCEPTED` cards. Call
+`SchedulingRepository.cancelAppointment`, then replace the visible card state
+with the backend response.
+
+Reason: This closes the smallest user-facing gap after appointment request and
+own-list visibility. The frontend uses current status and section placement to
+decide whether to show the action, but the backend remains authority for
+ownership, role, and valid transitions.
+
+Next: 52.42 should decide whether to pause for scheduling regression or move to
+professional availability management before adding more runtime behavior.

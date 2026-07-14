@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 Specialist Details public availability wired.
+**Last updated:** 2026-07-15 Specialist Details public availability regression passed.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -121,6 +121,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Patient profile name update regression | `PATIENT_PROFILE_NAME_UPDATE_REGRESSION.md` records focused proof for name-only payload, no age/location mutation, safe failure/no false success, local username/email/bio preservation, and deferred-work accuracy |
 | Next backend-completed surface after patient profile | `NEXT_SURFACE_AFTER_PATIENT_PROFILE_DECISION.md` selects Specialist Details public professional/availability wiring as the next narrow Flutter lane. The next runtime slice should use existing public professional and public availability repository surfaces without inventing a public detail endpoint, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims |
 | Specialist Details public availability | `specialistDetails` can now resolve a backend public professional id through `ProfileRepository.publicProfessionals`, render backend public profile fields, load `SchedulingRepository.publicAvailability`, generate backend request options, and submit `SchedulingRepository.requestAppointment`. The backend path does not show seeded local slots or claim local booking success. The old local path remains only for local-only test/dev navigation without registered repositories |
+| Specialist Details public availability regression | `SPECIALIST_DETAILS_PUBLIC_AVAILABILITY_REGRESSION.md` records focused proof for backend id resolution, Search handoff, dashboard local compatibility, no local slot fallback, generated request payload, safe request/availability failures, and absence of public-detail endpoint invention or deferred feature leakage |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

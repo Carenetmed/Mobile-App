@@ -1025,3 +1025,25 @@ account behavior out of `/patients/me`.
 
 Next: 52.68 should decide the next backend-completed Flutter surface from the
 completed-surface map and deferred-work register before any new runtime wiring.
+
+## D122 - Specialist Details selected as next public-professional surface
+
+Task: 52.68
+
+Decision: Select Specialist Details public professional/availability wiring as
+the next narrow backend-completed Flutter surface.
+
+Reason: Patient profile name update is regression-proven, scheduling staging
+smoke remains blocked on deliberate staging data, verification upload/list
+requires larger file/storage/document-state UX decisions, and admin dashboard
+work is a separate role surface. Search already consumes public verified
+professionals, public availability, and appointment request repository
+boundaries, while Specialist Details remains a visible local provider-detail
+surface that can be moved toward the same backend-backed public data without
+inventing a new backend route.
+
+Next: 52.69 should wire Specialist Details to public professional and public
+availability data only where a backend professional id can be resolved
+honestly. It must not invent a public detail endpoint or include verification,
+admin, payments, reviews, calls, calendar sync, notes, prescriptions, staging
+data, or production claims.

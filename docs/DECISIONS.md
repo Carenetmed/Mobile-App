@@ -1364,3 +1364,22 @@ staging, or production behavior was added in this lane.
 
 Next: 52.85 should decide the next backend-completed Flutter surface before
 any broader profile editing or another product area is wired.
+
+## D139 - Professional category/specialty editing selected next
+
+Task: 52.85
+
+Decision: Select professional category/specialty editing as the next
+backend-completed Flutter surface, but require a boundary decision before any
+runtime code.
+
+Reason: The professional display-name-only update is regression-proven. The
+current backend professional profile contract also accepts `category` and
+`specialty`, but the current app has no safe category/specialty edit UI.
+Runtime wiring needs a field and validation boundary first. Professional
+profile creation, website/address persistence, account identity, verification,
+availability, appointment, payment, review, call, calendar, note, prescription,
+staging, and production behavior remain out of scope.
+
+Next: 52.86 should define the professional category/specialty edit boundary
+before runtime wiring.

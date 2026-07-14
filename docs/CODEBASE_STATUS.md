@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 professional display name update regression passed.
+**Last updated:** 2026-07-15 next surface selected after professional display-name regression.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -135,6 +135,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Professional basic profile edit boundary | `PROFESSIONAL_BASIC_PROFILE_EDIT_BOUNDARY.md` selects `editYourName` as a display-name-only runtime update. The next implementation must read an existing professional profile, preserve category/specialty/bio, block empty-profile creation, and keep website/address/account/verification/availability/appointment/payment/review/call/calendar/note/prescription data out |
 | Professional display name update | `editYourName` now reads an existing professional profile, pre-fills backend `displayName`, saves only a changed `displayName` through `ProfileRepository.updateProfessionalMe`, preserves existing category/specialty/bio, blocks empty-profile creation, and shows safe validation/error/success states. Category/specialty editing, profile creation, website/address persistence, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging, and production claims remain deferred |
 | Professional display name update regression | `PROFESSIONAL_DISPLAY_NAME_UPDATE_REGRESSION.md` proves the current display-name-only profile update boundary with focused tests, analyzer, targeted preservation checks, empty-profile blocking, safe failure handling, and deferred-work accuracy. No broader profile editing is selected until the next decision slice |
+| Next surface after display-name regression | `NEXT_SURFACE_AFTER_DISPLAY_NAME_REGRESSION_DECISION.md` selects professional category/specialty editing as the next backend-completed Flutter surface, with a boundary decision before runtime wiring. Profile creation, website/address persistence, verification/admin, scheduling staging data, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging, and production claims remain deferred |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

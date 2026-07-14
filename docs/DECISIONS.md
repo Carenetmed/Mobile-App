@@ -90,6 +90,7 @@ does not silently reinterpret established boundaries.
 | D083 | 2026-07-14 | Search public listing wiring without fallback | Wire `SearchShellPage` to `ProfileRepository.publicProfessionals` and remove local specialist fallback for backend listing failures. Search now shows real loading/error/empty states, maps only public display/category/specialty/bio fields, keeps booking disabled, and keeps public detail, Find Mentor, Specialist Details, availability, appointments, ratings, prices, payments, reviews, calls, calendar sync, verification, and profile edit expansion deferred | Phase 22, task 52.29 |
 | D084 | 2026-07-14 | Scheduling availability appointment next lane | Select scheduling as the next backend-integration lane, but start with a frontend contract slice before runtime wiring. The next slice must map completed backend availability and appointment routes into Flutter repository/entities/screen boundaries, preserve no local fallback behavior, and keep public detail invention, direct booking, payments, notifications, reviews, calls, calendar sync, admin override, notes, and prescriptions deferred | Phase 22, task 52.30 |
 | D085 | 2026-07-14 | Scheduling availability appointment frontend contract | Define the Flutter contract for public/professional availability and appointment routes before runtime wiring. The next implementation must add entities/models/API client/repository/DI/tests only, must not wire UI screens yet, and must preserve no local fallback for backend-owned scheduling data | Phase 22, task 52.31 |
+| D086 | 2026-07-14 | Scheduling repository boundary | Add `SchedulingApiClient` and `SchedulingRepository` with availability and appointment entities/models, DI registration, and focused tests. Public availability sends no auth header; protected availability/appointment calls require stored session bearer auth; request/reschedule payloads send only backend-accepted fields; lifecycle actions send no trusted status body. No UI screens are wired yet | Phase 22, task 52.32 |
 
 ## How to add a row
 
@@ -369,3 +370,18 @@ success. A repository-first slice lets tests prove headers, payloads, parsing,
 safe errors, and authority boundaries before user-facing screens change.
 
 Next: 52.32 should add the scheduling repository boundary only.
+
+## D086 - Scheduling repository boundary
+
+Task: 52.32
+
+Decision: Add the scheduling repository/API boundary before UI wiring.
+
+Reason: Scheduling screens still contain local draft/seeded behavior. The
+repository boundary proves the backend route shape, bearer-token behavior,
+safe public availability access, allowed request payloads, and lifecycle
+actions before any visible booking or availability surface can claim backend
+success.
+
+Next: 52.33 should wire public availability read as the first scheduling UI
+surface while keeping appointment request disabled/deferred.

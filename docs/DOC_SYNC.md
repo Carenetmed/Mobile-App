@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.32** - add scheduling repository boundary |
-| Last completed | **52.31** - scheduling/availability/appointment frontend contract defined |
+| NEXT task | **52.33** - wire public availability read without local fallback |
+| Last completed | **52.32** - scheduling repository boundary added |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -239,6 +239,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-14 | Task 52.29 DONE - wired Search to public verified professionals without local fallback and kept booking/detail expansion deferred; DOC_SYNC NEXT -> 52.30 |
 | 2026-07-14 | Task 52.30 DONE - selected scheduling/availability/appointment contract definition as the next backend-integration lane; DOC_SYNC NEXT -> 52.31 |
 | 2026-07-14 | Task 52.31 DONE - defined scheduling/availability/appointment frontend contract and queued repository boundary; DOC_SYNC NEXT -> 52.32 |
+| 2026-07-14 | Task 52.32 DONE - added scheduling repository/API boundary and focused tests without UI wiring; DOC_SYNC NEXT -> 52.33 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

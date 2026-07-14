@@ -1227,3 +1227,24 @@ PDF-capable file picker/file selector dependency.
 
 Next: 52.78 should decide the upload UI and file-picker dependency boundary
 before adding runtime upload behavior.
+
+## D132 - Professional verification upload picker boundary accepted
+
+Task: 52.78
+
+Decision: The professional verification upload UI should use a PDF-capable
+file picker boundary in the next runtime implementation slice.
+
+Reason: The accepted verification upload boundary supports PDF, JPEG, and PNG
+documents, while the current direct dependency set only has `image_picker`.
+Using `image_picker` would silently exclude PDFs and create an incomplete
+verification upload flow. The existing repository already accepts the required
+metadata and bytes through `VerificationUploadRequest`, so the next runtime
+slice should add a suitable picker dependency, validate one selected PDF/JPEG/PNG
+file under a 10 MB app-side cap, call `VerificationRepository.uploadDocument`,
+show upload/success/safe-error states, and reload owner documents. Checksum,
+previews, admin review, public document exposure, staging data, and production
+claims stay deferred.
+
+Next: 52.79 should wire the professional verification upload flow with the
+selected PDF-capable picker dependency and focused widget tests.

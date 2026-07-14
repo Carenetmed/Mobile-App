@@ -1184,3 +1184,26 @@ documents.
 Next: 52.76 should add verification entities, API client, repository, signed
 upload PUT helper, and focused tests without runtime screen wiring or admin
 review UI.
+
+## D130 - Professional verification repository boundary added
+
+Task: 52.76
+
+Decision: Add the Flutter repository/API boundary for professional-owned
+verification documents before wiring the Manage Profile runtime screen.
+
+Reason: Verification uploads involve private documents and short-lived signed
+storage URLs. The app now has safe `VerificationDocument` and
+`VerificationUploadRequest` entities, a `VerificationApiClient`, and a
+`VerificationRepository` that requires a stored session, sends bearer auth to
+protected backend routes, performs upload-init, uses the signed upload URL only
+inside the data boundary, and completes uploads with allowed metadata. Focused
+tests prove owner document list parsing, allowed upload-init metadata, internal
+signed PUT without bearer auth, upload-complete metadata, missing-session and
+missing-config failures, and safe server-error mapping. Runtime screen wiring,
+file-picker UI, admin review, previews/downloads, rejection reasons, public
+document exposure, staging data, and production claims remain deferred.
+
+Next: 52.77 should wire a Manage Profile-owned verification documents shell
+against `VerificationRepository.documents` and keep upload UI scoped safely if
+file-picker/runtime upload UX needs a follow-up slice.

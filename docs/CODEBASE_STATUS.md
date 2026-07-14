@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-14 profile repository boundary added.
+**Last updated:** 2026-07-14 professional appointment completion wiring added.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -101,6 +101,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Professional appointment accept/decline | `appointments` now reads authenticated session role via `SessionStore` before showing role-specific actions. Professional users see `Accept`/`Decline` only on eligible upcoming `REQUESTED` appointments; patient users keep cancellation and do not see professional actions. Success replaces visible status from backend response; failures use safe errors |
 | Professional appointment lifecycle regression | `PROFESSIONAL_APPOINTMENT_LIFECYCLE_REGRESSION.md` records focused proof for patient cancel, professional accept/decline, role separation, state separation, safe failure behavior, and the absence of reschedule/complete/payment/calendar/notes UI |
 | Appointment reschedule/completion boundary | `APPOINTMENT_RESCHEDULE_COMPLETION_BOUNDARY_DECISION.md` selects professional completion before reschedule. Completion should be professional-only, accepted-only, after scheduled end time, and should send no trusted request body; reschedule remains deferred until availability/time-selection UX is decided |
+| Professional appointment completion | `appointments` now shows `Complete` only to professional sessions for accepted backend appointments whose scheduled end time has passed. The action calls `SchedulingRepository.completeAppointment`, replaces visible status from the backend response, and keeps safe error handling. Reschedule, patient completion, payments, notifications, calendar sync, reviews, notes, prescriptions, admin override, no-show/disputes, and calls remain deferred |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

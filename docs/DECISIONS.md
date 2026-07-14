@@ -895,3 +895,24 @@ Next: 52.61 should decide the next backend-completed Flutter surface after
 reviewing the completed surface map, deferred-work register, current
 profile/verification/auth/account status, and the scheduling staging-data
 blocker. It should not implement runtime behavior.
+
+## D115 - Patient self profile is next backend-completed Flutter surface
+
+Task: 52.61
+
+Decision: Choose patient self profile as the next backend-completed Flutter
+surface, but require a Settings/Profile mapping decision before runtime wiring.
+
+Reason: Scheduling end-to-end smoke is blocked on deliberate staging data;
+verification upload/list is not ready while staging reports
+`verificationStorage: disabled`; admin verification dashboard is outside the
+mobile milestone; phone/OTP and MFA remain backend-deferred; and public
+professional detail lacks a documented detail route. Patient self profile has
+`GET/PUT /patients/me` already represented in the Flutter repository boundary
+and belongs to the existing account/settings surface, but the current UI fields
+do not map cleanly to the backend contract.
+
+Next: 52.62 should define how Settings/Profile maps to patient profile fields
+before any runtime read/update. It should separate patient profile data from
+username, email, auth/security, public profile, verification, scheduling, and
+destructive account actions.

@@ -215,7 +215,8 @@
 | 52.72 | Wire Find Mentor To Public Professionals: replace the backend-capable Find Mentor path with public verified professionals from `ProfileRepository.publicProfessionals`, show safe loading/error/empty states, pass backend public professional ids into `specialistDetails`, keep local mentor behavior only for local-only test/dev navigation without a repository, and do not add public detail endpoint invention, local slot fallback, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **DONE** |
 | 52.73 | Run Find Mentor Public Professionals Regression Checkpoint: verify backend public listing, safe loading/error/empty states, category filtering, no local slot fallback/direct fake booking in the backend path, backend id handoff to Specialist Details, dashboard local compatibility, docs/deferred-work accuracy, and absence of public-detail endpoint invention, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing the next surface | M | **DONE** |
 | 52.74 | Decide Next Backend-Completed Flutter Surface After Find Mentor Regression: review Find Mentor regression, completed backend surface map, deferred-work register, verification upload/list blockers, scheduling staging-data blocker, profile mutation gaps, and release/staging risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.75 | Define Professional Verification Upload/List UI Boundary: review backend verification upload-init, upload-complete, owner document list, storage-readiness, private-document rules, existing app entry points, and file-picker constraints before choosing the first runtime verification implementation shape; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.75 | Define Professional Verification Upload/List UI Boundary: review backend verification upload-init, upload-complete, owner document list, storage-readiness, private-document rules, existing app entry points, and file-picker constraints before choosing the first runtime verification implementation shape; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.76 | Add Professional Verification Repository Boundary: add verification document/upload entities, API client, repository, signed upload PUT helper, and focused tests for owner document list, upload-init, upload-complete, safe errors, and no signed URL/object-key exposure in public entities; do not wire runtime screens or admin review UI | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -231,16 +232,18 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.74)
+## Manual test (last completed: task 52.75)
 
-Task `52.74` decides the next backend-completed Flutter surface after Find Mentor regression.
+Task `52.75` defines the professional verification upload/list UI boundary.
 
-1. Confirm `NEXT_SURFACE_AFTER_FIND_MENTOR_DECISION.md` selects professional verification upload/list as the next lane, with a decision-only boundary slice first.
-2. Confirm scheduling staging smoke remains blocked on deliberate backend/staging test data, not more Flutter runtime feature work.
-3. Confirm profile edit expansion, Google link/unlink/sign-up, admin verification dashboard, public detail endpoint, payments, reviews, calls, calendar sync, notes, prescriptions, and release/staging access remain deferred.
-4. Confirm no runtime Dart, Android, iOS, or test files changed in this decision-only slice.
-5. `git diff --check` - no whitespace errors.
-6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.75`
+1. Confirm `PROFESSIONAL_VERIFICATION_UPLOAD_LIST_BOUNDARY.md` selects Manage Profile as the professional-owned entry point.
+2. Confirm the boundary defines list/status plus one controlled upload flow using upload-init, signed upload PUT, upload-complete, and list reload.
+3. Confirm private document rules forbid signed URL/object-key/local-path/file-content exposure and admin/public leakage.
+4. Confirm the next runtime shape starts with a repository/API boundary slice, not screen wiring.
+5. Confirm admin review UI, rejection reason persistence, file preview, camera capture, batch/background upload, scanning/checksum proof claims, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and release readiness remain deferred.
+6. Confirm no runtime Dart, Android, iOS, or test files changed in this decision-only slice.
+7. `git diff --check` - no whitespace errors.
+8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.76`
 
 ## Previous runtime manual test baseline
 
@@ -592,6 +595,7 @@ Task `52.74` decides the next backend-completed Flutter surface after Find Mento
 | 2026-07-15 | 52.72 | DONE - Find Mentor now reads backend public professionals where available, routes backend ids to Specialist Details, and avoids local fallback/direct fake booking in the backend path |
 | 2026-07-15 | 52.73 | DONE - Find Mentor public professionals regression passed for loading, empty, success, category filter, backend id handoff, safe failure, no local slot fallback, dashboard compatibility, and Specialist Details compatibility |
 | 2026-07-15 | 52.74 | DONE - selected professional verification upload/list as the next backend-completed Flutter lane, with a required boundary decision before runtime upload/list wiring |
+| 2026-07-15 | 52.75 | DONE - professional verification upload/list boundary accepted: Manage Profile entry, owner list/status plus controlled upload flow, private-document rules, and repository-boundary next |
 
 ---
 

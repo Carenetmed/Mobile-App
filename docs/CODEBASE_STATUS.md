@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 patient profile name update wired.
+**Last updated:** 2026-07-15 patient profile name update regression passed.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -118,6 +118,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Patient profile read regression | `PATIENT_PROFILE_READ_REGRESSION.md` records focused proof for patient profile read success, empty-profile, safe failure, local save preservation, and absence of `updatePatientMe` mutation |
 | Patient profile update boundary | `PATIENT_PROFILE_UPDATE_BOUNDARY_DECISION.md` selects a constrained next runtime slice: Settings/Profile may update backend patient `name` only from combined first/last name. Age/location mutation, username/email/bio persistence, auth/security, verification, scheduling, and destructive account actions remain deferred |
 | Patient profile name update | Settings/Profile now calls `ProfileRepository.updatePatientMe` with combined first/last name only, shows safe loading/error behavior, preserves local username/email/bio save behavior, and blocks false success on backend name-save failure. Age/location mutation and account/security fields remain deferred |
+| Patient profile name update regression | `PATIENT_PROFILE_NAME_UPDATE_REGRESSION.md` records focused proof for name-only payload, no age/location mutation, safe failure/no false success, local username/email/bio preservation, and deferred-work accuracy |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

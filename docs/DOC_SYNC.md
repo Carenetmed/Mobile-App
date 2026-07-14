@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.66** - wire patient profile name update from Settings/Profile |
-| Last completed | **52.65** - patient profile update boundary decision |
+| NEXT task | **52.67** - patient profile name update regression checkpoint |
+| Last completed | **52.66** - patient profile name update wired |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -101,6 +101,7 @@ Do not use old chat history. Do not start the next task without my approval.
 
 | Date | Fixes |
 |------|--------|
+| 2026-07-15 | Task 52.66 DONE - Settings/Profile now updates backend patient profile name only, preserves local username/email/bio behavior, and blocks false success on backend name-save failure; DOC_SYNC NEXT -> 52.67 |
 | 2026-07-15 | Task 52.65 DONE - selected constrained patient profile name update as the next runtime slice, with username/email/bio/security/verification/scheduling data excluded from `/patients/me`; DOC_SYNC NEXT -> 52.66 |
 | 2026-07-15 | Task 52.64 DONE - patient profile read regression passed for success, empty-profile, safe failure, local save preservation, and no `updatePatientMe` mutation; DOC_SYNC NEXT -> 52.65 |
 | 2026-07-15 | Task 52.63 DONE - Settings/Profile now reads patient profile through `ProfileRepository.patientMe`, displays backend name/age/location read-only, and preserves local save/no-mutation behavior; DOC_SYNC NEXT -> 52.64 |

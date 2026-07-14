@@ -993,3 +993,19 @@ belong to separate contracts.
 Next: 52.66 should wire patient profile name update from Settings/Profile with
 safe loading/success/error states and focused tests proving the payload remains
 name-only.
+
+## D120 - Patient profile name update wired
+
+Task: 52.66
+
+Decision: Settings/Profile now updates backend patient profile `name` through
+`ProfileRepository.updatePatientMe` using combined first and last name only.
+The existing local save behavior remains responsible for username, email, and
+bio, and backend failure blocks a false success claim.
+
+Reason: This implements the constrained update boundary from D119 without
+mixing age, location, username, email, bio, auth/security, verification,
+scheduling, public profile, or destructive account data into `/patients/me`.
+
+Next: 52.67 should run a patient profile name update regression checkpoint
+before any broader profile/account surface is selected.

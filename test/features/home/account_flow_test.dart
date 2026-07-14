@@ -350,45 +350,91 @@ void main() {
     expect(find.text('Lagbaja Tamedu'), findsOneWidget);
   });
 
-  testWidgets(
-    'settings profile local save does not update backend patient profile',
-    (tester) async {
-      final repository = _FakeProfileRepository(
-        patientProfile: const PatientProfile(
-          id: 'patient-1',
-          name: 'Ada Lovelace',
-          age: 37,
-          location: 'Lagos',
-        ),
-      );
-      await _pumpSettingsProfile(tester, profileRepository: repository);
+  testWidgets('settings profile saves backend patient name only', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository(
+      patientProfile: const PatientProfile(
+        id: 'patient-1',
+        name: 'Ada Lovelace',
+        age: 37,
+        location: 'Lagos',
+      ),
+    );
+    await _pumpSettingsProfile(tester, profileRepository: repository);
 
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'lagbaja_carenet'),
-        'lagbaja_new',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'doctor@carenet.app'),
-        'newdoctor@carenet.app',
-      );
-      await tester.enterText(
-        find.widgetWithText(
-          TextFormField,
-          'Husband | Father | Anonymous | Needs help constantly',
-        ),
-        'Local test bio update',
-      );
-      await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'Ada'), 'Grace');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Lovelace'),
+      'Hopper',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'lagbaja_carenet'),
+      'lagbaja_new',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'doctor@carenet.app'),
+      'newdoctor@carenet.app',
+    );
+    await tester.enterText(
+      find.widgetWithText(
+        TextFormField,
+        'Husband | Father | Anonymous | Needs help constantly',
+      ),
+      'Local test bio update',
+    );
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Save Changes'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Save Changes'));
+    await tester.pumpAndSettle();
 
-      expect(repository.patientMeCalls, 1);
-      expect(repository.updatePatientMeCalls, 0);
-      expect(AccountLocalStore.snapshot.value.email, 'newdoctor@carenet.app');
-      expect(AccountLocalStore.snapshot.value.bio, 'Local test bio update');
-    },
-  );
+    expect(repository.patientMeCalls, 1);
+    expect(repository.updatePatientMeCalls, 1);
+    expect(repository.lastUpdatedName, 'Grace Hopper');
+    expect(repository.lastUpdatedAge, isNull);
+    expect(repository.lastUpdatedLocation, isNull);
+    expect(AccountLocalStore.snapshot.value.firstName, 'Grace');
+    expect(AccountLocalStore.snapshot.value.lastName, 'Hopper');
+    expect(AccountLocalStore.snapshot.value.email, 'newdoctor@carenet.app');
+    expect(AccountLocalStore.snapshot.value.bio, 'Local test bio update');
+  });
+
+  testWidgets('settings profile blocks false success on patient name failure', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository(
+      updateFailure: const AuthFailure(
+        type: AuthFailureType.server,
+        message: 'Service is unavailable. Please try again.',
+      ),
+    );
+    await _pumpSettingsProfile(tester, profileRepository: repository);
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Lagbaja'),
+      'Grace',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Tamedu'),
+      'Hopper',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'lagbaja_carenet'),
+      'lagbaja_new',
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Save Changes'));
+    await tester.pumpAndSettle();
+
+    expect(repository.updatePatientMeCalls, 1);
+    expect(
+      find.text('Service is unavailable. Please try again.'),
+      findsOneWidget,
+    );
+    expect(AccountLocalStore.snapshot.value.firstName, 'Lagbaja');
+    expect(AccountLocalStore.snapshot.value.username, 'lagbaja_carenet');
+  });
 
   testWidgets('authentication row opens two-step verification route', (
     tester,
@@ -1056,12 +1102,20 @@ class _FakeAccountRepository implements AccountRepository {
 }
 
 class _FakeProfileRepository implements ProfileRepository {
-  _FakeProfileRepository({this.patientProfile, this.failure});
+  _FakeProfileRepository({
+    this.patientProfile,
+    this.failure,
+    this.updateFailure,
+  });
 
   final PatientProfile? patientProfile;
   final AuthFailure? failure;
+  final AuthFailure? updateFailure;
   int patientMeCalls = 0;
   int updatePatientMeCalls = 0;
+  String? lastUpdatedName;
+  int? lastUpdatedAge;
+  String? lastUpdatedLocation;
 
   @override
   Future<PatientProfile?> patientMe() async {
@@ -1080,6 +1134,13 @@ class _FakeProfileRepository implements ProfileRepository {
     String? location,
   }) async {
     updatePatientMeCalls += 1;
+    lastUpdatedName = name;
+    lastUpdatedAge = age;
+    lastUpdatedLocation = location;
+    final failure = updateFailure;
+    if (failure != null) {
+      throw failure;
+    }
     return PatientProfile(name: name, age: age, location: location);
   }
 

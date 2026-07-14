@@ -736,3 +736,21 @@ boundaries.
 
 Next: 52.53 should run the scheduling core regression checkpoint. Do not add
 runtime reschedule behavior in 52.53.
+
+## D107 - Scheduling core regression checkpoint complete
+
+Task: 52.53
+
+Decision: The scheduling core has enough focused regression proof to move to a
+post-regression lane decision rather than adding more runtime behavior in this
+slice.
+
+Reason: Search public listing/availability/request, Appointments own-list and
+lifecycle actions, selectedDates availability management, and scheduling
+repository payload boundaries now have explicit focused coverage. Tests also
+guard against seeded fallback, raw backend error exposure, fake success, and
+accidental reschedule/payment/notification/calendar/review/notes/prescription/
+call/admin UI.
+
+Next: 52.54 should decide whether to define reschedule UX, move to another
+backend-completed surface, or run a real-device/staging smoke checkpoint.

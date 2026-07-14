@@ -50,13 +50,15 @@ void main() {
     expect(find.text('Booking starts here.'), findsOneWidget);
   });
 
-  testWidgets('booking form validates and saves a local draft', (tester) async {
+  testWidgets('booking form validates and prepares backend-required details', (
+    tester,
+  ) async {
     await _pumpAppointments(tester);
 
     await tester.tap(find.text('Book appointment'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Save booking request'));
+    await tester.tap(find.text('Review request details'));
     await tester.pumpAndSettle();
 
     expect(find.text('Clinician is required'), findsOneWidget);
@@ -71,16 +73,23 @@ void main() {
       find.byType(TextFormField).at(2),
       'Review recurring headaches',
     );
-    await tester.tap(find.text('Save booking request'));
+    await tester.tap(find.text('Review request details'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Latest booking draft'), findsOneWidget);
+    expect(find.text('Request details'), findsOneWidget);
     expect(find.text('Dr. Bello'), findsWidgets);
     expect(find.text('Review recurring headaches'), findsWidgets);
-    expect(find.text('Draft saved'), findsOneWidget);
+    expect(find.text('Backend request not sent'), findsOneWidget);
+    expect(
+      find.text(
+        'No appointment request has been sent yet. Choose a backend availability slot in the upcoming request flow before this can be submitted.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Confirmed locally'), findsNothing);
   });
 
-  testWidgets('booking draft can be confirmed or cancelled locally', (
+  testWidgets('prepared booking details can be cleared but not confirmed', (
     tester,
   ) async {
     await _pumpAppointments(tester);
@@ -95,19 +104,15 @@ void main() {
       find.byType(TextFormField).at(2),
       'Review recurring headaches',
     );
-    await tester.tap(find.text('Save booking request'));
+    await tester.tap(find.text('Review request details'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Draft saved'), findsOneWidget);
+    expect(find.text('Backend request not sent'), findsOneWidget);
+    expect(find.text('Confirm request'), findsNothing);
 
-    await tester.tap(find.text('Confirm request'));
+    await tester.tap(find.text('Clear details'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Confirmed locally'), findsOneWidget);
-
-    await tester.tap(find.text('Cancel draft'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Latest booking draft'), findsNothing);
+    expect(find.text('Request details'), findsNothing);
   });
 }

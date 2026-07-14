@@ -1,7 +1,7 @@
 # Scheduling, availability, and appointment frontend contract
 
 **Task:** 52.31
-**Status:** Accepted contract; repository boundary implemented in 52.32; first public availability UI read implemented in 52.33; appointment request UI path decided in 52.34
+**Status:** Accepted contract; repository boundary implemented in 52.32; first public availability UI read implemented in 52.33; appointment request UI path decided in 52.34; local booking success removed in 52.35
 
 Purpose: define how the Flutter app should consume the completed backend
 availability and appointment surfaces without seeded fallback, fake booking
@@ -280,6 +280,7 @@ Decision result:
 - Future request UI should start from a backend public professional plus public
   availability, then send only `professionalProfileId`, `requestedStartAt`, and
   `durationMinutes`.
+- 52.35 removed local `Confirmed locally` behavior from `bookAppointment`.
 
 ---
 

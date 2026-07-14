@@ -93,6 +93,7 @@ does not silently reinterpret established boundaries.
 | D086 | 2026-07-14 | Scheduling repository boundary | Add `SchedulingApiClient` and `SchedulingRepository` with availability and appointment entities/models, DI registration, and focused tests. Public availability sends no auth header; protected availability/appointment calls require stored session bearer auth; request/reschedule payloads send only backend-accepted fields; lifecycle actions send no trusted status body. No UI screens are wired yet | Phase 22, task 52.32 |
 | D087 | 2026-07-14 | Public availability read in Search | Wire the Search public professional profile sheet to `SchedulingRepository.publicAvailability` for the selected backend public professional id. Show real loading/error/empty availability states, render only returned backend windows, keep booking disabled/deferred, and do not reintroduce local specialist or slot fallback | Phase 22, task 52.33 |
 | D088 | 2026-07-14 | Appointment request UI path | Do not adapt the old free-text `bookAppointment` form directly into backend request wiring. First remove local `Confirmed locally`/fake booking success, then define a concrete request UX from backend public professional plus public availability; backend request success must mean `REQUESTED`, not booked/confirmed | Phase 22, task 52.34 |
+| D089 | 2026-07-14 | Remove local booking success | Remove local `Confirmed locally`/fake booking completion from `bookAppointment`. The route may still validate and review details, but it must show `Backend request not sent` and cannot claim save/confirmation until real appointment request wiring exists | Phase 22, task 52.35 |
 
 ## How to add a row
 
@@ -422,3 +423,18 @@ shape would either send unsupported fields or preserve fake booking success.
 
 Next: 52.35 should remove local booking success before real appointment request
 wiring.
+
+## D089 - Remove local booking success
+
+Task: 52.35
+
+Decision: Keep the `bookAppointment` route available, but remove local booking
+confirmation/success behavior. The route can review typed details only and must
+state that no backend appointment request has been sent.
+
+Reason: This removes a fake success path before real appointment request wiring.
+Future request work can now build from backend public professional plus public
+availability without competing with an older local confirmation state.
+
+Next: 52.36 should define the concrete appointment request UX before runtime
+booking is wired.

@@ -206,7 +206,8 @@
 | 52.63 | Wire Patient Profile Read To Settings Profile: call `ProfileRepository.patientMe` from Settings/Profile, show safe loading/error/empty-profile states, display backend patient name plus read-only age/location summary when available, keep local save for non-backend fields unchanged, and do not call `updatePatientMe` or create profile data | M | **DONE** |
 | 52.64 | Run Patient Profile Read Regression Checkpoint: verify Settings/Profile patient profile read success, empty-profile, safe failure, no `updatePatientMe` call, local save preservation, docs/deferred-work accuracy, and absence of username/email/bio/security/verification/scheduling mutation before deciding any patient profile update slice | M | **DONE** |
 | 52.65 | Decide Patient Profile Update Boundary Or Next Surface: review the patient profile read regression, Settings/Profile field mismatch, backend `PUT /patients/me` contract, and deferred account/security risks before choosing a constrained update UX or moving to another backend-completed surface; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.66 | Wire Patient Profile Name Update From Settings Profile: call `ProfileRepository.updatePatientMe` from Settings/Profile for combined first/last name only, show safe loading/success/error states, preserve local username/email/bio save behavior, and do not send age/location/user id/role/email/phone/password/security/verification/scheduling/public-profile data | M | **NEXT** |
+| 52.66 | Wire Patient Profile Name Update From Settings Profile: call `ProfileRepository.updatePatientMe` from Settings/Profile for combined first/last name only, show safe loading/success/error states, preserve local username/email/bio save behavior, and do not send age/location/user id/role/email/phone/password/security/verification/scheduling/public-profile data | M | **DONE** |
+| 52.67 | Run Patient Profile Name Update Regression Checkpoint: verify name-only payload, safe failure/no false success, local username/email/bio preservation, docs/deferred-work accuracy, and absence of age/location/auth/security/verification/scheduling/destructive-account mutation before deciding the next backend-completed surface | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -222,16 +223,15 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.65)
+## Manual test (last completed: task 52.66)
 
-Task `52.65` decides the patient profile update boundary without runtime
-behavior.
+Task `52.66` wires patient profile name update from Settings/Profile.
 
-1. Confirm `PATIENT_PROFILE_UPDATE_BOUNDARY_DECISION.md` selects name-only patient profile update.
-2. Confirm age, location, username, email, bio, auth/security, verification, scheduling, and destructive account actions stay out of the next payload.
-3. Confirm no runtime Dart, Android, iOS, or test files changed in this docs-only slice.
-4. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/PATIENT_PROFILE_UPDATE_BOUNDARY_DECISION.md` - no whitespace errors.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.66`
+1. `dart format lib\features\Home\presentation\pages\account_shell.dart test\features\home\account_flow_test.dart` - passes.
+2. `flutter test test\features\home\account_flow_test.dart -r compact` - all tests pass.
+3. `flutter analyze lib\features\Home\presentation\pages\account_shell.dart test\features\home\account_flow_test.dart` - no issues.
+4. Confirm `PATIENT_PROFILE_NAME_UPDATE_WIRING.md` documents the name-only payload boundary.
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.67`
 
 ## Previous runtime manual test baseline
 
@@ -574,6 +574,7 @@ behavior.
 | 2026-07-15 | 52.63 | DONE - Settings/Profile now reads patient profile through `ProfileRepository.patientMe`, displays backend name/age/location read-only, preserves local save, and does not call `updatePatientMe` |
 | 2026-07-15 | 52.64 | DONE - patient profile read regression passed for success, empty-profile, safe failure, local save preservation, and no `updatePatientMe` mutation |
 | 2026-07-15 | 52.65 | DONE - constrained patient profile update boundary selected: next runtime slice may update combined first/last name only, while username/email/bio/security/verification/scheduling data stay out of `/patients/me` |
+| 2026-07-15 | 52.66 | DONE - Settings/Profile now updates backend patient profile name only, preserves local username/email/bio behavior, and blocks false success on backend name-save failure |
 
 ---
 

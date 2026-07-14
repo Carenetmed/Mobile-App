@@ -294,11 +294,16 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
   String? _emailError;
   String? _bioError;
   bool _isLoadingPatientProfile = true;
+  bool _isSavingPatientName = false;
   String? _patientProfileError;
+  String? _patientProfileSaveMessage;
   PatientProfile? _patientProfile;
 
   ProfileRepository get _profileRepository =>
       widget.profileRepository ?? sl<ProfileRepository>();
+
+  bool get _hasProfileRepository =>
+      widget.profileRepository != null || sl.isRegistered<ProfileRepository>();
 
   @override
   void initState() {
@@ -397,12 +402,58 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
     });
   }
 
-  void _save() {
+  Future<void> _save() async {
     _validate();
     if (!_canSave) {
       return;
     }
 
+    final backendName = [
+      _firstNameController.text.trim(),
+      _lastNameController.text.trim(),
+    ].where((part) => part.isNotEmpty).join(' ');
+
+    setState(() {
+      _isSavingPatientName = true;
+      _patientProfileError = null;
+      _patientProfileSaveMessage = null;
+    });
+
+    if (!_hasProfileRepository) {
+      _saveLocalProfile();
+      return;
+    }
+
+    try {
+      final updated = await _profileRepository.updatePatientMe(
+        name: backendName,
+      );
+      if (!mounted) return;
+      setState(() {
+        _patientProfile = updated;
+        _isSavingPatientName = false;
+        _patientProfileSaveMessage = 'Patient profile name saved.';
+      });
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _patientProfileError = failure.message;
+        _isSavingPatientName = false;
+      });
+      return;
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _patientProfileError = 'Could not save patient profile name.';
+        _isSavingPatientName = false;
+      });
+      return;
+    }
+
+    _saveLocalProfile();
+  }
+
+  void _saveLocalProfile() {
     AccountLocalStore.updateSettingsProfile(
       firstName: _firstNameController.text,
       lastName: _lastNameController.text,
@@ -414,7 +465,7 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-          'Profile changes saved locally. Backend username/email checks can replace this seam later.',
+          'Patient profile name saved. Username, email, and bio stayed local.',
         ),
       ),
     );
@@ -521,7 +572,9 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
             SizedBox(height: 20.h),
             _PatientProfileReadPanel(
               isLoading: _isLoadingPatientProfile,
+              isSaving: _isSavingPatientName,
               error: _patientProfileError,
+              successMessage: _patientProfileSaveMessage,
               profile: _patientProfile,
             ),
             SizedBox(height: 20.h),
@@ -597,8 +650,11 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
                 SizedBox(width: 16.w),
                 Expanded(
                   child: CarenetButton(
-                    label: 'Save Changes',
-                    onPressed: _canSave ? _save : null,
+                    label:
+                        _isSavingPatientName
+                            ? 'Saving name...'
+                            : 'Save Changes',
+                    onPressed: _canSave && !_isSavingPatientName ? _save : null,
                   ),
                 ),
               ],
@@ -639,12 +695,16 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
 class _PatientProfileReadPanel extends StatelessWidget {
   const _PatientProfileReadPanel({
     required this.isLoading,
+    required this.isSaving,
     required this.error,
+    required this.successMessage,
     required this.profile,
   });
 
   final bool isLoading;
+  final bool isSaving;
   final String? error;
+  final String? successMessage;
   final PatientProfile? profile;
 
   @override
@@ -660,8 +720,12 @@ class _PatientProfileReadPanel extends StatelessWidget {
     final message =
         isLoading
             ? 'Loading patient profile...'
+            : isSaving
+            ? 'Saving patient profile name...'
             : error != null
             ? error!
+            : successMessage != null
+            ? successMessage!
             : profile == null
             ? 'No backend patient profile yet. Local settings remain editable.'
             : rows.isEmpty

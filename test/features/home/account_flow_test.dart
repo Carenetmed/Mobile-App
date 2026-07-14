@@ -5,6 +5,10 @@ import 'package:app_t/features/Authentication/data/repositories/auth_repository.
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
+import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
+import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
+import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_email_shell.dart';
@@ -84,6 +88,27 @@ Future<void> _pumpEditEmail(
               RouteName.enterPasswordToSave:
                   (_) => const Scaffold(body: Text('password-step')),
             },
+          ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _pumpSettingsProfile(
+  WidgetTester tester, {
+  required _FakeProfileRepository profileRepository,
+}) async {
+  AccountLocalStore.reset();
+  tester.view.physicalSize = _phoneSize;
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(
+    ScreenUtilInit(
+      designSize: _phoneSize,
+      builder:
+          (_, __) => MaterialApp(
+            home: SettingsProfilePage(profileRepository: profileRepository),
           ),
     ),
   );
@@ -269,6 +294,101 @@ void main() {
     expect(find.text('Account'), findsOneWidget);
     expect(find.text('newdoctor@carenet.app'), findsOneWidget);
   });
+
+  testWidgets('settings profile reads backend patient profile safely', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository(
+      patientProfile: const PatientProfile(
+        id: 'patient-1',
+        name: 'Ada Lovelace',
+        age: 37,
+        location: 'Lagos',
+      ),
+    );
+    await _pumpSettingsProfile(tester, profileRepository: repository);
+
+    expect(repository.patientMeCalls, 1);
+    expect(find.text('Ada Lovelace'), findsWidgets);
+    expect(
+      find.text('Backend name: Ada Lovelace\nAge: 37\nLocation: Lagos'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(TextFormField, 'Ada'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Lovelace'), findsOneWidget);
+  });
+
+  testWidgets('settings profile shows empty backend profile state', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository();
+    await _pumpSettingsProfile(tester, profileRepository: repository);
+
+    expect(repository.patientMeCalls, 1);
+    expect(
+      find.text(
+        'No backend patient profile yet. Local settings remain editable.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Lagbaja Tamedu'), findsOneWidget);
+  });
+
+  testWidgets('settings profile shows patient profile failure safely', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository(
+      failure: const AuthFailure(
+        type: AuthFailureType.unauthorized,
+        message: 'Please sign in again.',
+      ),
+    );
+    await _pumpSettingsProfile(tester, profileRepository: repository);
+
+    expect(repository.patientMeCalls, 1);
+    expect(find.text('Please sign in again.'), findsOneWidget);
+    expect(find.text('Lagbaja Tamedu'), findsOneWidget);
+  });
+
+  testWidgets(
+    'settings profile local save does not update backend patient profile',
+    (tester) async {
+      final repository = _FakeProfileRepository(
+        patientProfile: const PatientProfile(
+          id: 'patient-1',
+          name: 'Ada Lovelace',
+          age: 37,
+          location: 'Lagos',
+        ),
+      );
+      await _pumpSettingsProfile(tester, profileRepository: repository);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'lagbaja_carenet'),
+        'lagbaja_new',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'doctor@carenet.app'),
+        'newdoctor@carenet.app',
+      );
+      await tester.enterText(
+        find.widgetWithText(
+          TextFormField,
+          'Husband | Father | Anonymous | Needs help constantly',
+        ),
+        'Local test bio update',
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Save Changes'));
+      await tester.pumpAndSettle();
+
+      expect(repository.patientMeCalls, 1);
+      expect(repository.updatePatientMeCalls, 0);
+      expect(AccountLocalStore.snapshot.value.email, 'newdoctor@carenet.app');
+      expect(AccountLocalStore.snapshot.value.bio, 'Local test bio update');
+    },
+  );
 
   testWidgets('authentication row opens two-step verification route', (
     tester,
@@ -933,4 +1053,51 @@ class _FakeAccountRepository implements AccountRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeProfileRepository implements ProfileRepository {
+  _FakeProfileRepository({this.patientProfile, this.failure});
+
+  final PatientProfile? patientProfile;
+  final AuthFailure? failure;
+  int patientMeCalls = 0;
+  int updatePatientMeCalls = 0;
+
+  @override
+  Future<PatientProfile?> patientMe() async {
+    patientMeCalls += 1;
+    final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
+    return patientProfile;
+  }
+
+  @override
+  Future<PatientProfile> updatePatientMe({
+    required String name,
+    int? age,
+    String? location,
+  }) async {
+    updatePatientMeCalls += 1;
+    return PatientProfile(name: name, age: age, location: location);
+  }
+
+  @override
+  Future<ProfessionalProfile?> professionalMe() async => null;
+
+  @override
+  Future<ProfessionalProfile> updateProfessionalMe({
+    required String displayName,
+    required String category,
+    String? specialty,
+    String? bio,
+  }) async {
+    return ProfessionalProfile(displayName: displayName, category: category);
+  }
+
+  @override
+  Future<List<PublicProfessional>> publicProfessionals() async {
+    return const <PublicProfessional>[];
+  }
 }

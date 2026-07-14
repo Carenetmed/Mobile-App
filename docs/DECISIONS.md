@@ -1163,3 +1163,24 @@ before code.
 
 Next: 52.75 should define the professional verification upload/list UI boundary
 without implementing runtime behavior.
+
+## D129 - Professional verification upload/list boundary accepted
+
+Task: 52.75
+
+Decision: The first professional verification Flutter implementation should
+start with a repository/API boundary, then a Manage Profile-owned verification
+screen that can list owner document statuses and perform one controlled upload
+flow.
+
+Reason: Verification documents are private and sensitive. The app must handle
+upload-init, signed upload PUT, upload-complete, and owner document list/status
+without surfacing signed URLs, object keys, local file paths, file contents,
+provider credentials, or raw checksums. Manage Profile is the correct first
+entry point because it is the professional-owned profile surface; Account mixes
+patient/auth settings and Public Profile must not expose private verification
+documents.
+
+Next: 52.76 should add verification entities, API client, repository, signed
+upload PUT helper, and focused tests without runtime screen wiring or admin
+review UI.

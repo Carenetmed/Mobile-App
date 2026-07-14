@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 professional verification upload/list selected next.
+**Last updated:** 2026-07-15 professional verification upload/list boundary accepted.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -126,6 +126,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Find Mentor public professionals | `findMentor` now reads `ProfileRepository.publicProfessionals` where a repository is available, renders safe loading/error/empty states, filters backend public professionals by category/specialty, and passes backend public professional ids into `specialistDetails`. The backend path has no seeded local mentor fallback, no local slot chips, and no direct fake booking |
 | Find Mentor public professionals regression | `FIND_MENTOR_PUBLIC_PROFESSIONALS_REGRESSION.md` records focused proof for loading, empty, success, category filtering, backend id handoff, safe failure, no local fallback/direct fake booking, dashboard local compatibility, Specialist Details compatibility, and deferred-work accuracy |
 | Next surface after Find Mentor | `NEXT_SURFACE_AFTER_FIND_MENTOR_DECISION.md` selects professional verification upload/list as the next backend-completed Flutter lane. The next slice must define the private-document/file-picker/upload/list/status boundary before runtime implementation |
+| Professional verification boundary | `PROFESSIONAL_VERIFICATION_UPLOAD_LIST_BOUNDARY.md` accepts Manage Profile as the professional-owned entry point, requires owner document list/status plus one controlled upload flow, forbids signed URL/object-key/local-path/file-content exposure, and queues a repository/API boundary before runtime screen wiring |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

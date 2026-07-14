@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 scheduling smoke data decision recorded.
+**Last updated:** 2026-07-15 next backend-completed Flutter surface decision recorded.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -112,6 +112,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Scheduling smoke checkpoint decision | `SCHEDULING_CORE_PAUSE_OR_SMOKE_DECISION.md` pauses scheduling feature expansion and selects a staging smoke checkpoint next. The current local regression evidence is strong enough for the scoped core, but app-build/staging proof is still missing before claiming the scheduling core is externally proven |
 | Scheduling staging smoke checkpoint | `SCHEDULING_CORE_STAGING_SMOKE_CHECKPOINT.md` records that the developer-private staging proxy reaches `/health` and `/health/ready`, database/migrations/email/googleAuth report `ok`, verification storage remains disabled, public professionals endpoint is reachable but empty, unauthenticated protected scheduling routes return `401`, and a staging-configured debug APK builds. End-to-end appointment smoke remains blocked by missing staging patient/professional/verified-professional/availability/appointment data |
 | Scheduling smoke data decision | `SCHEDULING_SMOKE_DATA_OR_NEXT_SURFACE_DECISION.md` rejects ad hoc Flutter-created staging scheduling users/data. Full scheduling smoke remains blocked until deliberate backend/staging test data exists: patient/professional accounts, a verified public professional, availability windows, appointment path, and cleanup/reset guidance |
+| Next backend-completed surface | `NEXT_BACKEND_COMPLETED_FLUTTER_SURFACE_DECISION.md` selects patient self profile as the next Flutter surface because `ProfileRepository.patientMe/updatePatientMe` already exist and do not depend on scheduling seed data or verification storage. Runtime wiring is blocked until Settings/Profile maps backend `name`, `age`, and `location` separately from username, email, auth/security, public profile, and destructive account behavior |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.59** - scheduling core staging smoke checkpoint |
-| Last completed | **52.58** - scheduling core pause/smoke decision |
+| NEXT task | **52.60** - scheduling smoke data setup or next surface decision |
+| Last completed | **52.59** - scheduling core staging smoke checkpoint |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -101,6 +101,7 @@ Do not use old chat history. Do not start the next task without my approval.
 
 | Date | Fixes |
 |------|--------|
+| 2026-07-15 | Task 52.59 DONE - Scheduling staging smoke checkpoint recorded backend readiness, staging-configured APK build, protected-route guards, and missing data blockers; DOC_SYNC NEXT -> 52.60 |
 | 2026-07-15 | Task 52.58 DONE - Scheduling feature expansion paused; staging smoke checkpoint selected next; DOC_SYNC NEXT -> 52.59 |
 | 2026-07-15 | Task 52.57 DONE - Appointment reschedule regression proof added; DOC_SYNC NEXT -> 52.58 |
 | 2026-07-15 | Task 52.56 DONE - Appointments now wires constrained patient/professional reschedule from backend public availability options; DOC_SYNC NEXT -> 52.57 |

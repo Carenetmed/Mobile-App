@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 scheduling smoke checkpoint selected.
+**Last updated:** 2026-07-15 scheduling staging smoke checkpoint recorded.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -110,6 +110,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Appointment reschedule wiring | `appointments` now exposes `Reschedule` only for patient/professional sessions on upcoming `REQUESTED`/`ACCEPTED` backend appointment cards. It loads public availability for the appointment professional, generates bounded request options, submits `requestedStartAt` and `durationMinutes` through `SchedulingRepository.rescheduleAppointment`, replaces visible status from the backend response, and keeps safe errors/no raw backend messages. Non-patient/non-professional roles, recent cards, and terminal states do not expose reschedule |
 | Appointment reschedule regression | `APPOINTMENT_RESCHEDULE_REGRESSION.md` records focused proof for patient/professional reschedule success, backend `REQUESTED` response handling, non-patient/non-professional hiding, recent/terminal hiding, empty generated-option handling, safe failure messages, narrow payload behavior, and continued absence of payments, notifications, calendar, reviews, calls, admin, notes, and prescriptions UI |
 | Scheduling smoke checkpoint decision | `SCHEDULING_CORE_PAUSE_OR_SMOKE_DECISION.md` pauses scheduling feature expansion and selects a staging smoke checkpoint next. The current local regression evidence is strong enough for the scoped core, but app-build/staging proof is still missing before claiming the scheduling core is externally proven |
+| Scheduling staging smoke checkpoint | `SCHEDULING_CORE_STAGING_SMOKE_CHECKPOINT.md` records that the developer-private staging proxy reaches `/health` and `/health/ready`, database/migrations/email/googleAuth report `ok`, verification storage remains disabled, public professionals endpoint is reachable but empty, unauthenticated protected scheduling routes return `401`, and a staging-configured debug APK builds. End-to-end appointment smoke remains blocked by missing staging patient/professional/verified-professional/availability/appointment data |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
@@ -361,6 +362,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.56 test/analyze | Passed: `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart -r compact`; focused `flutter analyze` on Appointments reschedule wiring, scheduling repository/API client, and related tests reports no issues |
 | Focused task 52.57 test/analyze | Passed: `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart -r compact`; focused `flutter analyze` on Appointments reschedule regression, scheduling repository/API client, and related tests reports no issues |
 | Focused task 52.58 test/analyze | Not needed: decision-only docs slice. `git diff --check` covers changed docs; no runtime code changed |
+| Focused task 52.59 test/analyze | Passed: `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=http://127.0.0.1:8080`; `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart -r compact`; focused `flutter analyze` on scheduling config/API/repository/Search/Appointments/selectedDates and related tests reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

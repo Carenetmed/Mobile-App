@@ -853,3 +853,24 @@ proof against configured backend data.
 Next: 52.59 should run a scheduling core staging smoke checkpoint. It should
 prove only what available staging accounts/data can honestly prove, document any
 blocked paths exactly, and avoid runtime feature work or fake seed data.
+
+## D113 - Scheduling staging smoke partially proven
+
+Task: 52.59
+
+Decision: Treat scheduling staging smoke as partially proven, not complete
+end-to-end proof.
+
+Reason: The developer-private staging proxy now reaches `/health` and
+`/health/ready`; database, migrations, email, and Google auth report `ok`; the
+Flutter app builds as a staging-configured debug APK; unauthenticated protected
+scheduling routes return `401`; and the public professionals route is reachable.
+However, the public professionals list is empty, and the repo does not contain
+staging patient/professional accounts, verified professional data, availability
+windows, or appointment seed data. Therefore public availability, appointment
+request/list/lifecycle, professional availability management, completion, and
+reschedule are not end-to-end staging-proven.
+
+Next: 52.60 should decide whether to create deliberate scheduling staging test
+data/accounts or move to another backend-completed surface while keeping
+scheduling smoke blocked on data.

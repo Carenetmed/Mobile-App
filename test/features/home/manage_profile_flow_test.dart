@@ -46,7 +46,11 @@ Future<void> _pumpManageProfile(
             ),
             routes: <String, WidgetBuilder>{
               RouteName.settings: (_) => const SettingsProfilePage(),
-              RouteName.editYourName: (_) => const EditYourNameShellPage(),
+              RouteName.editYourName:
+                  (_) => EditYourNameShellPage(
+                    profileRepository:
+                        profileRepository ?? _FakeProfileRepository(),
+                  ),
               RouteName.editYourWebsite:
                   (_) => const EditYourWebsiteShellPage(),
               RouteName.addDescription:
@@ -763,8 +767,21 @@ void main() {
     expect(find.text('Availability saved from backend.'), findsNothing);
   });
 
-  testWidgets('edit action opens local name draft route', (tester) async {
-    await _pumpManageProfile(tester);
+  testWidgets('edit action updates professional display name only', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository(
+      professionalProfile: const ProfessionalProfile(
+        id: 'pro_1',
+        displayName: 'Dr Backend Profile',
+        category: 'Cardiology',
+        specialty: 'Heart health',
+        bio: 'Existing backend bio for the current professional profile.',
+        verificationStatus: 'VERIFIED',
+      ),
+    );
+
+    await _pumpManageProfile(tester, profileRepository: repository);
 
     await tester.tap(find.text('Edit'));
     await tester.pumpAndSettle();
@@ -772,23 +789,91 @@ void main() {
     expect(find.text('Edit your name'), findsOneWidget);
     expect(find.text('Enter a new name to continue'), findsOneWidget);
     expect(find.text('Your name'), findsWidgets);
+    expect(find.text('Dr Backend Profile'), findsOneWidget);
 
     await tester.enterText(find.byType(TextFormField), '');
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
     expect(find.text('Name is required'), findsOneWidget);
+    expect(repository.lastDisplayName, isNull);
 
     await tester.enterText(find.byType(TextFormField), 'Dr. New Name');
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Name draft prepared'), findsOneWidget);
+    expect(find.text('Display name saved'), findsOneWidget);
     expect(find.text('Dr. New Name'), findsWidgets);
     expect(
-      find.textContaining('No profile name has been saved'),
+      find.textContaining('Only your professional display name was updated'),
       findsOneWidget,
     );
+    expect(repository.lastDisplayName, 'Dr. New Name');
+    expect(repository.lastCategory, 'Cardiology');
+    expect(repository.lastSpecialty, 'Heart health');
+    expect(
+      repository.lastBio,
+      'Existing backend bio for the current professional profile.',
+    );
+  });
+
+  testWidgets('edit action does not create a partial professional profile', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository();
+    await _pumpManageProfile(tester, profileRepository: repository);
+
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Professional profile has not been created yet.'),
+      findsOneWidget,
+    );
+
+    await tester.enterText(find.byType(TextFormField), 'Dr. New Name');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Display name saved'), findsNothing);
+    expect(repository.lastDisplayName, isNull);
+    expect(
+      find.text('Professional profile has not been created yet.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('edit action shows safe display name save error', (tester) async {
+    final repository = _FakeProfileRepository(
+      professionalProfile: const ProfessionalProfile(
+        id: 'pro_1',
+        displayName: 'Dr Backend Profile',
+        category: 'Cardiology',
+        specialty: 'Heart health',
+        bio: 'Existing backend bio for the current professional profile.',
+        verificationStatus: 'VERIFIED',
+      ),
+      updateFailure: const AuthFailure(
+        type: AuthFailureType.server,
+        message: 'raw profile update failure',
+      ),
+    );
+
+    await _pumpManageProfile(tester, profileRepository: repository);
+
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField), 'Dr. New Name');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Service is unavailable. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw profile update failure'), findsNothing);
+    expect(find.text('Display name saved'), findsNothing);
   });
 
   testWidgets('basic website action opens local website draft route', (

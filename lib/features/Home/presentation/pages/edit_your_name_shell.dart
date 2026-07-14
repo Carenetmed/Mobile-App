@@ -1,6 +1,10 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
+import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/presentation/state/public_profile_local_store.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
@@ -8,7 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class EditYourNameShellPage extends StatefulWidget {
-  const EditYourNameShellPage({super.key});
+  const EditYourNameShellPage({super.key, this.profileRepository});
+
+  final ProfileRepository? profileRepository;
 
   @override
   State<EditYourNameShellPage> createState() => _EditYourNameShellPageState();
@@ -17,14 +23,20 @@ class EditYourNameShellPage extends StatefulWidget {
 class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
   late final TextEditingController _nameController;
   String? _errorText;
-  String? _preparedName;
+  String? _profileStateMessage;
+  String? _savedName;
+  ProfessionalProfile? _professionalProfile;
+  bool _isLoadingProfile = true;
+  bool _isSaving = false;
+
+  ProfileRepository get _profileRepository =>
+      widget.profileRepository ?? sl<ProfileRepository>();
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(
-      text: 'Dr. ${PublicProfileLocalStore.profile.name}',
-    );
+    _nameController = TextEditingController();
+    _loadProfessionalProfile();
   }
 
   @override
@@ -33,11 +45,57 @@ class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
     super.dispose();
   }
 
-  void _prepareNameDraft() {
+  Future<void> _loadProfessionalProfile() async {
+    setState(() {
+      _isLoadingProfile = true;
+      _profileStateMessage = 'Loading professional profile...';
+    });
+
+    try {
+      final profile = await _profileRepository.professionalMe();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _professionalProfile = profile;
+        _isLoadingProfile = false;
+        if (profile == null) {
+          _nameController.text = 'Dr. ${PublicProfileLocalStore.profile.name}';
+          _profileStateMessage =
+              'Professional profile has not been created yet.';
+          return;
+        }
+        _nameController.text = profile.displayName;
+        _profileStateMessage = null;
+      });
+    } on AuthFailure catch (failure) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _professionalProfile = null;
+        _isLoadingProfile = false;
+        _nameController.text = 'Dr. ${PublicProfileLocalStore.profile.name}';
+        _profileStateMessage = _safeProfileError(failure);
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _professionalProfile = null;
+        _isLoadingProfile = false;
+        _nameController.text = 'Dr. ${PublicProfileLocalStore.profile.name}';
+        _profileStateMessage = 'Something went wrong. Please try again.';
+      });
+    }
+  }
+
+  Future<void> _saveDisplayName() async {
     final name = _nameController.text.trim().replaceAll(RegExp(r'\s+'), ' ');
 
     setState(() {
-      _preparedName = null;
+      _savedName = null;
       if (name.isEmpty) {
         _errorText = 'Name is required';
         return;
@@ -47,8 +105,73 @@ class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
         return;
       }
       _errorText = null;
-      _preparedName = name;
     });
+
+    if (_errorText != null) {
+      return;
+    }
+
+    final currentProfile = _professionalProfile;
+    if (currentProfile == null) {
+      setState(() {
+        _profileStateMessage = 'Professional profile has not been created yet.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+      _profileStateMessage = null;
+    });
+
+    try {
+      final updated = await _profileRepository.updateProfessionalMe(
+        displayName: name,
+        category: currentProfile.category,
+        specialty: currentProfile.specialty,
+        bio: currentProfile.bio,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _professionalProfile = updated;
+        _nameController.text = updated.displayName;
+        _savedName = updated.displayName;
+      });
+    } on AuthFailure catch (failure) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _profileStateMessage = _safeProfileError(failure);
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _profileStateMessage = 'Something went wrong. Please try again.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+  String _safeProfileError(AuthFailure failure) {
+    return switch (failure.type) {
+      AuthFailureType.missingConfiguration => 'Backend is not configured yet.',
+      AuthFailureType.unauthorized => 'Please sign in again.',
+      AuthFailureType.validation => 'Please check the details and try again.',
+      AuthFailureType.server ||
+      AuthFailureType.network => 'Service is unavailable. Please try again.',
+      AuthFailureType.invalidCredentials ||
+      AuthFailureType.unknown => 'Something went wrong. Please try again.',
+    };
   }
 
   @override
@@ -91,7 +214,7 @@ class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
             ),
             SizedBox(height: 8.h),
             Text(
-              'This prepares a profile-name draft only. Profile persistence, verification, and account sync still need backend rules.',
+              'Save your professional display name only. Category, specialty, website, address, verification, and account settings stay separate.',
               style: TextStyle(
                 fontSize: FontSizes.footer4,
                 fontFamily: AppFonts.montserrat,
@@ -101,6 +224,10 @@ class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
               ),
             ),
             SizedBox(height: 18.h),
+            if (_profileStateMessage != null) ...[
+              _ProfileStateMessage(message: _profileStateMessage!),
+              SizedBox(height: 14.h),
+            ],
             CarenetTextField(
               label: 'Your name',
               hintText: 'Your name',
@@ -112,20 +239,27 @@ class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
                       : CarenetTextFieldValidationState.none,
               errorText: _errorText,
               onChanged: (_) {
-                if (_errorText != null || _preparedName != null) {
+                if (_errorText != null || _savedName != null) {
                   setState(() {
                     _errorText = null;
-                    _preparedName = null;
+                    _savedName = null;
                   });
                 }
               },
-              onFieldSubmitted: (_) => _prepareNameDraft(),
+              onFieldSubmitted: (_) {
+                if (!_isLoadingProfile && !_isSaving) {
+                  _saveDisplayName();
+                }
+              },
             ),
             SizedBox(height: 18.h),
-            CarenetButton(label: 'Save', onPressed: _prepareNameDraft),
+            CarenetButton(
+              label: _isSaving ? 'Saving...' : 'Save',
+              onPressed:
+                  _isLoadingProfile || _isSaving ? null : _saveDisplayName,
+            ),
             SizedBox(height: 16.h),
-            if (_preparedName != null)
-              _PreparedNameCard(preparedName: _preparedName!),
+            if (_savedName != null) _SavedNameCard(savedName: _savedName!),
           ],
         ),
       ),
@@ -133,10 +267,39 @@ class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
   }
 }
 
-class _PreparedNameCard extends StatelessWidget {
-  const _PreparedNameCard({required this.preparedName});
+class _ProfileStateMessage extends StatelessWidget {
+  const _ProfileStateMessage({required this.message});
 
-  final String preparedName;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: REdgeInsets.all(12.r),
+      decoration: BoxDecoration(
+        color: AppColors.blue02,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.white04),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          fontSize: FontSizes.footer4,
+          fontFamily: AppFonts.montserrat,
+          fontWeight: FontWeight.w500,
+          color: AppColors.primaryBlue11,
+          height: 1.45,
+        ),
+      ),
+    );
+  }
+}
+
+class _SavedNameCard extends StatelessWidget {
+  const _SavedNameCard({required this.savedName});
+
+  final String savedName;
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +315,7 @@ class _PreparedNameCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Name draft prepared',
+            'Display name saved',
             style: TextStyle(
               fontSize: FontSizes.footer3,
               fontFamily: AppFonts.montserrat,
@@ -162,7 +325,7 @@ class _PreparedNameCard extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            preparedName,
+            savedName,
             style: TextStyle(
               fontSize: FontSizes.footer2,
               fontFamily: AppFonts.montserrat,
@@ -172,7 +335,7 @@ class _PreparedNameCard extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            'No profile name has been saved. Backend profile persistence should replace this local draft seam.',
+            'Only your professional display name was updated. Category, specialty, website, address, availability, and verification remain separate.',
             style: TextStyle(
               fontSize: FontSizes.footer4,
               fontFamily: AppFonts.montserrat,

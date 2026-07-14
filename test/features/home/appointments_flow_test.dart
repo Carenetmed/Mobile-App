@@ -51,17 +51,27 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     this.cancelFailure,
     this.acceptFailure,
     this.completeFailure,
+    this.rescheduleFailure,
+    this.publicAvailabilityFailure,
+    this.publicWindows = const <AvailabilityWindow>[],
   });
 
   final List<AppointmentSummary> appointments;
+  final List<AvailabilityWindow> publicWindows;
   final Object? failure;
   final Object? cancelFailure;
   final Object? acceptFailure;
   final Object? completeFailure;
+  final Object? rescheduleFailure;
+  final Object? publicAvailabilityFailure;
   final List<String> cancelledAppointmentIds = <String>[];
   final List<String> acceptedAppointmentIds = <String>[];
   final List<String> declinedAppointmentIds = <String>[];
   final List<String> completedAppointmentIds = <String>[];
+  final List<String> publicAvailabilityProfessionalIds = <String>[];
+  final List<String> rescheduledAppointmentIds = <String>[];
+  DateTime? requestedRescheduleStartAt;
+  int? requestedRescheduleDurationMinutes;
 
   @override
   Future<List<AppointmentSummary>> ownAppointments() async {
@@ -136,8 +146,13 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   @override
   Future<List<AvailabilityWindow>> publicAvailability({
     required String professionalProfileId,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final error = publicAvailabilityFailure;
+    if (error != null) {
+      throw error;
+    }
+    publicAvailabilityProfessionalIds.add(professionalProfileId);
+    return publicWindows;
   }
 
   @override
@@ -161,13 +176,27 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     required String appointmentId,
     required DateTime requestedStartAt,
     required int durationMinutes,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final error = rescheduleFailure;
+    if (error != null) {
+      throw error;
+    }
+    rescheduledAppointmentIds.add(appointmentId);
+    requestedRescheduleStartAt = requestedStartAt;
+    requestedRescheduleDurationMinutes = durationMinutes;
+    return _updatedAppointment(
+      appointmentId: appointmentId,
+      status: AppointmentStatus.requested,
+      requestedStartAt: requestedStartAt,
+      durationMinutes: durationMinutes,
+    );
   }
 
   AppointmentSummary _updatedAppointment({
     required String appointmentId,
     required AppointmentStatus status,
+    DateTime? requestedStartAt,
+    int? durationMinutes,
   }) {
     final appointment = appointments.firstWhere(
       (item) => item.id == appointmentId,
@@ -176,8 +205,8 @@ class _FakeSchedulingRepository implements SchedulingRepository {
       id: appointment.id,
       patientProfileId: appointment.patientProfileId,
       professionalProfileId: appointment.professionalProfileId,
-      requestedStartAt: appointment.requestedStartAt,
-      durationMinutes: appointment.durationMinutes,
+      requestedStartAt: requestedStartAt ?? appointment.requestedStartAt,
+      durationMinutes: durationMinutes ?? appointment.durationMinutes,
       status: status,
       createdAt: appointment.createdAt,
       updatedAt: DateTime(2026, 7, 14, 9),
@@ -230,6 +259,7 @@ void main() {
       expect(find.text('Accept'), findsNothing);
       expect(find.text('Decline'), findsNothing);
       expect(find.text('Cancel appointment'), findsOneWidget);
+      expect(find.text('Reschedule'), findsOneWidget);
     },
   );
 
@@ -373,6 +403,215 @@ void main() {
     expect(find.text('REQUESTED'), findsOneWidget);
   });
 
+  testWidgets(
+    'patient can reschedule upcoming accepted appointment through backend',
+    (tester) async {
+      final schedulingRepository = _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-accepted',
+            requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+            status: AppointmentStatus.accepted,
+          ),
+        ],
+        publicWindows: <AvailabilityWindow>[
+          _availabilityWindow(
+            weekday: DateTime.tuesday,
+            startMinute: 9 * 60,
+            endMinute: 10 * 60,
+          ),
+        ],
+      );
+
+      await _pumpAppointments(
+        tester,
+        role: 'PATIENT',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: schedulingRepository,
+      );
+
+      expect(find.text('Reschedule'), findsOneWidget);
+
+      await tester.tap(find.text('Reschedule'));
+      await tester.pumpAndSettle();
+
+      expect(schedulingRepository.publicAvailabilityProfessionalIds, <String>[
+        'professional-accepted',
+      ]);
+      expect(find.text('Choose a backend availability time'), findsOneWidget);
+      expect(find.text('07/14 09:00-09:30 (30 min)'), findsOneWidget);
+
+      await tester.tap(find.text('Confirm reschedule'));
+      await tester.pumpAndSettle();
+
+      expect(schedulingRepository.rescheduledAppointmentIds, <String>[
+        'appointment-1',
+      ]);
+      expect(
+        schedulingRepository.requestedRescheduleStartAt,
+        DateTime(2026, 7, 14, 9),
+      );
+      expect(schedulingRepository.requestedRescheduleDurationMinutes, 30);
+      expect(find.text('REQUESTED'), findsOneWidget);
+      expect(find.text('ACCEPTED'), findsNothing);
+      expect(
+        find.text('Appointment rescheduled. Backend status: REQUESTED.'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('professional can reschedule assigned requested appointment', (
+    tester,
+  ) async {
+    final schedulingRepository = _FakeSchedulingRepository(
+      appointments: <AppointmentSummary>[
+        _appointment(
+          professionalProfileId: 'professional-upcoming',
+          requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+          status: AppointmentStatus.requested,
+        ),
+      ],
+      publicWindows: <AvailabilityWindow>[
+        _availabilityWindow(
+          weekday: DateTime.tuesday,
+          startMinute: 9 * 60,
+          endMinute: 10 * 60,
+        ),
+      ],
+    );
+
+    await _pumpAppointments(
+      tester,
+      role: 'PROFESSIONAL',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: schedulingRepository,
+    );
+
+    expect(find.text('Accept'), findsOneWidget);
+    expect(find.text('Decline'), findsOneWidget);
+    expect(find.text('Reschedule'), findsOneWidget);
+    expect(find.text('Cancel appointment'), findsNothing);
+
+    await tester.tap(find.text('Reschedule'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Confirm reschedule'));
+    await tester.pumpAndSettle();
+
+    expect(schedulingRepository.rescheduledAppointmentIds, <String>[
+      'appointment-1',
+    ]);
+    expect(
+      find.text('Appointment rescheduled. Backend status: REQUESTED.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('reschedule is hidden for recent and terminal appointments', (
+    tester,
+  ) async {
+    await _pumpAppointments(
+      tester,
+      role: 'PATIENT',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-past',
+            requestedStartAt: DateTime(2026, 7, 13, 10, 30),
+            status: AppointmentStatus.accepted,
+          ),
+          _appointment(
+            id: 'appointment-2',
+            professionalProfileId: 'professional-cancelled',
+            requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+            status: AppointmentStatus.cancelled,
+          ),
+        ],
+      ),
+    );
+
+    expect(find.text('ACCEPTED'), findsOneWidget);
+    expect(find.text('CANCELLED'), findsOneWidget);
+    expect(find.text('Reschedule'), findsNothing);
+  });
+
+  testWidgets(
+    'reschedule availability failure shows safe error without raw backend text',
+    (tester) async {
+      await _pumpAppointments(
+        tester,
+        role: 'PATIENT',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: _FakeSchedulingRepository(
+          appointments: <AppointmentSummary>[
+            _appointment(
+              professionalProfileId: 'professional-upcoming',
+              requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+              status: AppointmentStatus.requested,
+            ),
+          ],
+          publicAvailabilityFailure: const AuthFailure(
+            type: AuthFailureType.server,
+            message: 'raw availability failure',
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Reschedule'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Service is unavailable. Please try again.'),
+        findsOneWidget,
+      );
+      expect(find.text('raw availability failure'), findsNothing);
+      expect(find.text('Confirm reschedule'), findsNothing);
+    },
+  );
+
+  testWidgets('reschedule failure shows safe error without status update', (
+    tester,
+  ) async {
+    await _pumpAppointments(
+      tester,
+      role: 'PATIENT',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-accepted',
+            requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+            status: AppointmentStatus.accepted,
+          ),
+        ],
+        publicWindows: <AvailabilityWindow>[
+          _availabilityWindow(
+            weekday: DateTime.tuesday,
+            startMinute: 9 * 60,
+            endMinute: 10 * 60,
+          ),
+        ],
+        rescheduleFailure: const AuthFailure(
+          type: AuthFailureType.validation,
+          message: 'raw reschedule conflict',
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Reschedule'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Confirm reschedule'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Please choose an available time and try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw reschedule conflict'), findsNothing);
+    expect(find.text('ACCEPTED'), findsOneWidget);
+  });
+
   testWidgets('professional can accept requested appointment through backend', (
     tester,
   ) async {
@@ -495,6 +734,30 @@ void main() {
       expect(find.text('Decline'), findsNothing);
       expect(find.text('Complete'), findsNothing);
       expect(find.text('Cancel appointment'), findsNothing);
+      expect(find.text('Reschedule'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'non patient and non professional sessions do not expose reschedule',
+    (tester) async {
+      await _pumpAppointments(
+        tester,
+        role: 'ADMIN',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: _FakeSchedulingRepository(
+          appointments: <AppointmentSummary>[
+            _appointment(
+              professionalProfileId: 'professional-upcoming',
+              requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+              status: AppointmentStatus.requested,
+            ),
+          ],
+        ),
+      );
+
+      expect(find.text('REQUESTED'), findsOneWidget);
+      expect(find.text('Reschedule'), findsNothing);
     },
   );
 
@@ -749,37 +1012,38 @@ void main() {
     expect(find.text('REQUESTED'), findsOneWidget);
   });
 
-  testWidgets('appointment lifecycle keeps broader actions deferred', (
-    tester,
-  ) async {
-    await _pumpAppointments(
-      tester,
-      role: 'PROFESSIONAL',
-      now: DateTime(2026, 7, 14, 8),
-      schedulingRepository: _FakeSchedulingRepository(
-        appointments: <AppointmentSummary>[
-          _appointment(
-            professionalProfileId: 'professional-upcoming',
-            requestedStartAt: DateTime(2026, 7, 15, 10, 30),
-            status: AppointmentStatus.requested,
-          ),
-        ],
-      ),
-    );
+  testWidgets(
+    'appointment lifecycle keeps non-reschedule broader actions deferred',
+    (tester) async {
+      await _pumpAppointments(
+        tester,
+        role: 'PROFESSIONAL',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: _FakeSchedulingRepository(
+          appointments: <AppointmentSummary>[
+            _appointment(
+              professionalProfileId: 'professional-upcoming',
+              requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+              status: AppointmentStatus.requested,
+            ),
+          ],
+        ),
+      );
 
-    expect(find.text('Accept'), findsOneWidget);
-    expect(find.text('Decline'), findsOneWidget);
-    expect(find.text('Reschedule'), findsNothing);
-    expect(find.text('Complete'), findsNothing);
-    expect(find.text('Payment'), findsNothing);
-    expect(find.text('Notification'), findsNothing);
-    expect(find.text('Calendar'), findsNothing);
-    expect(find.text('Review'), findsNothing);
-    expect(find.text('Notes'), findsNothing);
-    expect(find.text('Prescription'), findsNothing);
-    expect(find.text('Call'), findsNothing);
-    expect(find.text('Admin'), findsNothing);
-  });
+      expect(find.text('Accept'), findsOneWidget);
+      expect(find.text('Decline'), findsOneWidget);
+      expect(find.text('Reschedule'), findsOneWidget);
+      expect(find.text('Complete'), findsNothing);
+      expect(find.text('Payment'), findsNothing);
+      expect(find.text('Notification'), findsNothing);
+      expect(find.text('Calendar'), findsNothing);
+      expect(find.text('Review'), findsNothing);
+      expect(find.text('Notes'), findsNothing);
+      expect(find.text('Prescription'), findsNothing);
+      expect(find.text('Call'), findsNothing);
+      expect(find.text('Admin'), findsNothing);
+    },
+  );
 
   testWidgets(
     'completion eligible appointment keeps broader actions deferred',
@@ -957,5 +1221,21 @@ AppointmentSummary _appointment({
     requestedStartAt: requestedStartAt,
     durationMinutes: 30,
     status: status,
+  );
+}
+
+AvailabilityWindow _availabilityWindow({
+  String id = 'availability-1',
+  required int weekday,
+  required int startMinute,
+  required int endMinute,
+}) {
+  return AvailabilityWindow(
+    id: id,
+    weekday: weekday,
+    startMinute: startMinute,
+    endMinute: endMinute,
+    timezone: 'Africa/Lagos',
+    active: true,
   );
 }

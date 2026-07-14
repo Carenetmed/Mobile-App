@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.56** - constrained appointment reschedule wiring |
-| Last completed | **52.55** - appointment reschedule UX boundary decision |
+| NEXT task | **52.57** - appointment reschedule regression |
+| Last completed | **52.56** - constrained appointment reschedule wiring |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -101,6 +101,7 @@ Do not use old chat history. Do not start the next task without my approval.
 
 | Date | Fixes |
 |------|--------|
+| 2026-07-15 | Task 52.56 DONE - Appointments now wires constrained patient/professional reschedule from backend public availability options; DOC_SYNC NEXT -> 52.57 |
 | 2026-05-19 | Task 4.3 DONE - notifications icon + messages handoff; DOC_SYNC NEXT -> 5.1 |
 | 2026-05-19 | Task 5.1 DONE - dashboard notifications tab now uses the dedicated notifications feature screen; DOC_SYNC NEXT -> 5.2 |
 | 2026-05-19 | Task 5.2 DONE - messages list routes into chat; fake notifications bottom nav removed; DOC_SYNC NEXT -> 5.3 |

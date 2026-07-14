@@ -793,3 +793,25 @@ Next: 52.56 may wire this constrained reschedule path. It must keep payments,
 notifications, calendar sync, reviews, calls, admin override, notes,
 prescriptions, medical records, free-text datetime entry, and reschedule reasons
 deferred.
+
+## D110 - Constrained appointment reschedule wired
+
+Task: 52.56
+
+Decision: The Appointments screen now wires the narrow patient/professional
+reschedule path from existing scheduling surfaces. It shows `Reschedule` only
+for patient or professional sessions on upcoming `REQUESTED` or `ACCEPTED`
+backend appointment cards, loads public availability for that appointment's
+professional, reuses generated request options, sends only `requestedStartAt`
+and `durationMinutes`, and replaces visible status from the backend response.
+
+Reason: Backend and frontend contracts already define owner-only reschedule,
+backend availability enforcement, and `REQUESTED` response authority. Reusing
+the existing public availability and request-option helper keeps the behavior
+bounded and avoids fake free-text datetime, local fallback, or invented
+reschedule-policy features.
+
+Next: 52.57 should run an appointment reschedule regression pass. Do not add
+payments, notifications, calendar sync, reviews, calls, admin override, notes,
+prescriptions, medical records, patient completion, no-show/disputes, free-text
+datetime entry, or reschedule reasons in that regression slice.

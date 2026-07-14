@@ -141,7 +141,13 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
                           message: 'No upcoming backend appointments.',
                         )
                       else
-                        ...upcoming.map((item) => _AppointmentCard(item: item)),
+                        ...upcoming.map(
+                          (item) => _AppointmentCard(
+                            item: item,
+                            schedulingRepository: _schedulingRepository,
+                            allowCancellation: true,
+                          ),
+                        ),
                       SizedBox(height: 24.h),
                       _SectionLabel(label: 'Recent'),
                       SizedBox(height: 10.h),
@@ -150,7 +156,13 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
                           message: 'No recent backend appointments.',
                         )
                       else
-                        ...recent.map((item) => _AppointmentCard(item: item)),
+                        ...recent.map(
+                          (item) => _AppointmentCard(
+                            item: item,
+                            schedulingRepository: _schedulingRepository,
+                            allowCancellation: false,
+                          ),
+                        ),
                     ],
                   );
                 },
@@ -528,10 +540,35 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-class _AppointmentCard extends StatelessWidget {
-  const _AppointmentCard({required this.item});
+class _AppointmentCard extends StatefulWidget {
+  const _AppointmentCard({
+    required this.item,
+    required this.schedulingRepository,
+    required this.allowCancellation,
+  });
 
   final _AppointmentItem item;
+  final SchedulingRepository schedulingRepository;
+  final bool allowCancellation;
+
+  @override
+  State<_AppointmentCard> createState() => _AppointmentCardState();
+}
+
+class _AppointmentCardState extends State<_AppointmentCard> {
+  late _AppointmentItem _item = widget.item;
+  bool _isCancelling = false;
+  String? _actionMessage;
+
+  @override
+  void didUpdateWidget(covariant _AppointmentCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.id != widget.item.id) {
+      _item = widget.item;
+      _isCancelling = false;
+      _actionMessage = null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -552,7 +589,7 @@ class _AppointmentCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  item.title,
+                  _item.title,
                   style: TextStyle(
                     fontSize: FontSizes.footer2,
                     fontFamily: AppFonts.montserrat,
@@ -568,7 +605,7 @@ class _AppointmentCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
-                  item.status,
+                  _item.status,
                   style: TextStyle(
                     fontSize: FontSizes.footer4,
                     fontFamily: AppFonts.montserrat,
@@ -581,7 +618,7 @@ class _AppointmentCard extends StatelessWidget {
           ),
           SizedBox(height: 10.h),
           Text(
-            '${item.date} • ${item.time}',
+            '${_item.date} - ${_item.time}',
             style: TextStyle(
               fontSize: FontSizes.footer3,
               fontFamily: AppFonts.montserrat,
@@ -591,7 +628,7 @@ class _AppointmentCard extends StatelessWidget {
           ),
           SizedBox(height: 4.h),
           Text(
-            item.mode,
+            _item.mode,
             style: TextStyle(
               fontSize: FontSizes.footer3,
               fontFamily: AppFonts.montserrat,
@@ -599,36 +636,105 @@ class _AppointmentCard extends StatelessWidget {
               color: AppColors.primaryBlue11,
             ),
           ),
+          if (widget.allowCancellation && _item.canCancel) ...[
+            SizedBox(height: 12.h),
+            SizedBox(
+              width: double.infinity,
+              child: CarenetButton(
+                label:
+                    _isCancelling
+                        ? 'Cancelling appointment...'
+                        : 'Cancel appointment',
+                type: CarenetButtonType.outline,
+                onPressed: _isCancelling ? null : _cancelAppointment,
+              ),
+            ),
+          ],
+          if (_actionMessage != null) ...[
+            SizedBox(height: 8.h),
+            Text(
+              _actionMessage!,
+              style: TextStyle(
+                fontSize: FontSizes.footer4,
+                fontFamily: AppFonts.montserrat,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryBlue11,
+                height: 1.35,
+              ),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  Future<void> _cancelAppointment() async {
+    setState(() {
+      _isCancelling = true;
+      _actionMessage = null;
+    });
+
+    try {
+      final cancelled = await widget.schedulingRepository.cancelAppointment(
+        appointmentId: _item.id,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _item = _AppointmentItem.fromSummary(cancelled);
+        _isCancelling = false;
+        _actionMessage =
+            'Cancellation updated. Backend status: ${cancelled.status.wireName}.';
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isCancelling = false;
+        _actionMessage = _AppointmentsShellPageState._safeAppointmentsError(
+          error,
+        );
+      });
+    }
   }
 }
 
 class _AppointmentItem {
   const _AppointmentItem({
+    required this.id,
     required this.title,
     required this.date,
     required this.time,
     required this.mode,
     required this.status,
+    required this.statusValue,
   });
 
   factory _AppointmentItem.fromSummary(AppointmentSummary summary) {
     return _AppointmentItem(
+      id: summary.id,
       title: 'Appointment with ${summary.professionalProfileId}',
       date: _dateLabel(summary.requestedStartAt),
       time: _timeLabel(summary.requestedStartAt),
       mode: 'Backend appointment request',
       status: summary.status.wireName,
+      statusValue: summary.status,
     );
   }
 
+  final String id;
   final String title;
   final String date;
   final String time;
   final String mode;
   final String status;
+  final AppointmentStatus statusValue;
+
+  bool get canCancel =>
+      statusValue == AppointmentStatus.requested ||
+      statusValue == AppointmentStatus.accepted;
 
   static String _dateLabel(DateTime date) {
     return '${date.year.toString().padLeft(4, '0')}-'

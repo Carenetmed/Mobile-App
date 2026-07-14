@@ -43,10 +43,13 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   _FakeSchedulingRepository({
     this.appointments = const <AppointmentSummary>[],
     this.failure,
+    this.cancelFailure,
   });
 
   final List<AppointmentSummary> appointments;
   final Object? failure;
+  final Object? cancelFailure;
+  final List<String> cancelledAppointmentIds = <String>[];
 
   @override
   Future<List<AppointmentSummary>> ownAppointments() async {
@@ -67,8 +70,25 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   @override
   Future<AppointmentSummary> cancelAppointment({
     required String appointmentId,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final error = cancelFailure;
+    if (error != null) {
+      throw error;
+    }
+    cancelledAppointmentIds.add(appointmentId);
+    final appointment = appointments.firstWhere(
+      (item) => item.id == appointmentId,
+    );
+    return AppointmentSummary(
+      id: appointment.id,
+      patientProfileId: appointment.patientProfileId,
+      professionalProfileId: appointment.professionalProfileId,
+      requestedStartAt: appointment.requestedStartAt,
+      durationMinutes: appointment.durationMinutes,
+      status: AppointmentStatus.cancelled,
+      createdAt: appointment.createdAt,
+      updatedAt: DateTime(2026, 7, 14, 9),
+    );
   }
 
   @override
@@ -166,9 +186,116 @@ void main() {
       expect(find.text('Private consult with Dr. Lagbaja'), findsNothing);
       expect(find.text('Nutrition follow-up'), findsNothing);
       expect(find.text('Accept'), findsNothing);
-      expect(find.text('Cancel appointment'), findsNothing);
+      expect(find.text('Cancel appointment'), findsOneWidget);
     },
   );
+
+  testWidgets('eligible appointment can be cancelled through backend', (
+    tester,
+  ) async {
+    final schedulingRepository = _FakeSchedulingRepository(
+      appointments: <AppointmentSummary>[
+        _appointment(
+          professionalProfileId: 'professional-upcoming',
+          requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+          status: AppointmentStatus.requested,
+        ),
+      ],
+    );
+
+    await _pumpAppointments(
+      tester,
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: schedulingRepository,
+    );
+
+    await tester.tap(find.text('Cancel appointment'));
+    await tester.pumpAndSettle();
+
+    expect(schedulingRepository.cancelledAppointmentIds, <String>[
+      'appointment-1',
+    ]);
+    expect(find.text('CANCELLED'), findsOneWidget);
+    expect(
+      find.text('Cancellation updated. Backend status: CANCELLED.'),
+      findsOneWidget,
+    );
+    expect(find.text('Cancel appointment'), findsNothing);
+  });
+
+  testWidgets('terminal appointments do not expose cancellation action', (
+    tester,
+  ) async {
+    await _pumpAppointments(
+      tester,
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-cancelled',
+            requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+            status: AppointmentStatus.cancelled,
+          ),
+        ],
+      ),
+    );
+
+    expect(find.text('CANCELLED'), findsOneWidget);
+    expect(find.text('Cancel appointment'), findsNothing);
+  });
+
+  testWidgets('recent active-status appointments do not expose cancellation', (
+    tester,
+  ) async {
+    await _pumpAppointments(
+      tester,
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-past',
+            requestedStartAt: DateTime(2026, 7, 13, 10, 30),
+            status: AppointmentStatus.accepted,
+          ),
+        ],
+      ),
+    );
+
+    expect(find.text('ACCEPTED'), findsOneWidget);
+    expect(find.text('Cancel appointment'), findsNothing);
+  });
+
+  testWidgets('cancellation failure shows safe error without status update', (
+    tester,
+  ) async {
+    await _pumpAppointments(
+      tester,
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-upcoming',
+            requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+            status: AppointmentStatus.requested,
+          ),
+        ],
+        cancelFailure: const AuthFailure(
+          type: AuthFailureType.server,
+          message: 'raw cancel failure',
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Cancel appointment'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Service is unavailable. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw cancel failure'), findsNothing);
+    expect(find.text('REQUESTED'), findsOneWidget);
+  });
 
   testWidgets(
     'appointments screen shows backend empty state without local data',

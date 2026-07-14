@@ -1,6 +1,9 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
+import 'package:app_t/features/Home/domain/entities/availability_window.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
@@ -21,6 +24,7 @@ const Size _phoneSize = Size(430, 1200);
 Future<void> _pumpManageProfile(
   WidgetTester tester, {
   ProfileRepository? profileRepository,
+  SchedulingRepository? schedulingRepository,
 }) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
@@ -46,7 +50,12 @@ Future<void> _pumpManageProfile(
                   ),
               RouteName.setAddress: (_) => const SetAddressShellPage(),
               RouteName.messages: (_) => const MessagesPage(),
-              RouteName.selectedDates: (_) => const SelectedDatesShellPage(),
+              RouteName.selectedDates:
+                  (_) => SelectedDatesShellPage(
+                    schedulingRepository:
+                        schedulingRepository ?? _FakeSchedulingRepository(),
+                    initialDate: DateTime(2026, 7, 14),
+                  ),
             },
           ),
     ),
@@ -123,6 +132,109 @@ class _FakeProfileRepository implements ProfileRepository {
   }
 }
 
+class _FakeSchedulingRepository implements SchedulingRepository {
+  _FakeSchedulingRepository({
+    this.windows = const <AvailabilityWindow>[],
+    this.failure,
+    this.replaceFailure,
+  });
+
+  final List<AvailabilityWindow> windows;
+  final Object? failure;
+  final Object? replaceFailure;
+  List<AvailabilityWindowDraft>? lastReplacement;
+
+  @override
+  Future<List<AvailabilityWindow>> ownAvailability() async {
+    final error = failure;
+    if (error != null) {
+      throw error;
+    }
+    return windows;
+  }
+
+  @override
+  Future<List<AvailabilityWindow>> replaceOwnAvailability({
+    required List<AvailabilityWindowDraft> windows,
+  }) async {
+    final error = replaceFailure;
+    if (error != null) {
+      throw error;
+    }
+    lastReplacement = windows;
+    return windows
+        .map(
+          (window) => AvailabilityWindow(
+            id: 'availability-${window.weekday}',
+            weekday: window.weekday,
+            startMinute: window.startMinute,
+            endMinute: window.endMinute,
+            timezone: window.timezone,
+            active: window.active,
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  @override
+  Future<AppointmentSummary> acceptAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> cancelAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> completeAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> declineAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<AppointmentSummary>> ownAppointments() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<AvailabilityWindow>> publicAvailability({
+    required String professionalProfileId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> requestAppointment({
+    required String professionalProfileId,
+    required DateTime requestedStartAt,
+    required int durationMinutes,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> rescheduleAppointment({
+    required String appointmentId,
+    required DateTime requestedStartAt,
+    required int durationMinutes,
+  }) {
+    throw UnimplementedError();
+  }
+}
+
 void main() {
   testWidgets('manage profile shows local profile management sections', (
     tester,
@@ -196,10 +308,26 @@ void main() {
     expect(find.text('raw config message'), findsNothing);
   });
 
-  testWidgets('business hours opens a route-local selected-date draft', (
+  testWidgets('business hours reads and saves backend availability', (
     tester,
   ) async {
-    await _pumpManageProfile(tester);
+    final schedulingRepository = _FakeSchedulingRepository(
+      windows: const <AvailabilityWindow>[
+        AvailabilityWindow(
+          id: 'availability-1',
+          weekday: DateTime.monday,
+          startMinute: 9 * 60,
+          endMinute: 17 * 60,
+          timezone: 'Africa/Lagos',
+          active: true,
+        ),
+      ],
+    );
+
+    await _pumpManageProfile(
+      tester,
+      schedulingRepository: schedulingRepository,
+    );
 
     await tester.drag(find.byType(ListView), const Offset(0, -450));
     await tester.pumpAndSettle();
@@ -210,18 +338,93 @@ void main() {
     expect(find.byType(CalendarDatePicker), findsOneWidget);
     expect(find.text('All day'), findsOneWidget);
     expect(find.text('Weekly availability'), findsOneWidget);
+    expect(find.text('Monday'), findsOneWidget);
+    expect(find.text('09:00 - 17:00'), findsOneWidget);
 
-    await tester.tap(find.text('Prepare hours'));
+    await tester.tap(find.text('Save availability'));
+    await tester.pumpAndSettle();
+
+    expect(schedulingRepository.lastReplacement, isNotNull);
+    expect(schedulingRepository.lastReplacement, hasLength(2));
+    expect(
+      schedulingRepository.lastReplacement!.map((window) => window.weekday),
+      <int>[DateTime.monday, DateTime.tuesday],
+    );
+    expect(schedulingRepository.lastReplacement!.last.startMinute, 0);
+    expect(schedulingRepository.lastReplacement!.last.endMinute, 24 * 60);
+    expect(find.text('Availability saved from backend.'), findsOneWidget);
+    expect(find.text('No profile schedule has been saved.'), findsNothing);
+  });
+
+  testWidgets(
+    'business hours shows safe backend errors without local fallback',
+    (tester) async {
+      await _pumpManageProfile(
+        tester,
+        schedulingRepository: _FakeSchedulingRepository(
+          failure: const AuthFailure(
+            type: AuthFailureType.server,
+            message: 'raw availability failure',
+          ),
+        ),
+      );
+
+      await tester.drag(find.byType(ListView), const Offset(0, -450));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Edit hours'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Service is unavailable. Please try again.'),
+        findsOneWidget,
+      );
+      expect(find.text('raw availability failure'), findsNothing);
+      expect(find.text('Closed'), findsNothing);
+      expect(find.text('Available 24 hours'), findsNothing);
+    },
+  );
+
+  testWidgets('business hours shows backend empty state honestly', (
+    tester,
+  ) async {
+    await _pumpManageProfile(tester);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -450));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit hours'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No backend availability is saved yet.'), findsOneWidget);
+    expect(find.text('Closed'), findsNothing);
+    expect(find.text('Available 24 hours'), findsNothing);
+  });
+
+  testWidgets('business hours save failure shows safe error without success', (
+    tester,
+  ) async {
+    await _pumpManageProfile(
+      tester,
+      schedulingRepository: _FakeSchedulingRepository(
+        replaceFailure: const AuthFailure(
+          type: AuthFailureType.validation,
+          message: 'raw invalid availability',
+        ),
+      ),
+    );
+
+    await tester.drag(find.byType(ListView), const Offset(0, -450));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edit hours'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save availability'));
     await tester.pumpAndSettle();
 
     expect(
-      find.textContaining('Business hours draft prepared'),
+      find.text('Please check the availability and try again.'),
       findsOneWidget,
     );
-    expect(
-      find.textContaining('No profile schedule has been saved'),
-      findsOneWidget,
-    );
+    expect(find.text('raw invalid availability'), findsNothing);
+    expect(find.text('Availability saved from backend.'), findsNothing);
   });
 
   testWidgets('edit action opens local name draft route', (tester) async {

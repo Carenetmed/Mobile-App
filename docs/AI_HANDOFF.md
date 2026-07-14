@@ -221,7 +221,8 @@
 | 52.78 | Decide Professional Verification Upload UI And File Picker Boundary: review the existing `image_picker` dependency, PDF/JPEG/PNG requirement, upload-init/signed PUT/upload-complete repository boundary, platform implications, validation/error/progress needs, and choose the narrow next upload implementation shape; do not add runtime upload behavior or package dependencies in this decision slice | S | **DONE** |
 | 52.79 | Wire Professional Verification Upload Flow: add the selected PDF-capable file picker dependency, let professionals choose `LICENSE`/`IDENTITY`/`CERTIFICATION`, select one PDF/JPEG/PNG file, enforce safe type and 10 MB size validation, call `VerificationRepository.uploadDocument`, show loading/success/safe-error states, reload owner documents after success, and do not expose signed URLs, object keys, local full paths, file previews, raw checksums, admin review data, public document access, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **DONE** |
 | 52.80 | Run Professional Verification Upload Regression Checkpoint: verify document list loading/empty/error, upload success with list reload, picker cancellation, invalid type, 10 MB size guard, safe backend upload failure, no signed URL/object-key/local path/raw checksum/admin/public exposure, docs/deferred-work accuracy, and absence of previews, admin review, rejection reasons, scanning claims, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing the next surface | M | **DONE** |
-| 52.81 | Decide Next Backend-Completed Flutter Surface After Verification Regression: review the verification upload regression, completed backend surface map, deferred-work register, scheduling staging-data blocker, remaining profile/account gaps, and release/staging risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.81 | Decide Next Backend-Completed Flutter Surface After Verification Regression: review the verification upload regression, completed backend surface map, deferred-work register, scheduling staging-data blocker, remaining profile/account gaps, and release/staging risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.82 | Define Professional Basic Profile Edit Boundary: decide whether the next runtime slice should update professional `displayName` only or `displayName`/`category`/`specialty` together, how existing professional profile fields and `bio` are preserved, whether empty-profile creation is allowed, and how `editYourName`/Manage Profile should stay separate from website, address, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims; do not implement runtime behavior in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -237,18 +238,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.80)
+## Manual test (last completed: task 52.81)
 
-Task `52.80` runs the professional verification upload regression checkpoint.
+Task `52.81` is a decision-only slice selecting the next backend-completed
+Flutter surface after verification upload regression.
 
-1. `flutter test test/features/home/manage_profile_flow_test.dart -r expanded` - all 24 focused Manage Profile / verification tests pass.
-2. `flutter analyze lib/features/Home/presentation/pages/professional_verification_documents_shell.dart lib/features/Home/presentation/pages/manage_profile_shell.dart test/features/home/manage_profile_flow_test.dart` - no issues.
-3. Confirm `pubspec.yaml` has direct `file_picker` and existing `image_picker`.
-4. Confirm the privacy search for signed URL/object key/raw checksum/admin/payment/review/prescription/calendar/staging/production terms finds only negative test assertions, not exposed verification-screen UI strings.
-5. Confirm `PROFESSIONAL_VERIFICATION_UPLOAD_REGRESSION.md` records list loading/empty/error, upload success/reload, picker cancellation, invalid type, 10 MB guard, safe backend failure, and private-data non-exposure evidence.
-6. Confirm checksum, previews/downloads, admin review, rejection reasons, camera, batch/background upload, scanning claims, public document exposure, staging data, production claims, and unrelated modules remain deferred.
-7. `git diff --check` - no whitespace errors.
-8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.81`
+1. Confirm `NEXT_SURFACE_AFTER_VERIFICATION_UPLOAD_REGRESSION_DECISION.md` reviews verification regression, scheduling staging-data blocker, admin verification boundary, verification follow-ups, patient profile expansion, Google auth expansion, professional website/address, and professional basic profile fields.
+2. Confirm the selected next lane is professional basic profile editing, with 52.82 as a boundary decision before runtime wiring.
+3. Confirm website/address, verification expansion, admin review, scheduling staging data, payments, reviews, calls, calendar sync, notes, prescriptions, staging, and production claims remain deferred.
+4. `git diff --check` - no whitespace errors.
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.82`
 
 ## Previous runtime manual test baseline
 
@@ -606,6 +605,7 @@ Task `52.80` runs the professional verification upload regression checkpoint.
 | 2026-07-15 | 52.78 | DONE - professional verification upload UI boundary selected a PDF-capable file picker path for the next runtime upload slice instead of using image-only picking |
 | 2026-07-15 | 52.79 | DONE - professional verification upload flow wired with file picker, document type selection, PDF/JPEG/PNG validation, 10 MB guard, safe upload states, repository call, and list reload |
 | 2026-07-15 | 52.80 | DONE - professional verification upload regression passed for list states, upload success/reload, cancellation, invalid type, size guard, safe failure, and private-data non-exposure |
+| 2026-07-15 | 52.81 | DONE - selected professional basic profile field editing as the next backend-completed Flutter surface, with a required boundary decision before runtime name/category/specialty wiring |
 
 ---
 

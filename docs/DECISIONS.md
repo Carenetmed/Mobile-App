@@ -1287,3 +1287,22 @@ document exposure, staging data, and production claims remain deferred.
 
 Next: 52.81 should decide the next backend-completed Flutter surface before any
 new runtime wiring.
+
+## D135 - Professional basic profile field editing selected next
+
+Task: 52.81
+
+Decision: Select professional basic profile field editing as the next
+backend-completed Flutter surface, but require a boundary decision before any
+runtime code.
+
+Reason: The verification upload/list lane is now regression-proven, while
+scheduling staging smoke remains blocked on deliberate backend-owned staging
+data and admin verification remains a separate role surface. The existing
+professional profile backend contract accepts `displayName`, `category`,
+`specialty`, and `bio`; bio is already wired, but name/category/specialty edit
+behavior still needs a safe UI boundary. Website and address are not accepted
+professional profile fields in the current contract and must remain deferred.
+
+Next: 52.82 should define the professional basic profile edit boundary before
+runtime name/category/specialty wiring.

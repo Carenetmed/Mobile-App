@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.80** - professional verification upload regression checkpoint |
-| Last completed | **52.79** - professional verification upload flow |
+| NEXT task | **52.81** - decide next backend-completed Flutter surface |
+| Last completed | **52.80** - professional verification upload regression checkpoint |
 | Registered routes | **71 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -106,6 +106,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-15 | Task 52.77 DONE - Manage Profile now opens a backend-backed professional verification documents shell with safe owner list/status, empty/error states, private-data non-exposure, and upload deferred pending file-picker boundary; DOC_SYNC NEXT -> 52.78 |
 | 2026-07-15 | Task 52.78 DONE - selected a PDF-capable file picker boundary for the professional verification upload flow, keeping runtime upload/package changes deferred to 52.79; DOC_SYNC NEXT -> 52.79 |
 | 2026-07-15 | Task 52.79 DONE - wired professional verification upload with file picker, document type selection, PDF/JPEG/PNG plus 10 MB validation, safe states, repository upload call, and list reload; DOC_SYNC NEXT -> 52.80 |
+| 2026-07-15 | Task 52.80 DONE - professional verification upload regression passed for owner list states, upload success/reload, picker cancellation, invalid file type, 10 MB guard, safe backend failure, and private-data non-exposure; DOC_SYNC NEXT -> 52.81 |
 | 2026-07-15 | Task 52.74 DONE - selected professional verification upload/list as the next backend-completed Flutter lane, with a required boundary decision before runtime wiring; DOC_SYNC NEXT -> 52.75 |
 | 2026-07-15 | Task 52.73 DONE - Find Mentor public professionals regression passed for loading, empty, success, filtering, backend id handoff, no local fallback/direct fake booking, dashboard compatibility, and Specialist Details compatibility; DOC_SYNC NEXT -> 52.74 |
 | 2026-07-15 | Task 52.72 DONE - Find Mentor now reads backend public professionals where available, routes backend ids to Specialist Details, and avoids local fallback/direct fake booking in the backend path; DOC_SYNC NEXT -> 52.73 |

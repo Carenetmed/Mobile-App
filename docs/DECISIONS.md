@@ -1268,3 +1268,22 @@ reasons, scanning claims, and broader upload management remain deferred.
 
 Next: 52.80 should run a focused professional verification upload regression
 checkpoint before selecting another backend-completed surface.
+
+## D134 - Professional verification upload regression passed
+
+Task: 52.80
+
+Decision: Treat the professional verification upload/list Flutter lane as
+regression-proven for the current frontend milestone boundary.
+
+Reason: Focused evidence now covers owner document list success, empty, and
+safe failure states; upload success with repository metadata and list reload;
+document type selection; picker cancellation; unsupported file rejection; 10 MB
+size guard; safe backend upload failure; direct `file_picker` dependency
+presence; focused analyzer cleanliness; and absence of private verification
+storage data or unrelated module claims in the runtime screen. Checksum,
+previews/downloads, admin review, rejection reasons, scanning claims, public
+document exposure, staging data, and production claims remain deferred.
+
+Next: 52.81 should decide the next backend-completed Flutter surface before any
+new runtime wiring.

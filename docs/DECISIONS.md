@@ -1142,3 +1142,24 @@ production-release behavior was added.
 
 Next: 52.74 should decide the next backend-completed Flutter surface before any
 new runtime wiring.
+
+## D128 - Professional verification upload/list selected next
+
+Task: 52.74
+
+Decision: Select professional verification upload/list as the next
+backend-completed Flutter lane, but require a decision-only UI/API boundary
+slice before runtime implementation.
+
+Reason: Search, Specialist Details, Find Mentor, patient profile name update,
+professional profile read/bio update, availability, and appointment lifecycle
+paths have focused proof for the current milestone boundary. Scheduling staging
+smoke remains blocked on deliberate backend/staging data rather than Flutter
+feature expansion. Professional verification upload/list is a completed backend
+surface, but it handles private documents and signed upload URLs, so Flutter
+must define file picker constraints, document type/status UX, upload-init/PUT
+upload/upload-complete boundaries, safe failures, and storage-readiness handling
+before code.
+
+Next: 52.75 should define the professional verification upload/list UI boundary
+without implementing runtime behavior.

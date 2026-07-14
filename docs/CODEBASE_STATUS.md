@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 professional verification repository boundary added.
+**Last updated:** 2026-07-15 professional verification documents shell wired.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -22,7 +22,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | App entry | `lib/main.dart` -> `CarenetApp` in `lib/app.dart` |
 | Start screen | `RouteName.splash` (not notifications) |
 | Splash -> session guard | 800ms then `AuthRepository.restore()` routes usable stored sessions to `dashboard`; missing, invalid, or failed restore falls back to `onboarding` |
-| Named routes | **70 wired routes** in `router.dart` plus the reserved unused `login` constant (see `ROUTES.md`) |
+| Named routes | **71 wired routes** in `router.dart` plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Onboarding UI | 3 pages, skip, next, get started -> sign up phone |
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
 | Sign-up email | Validates email, then routes to `finishSignUp` |
@@ -127,6 +127,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Find Mentor public professionals regression | `FIND_MENTOR_PUBLIC_PROFESSIONALS_REGRESSION.md` records focused proof for loading, empty, success, category filtering, backend id handoff, safe failure, no local fallback/direct fake booking, dashboard local compatibility, Specialist Details compatibility, and deferred-work accuracy |
 | Next surface after Find Mentor | `NEXT_SURFACE_AFTER_FIND_MENTOR_DECISION.md` selects professional verification upload/list as the next backend-completed Flutter lane. The next slice must define the private-document/file-picker/upload/list/status boundary before runtime implementation |
 | Professional verification repository boundary | `PROFESSIONAL_VERIFICATION_UPLOAD_LIST_BOUNDARY.md` accepts Manage Profile as the professional-owned entry point, and `VerificationRepository` now covers owner document list, upload-init, internal signed upload PUT, and upload-complete behind safe entities and focused tests. Runtime screen wiring, file picker UI, visible upload flow, admin review, private previews/downloads, public document access, staging data, and production claims remain deferred |
+| Professional verification documents shell | Manage Profile now has a `Verification` entry that opens `professionalVerificationDocuments`. The shell reads owner verification documents through `VerificationRepository.documents`, shows loading/empty/safe-error states, displays safe status metadata only, and keeps upload locked until the file-picker/upload UX boundary is decided |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

@@ -78,6 +78,8 @@ class RouteName {
   static const String publicProfile = 'publicProfile';
   static const String manageProfile = 'manageProfile';
   static const String managePortfolio = 'managePortfolio';
+  static const String professionalVerificationDocuments =
+      'professionalVerificationDocuments';
   static const String editYourName = 'editYourName';
   static const String editYourWebsite = 'editYourWebsite';
   static const String addDescription = 'addDescription';

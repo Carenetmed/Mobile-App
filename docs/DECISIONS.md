@@ -1207,3 +1207,23 @@ document exposure, staging data, and production claims remain deferred.
 Next: 52.77 should wire a Manage Profile-owned verification documents shell
 against `VerificationRepository.documents` and keep upload UI scoped safely if
 file-picker/runtime upload UX needs a follow-up slice.
+
+## D131 - Professional verification documents shell wired
+
+Task: 52.77
+
+Decision: Wire the first runtime professional verification screen as a
+Manage Profile-owned owner-document list/status shell.
+
+Reason: The repository/API boundary is now available, and the safest first
+runtime step is read-only visibility of the current professional's own
+verification document statuses. The new route reads
+`VerificationRepository.documents`, shows loading, empty, and safe backend
+error states, displays only safe metadata, and avoids signed URL, object key,
+local path, file preview, raw checksum, admin review, rejection reason, public
+document, staging-data, or production-release claims. Upload remains locked
+because the app has `image_picker` as a direct dependency but no direct
+PDF-capable file picker/file selector dependency.
+
+Next: 52.78 should decide the upload UI and file-picker dependency boundary
+before adding runtime upload behavior.

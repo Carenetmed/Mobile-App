@@ -217,7 +217,8 @@
 | 52.74 | Decide Next Backend-Completed Flutter Surface After Find Mentor Regression: review Find Mentor regression, completed backend surface map, deferred-work register, verification upload/list blockers, scheduling staging-data blocker, profile mutation gaps, and release/staging risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.75 | Define Professional Verification Upload/List UI Boundary: review backend verification upload-init, upload-complete, owner document list, storage-readiness, private-document rules, existing app entry points, and file-picker constraints before choosing the first runtime verification implementation shape; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.76 | Add Professional Verification Repository Boundary: add verification document/upload entities, API client, repository, signed upload PUT helper, and focused tests for owner document list, upload-init, upload-complete, safe errors, and no signed URL/object-key exposure in public entities; do not wire runtime screens or admin review UI | M | **DONE** |
-| 52.77 | Wire Professional Verification Documents Shell: add a Manage Profile entry and professional-owned verification document screen using `VerificationRepository.documents`, show safe loading/empty/error/status states, keep upload action scoped for a follow-up if file-picker/runtime upload UX needs another slice, and do not expose signed URLs, object keys, local paths, file previews, admin review data, public document access, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **NEXT** |
+| 52.77 | Wire Professional Verification Documents Shell: add a Manage Profile entry and professional-owned verification document screen using `VerificationRepository.documents`, show safe loading/empty/error/status states, keep upload action scoped for a follow-up if file-picker/runtime upload UX needs another slice, and do not expose signed URLs, object keys, local paths, file previews, admin review data, public document access, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **DONE** |
+| 52.78 | Decide Professional Verification Upload UI And File Picker Boundary: review the existing `image_picker` dependency, PDF/JPEG/PNG requirement, upload-init/signed PUT/upload-complete repository boundary, platform implications, validation/error/progress needs, and choose the narrow next upload implementation shape; do not add runtime upload behavior or package dependencies in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -233,20 +234,20 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.76)
+## Manual test (last completed: task 52.77)
 
-Task `52.76` adds the professional verification repository/API boundary.
+Task `52.77` wires the professional verification documents shell from Manage Profile.
 
-1. `dart format lib/core/di/injection.dart lib/features/Home/domain/entities/verification_document.dart lib/features/Home/domain/entities/verification_upload_request.dart lib/features/Home/data/models/verification_document_model.dart lib/features/Home/data/services/verification_api_client.dart lib/features/Home/data/repositories/verification_repository.dart test/features/home/verification_repository_test.dart` - formatted cleanly.
-2. `flutter test test/features/home/verification_repository_test.dart -r expanded` - all 6 tests pass.
-3. `flutter analyze lib/core/di/injection.dart lib/features/Home/domain/entities/verification_document.dart lib/features/Home/domain/entities/verification_upload_request.dart lib/features/Home/data/models/verification_document_model.dart lib/features/Home/data/services/verification_api_client.dart lib/features/Home/data/repositories/verification_repository.dart test/features/home/verification_repository_test.dart` - no issues.
-4. Confirm `VerificationRepository` requires a stored session before protected verification calls.
-5. Confirm upload-init sends `documentType`, `originalFileName`, `mimeType`, and `fileSizeBytes` only, with no owner id/status/object key fields.
-6. Confirm signed upload PUT uses the backend signed URL internally and sends no bearer authorization header.
-7. Confirm `VerificationDocument` exposes only safe metadata and has no signed URL, object key, local path, file content, raw checksum, admin note, or rejection-reason field.
-8. Confirm `PROFESSIONAL_VERIFICATION_REPOSITORY_BOUNDARY.md` records runtime screen wiring, file picker UI, admin review, rejection reasons, previews/downloads, camera capture, batch/background upload, scanning claims, public document exposure, staging data, production claims, and unrelated modules as deferred.
+1. `dart format lib/core/constants/navigators/routeName.dart lib/core/constants/navigators/router.dart lib/features/Home/presentation/pages/manage_profile_shell.dart lib/features/Home/presentation/pages/professional_verification_documents_shell.dart test/features/home/manage_profile_flow_test.dart` - formatted cleanly.
+2. `flutter test test/features/home/manage_profile_flow_test.dart -r expanded` - all 18 tests pass.
+3. `flutter analyze lib/core/constants/navigators/routeName.dart lib/core/constants/navigators/router.dart lib/features/Home/presentation/pages/manage_profile_shell.dart lib/features/Home/presentation/pages/professional_verification_documents_shell.dart test/features/home/manage_profile_flow_test.dart` - no issues.
+4. Confirm Manage Profile shows a `Verification` entry that opens `professionalVerificationDocuments`.
+5. Confirm the verification documents shell loads owner documents through `VerificationRepository.documents`.
+6. Confirm loading, empty, and safe backend error states are covered.
+7. Confirm document cards expose only safe owner-list metadata and do not show signed URLs, object keys, local paths, file previews, raw checksum values, admin data, or public document access.
+8. Confirm upload remains locked/deferred because the current direct dependency set has `image_picker` but no PDF-capable file picker/file selector dependency.
 9. `git diff --check` - no whitespace errors.
-10. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.77`
+10. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.78`
 
 ## Previous runtime manual test baseline
 
@@ -600,6 +601,7 @@ Task `52.76` adds the professional verification repository/API boundary.
 | 2026-07-15 | 52.74 | DONE - selected professional verification upload/list as the next backend-completed Flutter lane, with a required boundary decision before runtime upload/list wiring |
 | 2026-07-15 | 52.75 | DONE - professional verification upload/list boundary accepted: Manage Profile entry, owner list/status plus controlled upload flow, private-document rules, and repository-boundary next |
 | 2026-07-15 | 52.76 | DONE - professional verification repository/API boundary added with safe document entities, upload-init, internal signed PUT, upload-complete, bearer auth, safe error mapping, and focused tests |
+| 2026-07-15 | 52.77 | DONE - Manage Profile now opens a backend-backed professional verification documents shell with safe list/status, empty/error states, and upload locked for file-picker boundary decision |
 
 ---
 

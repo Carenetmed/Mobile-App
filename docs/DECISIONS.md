@@ -815,3 +815,22 @@ Next: 52.57 should run an appointment reschedule regression pass. Do not add
 payments, notifications, calendar sync, reviews, calls, admin override, notes,
 prescriptions, medical records, patient completion, no-show/disputes, free-text
 datetime entry, or reschedule reasons in that regression slice.
+
+## D111 - Appointment reschedule regression complete
+
+Task: 52.57
+
+Decision: The constrained appointment reschedule path has enough focused
+regression proof to stop reschedule-specific implementation for now and move to
+a scheduling pause/smoke/checkpoint decision.
+
+Reason: Tests now cover patient and professional success paths, backend
+`REQUESTED` response handling, narrow generated-option payload behavior,
+non-patient/non-professional hiding, recent and terminal hiding, empty generated
+availability handling, safe availability/reschedule failures, and absence of
+broader deferred payment/notification/calendar/review/call/admin/notes/
+prescription UI.
+
+Next: 52.58 should decide whether the scheduling/appointment core can pause for
+a broader checkpoint, needs a real-device/staging smoke, or needs a small QA/fix
+slice from regression findings. It should not add runtime behavior.

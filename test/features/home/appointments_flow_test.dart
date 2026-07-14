@@ -527,13 +527,66 @@ void main() {
             requestedStartAt: DateTime(2026, 7, 15, 10, 30),
             status: AppointmentStatus.cancelled,
           ),
+          _appointment(
+            id: 'appointment-3',
+            professionalProfileId: 'professional-declined',
+            requestedStartAt: DateTime(2026, 7, 15, 11, 30),
+            status: AppointmentStatus.declined,
+          ),
+          _appointment(
+            id: 'appointment-4',
+            professionalProfileId: 'professional-completed',
+            requestedStartAt: DateTime(2026, 7, 15, 12, 30),
+            status: AppointmentStatus.completed,
+          ),
         ],
       ),
     );
 
     expect(find.text('ACCEPTED'), findsOneWidget);
     expect(find.text('CANCELLED'), findsOneWidget);
+    expect(find.text('DECLINED'), findsOneWidget);
+    expect(find.text('COMPLETED'), findsOneWidget);
     expect(find.text('Reschedule'), findsNothing);
+  });
+
+  testWidgets('empty generated reschedule options do not submit a request', (
+    tester,
+  ) async {
+    final schedulingRepository = _FakeSchedulingRepository(
+      appointments: <AppointmentSummary>[
+        _appointment(
+          professionalProfileId: 'professional-upcoming',
+          requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+          status: AppointmentStatus.requested,
+        ),
+      ],
+      publicWindows: const <AvailabilityWindow>[],
+    );
+
+    await _pumpAppointments(
+      tester,
+      role: 'PATIENT',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: schedulingRepository,
+    );
+
+    await tester.tap(find.text('Reschedule'));
+    await tester.pumpAndSettle();
+
+    expect(schedulingRepository.publicAvailabilityProfessionalIds, <String>[
+      'professional-upcoming',
+    ]);
+    expect(
+      find.text('No backend availability is available for reschedule.'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('No generated reschedule times are available.'),
+      findsOneWidget,
+    );
+    expect(find.text('Confirm reschedule'), findsNothing);
+    expect(schedulingRepository.rescheduledAppointmentIds, isEmpty);
   });
 
   testWidgets(

@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.55** - appointment reschedule UX boundary decision |
-| Last completed | **52.54** - post-regression scheduling lane decision |
+| NEXT task | **52.56** - constrained appointment reschedule wiring |
+| Last completed | **52.55** - appointment reschedule UX boundary decision |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -262,6 +262,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-15 | Task 52.52 DONE - selected scheduling core regression before any reschedule UX/runtime work; DOC_SYNC NEXT -> 52.53 |
 | 2026-07-15 | Task 52.53 DONE - strengthened scheduling core regression proof across Search, Appointments, selectedDates, and repository boundaries; DOC_SYNC NEXT -> 52.54 |
 | 2026-07-15 | Task 52.54 DONE - selected reschedule UX/product boundary decision before runtime reschedule wiring; DOC_SYNC NEXT -> 52.55 |
+| 2026-07-15 | Task 52.55 DONE - defined constrained appointment reschedule UX boundary; DOC_SYNC NEXT -> 52.56 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

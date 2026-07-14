@@ -1,7 +1,7 @@
 # Concrete appointment request UX decision
 
 **Task:** 52.36
-**Status:** Accepted decision before runtime request wiring
+**Status:** Accepted decision; time-option helper implemented in 52.37 before runtime request wiring
 
 Purpose: define the first real appointment request UX after public availability
 read and removal of local booking success.
@@ -139,6 +139,14 @@ Scope:
   timezone preservation, duration fit, and empty windows
 - do not call `requestAppointment`
 - do not wire runtime booking UI yet
+
+Implementation status:
+
+- Done in 52.37 through `AppointmentRequestTimeOptions`
+- The helper generates options at returned availability window start times only
+- The helper preserves the backend timezone string but does not pretend to do
+  full IANA timezone conversion on the client
+- Runtime request UI remains deferred to 52.38
 
 Then:
 

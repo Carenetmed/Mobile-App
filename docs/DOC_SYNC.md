@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.37** - add appointment request time-option helper |
-| Last completed | **52.36** - concrete appointment request UX decided |
+| NEXT task | **52.38** - wire appointment request from Search availability |
+| Last completed | **52.37** - appointment request time-option helper added |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -244,6 +244,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-14 | Task 52.34 DONE - decided to remove local booking success before real appointment request wiring; DOC_SYNC NEXT -> 52.35 |
 | 2026-07-14 | Task 52.35 DONE - removed local booking confirmation/success from bookAppointment; DOC_SYNC NEXT -> 52.36 |
 | 2026-07-14 | Task 52.36 DONE - selected Search availability sheet request UX and queued time-option helper before runtime request; DOC_SYNC NEXT -> 52.37 |
+| 2026-07-14 | Task 52.37 DONE - added appointment request time-option helper and focused tests without UI wiring or request API calls; DOC_SYNC NEXT -> 52.38 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

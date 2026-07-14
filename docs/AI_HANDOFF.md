@@ -177,7 +177,8 @@
 | 52.34 | Decide the first appointment request UI path after public availability read: choose whether to adapt the existing `bookAppointment` form, add a constrained request action from the Search availability sheet, or pause for professional availability management first; do not implement runtime booking in this decision slice | S | **DONE** |
 | 52.35 | Remove local booking success from `bookAppointment`: keep the route available, remove `Confirmed locally` and fake booking completion behavior, show an honest deferred/backend-required state, update tests/docs, and do not call appointment request API yet | M | **DONE** |
 | 52.36 | Define the concrete appointment request UX after local booking success removal: choose date/time selection from backend public availability, duration options, Search sheet vs rewritten `bookAppointment` route arguments, and backend `REQUESTED` success handling; do not implement runtime booking in this decision slice | S | **DONE** |
-| 52.37 | Add appointment request time-option helper: convert returned `AvailabilityWindow` values into near-term concrete request options for the next seven days with focused tests; do not call `requestAppointment`, do not wire runtime booking UI, and keep payments/notifications/reviews/calls/calendar/notes/prescriptions out of scope | M | **NEXT** |
+| 52.37 | Add appointment request time-option helper: convert returned `AvailabilityWindow` values into near-term concrete request options for the next seven days with focused tests; do not call `requestAppointment`, do not wire runtime booking UI, and keep payments/notifications/reviews/calls/calendar/notes/prescriptions out of scope | M | **DONE** |
+| 52.38 | Wire appointment request from Search availability: add selectable generated time/duration options in the Search profile sheet, call `SchedulingRepository.requestAppointment` only after user selection, show backend `REQUESTED` success and safe errors, and keep own list/lifecycle/payments/notifications/reviews/calls/calendar/notes/prescriptions deferred | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -193,14 +194,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.36)
+## Manual test (last completed: task 52.37)
 
-Task `52.36` is a decision-only appointment request UX slice. No runtime behavior changed.
+Task `52.37` adds a helper/test boundary only. It does not wire appointment
+request UI and does not call `SchedulingRepository.requestAppointment`.
 
-1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/APPOINTMENT_REQUEST_UX_DECISION.md docs/APPOINTMENT_REQUEST_UI_PATH_DECISION.md docs/SCHEDULING_AVAILABILITY_APPOINTMENT_CONTRACT.md` - passes
-2. Confirm `APPOINTMENT_REQUEST_UX_DECISION.md` selects Search public availability sheet as the first request UX.
-3. Confirm the next slice is a helper/test slice before runtime `requestAppointment`.
-4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.37`
+1. `flutter test test/features/home/appointment_request_time_options_test.dart` - passes
+2. `flutter analyze lib/features/Home/domain/entities/appointment_request_time_option.dart lib/features/Home/domain/services/appointment_request_time_options.dart test/features/home/appointment_request_time_options_test.dart` - no issues
+3. `git diff --check` - passes
+4. Confirm generated options cover weekday matching, labels, timezone preservation, duration fit, and empty/inactive/invalid/past windows.
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.38`
 
 ## Previous runtime manual test baseline
 

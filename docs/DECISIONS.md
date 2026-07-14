@@ -92,6 +92,7 @@ does not silently reinterpret established boundaries.
 | D085 | 2026-07-14 | Scheduling availability appointment frontend contract | Define the Flutter contract for public/professional availability and appointment routes before runtime wiring. The next implementation must add entities/models/API client/repository/DI/tests only, must not wire UI screens yet, and must preserve no local fallback for backend-owned scheduling data | Phase 22, task 52.31 |
 | D086 | 2026-07-14 | Scheduling repository boundary | Add `SchedulingApiClient` and `SchedulingRepository` with availability and appointment entities/models, DI registration, and focused tests. Public availability sends no auth header; protected availability/appointment calls require stored session bearer auth; request/reschedule payloads send only backend-accepted fields; lifecycle actions send no trusted status body. No UI screens are wired yet | Phase 22, task 52.32 |
 | D087 | 2026-07-14 | Public availability read in Search | Wire the Search public professional profile sheet to `SchedulingRepository.publicAvailability` for the selected backend public professional id. Show real loading/error/empty availability states, render only returned backend windows, keep booking disabled/deferred, and do not reintroduce local specialist or slot fallback | Phase 22, task 52.33 |
+| D088 | 2026-07-14 | Appointment request UI path | Do not adapt the old free-text `bookAppointment` form directly into backend request wiring. First remove local `Confirmed locally`/fake booking success, then define a concrete request UX from backend public professional plus public availability; backend request success must mean `REQUESTED`, not booked/confirmed | Phase 22, task 52.34 |
 
 ## How to add a row
 
@@ -404,3 +405,20 @@ separate booking-path decision.
 
 Next: 52.34 should decide the first appointment request UI path before runtime
 booking is wired.
+
+## D088 - Appointment request UI path
+
+Task: 52.34
+
+Decision: Do not wire the existing `bookAppointment` free-text local form
+directly to `SchedulingRepository.requestAppointment`. First remove local
+booking success, then define a concrete request UX from backend professional
+and backend availability data.
+
+Reason: The backend request contract accepts only `professionalProfileId`,
+`requestedStartAt`, and `durationMinutes`. The old form stores clinician text,
+preferred date text, visit type, reason, and a local confirmation status. That
+shape would either send unsupported fields or preserve fake booking success.
+
+Next: 52.35 should remove local booking success before real appointment request
+wiring.

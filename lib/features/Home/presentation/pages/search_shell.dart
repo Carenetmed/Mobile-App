@@ -1,5 +1,6 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
+import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
@@ -275,53 +276,70 @@ class _SearchShellPageState extends State<SearchShellPage> {
       builder:
           (context) => Padding(
             padding: REdgeInsets.fromLTRB(20.w, 8.h, 20.w, 24.h),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  specialist.name,
-                  style: TextStyle(
-                    fontSize: FontSizes.body2,
-                    fontFamily: AppFonts.montserrat,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.kBlack,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    specialist.name,
+                    style: TextStyle(
+                      fontSize: FontSizes.body2,
+                      fontFamily: AppFonts.montserrat,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.kBlack,
+                    ),
                   ),
-                ),
-                SizedBox(height: 6.h),
-                Text(
-                  specialist.role,
-                  style: TextStyle(
-                    fontSize: FontSizes.footer2,
-                    fontFamily: AppFonts.montserrat,
-                    color: AppColors.primaryBlue11,
+                  SizedBox(height: 6.h),
+                  Text(
+                    specialist.role,
+                    style: TextStyle(
+                      fontSize: FontSizes.footer2,
+                      fontFamily: AppFonts.montserrat,
+                      color: AppColors.primaryBlue11,
+                    ),
                   ),
-                ),
-                SizedBox(height: 12.h),
-                Text(
-                  specialist.summary,
-                  style: TextStyle(
-                    fontSize: FontSizes.footer2,
-                    fontFamily: AppFonts.montserrat,
-                    color: AppColors.kBlack,
-                    height: 1.4,
+                  SizedBox(height: 12.h),
+                  Text(
+                    specialist.summary,
+                    style: TextStyle(
+                      fontSize: FontSizes.footer2,
+                      fontFamily: AppFonts.montserrat,
+                      color: AppColors.kBlack,
+                      height: 1.4,
+                    ),
                   ),
-                ),
-                SizedBox(height: 16.h),
-                _PublicAvailabilitySection(
-                  professionalProfileId: specialist.id,
-                  schedulingRepository: _schedulingRepository,
-                  now: widget.now ?? DateTime.now(),
-                ),
-                SizedBox(height: 16.h),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Done'),
+                  SizedBox(height: 16.h),
+                  _PublicAvailabilitySection(
+                    professionalProfileId: specialist.id,
+                    schedulingRepository: _schedulingRepository,
+                    now: widget.now ?? DateTime.now(),
                   ),
-                ),
-              ],
+                  SizedBox(height: 16.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () {
+                        final navigator = Navigator.of(context);
+                        navigator.pop();
+                        navigator.pushNamed(
+                          RouteName.specialistDetails,
+                          arguments: specialist.id,
+                        );
+                      },
+                      child: const Text('Open details'),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Done'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
     );

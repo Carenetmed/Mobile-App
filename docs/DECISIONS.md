@@ -1047,3 +1047,23 @@ availability data only where a backend professional id can be resolved
 honestly. It must not invent a public detail endpoint or include verification,
 admin, payments, reviews, calls, calendar sync, notes, prescriptions, staging
 data, or production claims.
+
+## D123 - Specialist Details public availability wired
+
+Task: 52.69
+
+Decision: Specialist Details now uses existing public professional and public
+availability repository surfaces when a backend public professional id is
+available.
+
+Reason: This moves a visible provider-detail surface away from seeded local
+slots while staying inside the accepted backend contract. The route resolves
+the passed id from `ProfileRepository.publicProfessionals`, renders public
+profile fields, reads `SchedulingRepository.publicAvailability`, generates
+bounded appointment request options, and submits selected requests through
+`SchedulingRepository.requestAppointment`. No public detail endpoint,
+verification/admin behavior, payment, review, call, calendar, note,
+prescription, staging-data, or production-release behavior was added.
+
+Next: 52.70 should run a Specialist Details public availability regression
+checkpoint before another runtime surface is selected.

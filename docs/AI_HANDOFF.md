@@ -209,7 +209,8 @@
 | 52.66 | Wire Patient Profile Name Update From Settings Profile: call `ProfileRepository.updatePatientMe` from Settings/Profile for combined first/last name only, show safe loading/success/error states, preserve local username/email/bio save behavior, and do not send age/location/user id/role/email/phone/password/security/verification/scheduling/public-profile data | M | **DONE** |
 | 52.67 | Run Patient Profile Name Update Regression Checkpoint: verify name-only payload, safe failure/no false success, local username/email/bio preservation, docs/deferred-work accuracy, and absence of age/location/auth/security/verification/scheduling/destructive-account mutation before deciding the next backend-completed surface | M | **DONE** |
 | 52.68 | Decide Next Backend-Completed Flutter Surface After Patient Profile Name Update: review the patient profile name update regression, completed backend surface map, deferred-work register, and current staging blockers before choosing one narrow next Flutter wiring lane; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.69 | Wire Specialist Details To Public Professional Availability: replace the local-only specialist details data path with backend public-professional/public-availability data where a backend professional id can be resolved honestly, show safe loading/error/empty states, keep the existing route, avoid local slot fallback, and do not invent a public detail endpoint, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, or staging data | M | **NEXT** |
+| 52.69 | Wire Specialist Details To Public Professional Availability: replace the local-only specialist details data path with backend public-professional/public-availability data where a backend professional id can be resolved honestly, show safe loading/error/empty states, keep the existing route, avoid local slot fallback, and do not invent a public detail endpoint, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, or staging data | M | **DONE** |
+| 52.70 | Run Specialist Details Public Availability Regression Checkpoint: verify backend id resolution, safe loading/error/empty states, no local slot fallback, generated request payload, request failure behavior, Search handoff, dashboard local compatibility, docs/deferred-work accuracy, and absence of public-detail endpoint invention, verification/admin behavior, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing the next surface | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -225,15 +226,17 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.68)
+## Manual test (last completed: task 52.69)
 
-Task `52.68` decides the next backend-completed Flutter surface.
+Task `52.69` wires Specialist Details to public professional availability.
 
-1. Confirm `NEXT_SURFACE_AFTER_PATIENT_PROFILE_DECISION.md` selects Specialist Details public professional/availability wiring next.
-2. Confirm verification upload/list, admin dashboard, Google link/unlink, scheduling staging data, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, and production claims remain out of scope.
-3. Confirm no runtime Dart, Android, iOS, or test files changed in this decision-only slice.
-4. `git diff --check` - no whitespace errors.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.69`
+1. `dart format lib\features\Home\presentation\pages\search_shell.dart lib\features\Home\presentation\pages\specialist_details_shell.dart test\features\home\specialist_details_flow_test.dart` - passes.
+2. `flutter test test\features\home\specialist_details_flow_test.dart -r compact` - all tests pass.
+3. `flutter test test\features\home\search_flow_test.dart -r compact` - all tests pass.
+4. `flutter test test\features\home\dashboard_shell_test.dart -r compact` - all tests pass.
+5. `flutter analyze lib\features\Home\presentation\pages\search_shell.dart lib\features\Home\presentation\pages\specialist_details_shell.dart test\features\home\specialist_details_flow_test.dart test\features\home\search_flow_test.dart test\features\home\dashboard_shell_test.dart` - no issues.
+6. Confirm `SPECIALIST_DETAILS_PUBLIC_AVAILABILITY_WIRING.md` records backend id resolution, no local fallback, and deferred-work boundaries.
+7. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.70`
 
 ## Previous runtime manual test baseline
 
@@ -579,6 +582,7 @@ Task `52.68` decides the next backend-completed Flutter surface.
 | 2026-07-15 | 52.66 | DONE - Settings/Profile now updates backend patient profile name only, preserves local username/email/bio behavior, and blocks false success on backend name-save failure |
 | 2026-07-15 | 52.67 | DONE - patient profile name update regression passed for name-only payload, safe failure/no false success, local-field preservation, and deferred-work accuracy |
 | 2026-07-15 | 52.68 | DONE - selected Specialist Details public professional/availability wiring as the next narrow backend-completed Flutter surface while keeping verification/admin/staging/payments/reviews/calls/calendar out of scope |
+| 2026-07-15 | 52.69 | DONE - Specialist Details can now render backend public professional detail, public availability, generated request options, and backend appointment request results without inventing a detail endpoint or falling back to local slots in the backend path |
 
 ---
 

@@ -662,3 +662,19 @@ status replacement, and absence of accidental broader lifecycle UI.
 
 Next: 52.49 should decide whether reschedule, completion, or another fix pass
 is the next safe lifecycle lane.
+
+## D103 - Professional completion before reschedule
+
+Task: 52.49
+
+Decision: Add professional appointment completion before reschedule.
+
+Reason: Completion is the narrower next lifecycle action because it is
+professional-only, requires no trusted request body, and lets the backend
+enforce assigned professional, `ACCEPTED` status, and scheduled-end timing.
+Reschedule needs new time/duration selection and availability UX, so it should
+remain a separate decision/runtime lane.
+
+Next: 52.50 should wire professional completion for accepted appointments after
+scheduled end time and keep reschedule, payments, notifications, calendar,
+reviews, notes, and prescriptions deferred.

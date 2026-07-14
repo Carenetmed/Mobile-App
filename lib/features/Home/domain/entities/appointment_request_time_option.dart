@@ -24,6 +24,30 @@ class AppointmentRequestTimeOption {
 
   String get timeRangeLabel => '$startTimeLabel-$endTimeLabel';
 
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is AppointmentRequestTimeOption &&
+            requestedStartAt == other.requestedStartAt &&
+            durationMinutes == other.durationMinutes &&
+            timezone == other.timezone &&
+            weekday == other.weekday &&
+            startMinute == other.startMinute &&
+            endMinute == other.endMinute;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(
+      requestedStartAt,
+      durationMinutes,
+      timezone,
+      weekday,
+      startMinute,
+      endMinute,
+    );
+  }
+
   static String _minuteLabel(int minuteOfDay) {
     final hour = minuteOfDay ~/ 60;
     final minute = minuteOfDay % 60;

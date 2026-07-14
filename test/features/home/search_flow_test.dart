@@ -17,6 +17,7 @@ Future<void> _pumpSearch(
   WidgetTester tester, {
   ProfileRepository? profileRepository,
   SchedulingRepository? schedulingRepository,
+  DateTime? now,
 }) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
@@ -32,6 +33,7 @@ Future<void> _pumpSearch(
                   profileRepository ?? _FakeProfileRepository(failure: null),
               schedulingRepository:
                   schedulingRepository ?? _FakeSchedulingRepository(),
+              now: now,
             ),
           ),
     ),
@@ -40,10 +42,18 @@ Future<void> _pumpSearch(
 }
 
 class _FakeSchedulingRepository implements SchedulingRepository {
-  _FakeSchedulingRepository({this.publicWindows, this.failure});
+  _FakeSchedulingRepository({
+    this.publicWindows,
+    this.failure,
+    this.requestFailure,
+  });
 
   final List<AvailabilityWindow>? publicWindows;
   final Object? failure;
+  final Object? requestFailure;
+  String? requestedProfessionalProfileId;
+  DateTime? requestedStartAt;
+  int? requestedDurationMinutes;
 
   @override
   Future<List<AvailabilityWindow>> publicAvailability({
@@ -106,8 +116,22 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     required String professionalProfileId,
     required DateTime requestedStartAt,
     required int durationMinutes,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final error = requestFailure;
+    if (error != null) {
+      throw error;
+    }
+    requestedProfessionalProfileId = professionalProfileId;
+    this.requestedStartAt = requestedStartAt;
+    requestedDurationMinutes = durationMinutes;
+    return AppointmentSummary(
+      id: 'appointment-1',
+      patientProfileId: 'patient-1',
+      professionalProfileId: professionalProfileId,
+      requestedStartAt: requestedStartAt,
+      durationMinutes: durationMinutes,
+      status: AppointmentStatus.requested,
+    );
   }
 
   @override
@@ -383,7 +407,7 @@ void main() {
         publicWindows: const <AvailabilityWindow>[
           AvailabilityWindow(
             id: 'availability-1',
-            weekday: 1,
+            weekday: DateTime.tuesday,
             startMinute: 540,
             endMinute: 1020,
             timezone: 'Africa/Lagos',
@@ -391,19 +415,118 @@ void main() {
           ),
         ],
       ),
+      now: DateTime(2026, 7, 14, 8),
     );
 
     await tester.tap(find.text('View profile').first);
     await tester.pumpAndSettle();
 
     expect(find.text('Public availability'), findsOneWidget);
-    expect(find.text('Day 1: 09:00 - 17:00 (Africa/Lagos)'), findsOneWidget);
-    expect(
-      find.text('Booking remains deferred until appointment request wiring.'),
-      findsOneWidget,
-    );
+    expect(find.text('Day 2: 09:00 - 17:00 (Africa/Lagos)'), findsOneWidget);
+    expect(find.text('Request appointment'), findsOneWidget);
+    expect(find.text('07/14 09:00-09:30 (30 min)'), findsOneWidget);
     expect(find.text('Saturday'), findsNothing);
     expect(find.text('10:00am'), findsNothing);
+  });
+
+  testWidgets('profile sheet sends selected generated appointment request', (
+    tester,
+  ) async {
+    final schedulingRepository = _FakeSchedulingRepository(
+      publicWindows: const <AvailabilityWindow>[
+        AvailabilityWindow(
+          id: 'availability-1',
+          weekday: DateTime.tuesday,
+          startMinute: 9 * 60,
+          endMinute: 10 * 60,
+          timezone: 'Africa/Lagos',
+          active: true,
+        ),
+      ],
+    );
+
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[
+          PublicProfessional(
+            id: 'pro_1',
+            displayName: 'Dr Backend Public',
+            category: 'Cardiology',
+            specialty: 'Heart health',
+            bio: 'Backend public bio for verified care.',
+            verified: true,
+          ),
+        ],
+      ),
+      schedulingRepository: schedulingRepository,
+      now: DateTime(2026, 7, 14, 8),
+    );
+
+    await tester.tap(find.text('View profile').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('07/14 09:00-09:45 (45 min)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Request selected time'));
+    await tester.pumpAndSettle();
+
+    expect(schedulingRepository.requestedProfessionalProfileId, 'pro_1');
+    expect(schedulingRepository.requestedStartAt, DateTime(2026, 7, 14, 9));
+    expect(schedulingRepository.requestedDurationMinutes, 45);
+    expect(
+      find.text('Request sent. Backend status: REQUESTED.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Confirmed locally'), findsNothing);
+  });
+
+  testWidgets('profile sheet shows request error without fake success', (
+    tester,
+  ) async {
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[
+          PublicProfessional(
+            id: 'pro_1',
+            displayName: 'Dr Backend Public',
+            category: 'Cardiology',
+            specialty: 'Heart health',
+            bio: 'Backend public bio for verified care.',
+            verified: true,
+          ),
+        ],
+      ),
+      schedulingRepository: _FakeSchedulingRepository(
+        publicWindows: const <AvailabilityWindow>[
+          AvailabilityWindow(
+            id: 'availability-1',
+            weekday: DateTime.tuesday,
+            startMinute: 9 * 60,
+            endMinute: 10 * 60,
+            timezone: 'Africa/Lagos',
+            active: true,
+          ),
+        ],
+        requestFailure: const AuthFailure(
+          type: AuthFailureType.validation,
+          message: 'raw unavailable slot',
+        ),
+      ),
+      now: DateTime(2026, 7, 14, 8),
+    );
+
+    await tester.tap(find.text('View profile').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Request selected time'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Please choose an available time and try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw unavailable slot'), findsNothing);
+    expect(find.textContaining('Request sent.'), findsNothing);
   });
 
   testWidgets('profile sheet shows availability error without fallback slots', (

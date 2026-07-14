@@ -1,7 +1,7 @@
 # Concrete appointment request UX decision
 
 **Task:** 52.36
-**Status:** Accepted decision; time-option helper implemented in 52.37 before runtime request wiring
+**Status:** Accepted decision; time-option helper implemented in 52.37 and Search request wiring implemented in 52.38
 
 Purpose: define the first real appointment request UX after public availability
 read and removal of local booking success.
@@ -152,12 +152,12 @@ Then:
 
 `52.38 - Wire Appointment Request From Search Availability`
 
-Likely scope:
+Implementation status:
 
-- add selectable generated time options and duration options in the Search
-  profile sheet
-- call `SchedulingRepository.requestAppointment`
-- show `REQUESTED` success only from backend success
+- Done in 52.38 from the Search public profile sheet
+- Adds selectable generated time/duration options
+- Calls `SchedulingRepository.requestAppointment` only after user selection
+- Shows `REQUESTED` success only from backend success
 - keep own appointment list, professional lifecycle, payments, notifications,
   reviews, calls, calendar sync, notes, and prescriptions deferred
 

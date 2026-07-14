@@ -200,7 +200,8 @@
 | 52.57 | Run Appointment Reschedule Regression: verify patient/professional reschedule role/status/time-option/failure behavior, backend REQUESTED response handling, safe no-fallback errors, terminal/recent hiding, and no payments/notifications/calendar/reviews/calls/admin/notes/prescriptions UI before deciding whether scheduling can pause for a broader checkpoint | M | **DONE** |
 | 52.58 | Decide Scheduling Core Pause Or Smoke Checkpoint: review appointment request/list/cancel/accept/decline/complete/reschedule, availability management, regression evidence, and remaining backend/frontend risks before choosing pause, real-device/staging smoke, or a small QA/fix slice; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.59 | Run Scheduling Core Staging Smoke Checkpoint: use a staging-configured app/backend environment to prove the existing scheduling core where available, document exact unproven paths/blockers, and do not add runtime feature behavior or fake seed data | M | **DONE** |
-| 52.60 | Decide Scheduling Smoke Data Setup Or Next Surface: review the staging smoke checkpoint blockers and choose whether to create deliberate staging scheduling test data/accounts or move to another backend-completed surface; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.60 | Decide Scheduling Smoke Data Setup Or Next Surface: review the staging smoke checkpoint blockers and choose whether to create deliberate staging scheduling test data/accounts or move to another backend-completed surface; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.61 | Decide Next Backend-Completed Flutter Surface After Scheduling Smoke Blocker: review the completed backend surface map, deferred-work register, profile/verification/auth/account status, and the scheduling staging-data blocker before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -216,21 +217,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.59)
+## Manual test (last completed: task 52.60)
 
-Task `52.59` runs the scheduling core staging smoke checkpoint without adding
-runtime behavior.
+Task `52.60` records the scheduling smoke data decision without adding runtime
+behavior.
 
-1. Restarted the developer-private Cloud Run proxy with a fresh gcloud identity token.
-2. `GET http://127.0.0.1:8080/health` - returns `status: ok`.
-3. `GET http://127.0.0.1:8080/health/ready` - returns database/migrations/email/googleAuth `ok`; verificationStorage remains `disabled`.
-4. `GET http://127.0.0.1:8080/professionals` - reachable but returns an empty list, so public availability/request smoke is blocked by missing verified professional data.
-5. `GET http://127.0.0.1:8080/appointments` and `GET http://127.0.0.1:8080/availability/me` without auth return `401`.
-6. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=http://127.0.0.1:8080` - passes.
-7. `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart -r compact` - all 47 tests pass.
-8. `flutter analyze lib/core/config/carenet_api_config.dart lib/features/Home/data/services/scheduling_api_client.dart lib/features/Home/data/repositories/scheduling_repository.dart lib/features/Home/presentation/pages/search_shell.dart lib/features/Home/presentation/pages/appointments_shell.dart lib/features/Home/presentation/pages/selected_dates_shell.dart test/features/home/scheduling_repository_test.dart test/features/home/search_flow_test.dart test/features/home/appointments_flow_test.dart` - no issues.
-9. Confirm `SCHEDULING_CORE_STAGING_SMOKE_CHECKPOINT.md` documents proven paths and exact blockers.
-10. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.60`
+1. Confirm `SCHEDULING_SMOKE_DATA_OR_NEXT_SURFACE_DECISION.md` rejects ad hoc Flutter-created staging data.
+2. Confirm `DEFERRED_WORK.md` keeps end-to-end scheduling smoke blocked on deliberate staging data/setup.
+3. Confirm no runtime Dart, Android, iOS, or test files changed in this docs-only slice.
+4. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/SCHEDULING_SMOKE_DATA_OR_NEXT_SURFACE_DECISION.md` - no whitespace errors.
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.61`
 
 ## Previous runtime manual test baseline
 
@@ -567,6 +563,7 @@ runtime behavior.
 | 2026-07-15 | 52.57 | DONE - appointment reschedule regression strengthened terminal/empty-option proof and documented the remaining scheduling checkpoint decision |
 | 2026-07-15 | 52.58 | DONE - scheduling feature expansion paused; next slice is a staging smoke checkpoint for the existing scheduling core |
 | 2026-07-15 | 52.59 | DONE - scheduling staging smoke proved backend readiness, staging-configured APK build, protected route guards, and documented missing staging data blockers |
+| 2026-07-15 | 52.60 | DONE - ad hoc Flutter-created scheduling staging data rejected; full scheduling smoke remains blocked on deliberate backend/staging test data setup, and the next slice will choose the next backend-completed Flutter surface |
 
 ---
 

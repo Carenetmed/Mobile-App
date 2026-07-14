@@ -647,3 +647,18 @@ Visible status updates come only from repository success.
 
 Next: 52.48 should run a professional lifecycle regression/checkpoint before
 deciding whether to add reschedule or complete UI.
+
+## D102 - Professional lifecycle regression before reschedule or complete
+
+Task: 52.48
+
+Decision: Pause broader appointment lifecycle expansion after accept/decline
+for a focused regression checkpoint.
+
+Reason: Patient cancel and professional accept/decline now share the
+Appointments surface. Before choosing reschedule or completion, the project
+should prove role separation, state separation, safe error handling, backend
+status replacement, and absence of accidental broader lifecycle UI.
+
+Next: 52.49 should decide whether reschedule, completion, or another fix pass
+is the next safe lifecycle lane.

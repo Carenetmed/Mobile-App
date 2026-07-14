@@ -519,6 +519,33 @@ void main() {
     expect(find.text('REQUESTED'), findsOneWidget);
   });
 
+  testWidgets('appointment lifecycle keeps broader actions deferred', (
+    tester,
+  ) async {
+    await _pumpAppointments(
+      tester,
+      role: 'PROFESSIONAL',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-upcoming',
+            requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+            status: AppointmentStatus.requested,
+          ),
+        ],
+      ),
+    );
+
+    expect(find.text('Accept'), findsOneWidget);
+    expect(find.text('Decline'), findsOneWidget);
+    expect(find.text('Reschedule'), findsNothing);
+    expect(find.text('Complete'), findsNothing);
+    expect(find.text('Payment'), findsNothing);
+    expect(find.text('Calendar'), findsNothing);
+    expect(find.text('Notes'), findsNothing);
+  });
+
   testWidgets(
     'appointments screen shows backend empty state without local data',
     (tester) async {

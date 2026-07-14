@@ -202,7 +202,8 @@
 | 52.59 | Run Scheduling Core Staging Smoke Checkpoint: use a staging-configured app/backend environment to prove the existing scheduling core where available, document exact unproven paths/blockers, and do not add runtime feature behavior or fake seed data | M | **DONE** |
 | 52.60 | Decide Scheduling Smoke Data Setup Or Next Surface: review the staging smoke checkpoint blockers and choose whether to create deliberate staging scheduling test data/accounts or move to another backend-completed surface; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.61 | Decide Next Backend-Completed Flutter Surface After Scheduling Smoke Blocker: review the completed backend surface map, deferred-work register, profile/verification/auth/account status, and the scheduling staging-data blocker before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.62 | Define Patient Profile Settings Mapping: map the existing Settings/Profile UI to backend `GET/PUT /patients/me` fields before runtime wiring, separating patient profile fields from username, email, auth/security, public profile, verification, scheduling, and destructive account actions; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.62 | Define Patient Profile Settings Mapping: map the existing Settings/Profile UI to backend `GET/PUT /patients/me` fields before runtime wiring, separating patient profile fields from username, email, auth/security, public profile, verification, scheduling, and destructive account actions; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.63 | Wire Patient Profile Read To Settings Profile: call `ProfileRepository.patientMe` from Settings/Profile, show safe loading/error/empty-profile states, display backend patient name plus read-only age/location summary when available, keep local save for non-backend fields unchanged, and do not call `updatePatientMe` or create profile data | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -218,16 +219,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.61)
+## Manual test (last completed: task 52.62)
 
-Task `52.61` chooses the next backend-completed Flutter surface without adding
-runtime behavior.
+Task `52.62` defines the patient profile Settings/Profile mapping without
+adding runtime behavior.
 
-1. Confirm `NEXT_BACKEND_COMPLETED_FLUTTER_SURFACE_DECISION.md` selects patient self profile as the next surface.
-2. Confirm the same decision doc defers runtime wiring until Settings/Profile mapping is defined.
+1. Confirm `PATIENT_PROFILE_SETTINGS_MAPPING_DECISION.md` maps only backend patient `name`, `age`, and `location`.
+2. Confirm username, email, bio, auth/security, verification, scheduling, and destructive account actions are explicitly excluded from `/patients/me`.
 3. Confirm no runtime Dart, Android, iOS, or test files changed in this docs-only slice.
-4. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/NEXT_BACKEND_COMPLETED_FLUTTER_SURFACE_DECISION.md` - no whitespace errors.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.62`
+4. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/PATIENT_PROFILE_SETTINGS_MAPPING_DECISION.md` - no whitespace errors.
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.63`
 
 ## Previous runtime manual test baseline
 
@@ -566,6 +567,7 @@ runtime behavior.
 | 2026-07-15 | 52.59 | DONE - scheduling staging smoke proved backend readiness, staging-configured APK build, protected route guards, and documented missing staging data blockers |
 | 2026-07-15 | 52.60 | DONE - ad hoc Flutter-created scheduling staging data rejected; full scheduling smoke remains blocked on deliberate backend/staging test data setup, and the next slice will choose the next backend-completed Flutter surface |
 | 2026-07-15 | 52.61 | DONE - patient self profile selected as the next backend-completed Flutter surface, with a required Settings/Profile mapping decision before runtime wiring |
+| 2026-07-15 | 52.62 | DONE - Settings/Profile patient mapping defined as read-first: backend `name`, `age`, and `location` only; username, email, bio, auth/security, verification, scheduling, and destructive account actions remain separate |
 
 ---
 

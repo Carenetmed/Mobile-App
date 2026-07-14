@@ -916,3 +916,24 @@ Next: 52.62 should define how Settings/Profile maps to patient profile fields
 before any runtime read/update. It should separate patient profile data from
 username, email, auth/security, public profile, verification, scheduling, and
 destructive account actions.
+
+## D116 - Patient profile Settings/Profile mapping is read-first
+
+Task: 52.62
+
+Decision: The first patient profile runtime slice should read
+`ProfileRepository.patientMe` in Settings/Profile, display backend `name` where
+safe, show `age` and `location` as read-only summary values when returned, and
+leave the existing local save flow unchanged. It should not call
+`updatePatientMe` or create patient profile data.
+
+Reason: The backend patient profile contract owns only `name`, `age`, and
+`location`, while the current Settings/Profile UI contains first name, last
+name, username, email, and bio. Username, email, auth/security state, public
+profile data, verification, scheduling, and destructive account actions must
+not be sent to `/patients/me`. A read-first slice proves session ownership,
+404 empty-profile handling, safe errors, and display integration before any
+mutation contract is attempted.
+
+Next: 52.63 should wire patient profile read to Settings/Profile with safe
+loading/error/empty-profile states and no patient profile mutation.

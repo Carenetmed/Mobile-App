@@ -714,3 +714,25 @@ not slip into the Appointments screen.
 Next: 52.52 should decide whether scheduling pauses for a broader regression
 checkpoint or starts a dedicated reschedule UX decision. Do not add runtime
 reschedule behavior in 52.52.
+
+## D106 - Scheduling core regression before reschedule
+
+Task: 52.52
+
+Decision: Pause scheduling feature expansion after professional completion and
+run a broader scheduling core regression checkpoint next.
+
+Reason: The current scheduling core now spans Search public professionals,
+public availability, generated request options, backend appointment requests,
+own appointment list, patient cancellation, professional availability
+management, professional accept/decline, and professional completion. Before
+adding reschedule, the project should prove the combined surface and confirm no
+local fallback, fake success, or broader deferred UI has slipped in.
+
+Reschedule remains deferred because it needs a separate UX/product decision for
+actor rules, eligible statuses, new time/duration selection, availability
+re-checks, conflict handling, audit, notifications, calendar, and payment
+boundaries.
+
+Next: 52.53 should run the scheduling core regression checkpoint. Do not add
+runtime reschedule behavior in 52.53.

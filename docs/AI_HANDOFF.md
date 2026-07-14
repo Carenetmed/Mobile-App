@@ -195,7 +195,8 @@
 | 52.52 | Decide Post-Completion Scheduling Lane: review appointment request/list/cancel/accept/decline/availability/completion coverage, regression evidence, and remaining risks before choosing a broader scheduling regression checkpoint or a dedicated reschedule UX decision; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.53 | Run Scheduling Core Regression Checkpoint: strengthen focused tests/docs across Search public listing/availability/request, Appointments own-list/cancel/accept/decline/complete, selectedDates availability management, safe error/no-fallback behavior, and absence of reschedule/payment/notification/calendar/review/notes/prescription/call/admin UI; do not add runtime features | L | **DONE** |
 | 52.54 | Decide Post-Regression Scheduling Lane: review the scheduling core regression checkpoint and choose reschedule UX boundary, another backend-completed surface, or real-device/staging smoke checkpoint; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.55 | Decide Appointment Reschedule UX Boundary: define whether patient/professional reschedule belongs in this milestone, actor/status/time-selection/duration/conflict rules, backend payload and safe error handling, and explicit deferrals before any runtime reschedule UI; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.55 | Decide Appointment Reschedule UX Boundary: define whether patient/professional reschedule belongs in this milestone, actor/status/time-selection/duration/conflict rules, backend payload and safe error handling, and explicit deferrals before any runtime reschedule UI; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.56 | Wire Appointment Reschedule From Existing Scheduling Surfaces: show Reschedule only for known patient/professional sessions on upcoming REQUESTED/ACCEPTED appointments, load public availability for the appointment professional, reuse generated request options, call SchedulingRepository.rescheduleAppointment with selected time/duration, update visible status from backend response, and keep payments/notifications/calendar/reviews/calls/admin/notes/prescriptions deferred | L | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -211,17 +212,17 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.54)
+## Manual test (last completed: task 52.55)
 
-Task `52.54` decides the post-regression scheduling lane. It selects a dedicated
-reschedule UX/product boundary decision before any runtime reschedule wiring.
-This is a docs-only decision slice.
+Task `52.55` defines the appointment reschedule UX boundary. It allows a narrow
+future runtime reschedule slice, but only through generated backend availability
+options and backend response authority. This is a docs-only decision slice.
 
-1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/POST_REGRESSION_SCHEDULING_LANE_DECISION.md` - passes
-2. Confirm `POST_REGRESSION_SCHEDULING_LANE_DECISION.md` chooses reschedule UX boundary definition next, not runtime reschedule.
+1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/APPOINTMENT_RESCHEDULE_UX_BOUNDARY_DECISION.md` - passes
+2. Confirm `APPOINTMENT_RESCHEDULE_UX_BOUNDARY_DECISION.md` defines actor/status/time-option/payload/safe-error/deferred boundaries before runtime reschedule.
 3. Confirm no runtime app files changed.
-4. Confirm payments, notifications, calendar sync, reviews, notes, prescriptions, calls, admin override, no-show/disputes, and medical records remain deferred.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.55`
+4. Confirm payments, notifications, calendar sync, reviews, notes, prescriptions, calls, admin override, no-show/disputes, medical records, free-text datetime entry, and reschedule reasons remain deferred.
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.56`
 
 ## Previous runtime manual test baseline
 

@@ -772,3 +772,24 @@ boundaries. Those rules should be made explicit before implementation.
 
 Next: 52.55 should decide the appointment reschedule UX boundary. It should not
 call `SchedulingRepository.rescheduleAppointment` or add runtime reschedule UI.
+
+## D109 - Constrained reschedule UX boundary accepted
+
+Task: 52.55
+
+Decision: Add appointment reschedule to the scheduling milestone as a narrow
+runtime slice after this decision. The first UI should expose reschedule only to
+known patient/professional sessions on upcoming `REQUESTED` or `ACCEPTED`
+appointments, reuse existing public availability and generated request options,
+send only `requestedStartAt` and `durationMinutes`, and replace the visible
+appointment from the backend response.
+
+Reason: Backend ADR 0024 already supports patient/professional owner
+reschedule for `REQUESTED` and `ACCEPTED`, returns status to `REQUESTED`, and
+re-enforces active availability. Reusing the proven request-option generator
+keeps the UI bounded and avoids free-text date/time invention.
+
+Next: 52.56 may wire this constrained reschedule path. It must keep payments,
+notifications, calendar sync, reviews, calls, admin override, notes,
+prescriptions, medical records, free-text datetime entry, and reschedule reasons
+deferred.

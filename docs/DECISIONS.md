@@ -1383,3 +1383,24 @@ staging, and production behavior remain out of scope.
 
 Next: 52.86 should define the professional category/specialty edit boundary
 before runtime wiring.
+
+## D140 - Professional category/specialty edit boundary accepted
+
+Task: 52.86
+
+Decision: Add a new constrained professional details edit surface for
+`category` and optional `specialty`; do not overload the display-name-only
+`editYourName` route.
+
+Reason: Manage Profile displays category and specialty together, and the backend
+profile update route accepts both fields. The app does not have an
+authoritative category taxonomy, so the first runtime slice should use a
+free-text required category field and optional specialty field while preserving
+existing `displayName` and `bio`. Empty professional profiles must block save
+instead of creating partial profiles. Profile creation, website/address
+persistence, account identity, verification, availability, appointment,
+payment, review, call, calendar, note, prescription, staging, and production
+behavior remain out of scope.
+
+Next: 52.87 should wire the constrained category/specialty update with focused
+Manage Profile tests.

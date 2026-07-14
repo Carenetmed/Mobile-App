@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.46** - decide professional appointment lifecycle UI boundary |
-| Last completed | **52.45** - professional availability management wired |
+| NEXT task | **52.47** - wire professional appointment accept/decline |
+| Last completed | **52.46** - professional appointment lifecycle UI boundary decision |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -253,6 +253,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-14 | Task 52.43 DONE - added scheduling patient-path regression proof and documented request/list/cancel coverage; DOC_SYNC NEXT -> 52.44 |
 | 2026-07-14 | Task 52.44 DONE - selected selectedDates as the professional availability management surface; DOC_SYNC NEXT -> 52.45 |
 | 2026-07-14 | Task 52.45 DONE - wired selectedDates to backend own-availability read/replace while preserving other backend weekdays; DOC_SYNC NEXT -> 52.46 |
+| 2026-07-14 | Task 52.46 DONE - selected role-aware professional accept/decline as the first lifecycle UI slice; DOC_SYNC NEXT -> 52.47 |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

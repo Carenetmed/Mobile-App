@@ -3,6 +3,8 @@ import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
+import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
@@ -12,9 +14,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppointmentsShellPage extends StatefulWidget {
-  const AppointmentsShellPage({super.key, this.schedulingRepository, this.now});
+  const AppointmentsShellPage({
+    super.key,
+    this.schedulingRepository,
+    this.sessionStore,
+    this.now,
+  });
 
   final SchedulingRepository? schedulingRepository;
+  final SessionStore? sessionStore;
   final DateTime? now;
 
   @override
@@ -23,9 +31,12 @@ class AppointmentsShellPage extends StatefulWidget {
 
 class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
   late final Future<List<AppointmentSummary>> _appointmentsFuture;
+  late final Future<AuthSessionModel?> _sessionFuture;
 
   SchedulingRepository get _schedulingRepository =>
       widget.schedulingRepository ?? sl<SchedulingRepository>();
+
+  SessionStore get _sessionStore => widget.sessionStore ?? sl<SessionStore>();
 
   DateTime get _now => widget.now ?? DateTime.now();
 
@@ -33,6 +44,7 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
   void initState() {
     super.initState();
     _appointmentsFuture = _schedulingRepository.ownAppointments();
+    _sessionFuture = _sessionStore.read();
   }
 
   @override
@@ -131,39 +143,55 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
                       .map(_AppointmentItem.fromSummary)
                       .toList(growable: false);
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _SectionLabel(label: 'Upcoming'),
-                      SizedBox(height: 10.h),
-                      if (upcoming.isEmpty)
-                        const _AppointmentStateCard(
-                          message: 'No upcoming backend appointments.',
-                        )
-                      else
-                        ...upcoming.map(
-                          (item) => _AppointmentCard(
-                            item: item,
-                            schedulingRepository: _schedulingRepository,
-                            allowCancellation: true,
-                          ),
-                        ),
-                      SizedBox(height: 24.h),
-                      _SectionLabel(label: 'Recent'),
-                      SizedBox(height: 10.h),
-                      if (recent.isEmpty)
-                        const _AppointmentStateCard(
-                          message: 'No recent backend appointments.',
-                        )
-                      else
-                        ...recent.map(
-                          (item) => _AppointmentCard(
-                            item: item,
-                            schedulingRepository: _schedulingRepository,
-                            allowCancellation: false,
-                          ),
-                        ),
-                    ],
+                  return FutureBuilder<AuthSessionModel?>(
+                    future: _sessionFuture,
+                    builder: (context, sessionSnapshot) {
+                      final role = sessionSnapshot.data?.user.role;
+                      final roleKnown =
+                          sessionSnapshot.connectionState ==
+                              ConnectionState.done &&
+                          role != null;
+                      final isProfessional =
+                          role?.toUpperCase() == 'PROFESSIONAL';
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _SectionLabel(label: 'Upcoming'),
+                          SizedBox(height: 10.h),
+                          if (upcoming.isEmpty)
+                            const _AppointmentStateCard(
+                              message: 'No upcoming backend appointments.',
+                            )
+                          else
+                            ...upcoming.map(
+                              (item) => _AppointmentCard(
+                                item: item,
+                                schedulingRepository: _schedulingRepository,
+                                allowCancellation: roleKnown && !isProfessional,
+                                allowProfessionalLifecycle:
+                                    roleKnown && isProfessional,
+                              ),
+                            ),
+                          SizedBox(height: 24.h),
+                          _SectionLabel(label: 'Recent'),
+                          SizedBox(height: 10.h),
+                          if (recent.isEmpty)
+                            const _AppointmentStateCard(
+                              message: 'No recent backend appointments.',
+                            )
+                          else
+                            ...recent.map(
+                              (item) => _AppointmentCard(
+                                item: item,
+                                schedulingRepository: _schedulingRepository,
+                                allowCancellation: false,
+                                allowProfessionalLifecycle: false,
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   );
                 },
               ),
@@ -545,11 +573,13 @@ class _AppointmentCard extends StatefulWidget {
     required this.item,
     required this.schedulingRepository,
     required this.allowCancellation,
+    required this.allowProfessionalLifecycle,
   });
 
   final _AppointmentItem item;
   final SchedulingRepository schedulingRepository;
   final bool allowCancellation;
+  final bool allowProfessionalLifecycle;
 
   @override
   State<_AppointmentCard> createState() => _AppointmentCardState();
@@ -558,6 +588,8 @@ class _AppointmentCard extends StatefulWidget {
 class _AppointmentCardState extends State<_AppointmentCard> {
   late _AppointmentItem _item = widget.item;
   bool _isCancelling = false;
+  bool _isAccepting = false;
+  bool _isDeclining = false;
   String? _actionMessage;
 
   @override
@@ -650,6 +682,29 @@ class _AppointmentCardState extends State<_AppointmentCard> {
               ),
             ),
           ],
+          if (widget.allowProfessionalLifecycle && _item.canAcceptDecline) ...[
+            SizedBox(height: 12.h),
+            Row(
+              children: [
+                Expanded(
+                  child: CarenetButton(
+                    label: _isAccepting ? 'Accepting...' : 'Accept',
+                    onPressed:
+                        _isBusy ? null : () => _professionalDecision(true),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                Expanded(
+                  child: CarenetButton(
+                    label: _isDeclining ? 'Declining...' : 'Decline',
+                    type: CarenetButtonType.outline,
+                    onPressed:
+                        _isBusy ? null : () => _professionalDecision(false),
+                  ),
+                ),
+              ],
+            ),
+          ],
           if (_actionMessage != null) ...[
             SizedBox(height: 8.h),
             Text(
@@ -667,6 +722,8 @@ class _AppointmentCardState extends State<_AppointmentCard> {
       ),
     );
   }
+
+  bool get _isBusy => _isCancelling || _isAccepting || _isDeclining;
 
   Future<void> _cancelAppointment() async {
     setState(() {
@@ -693,6 +750,46 @@ class _AppointmentCardState extends State<_AppointmentCard> {
       }
       setState(() {
         _isCancelling = false;
+        _actionMessage = _AppointmentsShellPageState._safeAppointmentsError(
+          error,
+        );
+      });
+    }
+  }
+
+  Future<void> _professionalDecision(bool accept) async {
+    setState(() {
+      _isAccepting = accept;
+      _isDeclining = !accept;
+      _actionMessage = null;
+    });
+
+    try {
+      final updated =
+          accept
+              ? await widget.schedulingRepository.acceptAppointment(
+                appointmentId: _item.id,
+              )
+              : await widget.schedulingRepository.declineAppointment(
+                appointmentId: _item.id,
+              );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _item = _AppointmentItem.fromSummary(updated);
+        _isAccepting = false;
+        _isDeclining = false;
+        _actionMessage =
+            'Appointment updated. Backend status: ${updated.status.wireName}.';
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isAccepting = false;
+        _isDeclining = false;
         _actionMessage = _AppointmentsShellPageState._safeAppointmentsError(
           error,
         );
@@ -735,6 +832,8 @@ class _AppointmentItem {
   bool get canCancel =>
       statusValue == AppointmentStatus.requested ||
       statusValue == AppointmentStatus.accepted;
+
+  bool get canAcceptDecline => statusValue == AppointmentStatus.requested;
 
   static String _dateLabel(DateTime date) {
     return '${date.year.toString().padLeft(4, '0')}-'

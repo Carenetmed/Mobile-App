@@ -1,4 +1,6 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
+import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
@@ -13,6 +15,8 @@ const Size _phoneSize = Size(430, 1200);
 Future<void> _pumpAppointments(
   WidgetTester tester, {
   SchedulingRepository? schedulingRepository,
+  SessionStore? sessionStore,
+  String role = 'PATIENT',
   DateTime? now,
 }) async {
   tester.view.physicalSize = _phoneSize;
@@ -27,6 +31,7 @@ Future<void> _pumpAppointments(
             home: AppointmentsShellPage(
               schedulingRepository:
                   schedulingRepository ?? _FakeSchedulingRepository(),
+              sessionStore: sessionStore ?? _sessionStore(role: role),
               now: now,
             ),
             routes: {
@@ -44,12 +49,16 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     this.appointments = const <AppointmentSummary>[],
     this.failure,
     this.cancelFailure,
+    this.acceptFailure,
   });
 
   final List<AppointmentSummary> appointments;
   final Object? failure;
   final Object? cancelFailure;
+  final Object? acceptFailure;
   final List<String> cancelledAppointmentIds = <String>[];
+  final List<String> acceptedAppointmentIds = <String>[];
+  final List<String> declinedAppointmentIds = <String>[];
 
   @override
   Future<List<AppointmentSummary>> ownAppointments() async {
@@ -63,8 +72,16 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   @override
   Future<AppointmentSummary> acceptAppointment({
     required String appointmentId,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final error = acceptFailure;
+    if (error != null) {
+      throw error;
+    }
+    acceptedAppointmentIds.add(appointmentId);
+    return _updatedAppointment(
+      appointmentId: appointmentId,
+      status: AppointmentStatus.accepted,
+    );
   }
 
   @override
@@ -76,18 +93,9 @@ class _FakeSchedulingRepository implements SchedulingRepository {
       throw error;
     }
     cancelledAppointmentIds.add(appointmentId);
-    final appointment = appointments.firstWhere(
-      (item) => item.id == appointmentId,
-    );
-    return AppointmentSummary(
-      id: appointment.id,
-      patientProfileId: appointment.patientProfileId,
-      professionalProfileId: appointment.professionalProfileId,
-      requestedStartAt: appointment.requestedStartAt,
-      durationMinutes: appointment.durationMinutes,
+    return _updatedAppointment(
+      appointmentId: appointmentId,
       status: AppointmentStatus.cancelled,
-      createdAt: appointment.createdAt,
-      updatedAt: DateTime(2026, 7, 14, 9),
     );
   }
 
@@ -101,8 +109,12 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   @override
   Future<AppointmentSummary> declineAppointment({
     required String appointmentId,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    declinedAppointmentIds.add(appointmentId);
+    return _updatedAppointment(
+      appointmentId: appointmentId,
+      status: AppointmentStatus.declined,
+    );
   }
 
   @override
@@ -140,6 +152,25 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     required int durationMinutes,
   }) {
     throw UnimplementedError();
+  }
+
+  AppointmentSummary _updatedAppointment({
+    required String appointmentId,
+    required AppointmentStatus status,
+  }) {
+    final appointment = appointments.firstWhere(
+      (item) => item.id == appointmentId,
+    );
+    return AppointmentSummary(
+      id: appointment.id,
+      patientProfileId: appointment.patientProfileId,
+      professionalProfileId: appointment.professionalProfileId,
+      requestedStartAt: appointment.requestedStartAt,
+      durationMinutes: appointment.durationMinutes,
+      status: status,
+      createdAt: appointment.createdAt,
+      updatedAt: DateTime(2026, 7, 14, 9),
+    );
   }
 }
 
@@ -186,6 +217,7 @@ void main() {
       expect(find.text('Private consult with Dr. Lagbaja'), findsNothing);
       expect(find.text('Nutrition follow-up'), findsNothing);
       expect(find.text('Accept'), findsNothing);
+      expect(find.text('Decline'), findsNothing);
       expect(find.text('Cancel appointment'), findsOneWidget);
     },
   );
@@ -330,6 +362,163 @@ void main() {
     expect(find.text('REQUESTED'), findsOneWidget);
   });
 
+  testWidgets('professional can accept requested appointment through backend', (
+    tester,
+  ) async {
+    final schedulingRepository = _FakeSchedulingRepository(
+      appointments: <AppointmentSummary>[
+        _appointment(
+          professionalProfileId: 'professional-upcoming',
+          requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+          status: AppointmentStatus.requested,
+        ),
+      ],
+    );
+
+    await _pumpAppointments(
+      tester,
+      role: 'PROFESSIONAL',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: schedulingRepository,
+    );
+
+    expect(find.text('Accept'), findsOneWidget);
+    expect(find.text('Decline'), findsOneWidget);
+    expect(find.text('Cancel appointment'), findsNothing);
+
+    await tester.tap(find.text('Accept'));
+    await tester.pumpAndSettle();
+
+    expect(schedulingRepository.acceptedAppointmentIds, <String>[
+      'appointment-1',
+    ]);
+    expect(find.text('ACCEPTED'), findsOneWidget);
+    expect(
+      find.text('Appointment updated. Backend status: ACCEPTED.'),
+      findsOneWidget,
+    );
+    expect(find.text('Accept'), findsNothing);
+    expect(find.text('Decline'), findsNothing);
+  });
+
+  testWidgets(
+    'professional can decline requested appointment through backend',
+    (tester) async {
+      final schedulingRepository = _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-upcoming',
+            requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+            status: AppointmentStatus.requested,
+          ),
+        ],
+      );
+
+      await _pumpAppointments(
+        tester,
+        role: 'PROFESSIONAL',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: schedulingRepository,
+      );
+
+      await tester.tap(find.text('Decline'));
+      await tester.pumpAndSettle();
+
+      expect(schedulingRepository.declinedAppointmentIds, <String>[
+        'appointment-1',
+      ]);
+      expect(find.text('DECLINED'), findsOneWidget);
+      expect(
+        find.text('Appointment updated. Backend status: DECLINED.'),
+        findsOneWidget,
+      );
+      expect(find.text('Accept'), findsNothing);
+      expect(find.text('Decline'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'patient session does not expose professional lifecycle actions',
+    (tester) async {
+      await _pumpAppointments(
+        tester,
+        role: 'PATIENT',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: _FakeSchedulingRepository(
+          appointments: <AppointmentSummary>[
+            _appointment(
+              professionalProfileId: 'professional-upcoming',
+              requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+              status: AppointmentStatus.requested,
+            ),
+          ],
+        ),
+      );
+
+      expect(find.text('Accept'), findsNothing);
+      expect(find.text('Decline'), findsNothing);
+      expect(find.text('Cancel appointment'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'professional lifecycle actions only appear for requested state',
+    (tester) async {
+      await _pumpAppointments(
+        tester,
+        role: 'PROFESSIONAL',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: _FakeSchedulingRepository(
+          appointments: <AppointmentSummary>[
+            _appointment(
+              professionalProfileId: 'professional-accepted',
+              requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+              status: AppointmentStatus.accepted,
+            ),
+          ],
+        ),
+      );
+
+      expect(find.text('ACCEPTED'), findsOneWidget);
+      expect(find.text('Accept'), findsNothing);
+      expect(find.text('Decline'), findsNothing);
+      expect(find.text('Cancel appointment'), findsNothing);
+    },
+  );
+
+  testWidgets('professional accept failure shows safe error without update', (
+    tester,
+  ) async {
+    await _pumpAppointments(
+      tester,
+      role: 'PROFESSIONAL',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-upcoming',
+            requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+            status: AppointmentStatus.requested,
+          ),
+        ],
+        acceptFailure: const AuthFailure(
+          type: AuthFailureType.server,
+          message: 'raw accept failure',
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Accept'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Service is unavailable. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw accept failure'), findsNothing);
+    expect(find.text('REQUESTED'), findsOneWidget);
+  });
+
   testWidgets(
     'appointments screen shows backend empty state without local data',
     (tester) async {
@@ -435,6 +624,26 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Request details'), findsNothing);
+  });
+}
+
+SessionStore _sessionStore({required String role}) {
+  return InMemorySessionStore()..save(_session(role: role));
+}
+
+AuthSessionModel _session({required String role}) {
+  return AuthSessionModel.fromJson(<String, dynamic>{
+    'accessToken': 'access-token',
+    'refreshToken': 'refresh-token',
+    'tokenType': 'Bearer',
+    'expiresIn': 900,
+    'user': <String, dynamic>{
+      'id': 'user-1',
+      'email': 'user@example.com',
+      'role': role,
+      'status': 'ACTIVE',
+      'emailVerified': true,
+    },
   });
 }
 

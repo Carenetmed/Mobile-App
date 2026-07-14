@@ -12,6 +12,7 @@ import 'package:app_t/features/Home/domain/entities/verification_document.dart';
 import 'package:app_t/features/Home/domain/entities/verification_upload_request.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_description_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/edit_professional_details_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_your_name_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_your_website_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/manage_profile_shell.dart';
@@ -48,6 +49,11 @@ Future<void> _pumpManageProfile(
               RouteName.settings: (_) => const SettingsProfilePage(),
               RouteName.editYourName:
                   (_) => EditYourNameShellPage(
+                    profileRepository:
+                        profileRepository ?? _FakeProfileRepository(),
+                  ),
+              RouteName.editProfessionalDetails:
+                  (_) => EditProfessionalDetailsShellPage(
                     profileRepository:
                         profileRepository ?? _FakeProfileRepository(),
                   ),
@@ -874,6 +880,163 @@ void main() {
     );
     expect(find.text('raw profile update failure'), findsNothing);
     expect(find.text('Display name saved'), findsNothing);
+  });
+
+  testWidgets(
+    'category action updates professional category and specialty only',
+    (tester) async {
+      final repository = _FakeProfileRepository(
+        professionalProfile: const ProfessionalProfile(
+          id: 'pro_1',
+          displayName: 'Dr Backend Profile',
+          category: 'Cardiology',
+          specialty: 'Heart health',
+          bio: 'Existing backend bio for the current professional profile.',
+          verificationStatus: 'VERIFIED',
+        ),
+      );
+
+      await _pumpManageProfile(tester, profileRepository: repository);
+
+      await tester.tap(find.text('Edit category'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Professional details'), findsOneWidget);
+      expect(find.text('Category and specialty'), findsOneWidget);
+      expect(find.text('Cardiology'), findsOneWidget);
+      expect(find.text('Heart health'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextFormField).at(0), '');
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Category is required'), findsOneWidget);
+      expect(repository.lastCategory, isNull);
+
+      await tester.enterText(find.byType(TextFormField).at(0), 'Mental health');
+      await tester.enterText(
+        find.byType(TextFormField).at(1),
+        'Community therapy',
+      );
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Professional details saved'), findsOneWidget);
+      expect(find.text('Mental health'), findsWidgets);
+      expect(find.text('Community therapy'), findsWidgets);
+      expect(
+        find.textContaining(
+          'Only your professional category and specialty were updated',
+        ),
+        findsOneWidget,
+      );
+      expect(repository.lastDisplayName, 'Dr Backend Profile');
+      expect(repository.lastCategory, 'Mental health');
+      expect(repository.lastSpecialty, 'Community therapy');
+      expect(
+        repository.lastBio,
+        'Existing backend bio for the current professional profile.',
+      );
+    },
+  );
+
+  testWidgets('category action clears optional specialty as null', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository(
+      professionalProfile: const ProfessionalProfile(
+        id: 'pro_1',
+        displayName: 'Dr Backend Profile',
+        category: 'Cardiology',
+        specialty: 'Heart health',
+        bio: 'Existing backend bio for the current professional profile.',
+        verificationStatus: 'VERIFIED',
+      ),
+    );
+
+    await _pumpManageProfile(tester, profileRepository: repository);
+
+    await tester.tap(find.text('Edit category'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'Cardiology');
+    await tester.enterText(find.byType(TextFormField).at(1), '');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Professional details saved'), findsOneWidget);
+    expect(repository.lastDisplayName, 'Dr Backend Profile');
+    expect(repository.lastCategory, 'Cardiology');
+    expect(repository.lastSpecialty, isNull);
+    expect(
+      repository.lastBio,
+      'Existing backend bio for the current professional profile.',
+    );
+  });
+
+  testWidgets(
+    'category action does not create a partial professional profile',
+    (tester) async {
+      final repository = _FakeProfileRepository();
+      await _pumpManageProfile(tester, profileRepository: repository);
+
+      await tester.tap(find.text('Edit category'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Professional profile has not been created yet.'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(find.byType(TextFormField).at(0), 'Cardiology');
+      await tester.enterText(find.byType(TextFormField).at(1), 'Heart health');
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle();
+
+      expect(repository.lastCategory, isNull);
+      expect(find.text('Professional details saved'), findsNothing);
+      expect(
+        find.text('Professional profile has not been created yet.'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('category action shows safe backend save error', (tester) async {
+    final repository = _FakeProfileRepository(
+      professionalProfile: const ProfessionalProfile(
+        id: 'pro_1',
+        displayName: 'Dr Backend Profile',
+        category: 'Cardiology',
+        specialty: 'Heart health',
+        bio: 'Existing backend bio for the current professional profile.',
+        verificationStatus: 'VERIFIED',
+      ),
+      updateFailure: const AuthFailure(
+        type: AuthFailureType.server,
+        message: 'raw category update failure',
+      ),
+    );
+
+    await _pumpManageProfile(tester, profileRepository: repository);
+
+    await tester.tap(find.text('Edit category'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'Mental health');
+    await tester.enterText(
+      find.byType(TextFormField).at(1),
+      'Community therapy',
+    );
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Service is unavailable. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw category update failure'), findsNothing);
+    expect(find.text('Professional details saved'), findsNothing);
   });
 
   testWidgets('basic website action opens local website draft route', (

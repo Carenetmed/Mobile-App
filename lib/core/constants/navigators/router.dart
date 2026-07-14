@@ -28,6 +28,7 @@ import 'package:app_t/features/Home/presentation/pages/create_community_page.dar
 import 'package:app_t/features/Home/presentation/pages/create_pin_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_email_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/edit_professional_details_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_your_name_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_your_website_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/emergency_shell.dart';
@@ -209,6 +210,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
     case RouteName.editYourName:
       return _page(settings, const EditYourNameShellPage());
+    case RouteName.editProfessionalDetails:
+      return _page(settings, const EditProfessionalDetailsShellPage());
     case RouteName.editYourWebsite:
       return _page(settings, const EditYourWebsiteShellPage());
     case RouteName.addDescription:

@@ -1404,3 +1404,23 @@ behavior remain out of scope.
 
 Next: 52.87 should wire the constrained category/specialty update with focused
 Manage Profile tests.
+
+## D141 - Professional category/specialty update wired
+
+Task: 52.87
+
+Decision: Add `editProfessionalDetails` as the constrained runtime surface for
+professional `category` and optional `specialty`, reachable from Manage Profile
+Basic without changing the display-name-only `editYourName` route.
+
+Reason: The boundary from D140 required category/specialty editing to stay
+separate from display-name editing and broader profile modules. The new route
+reads the existing professional profile, pre-fills category/specialty, requires
+category, sends cleared specialty as `null`, preserves existing `displayName`
+and `bio`, blocks empty-profile creation, and shows safe failure states.
+Website/address persistence, account identity, verification, availability,
+appointments, payments, reviews, calls, calendar sync, notes, prescriptions,
+staging data, and production claims remain out of scope.
+
+Next: 52.88 should run a focused regression checkpoint before selecting any
+broader profile surface.

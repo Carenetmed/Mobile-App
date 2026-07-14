@@ -227,7 +227,8 @@
 | 52.84 | Run Professional Display Name Update Regression Checkpoint: verify backend displayName prefill, display-name-only save, preservation of category/specialty/bio, empty-profile blocking, validation failure without repository update, safe backend failure without false success, docs/deferred-work accuracy, and absence of category/specialty editing, profile creation, website/address persistence, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing any broader profile-editing surface | M | **DONE** |
 | 52.85 | Decide Next Backend-Completed Flutter Surface After Display Name Regression: review the display-name regression, professional profile contract, remaining category/specialty/profile-creation gaps, patient/account gaps, verification/admin deferrals, scheduling staging-data blocker, and release/staging risks before choosing one narrow next lane; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.86 | Define Professional Category Specialty Edit Boundary: decide whether category and specialty should be edited together or separately, whether to adapt an existing route or add a constrained profile-details edit route, what validation/options apply, how existing `displayName` and `bio` are preserved, how empty professional profiles are blocked, and how this stays separate from website, address, account identity, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.87 | Wire Professional Category Specialty Update: add a constrained Manage Profile Basic edit entry/screen for professional `category` and optional `specialty`, read an existing professional self profile, prefill category/specialty, save new category and specialty through `ProfileRepository.updateProfessionalMe` while preserving existing `displayName` and `bio`, send cleared specialty as null, block empty-profile/profile-creation and empty category saves, keep validation/loading/safe-error states honest, and do not send website, address, account, verification, availability, appointment, payment, review, call, calendar, note, prescription, staging, or production data | M | **NEXT** |
+| 52.87 | Wire Professional Category Specialty Update: add a constrained Manage Profile Basic edit entry/screen for professional `category` and optional `specialty`, read an existing professional self profile, prefill category/specialty, save new category and specialty through `ProfileRepository.updateProfessionalMe` while preserving existing `displayName` and `bio`, send cleared specialty as null, block empty-profile/profile-creation and empty category saves, keep validation/loading/safe-error states honest, and do not send website, address, account, verification, availability, appointment, payment, review, call, calendar, note, prescription, staging, or production data | M | **DONE** |
+| 52.88 | Run Professional Category Specialty Update Regression Checkpoint: verify Manage Profile entry separation from display-name edit, backend category/specialty prefill, category-required validation, save preserving displayName/bio, clearing specialty as null, empty-profile blocking, safe backend failure, docs/deferred-work accuracy, and absence of profile creation, website/address, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing any broader profile surface | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -243,16 +244,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.86)
+## Manual test (last completed: task 52.87)
 
-Task `52.86` is a decision-only boundary slice for professional category and
-specialty editing.
+Task `52.87` wires the constrained professional category/specialty update
+surface from Manage Profile Basic.
 
-1. Confirm `PROFESSIONAL_CATEGORY_SPECIALTY_EDIT_BOUNDARY.md` selects a new constrained category/specialty edit surface rather than overloading `editYourName`.
-2. Confirm category is required, specialty is optional, cleared specialty sends `null`, and existing `displayName` plus `bio` are preserved.
-3. Confirm profile creation, category taxonomy/dropdowns, website/address persistence, verification/admin, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain deferred.
+1. `flutter test test/features/home/manage_profile_flow_test.dart -r expanded` - all 30 tests pass, including category/specialty prefill, category-required validation, displayName/bio preservation, specialty clearing as `null`, empty-profile blocking, and safe backend failure.
+2. `flutter analyze lib/core/constants/navigators/routeName.dart lib/core/constants/navigators/router.dart lib/features/Home/presentation/pages/manage_profile_shell.dart lib/features/Home/presentation/pages/edit_professional_details_shell.dart test/features/home/manage_profile_flow_test.dart` - no issues.
+3. Confirm `PROFESSIONAL_CATEGORY_SPECIALTY_UPDATE_WIRING.md` records runtime scope, proof, and non-behavior.
 4. `git diff --check` - no whitespace errors.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.87`
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.88`
 
 ## Previous runtime manual test baseline
 
@@ -616,6 +617,7 @@ specialty editing.
 | 2026-07-15 | 52.84 | DONE - professional display-name update regression passed for backend prefill, display-name-only save, category/specialty/bio preservation, empty-profile blocking, validation, safe failure, and deferred-work accuracy |
 | 2026-07-15 | 52.85 | DONE - selected professional category/specialty editing as the next backend-completed Flutter surface, with a required boundary decision before runtime wiring |
 | 2026-07-15 | 52.86 | DONE - accepted professional category/specialty edit boundary: new constrained edit surface, required category, optional specialty, preserve displayName/bio, and defer profile creation plus broader modules |
+| 2026-07-15 | 52.87 | DONE - Manage Profile now opens a constrained category/specialty edit route that reads the existing professional profile, preserves displayName/bio, clears specialty as null, blocks empty-profile creation, and keeps broader fields deferred |
 
 ---
 

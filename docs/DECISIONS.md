@@ -579,3 +579,22 @@ touching professional availability management.
 Next: 52.44 should decide the professional availability management UI boundary
 before replacing local business-hour/selected-date drafts with backend
 availability read/replace behavior.
+
+## D098 - Professional availability management belongs in selectedDates
+
+Task: 52.44
+
+Decision: Use `selectedDates` as the professional own-availability management
+surface. Keep `manageProfile` as the entry point/summary surface and do not mix
+profile mutation with availability persistence.
+
+Reason: The current app already routes Manage Profile -> Business -> Edit hours
+to `selectedDates`, and the scheduling repository already exposes protected
+`ownAvailability()` and `replaceOwnAvailability(windows:)`. Replacing the
+route-local draft at that boundary is the least disruptive path and preserves
+the existing Manage Profile structure.
+
+Next: 52.45 should wire `selectedDates` to backend own-availability
+read/replace with safe states, preserve existing windows where safe, and keep
+appointment lifecycle, payments, notifications, calls, calendar, notes, and
+prescriptions deferred.

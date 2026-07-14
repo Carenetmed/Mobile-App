@@ -197,7 +197,8 @@
 | 52.54 | Decide Post-Regression Scheduling Lane: review the scheduling core regression checkpoint and choose reschedule UX boundary, another backend-completed surface, or real-device/staging smoke checkpoint; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.55 | Decide Appointment Reschedule UX Boundary: define whether patient/professional reschedule belongs in this milestone, actor/status/time-selection/duration/conflict rules, backend payload and safe error handling, and explicit deferrals before any runtime reschedule UI; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.56 | Wire Appointment Reschedule From Existing Scheduling Surfaces: show Reschedule only for known patient/professional sessions on upcoming REQUESTED/ACCEPTED appointments, load public availability for the appointment professional, reuse generated request options, call SchedulingRepository.rescheduleAppointment with selected time/duration, update visible status from backend response, and keep payments/notifications/calendar/reviews/calls/admin/notes/prescriptions deferred | L | **DONE** |
-| 52.57 | Run Appointment Reschedule Regression: verify patient/professional reschedule role/status/time-option/failure behavior, backend REQUESTED response handling, safe no-fallback errors, terminal/recent hiding, and no payments/notifications/calendar/reviews/calls/admin/notes/prescriptions UI before deciding whether scheduling can pause for a broader checkpoint | M | **NEXT** |
+| 52.57 | Run Appointment Reschedule Regression: verify patient/professional reschedule role/status/time-option/failure behavior, backend REQUESTED response handling, safe no-fallback errors, terminal/recent hiding, and no payments/notifications/calendar/reviews/calls/admin/notes/prescriptions UI before deciding whether scheduling can pause for a broader checkpoint | M | **DONE** |
+| 52.58 | Decide Scheduling Core Pause Or Smoke Checkpoint: review appointment request/list/cancel/accept/decline/complete/reschedule, availability management, regression evidence, and remaining backend/frontend risks before choosing pause, real-device/staging smoke, or a small QA/fix slice; do not implement runtime behavior in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -213,21 +214,17 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.56)
+## Manual test (last completed: task 52.57)
 
-Task `52.56` wires the constrained appointment reschedule path from existing
-backend scheduling surfaces. Patient and professional sessions can reschedule
-upcoming `REQUESTED`/`ACCEPTED` appointment cards through generated public
-availability options; success trusts the backend response and returns the card
-to `REQUESTED`.
+Task `52.57` strengthens regression proof for the constrained appointment
+reschedule path without adding new runtime behavior.
 
-1. `dart format lib/features/Home/presentation/pages/appointments_shell.dart test/features/home/appointments_flow_test.dart` - passes
-2. `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart -r compact` - all 46 tests pass
+1. `dart format test/features/home/appointments_flow_test.dart` - passes
+2. `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart -r compact` - all 47 tests pass
 3. `flutter analyze lib/features/Home/presentation/pages/appointments_shell.dart test/features/home/appointments_flow_test.dart lib/features/Home/data/repositories/scheduling_repository.dart lib/features/Home/data/services/scheduling_api_client.dart test/features/home/scheduling_repository_test.dart` - no issues
-4. Confirm reschedule is visible only for patient/professional upcoming `REQUESTED`/`ACCEPTED` cards, hidden for non-patient/non-professional roles, recent cards, and terminal states.
-5. Confirm reschedule loads public availability for the appointment professional, submits only selected `requestedStartAt` and `durationMinutes`, shows safe errors, and does not expose raw backend messages.
-6. Confirm payments, notifications, calendar sync, reviews, notes, prescriptions, calls, admin override, no-show/disputes, medical records, free-text datetime entry, and reschedule reasons remain deferred.
-7. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.57`
+4. Confirm `APPOINTMENT_RESCHEDULE_REGRESSION.md` records patient/professional success, role hiding, terminal/recent hiding, empty-option handling, safe errors, narrow payload, and deferred broader actions.
+5. Confirm payments, notifications, calendar sync, reviews, notes, prescriptions, calls, admin override, no-show/disputes, medical records, free-text datetime entry, and reschedule reasons remain deferred.
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.58`
 
 ## Previous runtime manual test baseline
 
@@ -561,6 +558,7 @@ to `REQUESTED`.
 | 2026-07-14 | 52.35 | DONE - `bookAppointment` local confirmation removed; route now shows backend-required request details only |
 | 2026-07-14 | 52.36 | DONE - concrete appointment request UX selected: Search availability sheet first, helper/test slice before runtime request |
 | 2026-07-15 | 52.56 | DONE - Appointments now wires constrained patient/professional reschedule through generated public availability options; next slice is reschedule regression |
+| 2026-07-15 | 52.57 | DONE - appointment reschedule regression strengthened terminal/empty-option proof and documented the remaining scheduling checkpoint decision |
 
 ---
 

@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 patient profile read wired to Settings/Profile.
+**Last updated:** 2026-07-15 patient profile read regression checkpoint passed.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -115,6 +115,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Next backend-completed surface | `NEXT_BACKEND_COMPLETED_FLUTTER_SURFACE_DECISION.md` selects patient self profile as the next Flutter surface because `ProfileRepository.patientMe/updatePatientMe` already exist and do not depend on scheduling seed data or verification storage. Runtime wiring is blocked until Settings/Profile maps backend `name`, `age`, and `location` separately from username, email, auth/security, public profile, and destructive account behavior |
 | Patient profile settings mapping | `PATIENT_PROFILE_SETTINGS_MAPPING_DECISION.md` maps Settings/Profile to patient `name`, `age`, and `location` only. The next runtime slice should read `ProfileRepository.patientMe`, show safe loading/error/empty-profile states, display backend name and read-only age/location when available, and avoid `updatePatientMe` until a separate mutation slice |
 | Patient profile read wiring | Settings/Profile now reads `ProfileRepository.patientMe`, shows safe loading/error/empty-profile states, displays backend patient `name`, `age`, and `location` read-only when available, and keeps local save behavior local. It does not call `updatePatientMe` or create profile data |
+| Patient profile read regression | `PATIENT_PROFILE_READ_REGRESSION.md` records focused proof for patient profile read success, empty-profile, safe failure, local save preservation, and absence of `updatePatientMe` mutation |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.64** - patient profile read regression checkpoint |
-| Last completed | **52.63** - patient profile read wired to Settings/Profile |
+| NEXT task | **52.65** - patient profile update boundary or next surface decision |
+| Last completed | **52.64** - patient profile read regression checkpoint |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -101,6 +101,7 @@ Do not use old chat history. Do not start the next task without my approval.
 
 | Date | Fixes |
 |------|--------|
+| 2026-07-15 | Task 52.64 DONE - patient profile read regression passed for success, empty-profile, safe failure, local save preservation, and no `updatePatientMe` mutation; DOC_SYNC NEXT -> 52.65 |
 | 2026-07-15 | Task 52.63 DONE - Settings/Profile now reads patient profile through `ProfileRepository.patientMe`, displays backend name/age/location read-only, and preserves local save/no-mutation behavior; DOC_SYNC NEXT -> 52.64 |
 | 2026-07-15 | Task 52.62 DONE - defined read-first patient profile mapping for Settings/Profile using backend `name`, `age`, and `location` only; DOC_SYNC NEXT -> 52.63 |
 | 2026-07-15 | Task 52.61 DONE - selected patient self profile as the next backend-completed Flutter surface and required a Settings/Profile mapping decision before runtime wiring; DOC_SYNC NEXT -> 52.62 |

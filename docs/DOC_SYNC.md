@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.72** - wire Find Mentor to public professionals |
-| Last completed | **52.71** - next surface after Specialist Details decision |
+| NEXT task | **52.73** - Find Mentor public professionals regression checkpoint |
+| Last completed | **52.72** - Find Mentor public professionals wiring |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -101,6 +101,7 @@ Do not use old chat history. Do not start the next task without my approval.
 
 | Date | Fixes |
 |------|--------|
+| 2026-07-15 | Task 52.72 DONE - Find Mentor now reads backend public professionals where available, routes backend ids to Specialist Details, and avoids local fallback/direct fake booking in the backend path; DOC_SYNC NEXT -> 52.73 |
 | 2026-07-15 | Task 52.71 DONE - selected Find Mentor public professional replacement as the next narrow surface; DOC_SYNC NEXT -> 52.72 |
 | 2026-07-15 | Task 52.70 DONE - Specialist Details public availability regression passed for backend id resolution, Search handoff, dashboard compatibility, no local slot fallback, generated request payload, safe failure behavior, and deferred-work accuracy; DOC_SYNC NEXT -> 52.71 |
 | 2026-07-15 | Task 52.69 DONE - Specialist Details now uses backend public professional, public availability, generated request options, and backend appointment request results when a backend id is available; DOC_SYNC NEXT -> 52.70 |

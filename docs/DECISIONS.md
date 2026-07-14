@@ -510,3 +510,20 @@ calendar behavior are added.
 Next: 52.40 should decide the next scheduling UI lane deliberately: patient
 cancellation, professional availability management, professional lifecycle UI,
 or a regression checkpoint.
+
+## D094 - Scheduling next UI lane
+
+Task: 52.40
+
+Decision: Select patient appointment cancellation as the next runtime
+scheduling UI lane. Do not jump directly to professional availability
+management, professional accept/decline, reschedule, completion, or regression
+before adding the smallest patient-side reversal path.
+
+Reason: Request and own-list visibility are now backend-backed. Patient
+cancellation is the narrowest useful follow-up because it closes the obvious
+user gap after a request is created while avoiding payment, notification,
+calendar, provider workspace, and professional scheduling complexity.
+
+Next: 52.41 should add a cancel action only for eligible own appointment cards
+and update the visible status from the backend response.

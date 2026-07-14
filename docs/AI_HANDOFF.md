@@ -180,7 +180,8 @@
 | 52.37 | Add appointment request time-option helper: convert returned `AvailabilityWindow` values into near-term concrete request options for the next seven days with focused tests; do not call `requestAppointment`, do not wire runtime booking UI, and keep payments/notifications/reviews/calls/calendar/notes/prescriptions out of scope | M | **DONE** |
 | 52.38 | Wire appointment request from Search availability: add selectable generated time/duration options in the Search profile sheet, call `SchedulingRepository.requestAppointment` only after user selection, show backend `REQUESTED` success and safe errors, and keep own list/lifecycle/payments/notifications/reviews/calls/calendar/notes/prescriptions deferred | M | **DONE** |
 | 52.39 | Wire own appointment list read: replace the local upcoming/recent appointment display where safe with `SchedulingRepository.ownAppointments`, show backend statuses and safe loading/error/empty states, and keep accept/decline/cancel/reschedule/complete UI, payments, notifications, reviews, calls, calendar sync, notes, and prescriptions deferred | M | **DONE** |
-| 52.40 | Decide the next scheduling UI lane after request/list visibility: choose patient cancellation, professional availability management, professional appointment lifecycle, or regression checkpoint; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.40 | Decide the next scheduling UI lane after request/list visibility: choose patient cancellation, professional availability management, professional appointment lifecycle, or regression checkpoint; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.41 | Wire patient appointment cancellation: add a cancel action only for eligible own appointment cards, call `SchedulingRepository.cancelAppointment`, show safe loading/success/error states, update visible status from backend response, and keep professional lifecycle/reschedule/complete/payments/notifications/calendar/notes deferred | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -196,17 +197,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.39)
+## Manual test (last completed: task 52.40)
 
-Task `52.39` wires backend appointment list visibility. It keeps appointment
-lifecycle actions deferred.
+Task `52.40` is a decision-only scheduling UI lane slice. No runtime behavior
+changed.
 
-1. `flutter test test/features/home/appointments_flow_test.dart test/features/home/search_flow_test.dart` - passes
-2. `flutter analyze lib/features/Home/presentation/pages/appointments_shell.dart test/features/home/appointments_flow_test.dart lib/features/Home/presentation/pages/search_shell.dart test/features/home/search_flow_test.dart` - no issues
+1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/SCHEDULING_NEXT_UI_LANE_DECISION.md` - passes
+2. Confirm `SCHEDULING_NEXT_UI_LANE_DECISION.md` selects patient cancellation as the next narrow runtime lane.
 3. `git diff --check` - passes
-4. Confirm `appointments` reads `SchedulingRepository.ownAppointments` and does not show seeded local appointments on backend empty/error states.
-5. Confirm backend statuses render as wire names and no lifecycle action buttons are added.
-6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.40`
+4. Confirm professional availability management, professional lifecycle UI, reschedule, complete, payments, notifications, calendar sync, notes, and prescriptions remain deferred.
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.41`
 
 ## Previous runtime manual test baseline
 

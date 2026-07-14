@@ -937,3 +937,21 @@ mutation contract is attempted.
 
 Next: 52.63 should wire patient profile read to Settings/Profile with safe
 loading/error/empty-profile states and no patient profile mutation.
+
+## D117 - Patient profile read wired without mutation
+
+Task: 52.63
+
+Decision: Settings/Profile now reads patient self profile through
+`ProfileRepository.patientMe`, displays backend patient `name`, `age`, and
+`location` as read-only profile data, and preserves the existing local save
+flow for local-only fields. It does not call `updatePatientMe` or create patient
+profile data.
+
+Reason: This proves the authenticated patient profile read boundary without
+mixing patient profile data with username, email, bio, auth/security,
+verification, scheduling, or destructive account behavior. Mutation remains
+too broad until a focused update contract and UI are defined.
+
+Next: 52.64 should run a patient profile read regression checkpoint before any
+patient profile update slice is considered.

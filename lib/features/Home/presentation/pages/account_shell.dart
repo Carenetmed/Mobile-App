@@ -7,6 +7,8 @@ import 'package:app_t/features/Authentication/data/repositories/account_reposito
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
+import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/presentation/state/account_local_store.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
@@ -271,7 +273,9 @@ class _AccountShellPageState extends State<AccountShellPage> {
 }
 
 class SettingsProfilePage extends StatefulWidget {
-  const SettingsProfilePage({super.key});
+  const SettingsProfilePage({super.key, this.profileRepository});
+
+  final ProfileRepository? profileRepository;
 
   @override
   State<SettingsProfilePage> createState() => _SettingsProfilePageState();
@@ -289,6 +293,12 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
   String? _usernameError;
   String? _emailError;
   String? _bioError;
+  bool _isLoadingPatientProfile = true;
+  String? _patientProfileError;
+  PatientProfile? _patientProfile;
+
+  ProfileRepository get _profileRepository =>
+      widget.profileRepository ?? sl<ProfileRepository>();
 
   @override
   void initState() {
@@ -299,6 +309,44 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
     _usernameController = TextEditingController(text: snapshot.username);
     _emailController = TextEditingController(text: snapshot.email);
     _bioController = TextEditingController(text: snapshot.bio);
+    _loadPatientProfile();
+  }
+
+  Future<void> _loadPatientProfile() async {
+    if (widget.profileRepository == null &&
+        !sl.isRegistered<ProfileRepository>()) {
+      setState(() {
+        _isLoadingPatientProfile = false;
+      });
+      return;
+    }
+
+    try {
+      final profile = await _profileRepository.patientMe();
+      if (!mounted) return;
+      final nameParts = _splitPatientName(profile?.name);
+      setState(() {
+        _patientProfile = profile;
+        _patientProfileError = null;
+        _isLoadingPatientProfile = false;
+        if (nameParts != null) {
+          _firstNameController.text = nameParts.$1;
+          _lastNameController.text = nameParts.$2;
+        }
+      });
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _patientProfileError = failure.message;
+        _isLoadingPatientProfile = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _patientProfileError = 'Could not load patient profile.';
+        _isLoadingPatientProfile = false;
+      });
+    }
   }
 
   @override
@@ -376,6 +424,12 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
   @override
   Widget build(BuildContext context) {
     final snapshot = AccountLocalStore.snapshot.value;
+    final displayName =
+        _patientProfile?.name.trim().isNotEmpty == true
+            ? _patientProfile!.name.trim()
+            : '${snapshot.firstName} ${snapshot.lastName}';
+    final avatarLetter =
+        displayName.trim().isEmpty ? '?' : displayName.trim().characters.first;
 
     return Scaffold(
       backgroundColor: AppColors.kWhite,
@@ -415,7 +469,7 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
                     radius: 44.r,
                     backgroundColor: AppColors.blue02,
                     child: Text(
-                      snapshot.firstName.characters.first,
+                      avatarLetter,
                       style: TextStyle(
                         fontSize: FontSizes.body2,
                         fontFamily: AppFonts.montserrat,
@@ -430,7 +484,7 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${snapshot.firstName} ${snapshot.lastName}',
+                          displayName,
                           style: TextStyle(
                             fontSize: FontSizes.body2,
                             fontFamily: AppFonts.montserrat,
@@ -463,6 +517,12 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
                   ),
                 ],
               ),
+            ),
+            SizedBox(height: 20.h),
+            _PatientProfileReadPanel(
+              isLoading: _isLoadingPatientProfile,
+              error: _patientProfileError,
+              profile: _patientProfile,
             ),
             SizedBox(height: 20.h),
             CarenetTextField(
@@ -559,6 +619,99 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+(String, String)? _splitPatientName(String? name) {
+  final trimmed = name?.trim();
+  if (trimmed == null || trimmed.isEmpty) {
+    return null;
+  }
+  final parts = trimmed.split(RegExp(r'\s+'));
+  if (parts.length == 1) {
+    return null;
+  }
+  return (parts.first, parts.skip(1).join(' '));
+}
+
+class _PatientProfileReadPanel extends StatelessWidget {
+  const _PatientProfileReadPanel({
+    required this.isLoading,
+    required this.error,
+    required this.profile,
+  });
+
+  final bool isLoading;
+  final String? error;
+  final PatientProfile? profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = this.profile;
+    final rows = <String>[
+      if (profile?.name.trim().isNotEmpty == true)
+        'Backend name: ${profile!.name.trim()}',
+      if (profile?.age != null) 'Age: ${profile!.age}',
+      if (profile?.location?.trim().isNotEmpty == true)
+        'Location: ${profile!.location!.trim()}',
+    ];
+    final message =
+        isLoading
+            ? 'Loading patient profile...'
+            : error != null
+            ? error!
+            : profile == null
+            ? 'No backend patient profile yet. Local settings remain editable.'
+            : rows.isEmpty
+            ? 'Backend patient profile loaded without display fields.'
+            : rows.join('\n');
+
+    return Container(
+      padding: REdgeInsets.all(14.r),
+      decoration: BoxDecoration(
+        color: AppColors.blue02,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppColors.white04),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Patient profile',
+            style: TextStyle(
+              fontSize: FontSizes.footer2,
+              fontFamily: AppFonts.montserrat,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primaryBlue5,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: FontSizes.footer3,
+              fontFamily: AppFonts.montserrat,
+              fontWeight: FontWeight.w400,
+              color: AppColors.primaryBlue11,
+              height: 1.35,
+            ),
+          ),
+          if (!isLoading && profile != null) ...[
+            SizedBox(height: 8.h),
+            Text(
+              'Username, email, bio, and security changes still save locally or through their own account routes.',
+              style: TextStyle(
+                fontSize: FontSizes.footer4,
+                fontFamily: AppFonts.montserrat,
+                fontWeight: FontWeight.w500,
+                color: AppColors.primaryBlue5,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

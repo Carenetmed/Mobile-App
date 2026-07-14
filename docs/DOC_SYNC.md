@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.63** - wire patient profile read to Settings/Profile |
-| Last completed | **52.62** - patient profile settings mapping decision |
+| NEXT task | **52.64** - patient profile read regression checkpoint |
+| Last completed | **52.63** - patient profile read wired to Settings/Profile |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -101,6 +101,7 @@ Do not use old chat history. Do not start the next task without my approval.
 
 | Date | Fixes |
 |------|--------|
+| 2026-07-15 | Task 52.63 DONE - Settings/Profile now reads patient profile through `ProfileRepository.patientMe`, displays backend name/age/location read-only, and preserves local save/no-mutation behavior; DOC_SYNC NEXT -> 52.64 |
 | 2026-07-15 | Task 52.62 DONE - defined read-first patient profile mapping for Settings/Profile using backend `name`, `age`, and `location` only; DOC_SYNC NEXT -> 52.63 |
 | 2026-07-15 | Task 52.61 DONE - selected patient self profile as the next backend-completed Flutter surface and required a Settings/Profile mapping decision before runtime wiring; DOC_SYNC NEXT -> 52.62 |
 | 2026-07-15 | Task 52.60 DONE - rejected ad hoc Flutter-created scheduling staging data and kept full scheduling smoke blocked on deliberate backend/staging test data setup; DOC_SYNC NEXT -> 52.61 |

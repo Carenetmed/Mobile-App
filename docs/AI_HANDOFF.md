@@ -224,7 +224,8 @@
 | 52.81 | Decide Next Backend-Completed Flutter Surface After Verification Regression: review the verification upload regression, completed backend surface map, deferred-work register, scheduling staging-data blocker, remaining profile/account gaps, and release/staging risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.82 | Define Professional Basic Profile Edit Boundary: decide whether the next runtime slice should update professional `displayName` only or `displayName`/`category`/`specialty` together, how existing professional profile fields and `bio` are preserved, whether empty-profile creation is allowed, and how `editYourName`/Manage Profile should stay separate from website, address, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.83 | Wire Professional Display Name Update From Edit Your Name: update the existing `editYourName` route to read an existing professional self profile, prefill backend `displayName`, save only the changed `displayName` through `ProfileRepository.updateProfessionalMe` while preserving existing `category`, `specialty`, and `bio`, block empty-profile saves, keep validation/loading/safe-error states honest, and do not create a profile or send website, address, account, verification, availability, appointment, payment, review, call, calendar, note, prescription, staging, or production data | M | **DONE** |
-| 52.84 | Run Professional Display Name Update Regression Checkpoint: verify backend displayName prefill, display-name-only save, preservation of category/specialty/bio, empty-profile blocking, validation failure without repository update, safe backend failure without false success, docs/deferred-work accuracy, and absence of category/specialty editing, profile creation, website/address persistence, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing any broader profile-editing surface | M | **NEXT** |
+| 52.84 | Run Professional Display Name Update Regression Checkpoint: verify backend displayName prefill, display-name-only save, preservation of category/specialty/bio, empty-profile blocking, validation failure without repository update, safe backend failure without false success, docs/deferred-work accuracy, and absence of category/specialty editing, profile creation, website/address persistence, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing any broader profile-editing surface | M | **DONE** |
+| 52.85 | Decide Next Backend-Completed Flutter Surface After Display Name Regression: review the display-name regression, professional profile contract, remaining category/specialty/profile-creation gaps, patient/account gaps, verification/admin deferrals, scheduling staging-data blocker, and release/staging risks before choosing one narrow next lane; do not implement runtime behavior in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -240,16 +241,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.83)
+## Manual test (last completed: task 52.84)
 
-Task `52.83` wires professional display-name-only update from `editYourName`.
+Task `52.84` runs the professional display-name update regression checkpoint.
 
 1. `flutter test test/features/home/manage_profile_flow_test.dart -r expanded` - all 26 focused Manage Profile tests pass.
 2. `flutter analyze lib/features/Home/presentation/pages/edit_your_name_shell.dart lib/features/Home/presentation/pages/manage_profile_shell.dart test/features/home/manage_profile_flow_test.dart` - no issues.
-3. Confirm `PROFESSIONAL_DISPLAY_NAME_UPDATE_WIRING.md` records displayName-only behavior, preservation of `category`, `specialty`, and `bio`, empty-profile blocking, and safe failure behavior.
+3. Confirm `PROFESSIONAL_DISPLAY_NAME_UPDATE_REGRESSION.md` records displayName prefill, display-name-only save, category/specialty/bio preservation, empty-profile blocking, validation failure, safe backend failure, and no false success.
 4. Confirm category/specialty editing, profile creation, website/address persistence, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain deferred.
 5. `git diff --check` - no whitespace errors.
-6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.84`
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.85`
 
 ## Previous runtime manual test baseline
 
@@ -610,6 +611,7 @@ Task `52.83` wires professional display-name-only update from `editYourName`.
 | 2026-07-15 | 52.81 | DONE - selected professional basic profile field editing as the next backend-completed Flutter surface, with a required boundary decision before runtime name/category/specialty wiring |
 | 2026-07-15 | 52.82 | DONE - accepted display-name-only professional profile edit boundary for `editYourName`, preserving existing category/specialty/bio and deferring profile creation plus broader profile fields |
 | 2026-07-15 | 52.83 | DONE - `editYourName` now updates backend professional displayName only, preserves existing category/specialty/bio, blocks empty-profile creation, and keeps broader profile fields deferred |
+| 2026-07-15 | 52.84 | DONE - professional display-name update regression passed for backend prefill, display-name-only save, category/specialty/bio preservation, empty-profile blocking, validation, safe failure, and deferred-work accuracy |
 
 ---
 

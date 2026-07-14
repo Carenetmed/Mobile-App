@@ -1346,3 +1346,21 @@ out of scope.
 
 Next: 52.84 should run a focused professional display name update regression
 checkpoint before selecting any broader profile-editing surface.
+
+## D138 - Professional display name update regression passed
+
+Task: 52.84
+
+Decision: Treat the professional display-name-only update path as
+regression-proven for the current frontend milestone boundary.
+
+Reason: Focused tests and analyzer prove backend `displayName` prefill,
+display-name-only save, preservation of existing `category`, `specialty`, and
+`bio`, validation failure without repository update, empty-profile blocking
+without partial profile creation, and safe backend save failure without false
+success or raw error text. Broader field searches confirm no new runtime
+website/address, verification, payment, review, call, calendar, prescription,
+staging, or production behavior was added in this lane.
+
+Next: 52.85 should decide the next backend-completed Flutter surface before
+any broader profile editing or another product area is wired.

@@ -170,7 +170,8 @@
 | 52.27 | Wire professional bio update from `addDescription` for existing professional profiles only: read `professionalMe`, preserve existing `displayName`, `category`, and `specialty`, call `updateProfessionalMe` with the new `bio`, show safe loading/error/empty-profile states, and keep profile creation, name/category/specialty editing, website, address, patient profile, public listing, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions out of scope | M | **DONE** |
 | 52.28 | Decide the next profile/public-professional runtime lane after professional bio update: choose public verified professional listing replacement, a constrained name/category/specialty profile-edit UI, or pause profile wiring; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.29 | Wire public verified professional listing to Search specialists using `ProfileRepository.publicProfessionals`: replace list-card name/category/specialty/bio data only, keep safe loading/error/empty states, do not send auth headers, and keep public detail, Find Mentor, Specialist Details, availability, appointments, booking, reviews, ratings, prices, payments, calls, calendar sync, verification upload/admin, patient profile, profile creation, name/category/specialty editing, website, address, notifications, notes, and prescriptions out of scope | M | **DONE** |
-| 52.30 | Decide the next backend-integration lane after Search public listing: either continue profile/public-professional work only if a real backend contract exists, select another completed backend surface, or pause for regression; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.30 | Decide the next backend-integration lane after Search public listing: either continue profile/public-professional work only if a real backend contract exists, select another completed backend surface, or pause for regression; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.31 | Define the scheduling/availability/appointment frontend contract before runtime wiring: map completed backend availability and appointment routes into Flutter repository/entities/screen boundaries, preserve no-local-fallback behavior, and queue the first repository/runtime slice only after the contract is clear | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -186,14 +187,14 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.29)
+## Manual test (last completed: task 52.30)
 
-Task `52.29` wires Search specialists to public verified professionals only. It does not fall back to seeded local specialists when the backend listing fails; failures show real errors so integration can be debugged.
+Task `52.30` is a decision-only backend-integration lane selection. No runtime behavior changed.
 
-1. `flutter test test/features/home/search_flow_test.dart test/features/home/manage_profile_flow_test.dart test/features/home/profile_repository_test.dart` - passes
-2. `flutter analyze lib/features/Home/presentation/pages/search_shell.dart lib/features/Home/presentation/pages/manage_profile_shell.dart lib/features/Home/presentation/pages/add_description_shell.dart lib/features/Home/data/repositories/profile_repository.dart lib/features/Home/data/services/profile_api_client.dart lib/features/Home/domain/entities/public_professional.dart lib/features/Home/domain/entities/professional_profile.dart test/features/home/search_flow_test.dart test/features/home/manage_profile_flow_test.dart test/features/home/profile_repository_test.dart` - no issues
-3. Confirm Search uses `ProfileRepository.publicProfessionals`, shows backend error/empty states without local specialist fallback, and keeps booking disabled/deferred.
-4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.30`
+1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/SCHEDULING_AVAILABILITY_APPOINTMENT_LANE_DECISION.md` - passes
+2. Confirm `SCHEDULING_AVAILABILITY_APPOINTMENT_LANE_DECISION.md` selects scheduling/availability/appointments as the next backend-integration lane.
+3. Confirm the decision queues a contract slice before runtime booking/availability wiring.
+4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.31`
 
 ## Previous runtime manual test baseline
 
@@ -519,6 +520,7 @@ Task `52.29` wires Search specialists to public verified professionals only. It 
 | 2026-07-14 | 52.27 | DONE - Add Description now updates existing professional profile bio only, preserving required profile fields and refusing partial profile creation |
 | 2026-07-14 | 52.28 | DONE - next profile/public-professional runtime lane selected: public verified professional listing into Search only |
 | 2026-07-14 | 52.29 | DONE - Search now reads public verified professionals without local fallback, exposes real errors/empty states, and keeps booking/detail expansion deferred |
+| 2026-07-14 | 52.30 | DONE - next backend-integration lane selected: scheduling availability and appointment contract definition before runtime wiring |
 
 ---
 

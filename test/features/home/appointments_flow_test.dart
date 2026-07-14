@@ -1,4 +1,8 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
+import 'package:app_t/features/Home/domain/entities/availability_window.dart';
 import 'package:app_t/features/Home/presentation/pages/appointments_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,7 +10,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 const Size _phoneSize = Size(430, 1200);
 
-Future<void> _pumpAppointments(WidgetTester tester) async {
+Future<void> _pumpAppointments(
+  WidgetTester tester, {
+  SchedulingRepository? schedulingRepository,
+  DateTime? now,
+}) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
@@ -16,7 +24,11 @@ Future<void> _pumpAppointments(WidgetTester tester) async {
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
-            home: const AppointmentsShellPage(),
+            home: AppointmentsShellPage(
+              schedulingRepository:
+                  schedulingRepository ?? _FakeSchedulingRepository(),
+              now: now,
+            ),
             routes: {
               RouteName.bookAppointment:
                   (_) => const BookAppointmentShellPage(),
@@ -27,17 +39,166 @@ Future<void> _pumpAppointments(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+class _FakeSchedulingRepository implements SchedulingRepository {
+  _FakeSchedulingRepository({
+    this.appointments = const <AppointmentSummary>[],
+    this.failure,
+  });
+
+  final List<AppointmentSummary> appointments;
+  final Object? failure;
+
+  @override
+  Future<List<AppointmentSummary>> ownAppointments() async {
+    final error = failure;
+    if (error != null) {
+      throw error;
+    }
+    return appointments;
+  }
+
+  @override
+  Future<AppointmentSummary> acceptAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> cancelAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> completeAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> declineAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<AvailabilityWindow>> ownAvailability() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<AvailabilityWindow>> publicAvailability({
+    required String professionalProfileId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<AvailabilityWindow>> replaceOwnAvailability({
+    required List<AvailabilityWindowDraft> windows,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> requestAppointment({
+    required String professionalProfileId,
+    required DateTime requestedStartAt,
+    required int durationMinutes,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> rescheduleAppointment({
+    required String appointmentId,
+    required DateTime requestedStartAt,
+    required int durationMinutes,
+  }) {
+    throw UnimplementedError();
+  }
+}
+
 void main() {
-  testWidgets('appointments screen shows upcoming and recent sections', (
+  testWidgets(
+    'appointments screen shows backend upcoming and recent sections',
+    (tester) async {
+      await _pumpAppointments(
+        tester,
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: _FakeSchedulingRepository(
+          appointments: <AppointmentSummary>[
+            _appointment(
+              professionalProfileId: 'professional-upcoming',
+              requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+              status: AppointmentStatus.requested,
+            ),
+            _appointment(
+              id: 'appointment-2',
+              professionalProfileId: 'professional-completed',
+              requestedStartAt: DateTime(2026, 7, 13, 16),
+              status: AppointmentStatus.completed,
+            ),
+          ],
+        ),
+      );
+
+      expect(
+        find.text('Keep your care schedule in one place.'),
+        findsOneWidget,
+      );
+      expect(find.text('Upcoming'), findsOneWidget);
+      expect(find.text('Recent'), findsOneWidget);
+      expect(
+        find.text('Appointment with professional-upcoming'),
+        findsOneWidget,
+      );
+      expect(find.text('REQUESTED'), findsOneWidget);
+      expect(
+        find.text('Appointment with professional-completed'),
+        findsOneWidget,
+      );
+      expect(find.text('COMPLETED'), findsOneWidget);
+      expect(find.text('Private consult with Dr. Lagbaja'), findsNothing);
+      expect(find.text('Nutrition follow-up'), findsNothing);
+      expect(find.text('Accept'), findsNothing);
+      expect(find.text('Cancel appointment'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'appointments screen shows backend empty state without local data',
+    (tester) async {
+      await _pumpAppointments(tester);
+
+      expect(
+        find.text('No backend appointments are available yet.'),
+        findsOneWidget,
+      );
+      expect(find.text('Private consult with Dr. Lagbaja'), findsNothing);
+    },
+  );
+
+  testWidgets('appointments screen shows safe error without local fallback', (
     tester,
   ) async {
-    await _pumpAppointments(tester);
+    await _pumpAppointments(
+      tester,
+      schedulingRepository: _FakeSchedulingRepository(
+        failure: const AuthFailure(
+          type: AuthFailureType.unauthorized,
+          message: 'raw auth failure',
+        ),
+      ),
+    );
 
-    expect(find.text('Keep your care schedule in one place.'), findsOneWidget);
-    expect(find.text('Upcoming'), findsOneWidget);
-    expect(find.text('Recent'), findsOneWidget);
-    expect(find.text('Private consult with Dr. Lagbaja'), findsOneWidget);
-    expect(find.text('Nutrition follow-up'), findsOneWidget);
+    expect(find.text('Please sign in again.'), findsOneWidget);
+    expect(find.text('raw auth failure'), findsNothing);
+    expect(find.text('Private consult with Dr. Lagbaja'), findsNothing);
   });
 
   testWidgets('book appointment CTA opens booking route', (tester) async {
@@ -115,4 +276,21 @@ void main() {
 
     expect(find.text('Request details'), findsNothing);
   });
+}
+
+AppointmentSummary _appointment({
+  String id = 'appointment-1',
+  String patientProfileId = 'patient-1',
+  required String professionalProfileId,
+  required DateTime requestedStartAt,
+  required AppointmentStatus status,
+}) {
+  return AppointmentSummary(
+    id: id,
+    patientProfileId: patientProfileId,
+    professionalProfileId: professionalProfileId,
+    requestedStartAt: requestedStartAt,
+    durationMinutes: 30,
+    status: status,
+  );
 }

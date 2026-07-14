@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 professional verification documents shell wired.
+**Last updated:** 2026-07-15 professional verification upload picker boundary accepted.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -128,6 +128,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Next surface after Find Mentor | `NEXT_SURFACE_AFTER_FIND_MENTOR_DECISION.md` selects professional verification upload/list as the next backend-completed Flutter lane. The next slice must define the private-document/file-picker/upload/list/status boundary before runtime implementation |
 | Professional verification repository boundary | `PROFESSIONAL_VERIFICATION_UPLOAD_LIST_BOUNDARY.md` accepts Manage Profile as the professional-owned entry point, and `VerificationRepository` now covers owner document list, upload-init, internal signed upload PUT, and upload-complete behind safe entities and focused tests. Runtime screen wiring, file picker UI, visible upload flow, admin review, private previews/downloads, public document access, staging data, and production claims remain deferred |
 | Professional verification documents shell | Manage Profile now has a `Verification` entry that opens `professionalVerificationDocuments`. The shell reads owner verification documents through `VerificationRepository.documents`, shows loading/empty/safe-error states, displays safe status metadata only, and keeps upload locked until the file-picker/upload UX boundary is decided |
+| Professional verification upload picker boundary | `PROFESSIONAL_VERIFICATION_UPLOAD_PICKER_BOUNDARY.md` selects a PDF-capable picker path for the next runtime upload slice. Do not use the existing `image_picker` dependency for verification upload because PDF support is required. Runtime upload and package changes remain queued for 52.79 |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

@@ -218,7 +218,8 @@
 | 52.75 | Define Professional Verification Upload/List UI Boundary: review backend verification upload-init, upload-complete, owner document list, storage-readiness, private-document rules, existing app entry points, and file-picker constraints before choosing the first runtime verification implementation shape; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.76 | Add Professional Verification Repository Boundary: add verification document/upload entities, API client, repository, signed upload PUT helper, and focused tests for owner document list, upload-init, upload-complete, safe errors, and no signed URL/object-key exposure in public entities; do not wire runtime screens or admin review UI | M | **DONE** |
 | 52.77 | Wire Professional Verification Documents Shell: add a Manage Profile entry and professional-owned verification document screen using `VerificationRepository.documents`, show safe loading/empty/error/status states, keep upload action scoped for a follow-up if file-picker/runtime upload UX needs another slice, and do not expose signed URLs, object keys, local paths, file previews, admin review data, public document access, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **DONE** |
-| 52.78 | Decide Professional Verification Upload UI And File Picker Boundary: review the existing `image_picker` dependency, PDF/JPEG/PNG requirement, upload-init/signed PUT/upload-complete repository boundary, platform implications, validation/error/progress needs, and choose the narrow next upload implementation shape; do not add runtime upload behavior or package dependencies in this decision slice | S | **NEXT** |
+| 52.78 | Decide Professional Verification Upload UI And File Picker Boundary: review the existing `image_picker` dependency, PDF/JPEG/PNG requirement, upload-init/signed PUT/upload-complete repository boundary, platform implications, validation/error/progress needs, and choose the narrow next upload implementation shape; do not add runtime upload behavior or package dependencies in this decision slice | S | **DONE** |
+| 52.79 | Wire Professional Verification Upload Flow: add the selected PDF-capable file picker dependency, let professionals choose `LICENSE`/`IDENTITY`/`CERTIFICATION`, select one PDF/JPEG/PNG file, enforce safe type and 10 MB size validation, call `VerificationRepository.uploadDocument`, show loading/success/safe-error states, reload owner documents after success, and do not expose signed URLs, object keys, local full paths, file previews, raw checksums, admin review data, public document access, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -234,20 +235,18 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.77)
+## Manual test (last completed: task 52.78)
 
-Task `52.77` wires the professional verification documents shell from Manage Profile.
+Task `52.78` decides the professional verification upload UI and file picker boundary.
 
-1. `dart format lib/core/constants/navigators/routeName.dart lib/core/constants/navigators/router.dart lib/features/Home/presentation/pages/manage_profile_shell.dart lib/features/Home/presentation/pages/professional_verification_documents_shell.dart test/features/home/manage_profile_flow_test.dart` - formatted cleanly.
-2. `flutter test test/features/home/manage_profile_flow_test.dart -r expanded` - all 18 tests pass.
-3. `flutter analyze lib/core/constants/navigators/routeName.dart lib/core/constants/navigators/router.dart lib/features/Home/presentation/pages/manage_profile_shell.dart lib/features/Home/presentation/pages/professional_verification_documents_shell.dart test/features/home/manage_profile_flow_test.dart` - no issues.
-4. Confirm Manage Profile shows a `Verification` entry that opens `professionalVerificationDocuments`.
-5. Confirm the verification documents shell loads owner documents through `VerificationRepository.documents`.
-6. Confirm loading, empty, and safe backend error states are covered.
-7. Confirm document cards expose only safe owner-list metadata and do not show signed URLs, object keys, local paths, file previews, raw checksum values, admin data, or public document access.
-8. Confirm upload remains locked/deferred because the current direct dependency set has `image_picker` but no PDF-capable file picker/file selector dependency.
-9. `git diff --check` - no whitespace errors.
-10. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.78`
+1. Confirm `pubspec.yaml` has `image_picker` but no direct `file_picker` or `file_selector` dependency.
+2. Confirm `PROFESSIONAL_VERIFICATION_UPLOAD_PICKER_BOUNDARY.md` selects a PDF-capable picker boundary instead of using `image_picker` for PDF/JPEG/PNG verification uploads.
+3. Confirm the accepted upload UX is one document type, one PDF/JPEG/PNG file, 10 MB max app-side validation, upload progress, upload-complete success, and owner document list reload.
+4. Confirm checksum remains deferred unless added without logging or exposing raw checksum values.
+5. Confirm admin review, rejection reasons, previews/downloads, camera capture, batch/background upload, scanning claims, public document exposure, staging data, production claims, and unrelated modules remain deferred.
+6. Confirm no runtime Dart, Android, iOS, or package-lock behavior changed in this decision slice.
+7. `git diff --check` - no whitespace errors.
+8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.79`
 
 ## Previous runtime manual test baseline
 
@@ -602,6 +601,7 @@ Task `52.77` wires the professional verification documents shell from Manage Pro
 | 2026-07-15 | 52.75 | DONE - professional verification upload/list boundary accepted: Manage Profile entry, owner list/status plus controlled upload flow, private-document rules, and repository-boundary next |
 | 2026-07-15 | 52.76 | DONE - professional verification repository/API boundary added with safe document entities, upload-init, internal signed PUT, upload-complete, bearer auth, safe error mapping, and focused tests |
 | 2026-07-15 | 52.77 | DONE - Manage Profile now opens a backend-backed professional verification documents shell with safe list/status, empty/error states, and upload locked for file-picker boundary decision |
+| 2026-07-15 | 52.78 | DONE - professional verification upload UI boundary selected a PDF-capable file picker path for the next runtime upload slice instead of using image-only picking |
 
 ---
 

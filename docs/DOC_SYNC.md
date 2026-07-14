@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.67** - patient profile name update regression checkpoint |
-| Last completed | **52.66** - patient profile name update wired |
+| NEXT task | **52.68** - decide next backend-completed Flutter surface after patient profile name update |
+| Last completed | **52.67** - patient profile name update regression checkpoint |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -101,6 +101,7 @@ Do not use old chat history. Do not start the next task without my approval.
 
 | Date | Fixes |
 |------|--------|
+| 2026-07-15 | Task 52.67 DONE - patient profile name update regression passed for name-only payload, safe failure/no false success, local-field preservation, and deferred-work accuracy; DOC_SYNC NEXT -> 52.68 |
 | 2026-07-15 | Task 52.66 DONE - Settings/Profile now updates backend patient profile name only, preserves local username/email/bio behavior, and blocks false success on backend name-save failure; DOC_SYNC NEXT -> 52.67 |
 | 2026-07-15 | Task 52.65 DONE - selected constrained patient profile name update as the next runtime slice, with username/email/bio/security/verification/scheduling data excluded from `/patients/me`; DOC_SYNC NEXT -> 52.66 |
 | 2026-07-15 | Task 52.64 DONE - patient profile read regression passed for success, empty-profile, safe failure, local save preservation, and no `updatePatientMe` mutation; DOC_SYNC NEXT -> 52.65 |

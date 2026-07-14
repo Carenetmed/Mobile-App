@@ -1009,3 +1009,19 @@ scheduling, public profile, or destructive account data into `/patients/me`.
 
 Next: 52.67 should run a patient profile name update regression checkpoint
 before any broader profile/account surface is selected.
+
+## D121 - Patient profile name update regression passed
+
+Task: 52.67
+
+Decision: Treat the current patient profile name update as regression-proven
+for the scoped frontend/backend milestone boundary.
+
+Reason: Focused evidence proves Settings/Profile sends only backend patient
+`name`, does not send age/location, blocks false local success on backend
+failure, preserves username/email/bio as local/deferred fields, and keeps
+auth/security, verification, scheduling, public profile, and destructive
+account behavior out of `/patients/me`.
+
+Next: 52.68 should decide the next backend-completed Flutter surface from the
+completed-surface map and deferred-work register before any new runtime wiring.

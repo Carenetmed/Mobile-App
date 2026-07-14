@@ -171,6 +171,8 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
                                 allowCancellation: roleKnown && !isProfessional,
                                 allowProfessionalLifecycle:
                                     roleKnown && isProfessional,
+                                allowProfessionalCompletion: false,
+                                now: _now,
                               ),
                             ),
                           SizedBox(height: 24.h),
@@ -187,6 +189,9 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
                                 schedulingRepository: _schedulingRepository,
                                 allowCancellation: false,
                                 allowProfessionalLifecycle: false,
+                                allowProfessionalCompletion:
+                                    roleKnown && isProfessional,
+                                now: _now,
                               ),
                             ),
                         ],
@@ -574,12 +579,16 @@ class _AppointmentCard extends StatefulWidget {
     required this.schedulingRepository,
     required this.allowCancellation,
     required this.allowProfessionalLifecycle,
+    required this.allowProfessionalCompletion,
+    required this.now,
   });
 
   final _AppointmentItem item;
   final SchedulingRepository schedulingRepository;
   final bool allowCancellation;
   final bool allowProfessionalLifecycle;
+  final bool allowProfessionalCompletion;
+  final DateTime now;
 
   @override
   State<_AppointmentCard> createState() => _AppointmentCardState();
@@ -590,6 +599,7 @@ class _AppointmentCardState extends State<_AppointmentCard> {
   bool _isCancelling = false;
   bool _isAccepting = false;
   bool _isDeclining = false;
+  bool _isCompleting = false;
   String? _actionMessage;
 
   @override
@@ -598,6 +608,9 @@ class _AppointmentCardState extends State<_AppointmentCard> {
     if (oldWidget.item.id != widget.item.id) {
       _item = widget.item;
       _isCancelling = false;
+      _isAccepting = false;
+      _isDeclining = false;
+      _isCompleting = false;
       _actionMessage = null;
     }
   }
@@ -705,6 +718,17 @@ class _AppointmentCardState extends State<_AppointmentCard> {
               ],
             ),
           ],
+          if (widget.allowProfessionalCompletion &&
+              _item.canComplete(widget.now)) ...[
+            SizedBox(height: 12.h),
+            SizedBox(
+              width: double.infinity,
+              child: CarenetButton(
+                label: _isCompleting ? 'Completing appointment...' : 'Complete',
+                onPressed: _isBusy ? null : _completeAppointment,
+              ),
+            ),
+          ],
           if (_actionMessage != null) ...[
             SizedBox(height: 8.h),
             Text(
@@ -723,7 +747,8 @@ class _AppointmentCardState extends State<_AppointmentCard> {
     );
   }
 
-  bool get _isBusy => _isCancelling || _isAccepting || _isDeclining;
+  bool get _isBusy =>
+      _isCancelling || _isAccepting || _isDeclining || _isCompleting;
 
   Future<void> _cancelAppointment() async {
     setState(() {
@@ -796,6 +821,38 @@ class _AppointmentCardState extends State<_AppointmentCard> {
       });
     }
   }
+
+  Future<void> _completeAppointment() async {
+    setState(() {
+      _isCompleting = true;
+      _actionMessage = null;
+    });
+
+    try {
+      final completed = await widget.schedulingRepository.completeAppointment(
+        appointmentId: _item.id,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _item = _AppointmentItem.fromSummary(completed);
+        _isCompleting = false;
+        _actionMessage =
+            'Appointment completed. Backend status: ${completed.status.wireName}.';
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isCompleting = false;
+        _actionMessage = _AppointmentsShellPageState._safeAppointmentsError(
+          error,
+        );
+      });
+    }
+  }
 }
 
 class _AppointmentItem {
@@ -807,6 +864,8 @@ class _AppointmentItem {
     required this.mode,
     required this.status,
     required this.statusValue,
+    required this.requestedStartAt,
+    required this.durationMinutes,
   });
 
   factory _AppointmentItem.fromSummary(AppointmentSummary summary) {
@@ -818,6 +877,8 @@ class _AppointmentItem {
       mode: 'Backend appointment request',
       status: summary.status.wireName,
       statusValue: summary.status,
+      requestedStartAt: summary.requestedStartAt,
+      durationMinutes: summary.durationMinutes,
     );
   }
 
@@ -828,12 +889,24 @@ class _AppointmentItem {
   final String mode;
   final String status;
   final AppointmentStatus statusValue;
+  final DateTime requestedStartAt;
+  final int durationMinutes;
 
   bool get canCancel =>
       statusValue == AppointmentStatus.requested ||
       statusValue == AppointmentStatus.accepted;
 
   bool get canAcceptDecline => statusValue == AppointmentStatus.requested;
+
+  bool canComplete(DateTime now) {
+    if (statusValue != AppointmentStatus.accepted) {
+      return false;
+    }
+    final scheduledEndAt = requestedStartAt.add(
+      Duration(minutes: durationMinutes),
+    );
+    return scheduledEndAt.isBefore(now) || scheduledEndAt.isAtSameMomentAs(now);
+  }
 
   static String _dateLabel(DateTime date) {
     return '${date.year.toString().padLeft(4, '0')}-'

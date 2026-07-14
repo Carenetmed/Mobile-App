@@ -678,3 +678,21 @@ remain a separate decision/runtime lane.
 Next: 52.50 should wire professional completion for accepted appointments after
 scheduled end time and keep reschedule, payments, notifications, calendar,
 reviews, notes, and prescriptions deferred.
+
+## D104 - Professional appointment completion wired
+
+Task: 52.50
+
+Decision: Appointments may expose `Complete` only to authenticated
+`PROFESSIONAL` sessions for accepted appointments whose scheduled end time has
+passed. The screen calls `SchedulingRepository.completeAppointment` and replaces
+the visible status only from the backend response.
+
+Reason: This keeps the frontend aligned with the backend lifecycle boundary
+without trusting client-supplied ownership, status, payment, notification,
+calendar, review, note, or prescription state. Patients do not see completion,
+premature accepted appointments do not expose completion, and completed
+appointments do not expose duplicate completion.
+
+Next: 52.51 should run an appointment completion regression pass before any
+reschedule decision or broader scheduling feature expansion.

@@ -50,15 +50,18 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     this.failure,
     this.cancelFailure,
     this.acceptFailure,
+    this.completeFailure,
   });
 
   final List<AppointmentSummary> appointments;
   final Object? failure;
   final Object? cancelFailure;
   final Object? acceptFailure;
+  final Object? completeFailure;
   final List<String> cancelledAppointmentIds = <String>[];
   final List<String> acceptedAppointmentIds = <String>[];
   final List<String> declinedAppointmentIds = <String>[];
+  final List<String> completedAppointmentIds = <String>[];
 
   @override
   Future<List<AppointmentSummary>> ownAppointments() async {
@@ -102,8 +105,16 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   @override
   Future<AppointmentSummary> completeAppointment({
     required String appointmentId,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final error = completeFailure;
+    if (error != null) {
+      throw error;
+    }
+    completedAppointmentIds.add(appointmentId);
+    return _updatedAppointment(
+      appointmentId: appointmentId,
+      status: AppointmentStatus.completed,
+    );
   }
 
   @override
@@ -482,7 +493,163 @@ void main() {
       expect(find.text('ACCEPTED'), findsOneWidget);
       expect(find.text('Accept'), findsNothing);
       expect(find.text('Decline'), findsNothing);
+      expect(find.text('Complete'), findsNothing);
       expect(find.text('Cancel appointment'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'professional can complete accepted past appointment through backend',
+    (tester) async {
+      final schedulingRepository = _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-past',
+            requestedStartAt: DateTime(2026, 7, 14, 7, 15),
+            status: AppointmentStatus.accepted,
+          ),
+        ],
+      );
+
+      await _pumpAppointments(
+        tester,
+        role: 'PROFESSIONAL',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: schedulingRepository,
+      );
+
+      expect(find.text('ACCEPTED'), findsOneWidget);
+      expect(find.text('Complete'), findsOneWidget);
+      expect(find.text('Accept'), findsNothing);
+      expect(find.text('Decline'), findsNothing);
+      expect(find.text('Cancel appointment'), findsNothing);
+
+      await tester.tap(find.text('Complete'));
+      await tester.pumpAndSettle();
+
+      expect(schedulingRepository.completedAppointmentIds, <String>[
+        'appointment-1',
+      ]);
+      expect(find.text('COMPLETED'), findsOneWidget);
+      expect(find.text('ACCEPTED'), findsNothing);
+      expect(
+        find.text('Appointment completed. Backend status: COMPLETED.'),
+        findsOneWidget,
+      );
+      expect(find.text('Complete'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'professional cannot complete accepted appointment before scheduled end',
+    (tester) async {
+      final schedulingRepository = _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-active',
+            requestedStartAt: DateTime(2026, 7, 14, 7, 45),
+            status: AppointmentStatus.accepted,
+          ),
+        ],
+      );
+
+      await _pumpAppointments(
+        tester,
+        role: 'PROFESSIONAL',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: schedulingRepository,
+      );
+
+      expect(find.text('ACCEPTED'), findsOneWidget);
+      expect(find.text('Complete'), findsNothing);
+      expect(schedulingRepository.completedAppointmentIds, isEmpty);
+    },
+  );
+
+  testWidgets('patient cannot complete accepted past appointment', (
+    tester,
+  ) async {
+    final schedulingRepository = _FakeSchedulingRepository(
+      appointments: <AppointmentSummary>[
+        _appointment(
+          professionalProfileId: 'professional-past',
+          requestedStartAt: DateTime(2026, 7, 14, 7, 15),
+          status: AppointmentStatus.accepted,
+        ),
+      ],
+    );
+
+    await _pumpAppointments(
+      tester,
+      role: 'PATIENT',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: schedulingRepository,
+    );
+
+    expect(find.text('ACCEPTED'), findsOneWidget);
+    expect(find.text('Complete'), findsNothing);
+    expect(schedulingRepository.completedAppointmentIds, isEmpty);
+  });
+
+  testWidgets('completed appointments do not expose duplicate completion', (
+    tester,
+  ) async {
+    final schedulingRepository = _FakeSchedulingRepository(
+      appointments: <AppointmentSummary>[
+        _appointment(
+          professionalProfileId: 'professional-completed',
+          requestedStartAt: DateTime(2026, 7, 14, 7, 15),
+          status: AppointmentStatus.completed,
+        ),
+      ],
+    );
+
+    await _pumpAppointments(
+      tester,
+      role: 'PROFESSIONAL',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: schedulingRepository,
+    );
+
+    expect(find.text('COMPLETED'), findsOneWidget);
+    expect(find.text('Complete'), findsNothing);
+    expect(schedulingRepository.completedAppointmentIds, isEmpty);
+  });
+
+  testWidgets(
+    'professional completion failure shows safe error without update',
+    (tester) async {
+      final schedulingRepository = _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-past',
+            requestedStartAt: DateTime(2026, 7, 14, 7, 15),
+            status: AppointmentStatus.accepted,
+          ),
+        ],
+        completeFailure: const AuthFailure(
+          type: AuthFailureType.server,
+          message: 'raw complete failure',
+        ),
+      );
+
+      await _pumpAppointments(
+        tester,
+        role: 'PROFESSIONAL',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: schedulingRepository,
+      );
+
+      await tester.tap(find.text('Complete'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Service is unavailable. Please try again.'),
+        findsOneWidget,
+      );
+      expect(find.text('raw complete failure'), findsNothing);
+      expect(find.text('ACCEPTED'), findsOneWidget);
+      expect(find.text('Complete'), findsOneWidget);
     },
   );
 

@@ -1248,3 +1248,23 @@ claims stay deferred.
 
 Next: 52.79 should wire the professional verification upload flow with the
 selected PDF-capable picker dependency and focused widget tests.
+
+## D133 - Professional verification upload flow wired
+
+Task: 52.79
+
+Decision: Wire the first controlled professional verification upload flow in
+the owner verification documents screen.
+
+Reason: The repository/API boundary and picker decision are complete. The app
+now uses `file_picker` for PDF/JPEG/PNG selection, lets the professional choose
+one MVP document type, applies app-side file type and 10 MB validation, calls
+`VerificationRepository.uploadDocument` with safe metadata and bytes, shows
+safe cancel/error/success states, and reloads owner documents after success.
+The screen still does not expose signed URLs, object keys, local full paths,
+file previews, raw checksum values, admin review data, public document access,
+staging data, or production claims. Checksum, previews, admin review, rejection
+reasons, scanning claims, and broader upload management remain deferred.
+
+Next: 52.80 should run a focused professional verification upload regression
+checkpoint before selecting another backend-completed surface.

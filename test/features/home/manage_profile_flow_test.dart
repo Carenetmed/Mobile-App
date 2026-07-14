@@ -30,6 +30,7 @@ Future<void> _pumpManageProfile(
   ProfileRepository? profileRepository,
   SchedulingRepository? schedulingRepository,
   VerificationRepository? verificationRepository,
+  VerificationDocumentPicker? verificationDocumentPicker,
 }) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
@@ -59,6 +60,9 @@ Future<void> _pumpManageProfile(
                   (_) => ProfessionalVerificationDocumentsShellPage(
                     verificationRepository:
                         verificationRepository ?? _FakeVerificationRepository(),
+                    documentPicker:
+                        verificationDocumentPicker ??
+                        const _FakeVerificationDocumentPicker(),
                   ),
               RouteName.selectedDates:
                   (_) => SelectedDatesShellPage(
@@ -249,11 +253,13 @@ class _FakeVerificationRepository implements VerificationRepository {
   _FakeVerificationRepository({
     this.documentsResult = const <VerificationDocument>[],
     this.failure,
+    this.uploadFailure,
   });
 
-  final List<VerificationDocument> documentsResult;
+  List<VerificationDocument> documentsResult;
   final Object? failure;
-  bool uploadCalled = false;
+  final Object? uploadFailure;
+  VerificationUploadRequest? lastUploadRequest;
 
   @override
   Future<List<VerificationDocument>> documents() async {
@@ -267,10 +273,34 @@ class _FakeVerificationRepository implements VerificationRepository {
   @override
   Future<VerificationDocument> uploadDocument(
     VerificationUploadRequest request,
-  ) {
-    uploadCalled = true;
-    throw UnimplementedError();
+  ) async {
+    final error = uploadFailure;
+    if (error != null) {
+      throw error;
+    }
+    lastUploadRequest = request;
+    final document = VerificationDocument(
+      id: 'uploaded-document',
+      documentType: request.documentType,
+      status: 'PENDING',
+      storageProvider: 'gcs',
+      mimeType: request.mimeType,
+      fileSizeBytes: request.fileSizeBytes,
+      checksumProvided: false,
+      uploadedAt: DateTime.utc(2026, 7, 15),
+    );
+    documentsResult = <VerificationDocument>[...documentsResult, document];
+    return document;
   }
+}
+
+class _FakeVerificationDocumentPicker implements VerificationDocumentPicker {
+  const _FakeVerificationDocumentPicker({this.file});
+
+  final VerificationPickedFile? file;
+
+  @override
+  Future<VerificationPickedFile?> pick() async => file;
 }
 
 void main() {
@@ -352,7 +382,7 @@ void main() {
 
     expect(find.text('Verification documents'), findsOneWidget);
     expect(find.text('Professional verification'), findsOneWidget);
-    expect(find.text('License'), findsOneWidget);
+    expect(find.text('License'), findsWidgets);
     expect(find.text('PENDING'), findsOneWidget);
     expect(find.text('document-1'), findsOneWidget);
     expect(find.text('application/pdf'), findsOneWidget);
@@ -361,7 +391,7 @@ void main() {
     expect(find.text('2026-07-15'), findsOneWidget);
     expect(find.text('Upload document'), findsOneWidget);
     expect(
-      find.text('Upload UI needs the file picker and retry flow slice.'),
+      find.text('Select one PDF, JPEG, or PNG file under 10 MB.'),
       findsOneWidget,
     );
     expect(find.text('signedUrl'), findsNothing);
@@ -410,6 +440,181 @@ void main() {
     );
     expect(find.text('raw private storage failure'), findsNothing);
     expect(find.text('Verification documents'), findsOneWidget);
+  });
+
+  testWidgets(
+    'verification upload sends selected type and safe file metadata',
+    (tester) async {
+      final repository = _FakeVerificationRepository();
+      await _pumpManageProfile(
+        tester,
+        verificationRepository: repository,
+        verificationDocumentPicker: const _FakeVerificationDocumentPicker(
+          file: VerificationPickedFile(
+            name: 'license.pdf',
+            mimeType: 'application/pdf',
+            bytes: <int>[1, 2, 3, 4],
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Verification'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Choose file to upload'));
+      await tester.pumpAndSettle();
+
+      expect(repository.lastUploadRequest, isNotNull);
+      expect(repository.lastUploadRequest!.documentType, 'LICENSE');
+      expect(repository.lastUploadRequest!.originalFileName, 'license.pdf');
+      expect(repository.lastUploadRequest!.mimeType, 'application/pdf');
+      expect(repository.lastUploadRequest!.fileBytes, <int>[1, 2, 3, 4]);
+      expect(repository.lastUploadRequest!.fileSizeBytes, 4);
+      expect(repository.lastUploadRequest!.checksumSha256, isNull);
+      expect(repository.documentsResult, hasLength(1));
+      expect(repository.documentsResult.single.documentType, 'LICENSE');
+      expect(
+        find.text('Document uploaded and pending review.'),
+        findsOneWidget,
+      );
+      expect(find.text('signedUrl'), findsNothing);
+      expect(find.text('storageObjectKey'), findsNothing);
+      expect(find.text('license.pdf'), findsNothing);
+      expect(find.text('raw-secret-checksum'), findsNothing);
+    },
+  );
+
+  testWidgets('verification upload supports identity document selection', (
+    tester,
+  ) async {
+    final repository = _FakeVerificationRepository();
+    await _pumpManageProfile(
+      tester,
+      verificationRepository: repository,
+      verificationDocumentPicker: const _FakeVerificationDocumentPicker(
+        file: VerificationPickedFile(
+          name: 'identity.png',
+          mimeType: 'image/png',
+          bytes: <int>[7, 8, 9],
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('License'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Identity').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Choose file to upload'));
+    await tester.pumpAndSettle();
+
+    expect(repository.lastUploadRequest?.documentType, 'IDENTITY');
+    expect(repository.lastUploadRequest?.originalFileName, 'identity.png');
+    expect(repository.lastUploadRequest?.mimeType, 'image/png');
+  });
+
+  testWidgets('verification upload rejects unsupported file type', (
+    tester,
+  ) async {
+    final repository = _FakeVerificationRepository();
+    await _pumpManageProfile(
+      tester,
+      verificationRepository: repository,
+      verificationDocumentPicker: const _FakeVerificationDocumentPicker(
+        file: VerificationPickedFile(
+          name: 'license.txt',
+          mimeType: 'text/plain',
+          bytes: <int>[1, 2, 3],
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Choose file to upload'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Only PDF, JPEG, or PNG files are supported.'),
+      findsOneWidget,
+    );
+    expect(repository.lastUploadRequest, isNull);
+  });
+
+  testWidgets('verification upload rejects files over 10 MB', (tester) async {
+    final repository = _FakeVerificationRepository();
+    await _pumpManageProfile(
+      tester,
+      verificationRepository: repository,
+      verificationDocumentPicker: _FakeVerificationDocumentPicker(
+        file: VerificationPickedFile(
+          name: 'license.pdf',
+          mimeType: 'application/pdf',
+          bytes: List<int>.filled(10 * 1024 * 1024 + 1, 1),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Choose file to upload'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Select a file smaller than 10 MB.'), findsOneWidget);
+    expect(repository.lastUploadRequest, isNull);
+  });
+
+  testWidgets('verification upload cancellation does not call repository', (
+    tester,
+  ) async {
+    final repository = _FakeVerificationRepository();
+    await _pumpManageProfile(
+      tester,
+      verificationRepository: repository,
+      verificationDocumentPicker: const _FakeVerificationDocumentPicker(),
+    );
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Choose file to upload'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No file selected.'), findsOneWidget);
+    expect(repository.lastUploadRequest, isNull);
+  });
+
+  testWidgets('verification upload failure shows safe error without success', (
+    tester,
+  ) async {
+    final repository = _FakeVerificationRepository(
+      uploadFailure: const AuthFailure(
+        type: AuthFailureType.server,
+        message: 'raw signed url failure',
+      ),
+    );
+    await _pumpManageProfile(
+      tester,
+      verificationRepository: repository,
+      verificationDocumentPicker: const _FakeVerificationDocumentPicker(
+        file: VerificationPickedFile(
+          name: 'license.pdf',
+          mimeType: 'application/pdf',
+          bytes: <int>[1, 2, 3],
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Choose file to upload'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Service is unavailable. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw signed url failure'), findsNothing);
+    expect(find.text('Document uploaded and pending review.'), findsNothing);
   });
 
   testWidgets('manage profile keeps local screen when profile read fails', (

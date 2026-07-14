@@ -696,3 +696,21 @@ appointments do not expose duplicate completion.
 
 Next: 52.51 should run an appointment completion regression pass before any
 reschedule decision or broader scheduling feature expansion.
+
+## D105 - Completion regression before reschedule decision
+
+Task: 52.51
+
+Decision: Pause runtime appointment lifecycle expansion after professional
+completion and run a focused completion regression checkpoint before deciding
+reschedule.
+
+Reason: Completion now works through the backend for professional users, but
+reschedule has a larger UX and product surface: time selection, availability
+re-checking, owner rules, conflict behavior, and terminal-state behavior. The
+regression pass proves completion edge cases and confirms broader controls did
+not slip into the Appointments screen.
+
+Next: 52.52 should decide whether scheduling pauses for a broader regression
+checkpoint or starts a dedicated reschedule UX decision. Do not add runtime
+reschedule behavior in 52.52.

@@ -566,6 +566,37 @@ void main() {
     },
   );
 
+  testWidgets('professional can complete at the exact scheduled end time', (
+    tester,
+  ) async {
+    final schedulingRepository = _FakeSchedulingRepository(
+      appointments: <AppointmentSummary>[
+        _appointment(
+          professionalProfileId: 'professional-exact-end',
+          requestedStartAt: DateTime(2026, 7, 14, 7, 30),
+          status: AppointmentStatus.accepted,
+        ),
+      ],
+    );
+
+    await _pumpAppointments(
+      tester,
+      role: 'PROFESSIONAL',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: schedulingRepository,
+    );
+
+    expect(find.text('Complete'), findsOneWidget);
+
+    await tester.tap(find.text('Complete'));
+    await tester.pumpAndSettle();
+
+    expect(schedulingRepository.completedAppointmentIds, <String>[
+      'appointment-1',
+    ]);
+    expect(find.text('COMPLETED'), findsOneWidget);
+  });
+
   testWidgets('patient cannot complete accepted past appointment', (
     tester,
   ) async {
@@ -587,6 +618,38 @@ void main() {
     );
 
     expect(find.text('ACCEPTED'), findsOneWidget);
+    expect(find.text('Complete'), findsNothing);
+    expect(schedulingRepository.completedAppointmentIds, isEmpty);
+  });
+
+  testWidgets('cancelled and declined appointments do not expose completion', (
+    tester,
+  ) async {
+    final schedulingRepository = _FakeSchedulingRepository(
+      appointments: <AppointmentSummary>[
+        _appointment(
+          professionalProfileId: 'professional-cancelled',
+          requestedStartAt: DateTime(2026, 7, 14, 7, 15),
+          status: AppointmentStatus.cancelled,
+        ),
+        _appointment(
+          id: 'appointment-2',
+          professionalProfileId: 'professional-declined',
+          requestedStartAt: DateTime(2026, 7, 14, 7, 15),
+          status: AppointmentStatus.declined,
+        ),
+      ],
+    );
+
+    await _pumpAppointments(
+      tester,
+      role: 'PROFESSIONAL',
+      now: DateTime(2026, 7, 14, 8),
+      schedulingRepository: schedulingRepository,
+    );
+
+    expect(find.text('CANCELLED'), findsOneWidget);
+    expect(find.text('DECLINED'), findsOneWidget);
     expect(find.text('Complete'), findsNothing);
     expect(schedulingRepository.completedAppointmentIds, isEmpty);
   });
@@ -712,6 +775,37 @@ void main() {
     expect(find.text('Calendar'), findsNothing);
     expect(find.text('Notes'), findsNothing);
   });
+
+  testWidgets(
+    'completion eligible appointment keeps broader actions deferred',
+    (tester) async {
+      await _pumpAppointments(
+        tester,
+        role: 'PROFESSIONAL',
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: _FakeSchedulingRepository(
+          appointments: <AppointmentSummary>[
+            _appointment(
+              professionalProfileId: 'professional-past',
+              requestedStartAt: DateTime(2026, 7, 14, 7, 15),
+              status: AppointmentStatus.accepted,
+            ),
+          ],
+        ),
+      );
+
+      expect(find.text('Complete'), findsOneWidget);
+      expect(find.text('Accept'), findsNothing);
+      expect(find.text('Decline'), findsNothing);
+      expect(find.text('Cancel appointment'), findsNothing);
+      expect(find.text('Reschedule'), findsNothing);
+      expect(find.text('Payment'), findsNothing);
+      expect(find.text('Calendar'), findsNothing);
+      expect(find.text('Review'), findsNothing);
+      expect(find.text('Notes'), findsNothing);
+      expect(find.text('Prescription'), findsNothing);
+    },
+  );
 
   testWidgets(
     'appointments screen shows backend empty state without local data',

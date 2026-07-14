@@ -1067,3 +1067,22 @@ prescription, staging-data, or production-release behavior was added.
 
 Next: 52.70 should run a Specialist Details public availability regression
 checkpoint before another runtime surface is selected.
+
+## D124 - Specialist Details public availability regression passed
+
+Task: 52.70
+
+Decision: Treat Specialist Details public professional/availability wiring as
+regression-proven for the current frontend/backend milestone boundary.
+
+Reason: Focused evidence proves backend id resolution from public listing data,
+Search handoff into `specialistDetails`, public availability reads, generated
+appointment request payloads, safe availability/request failures, unresolved-id
+handling, no local slot fallback in the backend path, and dashboard local
+compatibility for older local-only navigation. Deferred work remains explicit:
+no public detail endpoint, Find Mentor replacement, verification/admin,
+payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or
+production claims were added.
+
+Next: 52.71 should decide the next surface after Specialist Details regression
+before any new runtime wiring.

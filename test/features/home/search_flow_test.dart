@@ -1,5 +1,8 @@
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
+import 'package:app_t/features/Home/domain/entities/availability_window.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
@@ -13,6 +16,7 @@ const Size _phoneSize = Size(430, 1200);
 Future<void> _pumpSearch(
   WidgetTester tester, {
   ProfileRepository? profileRepository,
+  SchedulingRepository? schedulingRepository,
 }) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
@@ -26,11 +30,94 @@ Future<void> _pumpSearch(
             home: SearchShellPage(
               profileRepository:
                   profileRepository ?? _FakeProfileRepository(failure: null),
+              schedulingRepository:
+                  schedulingRepository ?? _FakeSchedulingRepository(),
             ),
           ),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _FakeSchedulingRepository implements SchedulingRepository {
+  _FakeSchedulingRepository({this.publicWindows, this.failure});
+
+  final List<AvailabilityWindow>? publicWindows;
+  final Object? failure;
+
+  @override
+  Future<List<AvailabilityWindow>> publicAvailability({
+    required String professionalProfileId,
+  }) async {
+    final error = failure;
+    if (error != null) {
+      throw error;
+    }
+    return publicWindows ?? const <AvailabilityWindow>[];
+  }
+
+  @override
+  Future<AppointmentSummary> acceptAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> cancelAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> completeAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> declineAppointment({
+    required String appointmentId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<AppointmentSummary>> ownAppointments() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<AvailabilityWindow>> ownAvailability() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<AvailabilityWindow>> replaceOwnAvailability({
+    required List<AvailabilityWindowDraft> windows,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> requestAppointment({
+    required String professionalProfileId,
+    required DateTime requestedStartAt,
+    required int durationMinutes,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<AppointmentSummary> rescheduleAppointment({
+    required String appointmentId,
+    required DateTime requestedStartAt,
+    required int durationMinutes,
+  }) {
+    throw UnimplementedError();
+  }
 }
 
 class _FakeProfileRepository implements ProfileRepository {
@@ -269,5 +356,90 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Backend public bio for verified care.'), findsOneWidget);
+    expect(
+      find.text('No public availability is available yet.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('profile sheet reads public availability without local slots', (
+    tester,
+  ) async {
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[
+          PublicProfessional(
+            id: 'pro_1',
+            displayName: 'Dr Backend Public',
+            category: 'Cardiology',
+            specialty: 'Heart health',
+            bio: 'Backend public bio for verified care.',
+            verified: true,
+          ),
+        ],
+      ),
+      schedulingRepository: _FakeSchedulingRepository(
+        publicWindows: const <AvailabilityWindow>[
+          AvailabilityWindow(
+            id: 'availability-1',
+            weekday: 1,
+            startMinute: 540,
+            endMinute: 1020,
+            timezone: 'Africa/Lagos',
+            active: true,
+          ),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text('View profile').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Public availability'), findsOneWidget);
+    expect(find.text('Day 1: 09:00 - 17:00 (Africa/Lagos)'), findsOneWidget);
+    expect(
+      find.text('Booking remains deferred until appointment request wiring.'),
+      findsOneWidget,
+    );
+    expect(find.text('Saturday'), findsNothing);
+    expect(find.text('10:00am'), findsNothing);
+  });
+
+  testWidgets('profile sheet shows availability error without fallback slots', (
+    tester,
+  ) async {
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[
+          PublicProfessional(
+            id: 'pro_1',
+            displayName: 'Dr Backend Public',
+            category: 'Cardiology',
+            specialty: 'Heart health',
+            bio: 'Backend public bio for verified care.',
+            verified: true,
+          ),
+        ],
+      ),
+      schedulingRepository: _FakeSchedulingRepository(
+        failure: const AuthFailure(
+          type: AuthFailureType.server,
+          message: 'raw backend error',
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('View profile').first);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Service is unavailable. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw backend error'), findsNothing);
+    expect(find.text('Saturday'), findsNothing);
+    expect(find.text('10:00am'), findsNothing);
   });
 }

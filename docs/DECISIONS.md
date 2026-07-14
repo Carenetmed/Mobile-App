@@ -91,6 +91,7 @@ does not silently reinterpret established boundaries.
 | D084 | 2026-07-14 | Scheduling availability appointment next lane | Select scheduling as the next backend-integration lane, but start with a frontend contract slice before runtime wiring. The next slice must map completed backend availability and appointment routes into Flutter repository/entities/screen boundaries, preserve no local fallback behavior, and keep public detail invention, direct booking, payments, notifications, reviews, calls, calendar sync, admin override, notes, and prescriptions deferred | Phase 22, task 52.30 |
 | D085 | 2026-07-14 | Scheduling availability appointment frontend contract | Define the Flutter contract for public/professional availability and appointment routes before runtime wiring. The next implementation must add entities/models/API client/repository/DI/tests only, must not wire UI screens yet, and must preserve no local fallback for backend-owned scheduling data | Phase 22, task 52.31 |
 | D086 | 2026-07-14 | Scheduling repository boundary | Add `SchedulingApiClient` and `SchedulingRepository` with availability and appointment entities/models, DI registration, and focused tests. Public availability sends no auth header; protected availability/appointment calls require stored session bearer auth; request/reschedule payloads send only backend-accepted fields; lifecycle actions send no trusted status body. No UI screens are wired yet | Phase 22, task 52.32 |
+| D087 | 2026-07-14 | Public availability read in Search | Wire the Search public professional profile sheet to `SchedulingRepository.publicAvailability` for the selected backend public professional id. Show real loading/error/empty availability states, render only returned backend windows, keep booking disabled/deferred, and do not reintroduce local specialist or slot fallback | Phase 22, task 52.33 |
 
 ## How to add a row
 
@@ -385,3 +386,21 @@ success.
 
 Next: 52.33 should wire public availability read as the first scheduling UI
 surface while keeping appointment request disabled/deferred.
+
+## D087 - Public availability read in Search
+
+Task: 52.33
+
+Decision: Use the Search public professional profile sheet as the first
+scheduling UI surface. It already starts from a backend public professional id,
+so it can read public availability without inventing a public detail route or
+using local `SearchLocalStore` slots.
+
+Reason: Specialist Details and Find Mentor still depend on local seeded
+specialist data. Wiring availability there first would risk making local data a
+fallback for backend scheduling. Search can show availability from the real
+selected public professional and keep appointment request disabled until a
+separate booking-path decision.
+
+Next: 52.34 should decide the first appointment request UI path before runtime
+booking is wired.

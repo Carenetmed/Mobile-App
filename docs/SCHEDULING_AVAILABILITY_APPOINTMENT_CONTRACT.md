@@ -1,7 +1,7 @@
 # Scheduling, availability, and appointment frontend contract
 
 **Task:** 52.31
-**Status:** Accepted contract; repository boundary implemented in 52.32
+**Status:** Accepted contract; repository boundary implemented in 52.32; first public availability UI read implemented in 52.33
 
 Purpose: define how the Flutter app should consume the completed backend
 availability and appointment surfaces without seeded fallback, fake booking
@@ -254,6 +254,22 @@ Then:
 Likely first runtime target: selected public professional -> availability read
 surface. This should still keep appointment request disabled until a separate
 booking request slice.
+
+Implemented in 52.33:
+
+- Search public professional profile sheet calls
+  `SchedulingRepository.publicAvailability` for the selected backend public
+  professional id.
+- The sheet shows loading, safe error, empty, and real availability-window
+  states.
+- Booking remains disabled/deferred.
+- Specialist Details, Find Mentor, appointment request, professional own
+  availability management, own appointment list, and lifecycle actions remain
+  deferred.
+
+Next:
+
+`52.34 - Decide First Appointment Request UI Path`
 
 ---
 

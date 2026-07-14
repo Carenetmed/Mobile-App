@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.69** - wire Specialist Details to public professional availability |
-| Last completed | **52.68** - next backend-completed Flutter surface decision |
+| NEXT task | **52.70** - Specialist Details public availability regression checkpoint |
+| Last completed | **52.69** - Specialist Details public availability wiring |
 | Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -101,6 +101,7 @@ Do not use old chat history. Do not start the next task without my approval.
 
 | Date | Fixes |
 |------|--------|
+| 2026-07-15 | Task 52.69 DONE - Specialist Details now uses backend public professional, public availability, generated request options, and backend appointment request results when a backend id is available; DOC_SYNC NEXT -> 52.70 |
 | 2026-07-15 | Task 52.68 DONE - selected Specialist Details public professional/availability wiring as the next narrow backend-completed Flutter surface; DOC_SYNC NEXT -> 52.69 |
 | 2026-07-15 | Task 52.67 DONE - patient profile name update regression passed for name-only payload, safe failure/no false success, local-field preservation, and deferred-work accuracy; DOC_SYNC NEXT -> 52.68 |
 | 2026-07-15 | Task 52.66 DONE - Settings/Profile now updates backend patient profile name only, preserves local username/email/bio behavior, and blocks false success on backend name-save failure; DOC_SYNC NEXT -> 52.67 |

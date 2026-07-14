@@ -89,6 +89,7 @@ does not silently reinterpret established boundaries.
 | D082 | 2026-07-14 | Next profile public listing lane | Select public verified professional listing into `SearchShellPage` as the next runtime lane. Replace only list-card name/category/specialty/bio data through `ProfileRepository.publicProfessionals`; keep public detail, Find Mentor, Specialist Details, availability, appointments, booking, reviews, ratings, prices, payments, calls, calendar sync, verification, patient profile, profile creation, and profile edit expansion deferred | Phase 22, task 52.28 |
 | D083 | 2026-07-14 | Search public listing wiring without fallback | Wire `SearchShellPage` to `ProfileRepository.publicProfessionals` and remove local specialist fallback for backend listing failures. Search now shows real loading/error/empty states, maps only public display/category/specialty/bio fields, keeps booking disabled, and keeps public detail, Find Mentor, Specialist Details, availability, appointments, ratings, prices, payments, reviews, calls, calendar sync, verification, and profile edit expansion deferred | Phase 22, task 52.29 |
 | D084 | 2026-07-14 | Scheduling availability appointment next lane | Select scheduling as the next backend-integration lane, but start with a frontend contract slice before runtime wiring. The next slice must map completed backend availability and appointment routes into Flutter repository/entities/screen boundaries, preserve no local fallback behavior, and keep public detail invention, direct booking, payments, notifications, reviews, calls, calendar sync, admin override, notes, and prescriptions deferred | Phase 22, task 52.30 |
+| D085 | 2026-07-14 | Scheduling availability appointment frontend contract | Define the Flutter contract for public/professional availability and appointment routes before runtime wiring. The next implementation must add entities/models/API client/repository/DI/tests only, must not wire UI screens yet, and must preserve no local fallback for backend-owned scheduling data | Phase 22, task 52.31 |
 
 ## How to add a row
 
@@ -352,3 +353,19 @@ local fallback and fake success states.
 
 Next: 52.31 should define the scheduling/availability/appointment frontend
 contract, then queue the first repository/runtime slice from that contract.
+
+## D085 - Scheduling availability appointment frontend contract
+
+Task: 52.31
+
+Decision: Use `SCHEDULING_AVAILABILITY_APPOINTMENT_CONTRACT.md` as the source
+of truth for Flutter availability and appointment integration. Add repository
+and API boundaries before screen wiring.
+
+Reason: Current appointment, booking, Specialist Details, Find Mentor, and
+Selected Dates screens still contain local draft/seeded behavior. Once a
+scheduling surface is backend-wired, local drafts must not be used as backup
+success. A repository-first slice lets tests prove headers, payloads, parsing,
+safe errors, and authority boundaries before user-facing screens change.
+
+Next: 52.32 should add the scheduling repository boundary only.

@@ -1,7 +1,7 @@
 # Scheduling and appointment next lane decision
 
 **Task:** 52.30
-**Status:** Accepted decision before contract/runtime wiring
+**Status:** Accepted decision; frontend contract defined in 52.31
 
 Purpose: choose the next backend-integration lane after Search public verified
 professional listing was wired without local fallback.
@@ -79,6 +79,13 @@ Scope:
 - Define safe loading/error/empty behavior.
 - Preserve the no local fallback rule for backend-wired scheduling data.
 - Queue the first runtime/repository slice only after the contract is clear.
+
+Implemented:
+
+- `SCHEDULING_AVAILABILITY_APPOINTMENT_CONTRACT.md` defines accepted backend
+  routes, allowed payloads, entity boundaries, screen mapping, safe error
+  behavior, and no-local-fallback rules.
+- The next slice is `52.32 - Add Scheduling Repository Boundary`.
 
 Out of scope:
 

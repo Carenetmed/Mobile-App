@@ -171,7 +171,8 @@
 | 52.28 | Decide the next profile/public-professional runtime lane after professional bio update: choose public verified professional listing replacement, a constrained name/category/specialty profile-edit UI, or pause profile wiring; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.29 | Wire public verified professional listing to Search specialists using `ProfileRepository.publicProfessionals`: replace list-card name/category/specialty/bio data only, keep safe loading/error/empty states, do not send auth headers, and keep public detail, Find Mentor, Specialist Details, availability, appointments, booking, reviews, ratings, prices, payments, calls, calendar sync, verification upload/admin, patient profile, profile creation, name/category/specialty editing, website, address, notifications, notes, and prescriptions out of scope | M | **DONE** |
 | 52.30 | Decide the next backend-integration lane after Search public listing: either continue profile/public-professional work only if a real backend contract exists, select another completed backend surface, or pause for regression; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.31 | Define the scheduling/availability/appointment frontend contract before runtime wiring: map completed backend availability and appointment routes into Flutter repository/entities/screen boundaries, preserve no-local-fallback behavior, and queue the first repository/runtime slice only after the contract is clear | M | **NEXT** |
+| 52.31 | Define the scheduling/availability/appointment frontend contract before runtime wiring: map completed backend availability and appointment routes into Flutter repository/entities/screen boundaries, preserve no-local-fallback behavior, and queue the first repository/runtime slice only after the contract is clear | M | **DONE** |
+| 52.32 | Add the scheduling repository boundary for availability and appointment routes: entities, models, API client, repository, DI registration, and focused tests only; do not wire UI screens, booking success, public detail, payments, notifications, reviews, calls, calendar sync, notes, or prescriptions | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -187,14 +188,14 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.30)
+## Manual test (last completed: task 52.31)
 
-Task `52.30` is a decision-only backend-integration lane selection. No runtime behavior changed.
+Task `52.31` is a contract-only scheduling/availability/appointment slice. No runtime behavior changed.
 
-1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/SCHEDULING_AVAILABILITY_APPOINTMENT_LANE_DECISION.md` - passes
-2. Confirm `SCHEDULING_AVAILABILITY_APPOINTMENT_LANE_DECISION.md` selects scheduling/availability/appointments as the next backend-integration lane.
-3. Confirm the decision queues a contract slice before runtime booking/availability wiring.
-4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.31`
+1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/SCHEDULING_AVAILABILITY_APPOINTMENT_CONTRACT.md` - passes
+2. Confirm `SCHEDULING_AVAILABILITY_APPOINTMENT_CONTRACT.md` maps backend availability and appointment routes into Flutter repository/entity/screen boundaries.
+3. Confirm the next implementation is repository/API boundary only, with no UI wiring or local fallback success.
+4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.32`
 
 ## Previous runtime manual test baseline
 
@@ -521,6 +522,7 @@ Task `52.30` is a decision-only backend-integration lane selection. No runtime b
 | 2026-07-14 | 52.28 | DONE - next profile/public-professional runtime lane selected: public verified professional listing into Search only |
 | 2026-07-14 | 52.29 | DONE - Search now reads public verified professionals without local fallback, exposes real errors/empty states, and keeps booking/detail expansion deferred |
 | 2026-07-14 | 52.30 | DONE - next backend-integration lane selected: scheduling availability and appointment contract definition before runtime wiring |
+| 2026-07-14 | 52.31 | DONE - scheduling/availability/appointment frontend contract defined; next slice is repository boundary only |
 
 ---
 

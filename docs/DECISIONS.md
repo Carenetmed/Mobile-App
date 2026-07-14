@@ -544,3 +544,20 @@ ownership, role, and valid transitions.
 
 Next: 52.42 should decide whether to pause for scheduling regression or move to
 professional availability management before adding more runtime behavior.
+
+## D096 - Scheduling patient-path regression before expansion
+
+Task: 52.42
+
+Decision: Pause scheduling feature expansion for a focused patient-path
+regression checkpoint before professional availability management or
+professional lifecycle UI.
+
+Reason: Search public listing, public availability, request submission, own
+appointment list, and patient cancellation are now backend-backed. Before adding
+larger professional-facing scheduling authority, the project should prove this
+new path did not reintroduce seeded fallback, fake success, raw backend errors,
+or hidden local state.
+
+Next: 52.43 should strengthen focused tests/docs for the scheduling patient
+path without adding new runtime product behavior.

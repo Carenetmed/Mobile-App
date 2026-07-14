@@ -475,3 +475,20 @@ authority for availability and conflicts.
 Next: 52.38 should wire the Search public availability sheet to generated
 options and call `requestAppointment` only after user selection, showing backend
 `REQUESTED` success without local fallback.
+
+## D092 - Search appointment request wiring
+
+Task: 52.38
+
+Decision: Wire the first real appointment request action inside the Search
+public professional profile sheet. The sheet uses generated time options from
+backend public availability, calls `SchedulingRepository.requestAppointment`
+only after user selection, and displays the backend-returned appointment status.
+
+Reason: This path starts from a real backend public professional id and returned
+availability windows, so it avoids adapting the old free-text local
+`bookAppointment` form. Success remains backend-owned: no local confirmation,
+no fake booked state, and no fallback request when the backend fails.
+
+Next: 52.39 should wire the patient's own appointment list read so submitted
+requests become visible before any lifecycle mutation UI is added.

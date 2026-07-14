@@ -178,7 +178,8 @@
 | 52.35 | Remove local booking success from `bookAppointment`: keep the route available, remove `Confirmed locally` and fake booking completion behavior, show an honest deferred/backend-required state, update tests/docs, and do not call appointment request API yet | M | **DONE** |
 | 52.36 | Define the concrete appointment request UX after local booking success removal: choose date/time selection from backend public availability, duration options, Search sheet vs rewritten `bookAppointment` route arguments, and backend `REQUESTED` success handling; do not implement runtime booking in this decision slice | S | **DONE** |
 | 52.37 | Add appointment request time-option helper: convert returned `AvailabilityWindow` values into near-term concrete request options for the next seven days with focused tests; do not call `requestAppointment`, do not wire runtime booking UI, and keep payments/notifications/reviews/calls/calendar/notes/prescriptions out of scope | M | **DONE** |
-| 52.38 | Wire appointment request from Search availability: add selectable generated time/duration options in the Search profile sheet, call `SchedulingRepository.requestAppointment` only after user selection, show backend `REQUESTED` success and safe errors, and keep own list/lifecycle/payments/notifications/reviews/calls/calendar/notes/prescriptions deferred | M | **NEXT** |
+| 52.38 | Wire appointment request from Search availability: add selectable generated time/duration options in the Search profile sheet, call `SchedulingRepository.requestAppointment` only after user selection, show backend `REQUESTED` success and safe errors, and keep own list/lifecycle/payments/notifications/reviews/calls/calendar/notes/prescriptions deferred | M | **DONE** |
+| 52.39 | Wire own appointment list read: replace the local upcoming/recent appointment display where safe with `SchedulingRepository.ownAppointments`, show backend statuses and safe loading/error/empty states, and keep accept/decline/cancel/reschedule/complete UI, payments, notifications, reviews, calls, calendar sync, notes, and prescriptions deferred | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -194,16 +195,18 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.37)
+## Manual test (last completed: task 52.38)
 
-Task `52.37` adds a helper/test boundary only. It does not wire appointment
-request UI and does not call `SchedulingRepository.requestAppointment`.
+Task `52.38` wires the first real appointment request action from Search public
+availability. It does not use local booking success or the old free-text
+`bookAppointment` form.
 
-1. `flutter test test/features/home/appointment_request_time_options_test.dart` - passes
-2. `flutter analyze lib/features/Home/domain/entities/appointment_request_time_option.dart lib/features/Home/domain/services/appointment_request_time_options.dart test/features/home/appointment_request_time_options_test.dart` - no issues
+1. `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/search_flow_test.dart` - passes
+2. `flutter analyze lib/features/Home/presentation/pages/search_shell.dart lib/features/Home/domain/entities/appointment_request_time_option.dart lib/features/Home/domain/services/appointment_request_time_options.dart test/features/home/search_flow_test.dart test/features/home/appointment_request_time_options_test.dart` - no issues
 3. `git diff --check` - passes
-4. Confirm generated options cover weekday matching, labels, timezone preservation, duration fit, and empty/inactive/invalid/past windows.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.38`
+4. Confirm Search profile sheet sends only selected generated `requestedStartAt`, duration, and backend professional id through `SchedulingRepository.requestAppointment`.
+5. Confirm request success shows backend `REQUESTED` status and request failures show safe errors without raw backend text or local fallback.
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.39`
 
 ## Previous runtime manual test baseline
 

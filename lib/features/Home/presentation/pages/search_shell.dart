@@ -5,8 +5,11 @@ import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_request_time_option.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/availability_window.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
+import 'package:app_t/features/Home/domain/services/appointment_request_time_options.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,10 +19,12 @@ class SearchShellPage extends StatefulWidget {
     super.key,
     this.profileRepository,
     this.schedulingRepository,
+    this.now,
   });
 
   final ProfileRepository? profileRepository;
   final SchedulingRepository? schedulingRepository;
+  final DateTime? now;
 
   @override
   State<SearchShellPage> createState() => _SearchShellPageState();
@@ -306,6 +311,7 @@ class _SearchShellPageState extends State<SearchShellPage> {
                 _PublicAvailabilitySection(
                   professionalProfileId: specialist.id,
                   schedulingRepository: _schedulingRepository,
+                  now: widget.now ?? DateTime.now(),
                 ),
                 SizedBox(height: 16.h),
                 SizedBox(
@@ -326,10 +332,12 @@ class _PublicAvailabilitySection extends StatefulWidget {
   const _PublicAvailabilitySection({
     required this.professionalProfileId,
     required this.schedulingRepository,
+    required this.now,
   });
 
   final String professionalProfileId;
   final SchedulingRepository schedulingRepository;
+  final DateTime now;
 
   @override
   State<_PublicAvailabilitySection> createState() =>
@@ -338,7 +346,13 @@ class _PublicAvailabilitySection extends StatefulWidget {
 
 class _PublicAvailabilitySectionState
     extends State<_PublicAvailabilitySection> {
+  static const AppointmentRequestTimeOptions _timeOptions =
+      AppointmentRequestTimeOptions();
+
   late final Future<List<AvailabilityWindow>> _availabilityFuture;
+  AppointmentRequestTimeOption? _selectedOption;
+  bool _isRequestingAppointment = false;
+  String? _requestMessage;
 
   @override
   void initState() {
@@ -374,6 +388,13 @@ class _PublicAvailabilitySectionState
           );
         }
 
+        final requestOptions = _timeOptions.generate(
+          windows: windows,
+          now: widget.now,
+        );
+        _selectedOption ??=
+            requestOptions.isEmpty ? null : requestOptions.first;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -393,24 +414,131 @@ class _PublicAvailabilitySectionState
                 child: _AvailabilityWindowRow(window: window),
               ),
             ),
-            SizedBox(height: 4.h),
-            Text(
-              'Booking remains deferred until appointment request wiring.',
-              style: TextStyle(
-                fontSize: FontSizes.footer4,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w500,
-                color: AppColors.primaryBlue11,
-                height: 1.35,
+            SizedBox(height: 12.h),
+            if (requestOptions.isEmpty)
+              const _AvailabilityStateCard(
+                message: 'No requestable times in the next seven days.',
+              )
+            else ...[
+              Text(
+                'Request appointment',
+                style: TextStyle(
+                  fontSize: FontSizes.footer3,
+                  fontFamily: AppFonts.montserrat,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.kBlack,
+                ),
               ),
-            ),
+              SizedBox(height: 8.h),
+              Wrap(
+                spacing: 8.w,
+                runSpacing: 8.h,
+                children:
+                    requestOptions
+                        .map(
+                          (option) => ChoiceChip(
+                            label: Text(_optionLabel(option)),
+                            selected: option == _selectedOption,
+                            onSelected:
+                                _isRequestingAppointment
+                                    ? null
+                                    : (_) => setState(() {
+                                      _selectedOption = option;
+                                      _requestMessage = null;
+                                    }),
+                          ),
+                        )
+                        .toList(),
+              ),
+              SizedBox(height: 10.h),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed:
+                      _isRequestingAppointment || _selectedOption == null
+                          ? null
+                          : _requestAppointment,
+                  child: Text(
+                    _isRequestingAppointment
+                        ? 'Sending request...'
+                        : 'Request selected time',
+                  ),
+                ),
+              ),
+            ],
+            if (_requestMessage != null) ...[
+              SizedBox(height: 8.h),
+              _AvailabilityStateCard(message: _requestMessage!),
+            ],
           ],
         );
       },
     );
   }
 
+  Future<void> _requestAppointment() async {
+    final option = _selectedOption;
+    if (option == null) {
+      return;
+    }
+
+    setState(() {
+      _isRequestingAppointment = true;
+      _requestMessage = null;
+    });
+
+    try {
+      final appointment = await widget.schedulingRepository.requestAppointment(
+        professionalProfileId: widget.professionalProfileId,
+        requestedStartAt: option.requestedStartAt,
+        durationMinutes: option.durationMinutes,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isRequestingAppointment = false;
+        _requestMessage =
+            'Request sent. Backend status: ${appointment.status.wireName}.';
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isRequestingAppointment = false;
+        _requestMessage = _safeAppointmentRequestError(error);
+      });
+    }
+  }
+
+  static String _optionLabel(AppointmentRequestTimeOption option) {
+    final date = option.requestedStartAt;
+    final dateLabel =
+        '${date.month.toString().padLeft(2, '0')}/'
+        '${date.day.toString().padLeft(2, '0')}';
+    return '$dateLabel ${option.timeRangeLabel} '
+        '(${option.durationMinutes} min)';
+  }
+
   static String _safeAvailabilityError(Object? error) {
+    if (error is AuthFailure) {
+      return switch (error.type) {
+        AuthFailureType.missingConfiguration =>
+          'Backend is not configured yet.',
+        AuthFailureType.unauthorized => 'Please sign in again.',
+        AuthFailureType.validation =>
+          'Please choose an available time and try again.',
+        AuthFailureType.server ||
+        AuthFailureType.network => 'Service is unavailable. Please try again.',
+        AuthFailureType.invalidCredentials ||
+        AuthFailureType.unknown => 'Something went wrong. Please try again.',
+      };
+    }
+    return 'Something went wrong. Please try again.';
+  }
+
+  static String _safeAppointmentRequestError(Object? error) {
     if (error is AuthFailure) {
       return switch (error.type) {
         AuthFailureType.missingConfiguration =>

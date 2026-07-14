@@ -955,3 +955,20 @@ too broad until a focused update contract and UI are defined.
 
 Next: 52.64 should run a patient profile read regression checkpoint before any
 patient profile update slice is considered.
+
+## D118 - Patient profile read regression passed
+
+Task: 52.64
+
+Decision: Treat patient profile read as regression-proven and pause
+read-specific work.
+
+Reason: Focused tests and analyzer prove Settings/Profile reads patient profile
+successfully, handles empty and failure states safely, preserves the local save
+flow, and does not call `updatePatientMe`. The remaining question is not read
+stability; it is whether a constrained patient profile update UX is safe given
+the current Settings/Profile field mismatch.
+
+Next: 52.65 should decide whether to define patient profile update behavior or
+move to another backend-completed surface. It should not implement runtime
+mutation.

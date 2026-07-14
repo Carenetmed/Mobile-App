@@ -455,3 +455,23 @@ options from returned availability before UI calls `requestAppointment`.
 
 Next: 52.37 should add the time-option helper and focused tests without calling
 the appointment request API.
+
+## D091 - Appointment request time-option helper
+
+Task: 52.37
+
+Decision: Add a small domain helper that converts active backend
+`AvailabilityWindow` records into concrete near-term appointment request options
+for the next seven days. Generate options at the window start time only, include
+only durations that fit inside the returned window, preserve the backend
+timezone string, and skip inactive, invalid, and past options.
+
+Reason: The first real request UI needs concrete `requestedStartAt` plus
+`durationMinutes` values before it can call `SchedulingRepository.requestAppointment`.
+Keeping this as a helper/test slice avoids mixing date generation, UI selection,
+and backend request behavior in one change. Backend validation remains the final
+authority for availability and conflicts.
+
+Next: 52.38 should wire the Search public availability sheet to generated
+options and call `requestAppointment` only after user selection, showing backend
+`REQUESTED` success without local fallback.

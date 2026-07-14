@@ -173,7 +173,8 @@
 | 52.30 | Decide the next backend-integration lane after Search public listing: either continue profile/public-professional work only if a real backend contract exists, select another completed backend surface, or pause for regression; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.31 | Define the scheduling/availability/appointment frontend contract before runtime wiring: map completed backend availability and appointment routes into Flutter repository/entities/screen boundaries, preserve no-local-fallback behavior, and queue the first repository/runtime slice only after the contract is clear | M | **DONE** |
 | 52.32 | Add the scheduling repository boundary for availability and appointment routes: entities, models, API client, repository, DI registration, and focused tests only; do not wire UI screens, booking success, public detail, payments, notifications, reviews, calls, calendar sync, notes, or prescriptions | M | **DONE** |
-| 52.33 | Wire public availability read as the first scheduling UI surface: use `SchedulingRepository.publicAvailability` only for a selected public professional, show real loading/error/empty availability states, keep appointment request disabled/deferred, and do not reintroduce local specialist/slot fallback, public detail invention, payments, reviews, calls, calendar sync, notes, or prescriptions | M | **NEXT** |
+| 52.33 | Wire public availability read as the first scheduling UI surface: use `SchedulingRepository.publicAvailability` only for a selected public professional, show real loading/error/empty availability states, keep appointment request disabled/deferred, and do not reintroduce local specialist/slot fallback, public detail invention, payments, reviews, calls, calendar sync, notes, or prescriptions | M | **DONE** |
+| 52.34 | Decide the first appointment request UI path after public availability read: choose whether to adapt the existing `bookAppointment` form, add a constrained request action from the Search availability sheet, or pause for professional availability management first; do not implement runtime booking in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -189,14 +190,14 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.32)
+## Manual test (last completed: task 52.33)
 
-Task `52.32` adds the scheduling repository boundary only. No UI screen is wired yet.
+Task `52.33` wires public availability read into the Search public professional profile sheet only. Booking remains disabled/deferred.
 
-1. `flutter test test/features/home/scheduling_repository_test.dart` - passes
-2. `flutter analyze lib/core/di/injection.dart lib/features/Home/domain/entities/availability_window.dart lib/features/Home/domain/entities/appointment_summary.dart lib/features/Home/data/models/availability_window_model.dart lib/features/Home/data/models/appointment_summary_model.dart lib/features/Home/data/services/scheduling_api_client.dart lib/features/Home/data/repositories/scheduling_repository.dart test/features/home/scheduling_repository_test.dart` - no issues
-3. Confirm no UI screens are wired to scheduling yet.
-4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.33`
+1. `flutter test test/features/home/scheduling_repository_test.dart test/features/home/search_flow_test.dart` - passes
+2. `flutter analyze lib/features/Home/presentation/pages/search_shell.dart lib/features/Home/data/repositories/scheduling_repository.dart lib/features/Home/domain/entities/availability_window.dart test/features/home/search_flow_test.dart test/features/home/scheduling_repository_test.dart` - no issues
+3. Confirm Search profile sheet uses `SchedulingRepository.publicAvailability`, shows real loading/error/empty availability states, and does not show local slot fallback.
+4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.34`
 
 ## Previous runtime manual test baseline
 
@@ -525,6 +526,7 @@ Task `52.32` adds the scheduling repository boundary only. No UI screen is wired
 | 2026-07-14 | 52.30 | DONE - next backend-integration lane selected: scheduling availability and appointment contract definition before runtime wiring |
 | 2026-07-14 | 52.31 | DONE - scheduling/availability/appointment frontend contract defined; next slice is repository boundary only |
 | 2026-07-14 | 52.32 | DONE - scheduling repository boundary added for availability and appointment routes without UI wiring |
+| 2026-07-14 | 52.33 | DONE - Search profile sheet now reads public availability without local slot fallback while booking remains deferred |
 
 ---
 

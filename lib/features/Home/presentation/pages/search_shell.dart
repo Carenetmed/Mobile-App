@@ -4,15 +4,22 @@ import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/domain/entities/availability_window.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SearchShellPage extends StatefulWidget {
-  const SearchShellPage({super.key, this.profileRepository});
+  const SearchShellPage({
+    super.key,
+    this.profileRepository,
+    this.schedulingRepository,
+  });
 
   final ProfileRepository? profileRepository;
+  final SchedulingRepository? schedulingRepository;
 
   @override
   State<SearchShellPage> createState() => _SearchShellPageState();
@@ -29,6 +36,9 @@ class _SearchShellPageState extends State<SearchShellPage> {
 
   ProfileRepository get _profileRepository =>
       widget.profileRepository ?? sl<ProfileRepository>();
+
+  SchedulingRepository get _schedulingRepository =>
+      widget.schedulingRepository ?? sl<SchedulingRepository>();
 
   @override
   void initState() {
@@ -293,6 +303,11 @@ class _SearchShellPageState extends State<SearchShellPage> {
                   ),
                 ),
                 SizedBox(height: 16.h),
+                _PublicAvailabilitySection(
+                  professionalProfileId: specialist.id,
+                  schedulingRepository: _schedulingRepository,
+                ),
+                SizedBox(height: 16.h),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
@@ -303,6 +318,176 @@ class _SearchShellPageState extends State<SearchShellPage> {
               ],
             ),
           ),
+    );
+  }
+}
+
+class _PublicAvailabilitySection extends StatefulWidget {
+  const _PublicAvailabilitySection({
+    required this.professionalProfileId,
+    required this.schedulingRepository,
+  });
+
+  final String professionalProfileId;
+  final SchedulingRepository schedulingRepository;
+
+  @override
+  State<_PublicAvailabilitySection> createState() =>
+      _PublicAvailabilitySectionState();
+}
+
+class _PublicAvailabilitySectionState
+    extends State<_PublicAvailabilitySection> {
+  late final Future<List<AvailabilityWindow>> _availabilityFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _availabilityFuture = widget.schedulingRepository.publicAvailability(
+      professionalProfileId: widget.professionalProfileId,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<AvailabilityWindow>>(
+      future: _availabilityFuture,
+      builder: (context, snapshot) {
+        final state = snapshot.connectionState;
+        if (state == ConnectionState.waiting ||
+            state == ConnectionState.active) {
+          return const _AvailabilityStateCard(
+            message: 'Loading public availability...',
+          );
+        }
+
+        if (snapshot.hasError) {
+          return _AvailabilityStateCard(
+            message: _safeAvailabilityError(snapshot.error),
+          );
+        }
+
+        final windows = snapshot.data ?? const <AvailabilityWindow>[];
+        if (windows.isEmpty) {
+          return const _AvailabilityStateCard(
+            message: 'No public availability is available yet.',
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Public availability',
+              style: TextStyle(
+                fontSize: FontSizes.footer3,
+                fontFamily: AppFonts.montserrat,
+                fontWeight: FontWeight.w700,
+                color: AppColors.kBlack,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            ...windows.map(
+              (window) => Padding(
+                padding: REdgeInsets.only(bottom: 6.h),
+                child: _AvailabilityWindowRow(window: window),
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              'Booking remains deferred until appointment request wiring.',
+              style: TextStyle(
+                fontSize: FontSizes.footer4,
+                fontFamily: AppFonts.montserrat,
+                fontWeight: FontWeight.w500,
+                color: AppColors.primaryBlue11,
+                height: 1.35,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static String _safeAvailabilityError(Object? error) {
+    if (error is AuthFailure) {
+      return switch (error.type) {
+        AuthFailureType.missingConfiguration =>
+          'Backend is not configured yet.',
+        AuthFailureType.unauthorized => 'Please sign in again.',
+        AuthFailureType.validation =>
+          'Please choose an available time and try again.',
+        AuthFailureType.server ||
+        AuthFailureType.network => 'Service is unavailable. Please try again.',
+        AuthFailureType.invalidCredentials ||
+        AuthFailureType.unknown => 'Something went wrong. Please try again.',
+      };
+    }
+    return 'Something went wrong. Please try again.';
+  }
+}
+
+class _AvailabilityWindowRow extends StatelessWidget {
+  const _AvailabilityWindowRow({required this.window});
+
+  final AvailabilityWindow window;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: REdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: AppColors.blue02,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.white04),
+      ),
+      child: Text(
+        'Day ${window.weekday}: ${_timeLabel(window.startMinute)} - ${_timeLabel(window.endMinute)} (${window.timezone})',
+        style: TextStyle(
+          fontSize: FontSizes.footer4,
+          fontFamily: AppFonts.montserrat,
+          fontWeight: FontWeight.w600,
+          color: AppColors.kBlack,
+          height: 1.35,
+        ),
+      ),
+    );
+  }
+
+  String _timeLabel(int minuteOfDay) {
+    final hours = minuteOfDay ~/ 60;
+    final minutes = minuteOfDay % 60;
+    return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+  }
+}
+
+class _AvailabilityStateCard extends StatelessWidget {
+  const _AvailabilityStateCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: REdgeInsets.all(12.r),
+      decoration: BoxDecoration(
+        color: AppColors.blue02,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.white04),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          fontSize: FontSizes.footer4,
+          fontFamily: AppFonts.montserrat,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primaryBlue11,
+          height: 1.35,
+        ),
+      ),
     );
   }
 }

@@ -194,7 +194,8 @@
 | 52.51 | Run Appointment Completion Regression: verify professional completion role/timing/state/failure behavior, prove no reschedule/payment/calendar/review/notes/prescription UI slipped in, and decide whether reschedule needs a separate UX decision or the scheduling lane should pause for a broader regression checkpoint | M | **DONE** |
 | 52.52 | Decide Post-Completion Scheduling Lane: review appointment request/list/cancel/accept/decline/availability/completion coverage, regression evidence, and remaining risks before choosing a broader scheduling regression checkpoint or a dedicated reschedule UX decision; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.53 | Run Scheduling Core Regression Checkpoint: strengthen focused tests/docs across Search public listing/availability/request, Appointments own-list/cancel/accept/decline/complete, selectedDates availability management, safe error/no-fallback behavior, and absence of reschedule/payment/notification/calendar/review/notes/prescription/call/admin UI; do not add runtime features | L | **DONE** |
-| 52.54 | Decide Post-Regression Scheduling Lane: review the scheduling core regression checkpoint and choose reschedule UX boundary, another backend-completed surface, or real-device/staging smoke checkpoint; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.54 | Decide Post-Regression Scheduling Lane: review the scheduling core regression checkpoint and choose reschedule UX boundary, another backend-completed surface, or real-device/staging smoke checkpoint; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.55 | Decide Appointment Reschedule UX Boundary: define whether patient/professional reschedule belongs in this milestone, actor/status/time-selection/duration/conflict rules, backend payload and safe error handling, and explicit deferrals before any runtime reschedule UI; do not implement runtime behavior in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -210,19 +211,17 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.53)
+## Manual test (last completed: task 52.54)
 
-Task `52.53` strengthens scheduling core regression coverage across Search,
-Appointments, selectedDates, and scheduling repository boundaries. It does not
-add runtime features.
+Task `52.54` decides the post-regression scheduling lane. It selects a dedicated
+reschedule UX/product boundary decision before any runtime reschedule wiring.
+This is a docs-only decision slice.
 
-1. `dart format test\features\home\appointments_flow_test.dart test\features\home\search_flow_test.dart test\features\home\manage_profile_flow_test.dart` - passes
-2. `flutter test test\features\home\appointment_request_time_options_test.dart test\features\home\search_flow_test.dart test\features\home\appointments_flow_test.dart test\features\home\manage_profile_flow_test.dart test\features\home\scheduling_repository_test.dart` - passes
-3. `flutter analyze lib\features\Home\presentation\pages\search_shell.dart lib\features\Home\presentation\pages\appointments_shell.dart lib\features\Home\presentation\pages\selected_dates_shell.dart lib\features\Home\data\repositories\scheduling_repository.dart lib\features\Home\data\services\scheduling_api_client.dart test\features\home\search_flow_test.dart test\features\home\appointments_flow_test.dart test\features\home\manage_profile_flow_test.dart test\features\home\scheduling_repository_test.dart` - no issues
-4. `git diff --check` - passes
-5. Confirm `SCHEDULING_CORE_REGRESSION_CHECKPOINT.md` records Search, Appointments, selectedDates, and repository proof.
-6. Confirm reschedule, payments, notifications, calendar sync, reviews, notes, prescriptions, calls, and admin override remain deferred.
-7. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.54`
+1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/POST_REGRESSION_SCHEDULING_LANE_DECISION.md` - passes
+2. Confirm `POST_REGRESSION_SCHEDULING_LANE_DECISION.md` chooses reschedule UX boundary definition next, not runtime reschedule.
+3. Confirm no runtime app files changed.
+4. Confirm payments, notifications, calendar sync, reviews, notes, prescriptions, calls, admin override, no-show/disputes, and medical records remain deferred.
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.55`
 
 ## Previous runtime manual test baseline
 

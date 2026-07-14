@@ -754,3 +754,21 @@ call/admin UI.
 
 Next: 52.54 should decide whether to define reschedule UX, move to another
 backend-completed surface, or run a real-device/staging smoke checkpoint.
+
+## D108 - Reschedule UX boundary before runtime wiring
+
+Task: 52.54
+
+Decision: Continue the scheduling lane with a dedicated appointment reschedule
+UX/product boundary decision before any runtime reschedule UI or repository
+call is wired.
+
+Reason: The scheduling core regression checkpoint proves the current path, and
+reschedule is the remaining backend-completed appointment lifecycle method
+present in the Flutter repository boundary. However, reschedule affects actor
+rules, eligible statuses, time/duration selection, availability re-checks,
+conflicts, audit expectations, and future notification/calendar/payment
+boundaries. Those rules should be made explicit before implementation.
+
+Next: 52.55 should decide the appointment reschedule UX boundary. It should not
+call `SchedulingRepository.rescheduleAppointment` or add runtime reschedule UI.

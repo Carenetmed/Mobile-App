@@ -1124,3 +1124,21 @@ not claim direct booking from Find Mentor.
 
 Next: 52.73 should run a focused Find Mentor public professionals regression
 checkpoint before selecting another surface.
+
+## D127 - Find Mentor public professionals regression passed
+
+Task: 52.73
+
+Decision: Treat Find Mentor public professional wiring as regression-proven for
+the current frontend/backend milestone boundary.
+
+Reason: Focused evidence now covers backend public listing success, loading,
+empty, safe failure, category filtering, backend id handoff to Specialist
+Details, absence of seeded local slot fallback/direct fake booking in the
+backend path, dashboard local compatibility, Specialist Details compatibility,
+and deferred-work accuracy. No public detail endpoint, verification/admin
+behavior, payment, review, call, calendar, note, prescription, staging-data, or
+production-release behavior was added.
+
+Next: 52.74 should decide the next backend-completed Flutter surface before any
+new runtime wiring.

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
@@ -16,6 +18,7 @@ Future<void> _pumpFindMentor(
   required ProfileRepository profileRepository,
   List<String>? pushedRoutes,
   List<Object?>? pushedArguments,
+  bool settle = true,
 }) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
@@ -41,17 +44,30 @@ Future<void> _pumpFindMentor(
           ),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
 }
 
 class _FakeProfileRepository implements ProfileRepository {
-  _FakeProfileRepository({this.publicListing, this.failure});
+  _FakeProfileRepository({
+    this.publicListing,
+    this.pendingPublicListing,
+    this.failure,
+  });
 
   final List<PublicProfessional>? publicListing;
+  final Future<List<PublicProfessional>>? pendingPublicListing;
   final Object? failure;
 
   @override
   Future<List<PublicProfessional>> publicProfessionals() async {
+    final pending = pendingPublicListing;
+    if (pending != null) {
+      return pending;
+    }
     final error = failure;
     if (error != null) {
       throw error;
@@ -105,6 +121,48 @@ void main() {
     expect(find.text('Backend mentor bio.'), findsOneWidget);
     expect(find.text('Verified'), findsOneWidget);
     expect(find.text('Booking in details'), findsOneWidget);
+    expect(find.text('Dr. Uzo Blessing'), findsNothing);
+    expect(find.text('Saturday'), findsNothing);
+    expect(find.text('10:00am'), findsNothing);
+    expect(find.text('Book Appointment'), findsNothing);
+  });
+
+  testWidgets(
+    'find mentor shows backend loading state without local fallback',
+    (tester) async {
+      final pendingPublicListing = Completer<List<PublicProfessional>>();
+
+      await _pumpFindMentor(
+        tester,
+        profileRepository: _FakeProfileRepository(
+          pendingPublicListing: pendingPublicListing.future,
+        ),
+        settle: false,
+      );
+
+      expect(find.text('Loading verified professionals...'), findsOneWidget);
+      expect(find.text('Dr. Uzo Blessing'), findsNothing);
+      expect(find.text('Book Appointment'), findsNothing);
+
+      pendingPublicListing.complete(const <PublicProfessional>[]);
+      await tester.pumpAndSettle();
+    },
+  );
+
+  testWidgets('find mentor shows backend empty state without local fallback', (
+    tester,
+  ) async {
+    await _pumpFindMentor(
+      tester,
+      profileRepository: _FakeProfileRepository(
+        publicListing: const <PublicProfessional>[],
+      ),
+    );
+
+    expect(
+      find.text('No verified professionals are available yet.'),
+      findsOneWidget,
+    );
     expect(find.text('Dr. Uzo Blessing'), findsNothing);
     expect(find.text('Saturday'), findsNothing);
     expect(find.text('10:00am'), findsNothing);

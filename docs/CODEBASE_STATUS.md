@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 Find Mentor public professionals wired.
+**Last updated:** 2026-07-15 Find Mentor public professionals regression passed.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -124,6 +124,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Specialist Details public availability regression | `SPECIALIST_DETAILS_PUBLIC_AVAILABILITY_REGRESSION.md` records focused proof for backend id resolution, Search handoff, dashboard local compatibility, no local slot fallback, generated request payload, safe request/availability failures, and absence of public-detail endpoint invention or deferred feature leakage |
 | Next surface after Specialist Details | `NEXT_SURFACE_AFTER_SPECIALIST_DETAILS_DECISION.md` selects Find Mentor public professional replacement as the next narrow Flutter lane. The next runtime slice should replace local mentor cards with public verified professionals where a repository is available and pass backend ids into Specialist Details without local slot fallback, verification/admin behavior, payments, reviews, calls, calendar sync, staging data, or production claims |
 | Find Mentor public professionals | `findMentor` now reads `ProfileRepository.publicProfessionals` where a repository is available, renders safe loading/error/empty states, filters backend public professionals by category/specialty, and passes backend public professional ids into `specialistDetails`. The backend path has no seeded local mentor fallback, no local slot chips, and no direct fake booking |
+| Find Mentor public professionals regression | `FIND_MENTOR_PUBLIC_PROFESSIONALS_REGRESSION.md` records focused proof for loading, empty, success, category filtering, backend id handoff, safe failure, no local fallback/direct fake booking, dashboard local compatibility, Specialist Details compatibility, and deferred-work accuracy |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

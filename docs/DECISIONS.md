@@ -1086,3 +1086,22 @@ production claims were added.
 
 Next: 52.71 should decide the next surface after Specialist Details regression
 before any new runtime wiring.
+
+## D125 - Find Mentor selected as next public-provider surface
+
+Task: 52.71
+
+Decision: Select Find Mentor public professional replacement as the next narrow
+backend-completed Flutter surface.
+
+Reason: Specialist Details is regression-proven, and Find Mentor remains the
+other visible provider-discovery entry point still backed by local mentor cards
+and local slot chips. It can use existing `ProfileRepository.publicProfessionals`
+and route selected backend ids into the already-proven Specialist Details
+backend path. Verification upload/list, admin dashboard, scheduling staging
+data, Google link/unlink, payments, reviews, calls, calendar sync, notes,
+prescriptions, and production release work remain larger separate lanes.
+
+Next: 52.72 should wire Find Mentor to public professionals, preserving
+local-only compatibility only when no repository is available and avoiding
+local slot fallback in the backend path.

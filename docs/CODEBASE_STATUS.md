@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 appointment reschedule UX boundary added.
+**Last updated:** 2026-07-15 appointment reschedule wiring added.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -107,6 +107,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Scheduling core regression checkpoint | `SCHEDULING_CORE_REGRESSION_CHECKPOINT.md` records focused proof across Search public listing/availability/request, Appointments own-list/cancel/accept/decline/complete, selectedDates availability management, scheduling repository payload boundaries, safe error/no-fallback behavior, and absence of reschedule/payment/notification/calendar/review/notes/prescription/call/admin UI |
 | Post-regression scheduling lane | `POST_REGRESSION_SCHEDULING_LANE_DECISION.md` selects a dedicated appointment reschedule UX/product boundary decision before any runtime reschedule wiring. Reschedule remains blocked until actor, status, time-selection, duration, conflict, payload, success/error, and deferred notification/payment/calendar/review/notes/call/admin boundaries are defined |
 | Appointment reschedule UX boundary | `APPOINTMENT_RESCHEDULE_UX_BOUNDARY_DECISION.md` allows a constrained next runtime slice for patient/professional reschedule of upcoming `REQUESTED`/`ACCEPTED` appointments using existing public availability and generated request options. Success must replace the card from backend response, expected status returns to `REQUESTED`, and payments, notifications, calendar sync, reviews, calls, admin override, notes, prescriptions, medical records, free-text datetime entry, and reschedule reasons remain deferred |
+| Appointment reschedule wiring | `appointments` now exposes `Reschedule` only for patient/professional sessions on upcoming `REQUESTED`/`ACCEPTED` backend appointment cards. It loads public availability for the appointment professional, generates bounded request options, submits `requestedStartAt` and `durationMinutes` through `SchedulingRepository.rescheduleAppointment`, replaces visible status from the backend response, and keeps safe errors/no raw backend messages. Non-patient/non-professional roles, recent cards, and terminal states do not expose reschedule |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
@@ -349,6 +350,13 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.47 test/analyze | Passed: `flutter test test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart`; focused `flutter analyze` on Appointments role-aware lifecycle UI, appointment flow tests, scheduling repository/API client, and repository tests reports no issues |
 | Focused task 52.48 test/analyze | Passed: `flutter test test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart`; focused `flutter analyze` on Appointments lifecycle regression, appointment flow tests, scheduling repository/API client, and repository tests reports no issues |
 | Focused task 52.49 test/analyze | Not needed: decision-only docs slice. `git diff --check` covers changed docs; no runtime code changed |
+| Focused task 52.50 test/analyze | Passed: `flutter test test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart`; focused `flutter analyze` on Appointments completion wiring, scheduling repository/API client, and related tests reports no issues |
+| Focused task 52.51 test/analyze | Passed: `flutter test test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart`; focused `flutter analyze` on Appointments completion regression and related scheduling files reports no issues |
+| Focused task 52.52 test/analyze | Not needed: decision-only docs slice. `git diff --check` covers changed docs; no runtime code changed |
+| Focused task 52.53 test/analyze | Passed: focused scheduling core regression tests across appointment request options, Search, Appointments, selectedDates, manage profile, and scheduling repository; focused analyze reports no issues |
+| Focused task 52.54 test/analyze | Not needed: decision-only docs slice. `git diff --check` covers changed docs; no runtime code changed |
+| Focused task 52.55 test/analyze | Not needed: decision-only docs slice. `git diff --check` covers changed docs; no runtime code changed |
+| Focused task 52.56 test/analyze | Passed: `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart -r compact`; focused `flutter analyze` on Appointments reschedule wiring, scheduling repository/API client, and related tests reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

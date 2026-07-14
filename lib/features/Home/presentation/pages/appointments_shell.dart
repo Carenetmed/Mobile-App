@@ -7,7 +7,9 @@ import 'package:app_t/features/Authentication/data/models/auth_session_model.dar
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_request_time_option.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
+import 'package:app_t/features/Home/domain/services/appointment_request_time_options.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
@@ -153,6 +155,9 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
                           role != null;
                       final isProfessional =
                           role?.toUpperCase() == 'PROFESSIONAL';
+                      final isPatient = role?.toUpperCase() == 'PATIENT';
+                      final canReschedule =
+                          roleKnown && (isPatient || isProfessional);
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,6 +177,7 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
                                 allowProfessionalLifecycle:
                                     roleKnown && isProfessional,
                                 allowProfessionalCompletion: false,
+                                allowReschedule: canReschedule,
                                 now: _now,
                               ),
                             ),
@@ -191,6 +197,7 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
                                 allowProfessionalLifecycle: false,
                                 allowProfessionalCompletion:
                                     roleKnown && isProfessional,
+                                allowReschedule: false,
                                 now: _now,
                               ),
                             ),
@@ -580,6 +587,7 @@ class _AppointmentCard extends StatefulWidget {
     required this.allowCancellation,
     required this.allowProfessionalLifecycle,
     required this.allowProfessionalCompletion,
+    required this.allowReschedule,
     required this.now,
   });
 
@@ -588,6 +596,7 @@ class _AppointmentCard extends StatefulWidget {
   final bool allowCancellation;
   final bool allowProfessionalLifecycle;
   final bool allowProfessionalCompletion;
+  final bool allowReschedule;
   final DateTime now;
 
   @override
@@ -600,6 +609,12 @@ class _AppointmentCardState extends State<_AppointmentCard> {
   bool _isAccepting = false;
   bool _isDeclining = false;
   bool _isCompleting = false;
+  bool _isLoadingRescheduleOptions = false;
+  bool _isRescheduling = false;
+  List<AppointmentRequestTimeOption> _rescheduleOptions =
+      const <AppointmentRequestTimeOption>[];
+  AppointmentRequestTimeOption? _selectedRescheduleOption;
+  bool _showRescheduleOptions = false;
   String? _actionMessage;
 
   @override
@@ -611,6 +626,11 @@ class _AppointmentCardState extends State<_AppointmentCard> {
       _isAccepting = false;
       _isDeclining = false;
       _isCompleting = false;
+      _isLoadingRescheduleOptions = false;
+      _isRescheduling = false;
+      _rescheduleOptions = const <AppointmentRequestTimeOption>[];
+      _selectedRescheduleOption = null;
+      _showRescheduleOptions = false;
       _actionMessage = null;
     }
   }
@@ -729,6 +749,38 @@ class _AppointmentCardState extends State<_AppointmentCard> {
               ),
             ),
           ],
+          if (widget.allowReschedule && _item.canReschedule(widget.now)) ...[
+            SizedBox(height: 12.h),
+            SizedBox(
+              width: double.infinity,
+              child: CarenetButton(
+                label:
+                    _isLoadingRescheduleOptions
+                        ? 'Loading reschedule times...'
+                        : 'Reschedule',
+                type: CarenetButtonType.outline,
+                onPressed: _isBusy ? null : _loadRescheduleOptions,
+              ),
+            ),
+          ],
+          if (_showRescheduleOptions) ...[
+            SizedBox(height: 12.h),
+            _RescheduleOptionsPanel(
+              options: _rescheduleOptions,
+              selectedOption: _selectedRescheduleOption,
+              isSubmitting: _isRescheduling,
+              onSelect: (option) {
+                setState(() {
+                  _selectedRescheduleOption = option;
+                  _actionMessage = null;
+                });
+              },
+              onSubmit:
+                  _selectedRescheduleOption == null || _isBusy
+                      ? null
+                      : _rescheduleAppointment,
+            ),
+          ],
           if (_actionMessage != null) ...[
             SizedBox(height: 8.h),
             Text(
@@ -748,7 +800,12 @@ class _AppointmentCardState extends State<_AppointmentCard> {
   }
 
   bool get _isBusy =>
-      _isCancelling || _isAccepting || _isDeclining || _isCompleting;
+      _isCancelling ||
+      _isAccepting ||
+      _isDeclining ||
+      _isCompleting ||
+      _isLoadingRescheduleOptions ||
+      _isRescheduling;
 
   Future<void> _cancelAppointment() async {
     setState(() {
@@ -853,6 +910,191 @@ class _AppointmentCardState extends State<_AppointmentCard> {
       });
     }
   }
+
+  Future<void> _loadRescheduleOptions() async {
+    setState(() {
+      _isLoadingRescheduleOptions = true;
+      _actionMessage = null;
+      _showRescheduleOptions = false;
+      _rescheduleOptions = const <AppointmentRequestTimeOption>[];
+      _selectedRescheduleOption = null;
+    });
+
+    try {
+      final windows = await widget.schedulingRepository.publicAvailability(
+        professionalProfileId: _item.professionalProfileId,
+      );
+      final options = const AppointmentRequestTimeOptions().generate(
+        windows: windows,
+        now: widget.now,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isLoadingRescheduleOptions = false;
+        _rescheduleOptions = options;
+        _selectedRescheduleOption = options.isEmpty ? null : options.first;
+        _showRescheduleOptions = true;
+        _actionMessage =
+            options.isEmpty
+                ? 'No backend availability is available for reschedule.'
+                : null;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isLoadingRescheduleOptions = false;
+        _actionMessage = _safeSchedulingActionError(error);
+      });
+    }
+  }
+
+  Future<void> _rescheduleAppointment() async {
+    final selected = _selectedRescheduleOption;
+    if (selected == null) {
+      return;
+    }
+
+    setState(() {
+      _isRescheduling = true;
+      _actionMessage = null;
+    });
+
+    try {
+      final rescheduled = await widget.schedulingRepository
+          .rescheduleAppointment(
+            appointmentId: _item.id,
+            requestedStartAt: selected.requestedStartAt,
+            durationMinutes: selected.durationMinutes,
+          );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _item = _AppointmentItem.fromSummary(rescheduled);
+        _isRescheduling = false;
+        _showRescheduleOptions = false;
+        _rescheduleOptions = const <AppointmentRequestTimeOption>[];
+        _selectedRescheduleOption = null;
+        _actionMessage =
+            'Appointment rescheduled. Backend status: ${rescheduled.status.wireName}.';
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isRescheduling = false;
+        _actionMessage = _safeSchedulingActionError(error);
+      });
+    }
+  }
+
+  static String _safeSchedulingActionError(Object? error) {
+    if (error is AuthFailure) {
+      return switch (error.type) {
+        AuthFailureType.missingConfiguration =>
+          'Backend is not configured yet.',
+        AuthFailureType.unauthorized => 'Please sign in again.',
+        AuthFailureType.validation =>
+          'Please choose an available time and try again.',
+        AuthFailureType.server ||
+        AuthFailureType.network => 'Service is unavailable. Please try again.',
+        AuthFailureType.invalidCredentials ||
+        AuthFailureType.unknown => 'Something went wrong. Please try again.',
+      };
+    }
+    return 'Something went wrong. Please try again.';
+  }
+}
+
+class _RescheduleOptionsPanel extends StatelessWidget {
+  const _RescheduleOptionsPanel({
+    required this.options,
+    required this.selectedOption,
+    required this.isSubmitting,
+    required this.onSelect,
+    required this.onSubmit,
+  });
+
+  final List<AppointmentRequestTimeOption> options;
+  final AppointmentRequestTimeOption? selectedOption;
+  final bool isSubmitting;
+  final ValueChanged<AppointmentRequestTimeOption> onSelect;
+  final VoidCallback? onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    if (options.isEmpty) {
+      return Text(
+        'No generated reschedule times are available.',
+        style: TextStyle(
+          fontSize: FontSizes.footer4,
+          fontFamily: AppFonts.montserrat,
+          fontWeight: FontWeight.w500,
+          color: AppColors.primaryBlue11,
+          height: 1.35,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Choose a backend availability time',
+          style: TextStyle(
+            fontSize: FontSizes.footer4,
+            fontFamily: AppFonts.montserrat,
+            fontWeight: FontWeight.w700,
+            color: AppColors.kBlack,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Wrap(
+          spacing: 8.w,
+          runSpacing: 8.h,
+          children:
+              options.take(6).map((option) {
+                final isSelected = option == selectedOption;
+                return ChoiceChip(
+                  label: Text(_optionLabel(option)),
+                  selected: isSelected,
+                  selectedColor: AppColors.primaryBlue7,
+                  backgroundColor: AppColors.kWhite,
+                  labelStyle: TextStyle(
+                    fontFamily: AppFonts.montserrat,
+                    fontWeight: FontWeight.w500,
+                    fontSize: FontSizes.footer4,
+                    color:
+                        isSelected ? AppColors.primaryBlue5 : AppColors.kBlack,
+                  ),
+                  onSelected: (_) => onSelect(option),
+                );
+              }).toList(),
+        ),
+        SizedBox(height: 10.h),
+        SizedBox(
+          width: double.infinity,
+          child: CarenetButton(
+            label: isSubmitting ? 'Rescheduling...' : 'Confirm reschedule',
+            onPressed: onSubmit,
+          ),
+        ),
+      ],
+    );
+  }
+
+  static String _optionLabel(AppointmentRequestTimeOption option) {
+    final start = option.requestedStartAt;
+    final month = start.month.toString().padLeft(2, '0');
+    final day = start.day.toString().padLeft(2, '0');
+    return '$month/$day ${option.timeRangeLabel} '
+        '(${option.durationMinutes} min)';
+  }
 }
 
 class _AppointmentItem {
@@ -864,6 +1106,7 @@ class _AppointmentItem {
     required this.mode,
     required this.status,
     required this.statusValue,
+    required this.professionalProfileId,
     required this.requestedStartAt,
     required this.durationMinutes,
   });
@@ -877,6 +1120,7 @@ class _AppointmentItem {
       mode: 'Backend appointment request',
       status: summary.status.wireName,
       statusValue: summary.status,
+      professionalProfileId: summary.professionalProfileId,
       requestedStartAt: summary.requestedStartAt,
       durationMinutes: summary.durationMinutes,
     );
@@ -889,6 +1133,7 @@ class _AppointmentItem {
   final String mode;
   final String status;
   final AppointmentStatus statusValue;
+  final String professionalProfileId;
   final DateTime requestedStartAt;
   final int durationMinutes;
 
@@ -897,6 +1142,15 @@ class _AppointmentItem {
       statusValue == AppointmentStatus.accepted;
 
   bool get canAcceptDecline => statusValue == AppointmentStatus.requested;
+
+  bool canReschedule(DateTime now) {
+    if (statusValue != AppointmentStatus.requested &&
+        statusValue != AppointmentStatus.accepted) {
+      return false;
+    }
+    return requestedStartAt.isAfter(now) ||
+        requestedStartAt.isAtSameMomentAs(now);
+  }
 
   bool canComplete(DateTime now) {
     if (statusValue != AppointmentStatus.accepted) {

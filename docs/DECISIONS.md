@@ -631,3 +631,19 @@ reschedule has additional time/availability UX.
 
 Next: 52.47 should wire professional accept/decline only for signed-in
 `PROFESSIONAL` users on eligible `REQUESTED` appointments.
+
+## D101 - Role-aware professional accept/decline wired
+
+Task: 52.47
+
+Decision: Appointments may expose professional `Accept`/`Decline` only after
+reading authenticated session role, and only for eligible `REQUESTED`
+appointments. Patient sessions keep patient cancellation behavior and do not
+see professional actions.
+
+Reason: This avoids guessing role from appointment ids or profile ids while
+still using the backend as authority for ownership and transition validity.
+Visible status updates come only from repository success.
+
+Next: 52.48 should run a professional lifecycle regression/checkpoint before
+deciding whether to add reschedule or complete UI.

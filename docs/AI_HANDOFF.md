@@ -187,7 +187,8 @@
 | 52.44 | Decide Professional Availability Management UI Boundary: inspect Manage Profile business-hour/selected-date UI, scheduling repository own-availability read/replace contract, docs, and blueprint evidence before choosing the next narrow professional availability slice; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.45 | Wire Professional Availability Management: replace the selectedDates local draft with backend own-availability read/replace using SchedulingRepository, show safe loading/empty/error/success states, preserve existing windows where safe, and do not add profile mutation, appointment lifecycle UI, payments, notifications, calls, calendar, reviews, notes, or prescriptions | L | **DONE** |
 | 52.46 | Decide Professional Appointment Lifecycle UI Boundary: inspect Appointments role assumptions, scheduling repository lifecycle methods, backend contract, and current professional workspace readiness before choosing accept/decline/reschedule/complete UI scope; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.47 | Wire Professional Appointment Accept Decline: make Appointments role-aware from authenticated session state, show Accept/Decline only for professional users on eligible REQUESTED appointments, call SchedulingRepository accept/decline, update visible status from backend response, and keep reschedule/complete/payments/notifications/calendar/notes deferred | L | **NEXT** |
+| 52.47 | Wire Professional Appointment Accept Decline: make Appointments role-aware from authenticated session state, show Accept/Decline only for professional users on eligible REQUESTED appointments, call SchedulingRepository accept/decline, update visible status from backend response, and keep reschedule/complete/payments/notifications/calendar/notes deferred | L | **DONE** |
+| 52.48 | Run Professional Appointment Lifecycle Regression: verify role-aware Appointments behavior for patient cancel, professional accept/decline, safe errors, terminal states, and no reschedule/complete/payment/calendar/notes UI before deciding any broader lifecycle action | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -203,16 +204,19 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.46)
+## Manual test (last completed: task 52.47)
 
-Task `52.46` is a decision-only professional appointment lifecycle UI boundary
-slice. No runtime behavior changed.
+Task `52.47` wires role-aware professional appointment accept/decline into
+Appointments. Professional actions are read from authenticated session role,
+shown only for eligible `REQUESTED` appointments, and update visible status only
+from backend repository success.
 
-1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/PROFESSIONAL_APPOINTMENT_LIFECYCLE_UI_BOUNDARY_DECISION.md` - passes
-2. Confirm `PROFESSIONAL_APPOINTMENT_LIFECYCLE_UI_BOUNDARY_DECISION.md` chooses role-aware professional accept/decline before reschedule/complete.
+1. `flutter test test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart` - passes
+2. `flutter analyze lib/features/Home/presentation/pages/appointments_shell.dart test/features/home/appointments_flow_test.dart lib/features/Home/data/repositories/scheduling_repository.dart lib/features/Home/data/services/scheduling_api_client.dart test/features/home/scheduling_repository_test.dart` - no issues
 3. `git diff --check` - passes
-4. Confirm professional reschedule/complete, payments, notifications, calendar sync, notes, and prescriptions remain deferred.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.47`
+4. Confirm patient sessions do not show professional Accept/Decline and professional sessions do not show patient cancellation.
+5. Confirm professional reschedule/complete, payments, notifications, calendar sync, notes, and prescriptions remain deferred.
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.48`
 
 ## Previous runtime manual test baseline
 

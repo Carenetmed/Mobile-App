@@ -972,3 +972,24 @@ the current Settings/Profile field mismatch.
 Next: 52.65 should decide whether to define patient profile update behavior or
 move to another backend-completed surface. It should not implement runtime
 mutation.
+
+## D119 - Patient profile update boundary is name-only
+
+Task: 52.65
+
+Decision: Proceed with a constrained patient profile name update as the next
+runtime slice. The update may combine Settings/Profile first name and last name
+into backend `name` and call `ProfileRepository.updatePatientMe`; it must not
+send age, location, username, email, bio, user id, role, phone, password,
+auth/security data, verification data, scheduling data, public profile data, or
+destructive account data.
+
+Reason: Patient profile read is regression-proven and the backend update route
+exists, but the current Settings/Profile UI only has editable name fields that
+map to the backend patient profile contract. Age and location are currently
+read-only summaries, while username, email, bio, and account/security controls
+belong to separate contracts.
+
+Next: 52.66 should wire patient profile name update from Settings/Profile with
+safe loading/success/error states and focused tests proving the payload remains
+name-only.

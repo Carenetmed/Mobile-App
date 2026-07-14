@@ -1,7 +1,7 @@
 # Appointment request UI path decision
 
 **Task:** 52.34
-**Status:** Accepted decision before runtime booking wiring
+**Status:** Accepted decision; local booking success removed in 52.35
 
 Purpose: decide how the frontend should move from public availability display to
 real appointment request without preserving local/dummy booking success.
@@ -79,6 +79,13 @@ Scope:
 - Do not call appointment request API yet.
 - Do not invent date/time conversion rules.
 - Update tests and docs to remove fake booking success expectations.
+
+Implemented in 52.35:
+
+- `bookAppointment` no longer exposes `Confirm request`.
+- `Confirmed locally` and fake booking completion behavior were removed.
+- Valid details show `Backend request not sent`.
+- The route does not call the appointment request API yet.
 
 Then:
 

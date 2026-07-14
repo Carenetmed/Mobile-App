@@ -67,7 +67,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Book Appointment'), findsOneWidget);
-    expect(find.text('Save booking request'), findsOneWidget);
+    expect(find.text('Review request details'), findsOneWidget);
   });
 
   testWidgets('deferred public profile actions are disabled', (tester) async {

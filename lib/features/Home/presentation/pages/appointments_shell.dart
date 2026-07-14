@@ -175,19 +175,8 @@ class _BookAppointmentShellPageState extends State<BookAppointmentShellPage> {
         preferredDate: _dateController.text.trim(),
         reason: _reasonController.text.trim(),
         visitType: _selectedVisitType!,
-        status: 'Draft saved',
+        status: 'Backend request not sent',
       );
-    });
-  }
-
-  void _confirmDraft() {
-    final draft = _bookedDraft;
-    if (draft == null) {
-      return;
-    }
-
-    setState(() {
-      _bookedDraft = draft.copyWith(status: 'Confirmed locally');
     });
   }
 
@@ -237,7 +226,7 @@ class _BookAppointmentShellPageState extends State<BookAppointmentShellPage> {
               ),
               SizedBox(height: 12.h),
               Text(
-                'This is local booking state for now, but it gives the appointments lane a real form instead of a route-only handoff. Search, provider availability, and live calendar slots can plug in later.',
+                'Appointment request wiring is backend-gated. You can review details here, but nothing is submitted or confirmed until the real request flow is connected.',
                 style: TextStyle(
                   fontSize: FontSizes.footer2,
                   fontFamily: AppFonts.montserrat,
@@ -338,7 +327,7 @@ class _BookAppointmentShellPageState extends State<BookAppointmentShellPage> {
               SizedBox(
                 width: double.infinity,
                 child: CarenetButton(
-                  label: 'Save booking request',
+                  label: 'Review request details',
                   onPressed: _submit,
                 ),
               ),
@@ -356,7 +345,7 @@ class _BookAppointmentShellPageState extends State<BookAppointmentShellPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Latest booking draft',
+                        'Request details',
                         style: TextStyle(
                           fontSize: FontSizes.footer3,
                           fontFamily: AppFonts.montserrat,
@@ -405,24 +394,25 @@ class _BookAppointmentShellPageState extends State<BookAppointmentShellPage> {
                           height: 1.4,
                         ),
                       ),
+                      SizedBox(height: 10.h),
+                      Text(
+                        'No appointment request has been sent yet. Choose a backend availability slot in the upcoming request flow before this can be submitted.',
+                        style: TextStyle(
+                          fontSize: FontSizes.footer4,
+                          fontFamily: AppFonts.montserrat,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.primaryBlue11,
+                          height: 1.35,
+                        ),
+                      ),
                       SizedBox(height: 16.h),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: CarenetButton(
-                              label: 'Confirm request',
-                              onPressed: _confirmDraft,
-                            ),
-                          ),
-                          SizedBox(width: 12.w),
-                          Expanded(
-                            child: CarenetButton(
-                              label: 'Cancel draft',
-                              type: CarenetButtonType.outline,
-                              onPressed: _cancelDraft,
-                            ),
-                          ),
-                        ],
+                      SizedBox(
+                        width: double.infinity,
+                        child: CarenetButton(
+                          label: 'Clear details',
+                          type: CarenetButtonType.outline,
+                          onPressed: _cancelDraft,
+                        ),
                       ),
                     ],
                   ),
@@ -561,20 +551,4 @@ class _BookedAppointmentDraft {
   final String reason;
   final String visitType;
   final String status;
-
-  _BookedAppointmentDraft copyWith({
-    String? clinician,
-    String? preferredDate,
-    String? reason,
-    String? visitType,
-    String? status,
-  }) {
-    return _BookedAppointmentDraft(
-      clinician: clinician ?? this.clinician,
-      preferredDate: preferredDate ?? this.preferredDate,
-      reason: reason ?? this.reason,
-      visitType: visitType ?? this.visitType,
-      status: status ?? this.status,
-    );
-  }
 }

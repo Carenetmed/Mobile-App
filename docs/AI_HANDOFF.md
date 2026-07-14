@@ -223,7 +223,8 @@
 | 52.80 | Run Professional Verification Upload Regression Checkpoint: verify document list loading/empty/error, upload success with list reload, picker cancellation, invalid type, 10 MB size guard, safe backend upload failure, no signed URL/object-key/local path/raw checksum/admin/public exposure, docs/deferred-work accuracy, and absence of previews, admin review, rejection reasons, scanning claims, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing the next surface | M | **DONE** |
 | 52.81 | Decide Next Backend-Completed Flutter Surface After Verification Regression: review the verification upload regression, completed backend surface map, deferred-work register, scheduling staging-data blocker, remaining profile/account gaps, and release/staging risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.82 | Define Professional Basic Profile Edit Boundary: decide whether the next runtime slice should update professional `displayName` only or `displayName`/`category`/`specialty` together, how existing professional profile fields and `bio` are preserved, whether empty-profile creation is allowed, and how `editYourName`/Manage Profile should stay separate from website, address, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.83 | Wire Professional Display Name Update From Edit Your Name: update the existing `editYourName` route to read an existing professional self profile, prefill backend `displayName`, save only the changed `displayName` through `ProfileRepository.updateProfessionalMe` while preserving existing `category`, `specialty`, and `bio`, block empty-profile saves, keep validation/loading/safe-error states honest, and do not create a profile or send website, address, account, verification, availability, appointment, payment, review, call, calendar, note, prescription, staging, or production data | M | **NEXT** |
+| 52.83 | Wire Professional Display Name Update From Edit Your Name: update the existing `editYourName` route to read an existing professional self profile, prefill backend `displayName`, save only the changed `displayName` through `ProfileRepository.updateProfessionalMe` while preserving existing `category`, `specialty`, and `bio`, block empty-profile saves, keep validation/loading/safe-error states honest, and do not create a profile or send website, address, account, verification, availability, appointment, payment, review, call, calendar, note, prescription, staging, or production data | M | **DONE** |
+| 52.84 | Run Professional Display Name Update Regression Checkpoint: verify backend displayName prefill, display-name-only save, preservation of category/specialty/bio, empty-profile blocking, validation failure without repository update, safe backend failure without false success, docs/deferred-work accuracy, and absence of category/specialty editing, profile creation, website/address persistence, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing any broader profile-editing surface | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -239,16 +240,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.82)
+## Manual test (last completed: task 52.83)
 
-Task `52.82` is a decision-only boundary slice for professional basic profile
-editing.
+Task `52.83` wires professional display-name-only update from `editYourName`.
 
-1. Confirm `PROFESSIONAL_BASIC_PROFILE_EDIT_BOUNDARY.md` selects display-name-only update from `editYourName`.
-2. Confirm the runtime rule preserves existing `category`, `specialty`, and `bio` when saving a new `displayName`.
-3. Confirm empty-profile creation, category/specialty editing, website/address persistence, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging, and production claims remain deferred.
-4. `git diff --check` - no whitespace errors.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.83`
+1. `flutter test test/features/home/manage_profile_flow_test.dart -r expanded` - all 26 focused Manage Profile tests pass.
+2. `flutter analyze lib/features/Home/presentation/pages/edit_your_name_shell.dart lib/features/Home/presentation/pages/manage_profile_shell.dart test/features/home/manage_profile_flow_test.dart` - no issues.
+3. Confirm `PROFESSIONAL_DISPLAY_NAME_UPDATE_WIRING.md` records displayName-only behavior, preservation of `category`, `specialty`, and `bio`, empty-profile blocking, and safe failure behavior.
+4. Confirm category/specialty editing, profile creation, website/address persistence, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain deferred.
+5. `git diff --check` - no whitespace errors.
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.84`
 
 ## Previous runtime manual test baseline
 
@@ -608,6 +609,7 @@ editing.
 | 2026-07-15 | 52.80 | DONE - professional verification upload regression passed for list states, upload success/reload, cancellation, invalid type, size guard, safe failure, and private-data non-exposure |
 | 2026-07-15 | 52.81 | DONE - selected professional basic profile field editing as the next backend-completed Flutter surface, with a required boundary decision before runtime name/category/specialty wiring |
 | 2026-07-15 | 52.82 | DONE - accepted display-name-only professional profile edit boundary for `editYourName`, preserving existing category/specialty/bio and deferring profile creation plus broader profile fields |
+| 2026-07-15 | 52.83 | DONE - `editYourName` now updates backend professional displayName only, preserves existing category/specialty/bio, blocks empty-profile creation, and keeps broader profile fields deferred |
 
 ---
 

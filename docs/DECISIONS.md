@@ -1326,3 +1326,23 @@ claims remain out of scope.
 
 Next: 52.83 should wire professional display name update from `editYourName`
 with focused Manage Profile tests.
+
+## D137 - Professional display name update wired
+
+Task: 52.83
+
+Decision: `editYourName` now updates backend professional `displayName` only.
+
+Reason: The screen reads the current professional profile, pre-fills backend
+`displayName`, validates the submitted name, then calls
+`ProfileRepository.updateProfessionalMe` with the new `displayName` while
+preserving the existing `category`, `specialty`, and `bio`. Empty professional
+profiles block save instead of creating partial profiles. Save success appears
+only after repository success, and backend failures show safe copy.
+Category/specialty editing, profile creation, website/address persistence,
+account identity, verification, availability, appointment, payment, review,
+call, calendar, note, prescription, staging, and production behavior remain
+out of scope.
+
+Next: 52.84 should run a focused professional display name update regression
+checkpoint before selecting any broader profile-editing surface.

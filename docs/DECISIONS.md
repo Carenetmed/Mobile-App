@@ -614,3 +614,20 @@ save, avoids profile mutation, and shows success only after repository success.
 
 Next: 52.46 should decide the professional appointment lifecycle UI boundary
 before adding accept/decline/reschedule/complete controls.
+
+## D100 - Professional accept/decline before broader lifecycle UI
+
+Task: 52.46
+
+Decision: Add role-aware professional `Accept`/`Decline` as the first
+professional appointment lifecycle UI, before reschedule or complete.
+
+Reason: `AppointmentsShellPage` currently reads own backend appointments but
+does not know the signed-in role. Professional lifecycle controls should be
+shown only after reading authenticated session role from `SessionStore` or an
+equivalent existing auth boundary. `REQUESTED -> ACCEPTED/DECLINED` is the
+narrowest professional action pair; completion has scheduled-end-time rules and
+reschedule has additional time/availability UX.
+
+Next: 52.47 should wire professional accept/decline only for signed-in
+`PROFESSIONAL` users on eligible `REQUESTED` appointments.

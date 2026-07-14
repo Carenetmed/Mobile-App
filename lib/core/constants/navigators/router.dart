@@ -39,6 +39,7 @@ import 'package:app_t/features/Home/presentation/pages/manage_portfolio_shell.da
 import 'package:app_t/features/Home/presentation/pages/manage_readings.dart';
 import 'package:app_t/features/Home/presentation/pages/password_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/podcast_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/professional_verification_documents_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/published_articles_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/public_profile_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/qa_shell.dart';
@@ -201,6 +202,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _page(settings, const ManageProfileShellPage());
     case RouteName.managePortfolio:
       return _page(settings, const ManagePortfolioShellPage());
+    case RouteName.professionalVerificationDocuments:
+      return _page(
+        settings,
+        const ProfessionalVerificationDocumentsShellPage(),
+      );
     case RouteName.editYourName:
       return _page(settings, const EditYourNameShellPage());
     case RouteName.editYourWebsite:

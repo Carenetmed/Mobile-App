@@ -51,9 +51,9 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.77** - wire professional verification documents shell |
-| Last completed | **52.76** - professional verification repository boundary |
-| Registered routes | **70 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
+| NEXT task | **52.78** - decide professional verification upload UI/file picker boundary |
+| Last completed | **52.77** - professional verification documents shell |
+| Registered routes | **71 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
 ---
@@ -103,6 +103,7 @@ Do not use old chat history. Do not start the next task without my approval.
 |------|--------|
 | 2026-07-15 | Task 52.75 DONE - accepted the professional verification upload/list boundary with Manage Profile entry, owner list/status plus controlled upload flow, private-document rules, and repository-boundary next; DOC_SYNC NEXT -> 52.76 |
 | 2026-07-15 | Task 52.76 DONE - added the professional verification repository/API boundary for owner document list, upload-init, internal signed upload PUT, upload-complete, safe metadata, bearer auth, and focused tests; DOC_SYNC NEXT -> 52.77 |
+| 2026-07-15 | Task 52.77 DONE - Manage Profile now opens a backend-backed professional verification documents shell with safe owner list/status, empty/error states, private-data non-exposure, and upload deferred pending file-picker boundary; DOC_SYNC NEXT -> 52.78 |
 | 2026-07-15 | Task 52.74 DONE - selected professional verification upload/list as the next backend-completed Flutter lane, with a required boundary decision before runtime wiring; DOC_SYNC NEXT -> 52.75 |
 | 2026-07-15 | Task 52.73 DONE - Find Mentor public professionals regression passed for loading, empty, success, filtering, backend id handoff, no local fallback/direct fake booking, dashboard compatibility, and Specialist Details compatibility; DOC_SYNC NEXT -> 52.74 |
 | 2026-07-15 | Task 52.72 DONE - Find Mentor now reads backend public professionals where available, routes backend ids to Specialist Details, and avoids local fallback/direct fake booking in the backend path; DOC_SYNC NEXT -> 52.73 |

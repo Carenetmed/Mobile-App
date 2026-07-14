@@ -64,6 +64,7 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `publicProfile` | `publicProfile` | `PublicProfileShellPage` | `lib/features/Home/presentation/pages/public_profile_shell.dart` |
 | `manageProfile` | `manageProfile` | `ManageProfileShellPage` | `lib/features/Home/presentation/pages/manage_profile_shell.dart` |
 | `managePortfolio` | `managePortfolio` | `ManagePortfolioShellPage` | `lib/features/Home/presentation/pages/manage_portfolio_shell.dart` |
+| `professionalVerificationDocuments` | `professionalVerificationDocuments` | `ProfessionalVerificationDocumentsShellPage` | `lib/features/Home/presentation/pages/professional_verification_documents_shell.dart` |
 | `editYourName` | `editYourName` | `EditYourNameShellPage` | `lib/features/Home/presentation/pages/edit_your_name_shell.dart` |
 | `editYourWebsite` | `editYourWebsite` | `EditYourWebsiteShellPage` | `lib/features/Home/presentation/pages/edit_your_website_shell.dart` |
 | `addDescription` | `addDescription` | `AddDescriptionShellPage` | `lib/features/Home/presentation/pages/add_description_shell.dart` |
@@ -135,6 +136,7 @@ Figma `routes.json` uses paths like `/splash-screen`, `/sign-up-with-phone`. App
 | `/profile-view-from-user` | `publicProfile` |
 | `/manage-profile` | `manageProfile` |
 | `/manage-portfolio` | `managePortfolio` |
+| Professional verification owner documents | `professionalVerificationDocuments` |
 | `/edit-your-name` | `editYourName` |
 | `/edit-your-website` | `editYourWebsite` |
 | `/add-desicription` | `addDescription` |

@@ -2,16 +2,20 @@ import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/data/repositories/verification_repository.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/availability_window.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
+import 'package:app_t/features/Home/domain/entities/verification_document.dart';
+import 'package:app_t/features/Home/domain/entities/verification_upload_request.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_description_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_your_name_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_your_website_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/manage_profile_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/professional_verification_documents_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/set_address_shell.dart';
 import 'package:app_t/features/Messaging/presentation/pages/Messages.dart';
@@ -25,6 +29,7 @@ Future<void> _pumpManageProfile(
   WidgetTester tester, {
   ProfileRepository? profileRepository,
   SchedulingRepository? schedulingRepository,
+  VerificationRepository? verificationRepository,
 }) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
@@ -50,6 +55,11 @@ Future<void> _pumpManageProfile(
                   ),
               RouteName.setAddress: (_) => const SetAddressShellPage(),
               RouteName.messages: (_) => const MessagesPage(),
+              RouteName.professionalVerificationDocuments:
+                  (_) => ProfessionalVerificationDocumentsShellPage(
+                    verificationRepository:
+                        verificationRepository ?? _FakeVerificationRepository(),
+                  ),
               RouteName.selectedDates:
                   (_) => SelectedDatesShellPage(
                     schedulingRepository:
@@ -235,6 +245,34 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   }
 }
 
+class _FakeVerificationRepository implements VerificationRepository {
+  _FakeVerificationRepository({
+    this.documentsResult = const <VerificationDocument>[],
+    this.failure,
+  });
+
+  final List<VerificationDocument> documentsResult;
+  final Object? failure;
+  bool uploadCalled = false;
+
+  @override
+  Future<List<VerificationDocument>> documents() async {
+    final error = failure;
+    if (error != null) {
+      throw error;
+    }
+    return documentsResult;
+  }
+
+  @override
+  Future<VerificationDocument> uploadDocument(
+    VerificationUploadRequest request,
+  ) {
+    uploadCalled = true;
+    throw UnimplementedError();
+  }
+}
+
 void main() {
   testWidgets('manage profile shows local profile management sections', (
     tester,
@@ -286,6 +324,92 @@ void main() {
       find.text('Professional profile has not been created yet.'),
       findsNothing,
     );
+  });
+
+  testWidgets('verification entry opens owner document status shell', (
+    tester,
+  ) async {
+    await _pumpManageProfile(
+      tester,
+      verificationRepository: _FakeVerificationRepository(
+        documentsResult: <VerificationDocument>[
+          VerificationDocument(
+            id: 'document-1',
+            documentType: 'license',
+            status: 'PENDING',
+            storageProvider: 'gcs',
+            mimeType: 'application/pdf',
+            fileSizeBytes: 2048,
+            checksumProvided: true,
+            uploadedAt: DateTime.utc(2026, 7, 15),
+          ),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Verification documents'), findsOneWidget);
+    expect(find.text('Professional verification'), findsOneWidget);
+    expect(find.text('License'), findsOneWidget);
+    expect(find.text('PENDING'), findsOneWidget);
+    expect(find.text('document-1'), findsOneWidget);
+    expect(find.text('application/pdf'), findsOneWidget);
+    expect(find.text('2048 bytes'), findsOneWidget);
+    expect(find.text('Provided'), findsOneWidget);
+    expect(find.text('2026-07-15'), findsOneWidget);
+    expect(find.text('Upload document'), findsOneWidget);
+    expect(
+      find.text('Upload UI needs the file picker and retry flow slice.'),
+      findsOneWidget,
+    );
+    expect(find.text('signedUrl'), findsNothing);
+    expect(find.text('storageObjectKey'), findsNothing);
+    expect(find.text('private/object/key.pdf'), findsNothing);
+    expect(find.text('raw-secret-checksum'), findsNothing);
+    expect(find.text('Admin'), findsNothing);
+    expect(find.text('Payment'), findsNothing);
+    expect(find.text('Review'), findsNothing);
+    expect(find.text('Call'), findsNothing);
+    expect(find.text('Prescription'), findsNothing);
+  });
+
+  testWidgets('verification documents show empty state honestly', (
+    tester,
+  ) async {
+    await _pumpManageProfile(tester);
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('No verification documents are submitted yet.'),
+      findsOneWidget,
+    );
+    expect(find.text('Verification documents'), findsOneWidget);
+  });
+
+  testWidgets('verification documents show safe backend error', (tester) async {
+    await _pumpManageProfile(
+      tester,
+      verificationRepository: _FakeVerificationRepository(
+        failure: const AuthFailure(
+          type: AuthFailureType.server,
+          message: 'raw private storage failure',
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Service is unavailable. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw private storage failure'), findsNothing);
+    expect(find.text('Verification documents'), findsOneWidget);
   });
 
   testWidgets('manage profile keeps local screen when profile read fails', (

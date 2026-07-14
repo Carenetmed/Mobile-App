@@ -5,15 +5,21 @@ import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/data/repositories/verification_repository.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/presentation/state/public_profile_local_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ManageProfileShellPage extends StatefulWidget {
-  const ManageProfileShellPage({super.key, this.profileRepository});
+  const ManageProfileShellPage({
+    super.key,
+    this.profileRepository,
+    this.verificationRepository,
+  });
 
   final ProfileRepository? profileRepository;
+  final VerificationRepository? verificationRepository;
 
   @override
   State<ManageProfileShellPage> createState() => _ManageProfileShellPageState();
@@ -133,6 +139,11 @@ class _ManageProfileShellPageState extends State<ManageProfileShellPage> {
                   () => Navigator.pushNamed(context, RouteName.editYourName),
               onMessagePreview:
                   () => Navigator.pushNamed(context, RouteName.messages),
+              onVerification:
+                  () => Navigator.pushNamed(
+                    context,
+                    RouteName.professionalVerificationDocuments,
+                  ),
             ),
             SizedBox(height: 16.h),
             _BasicSection(
@@ -290,10 +301,12 @@ class _ManageActions extends StatelessWidget {
   const _ManageActions({
     required this.onEditBasic,
     required this.onMessagePreview,
+    required this.onVerification,
   });
 
   final VoidCallback onEditBasic;
   final VoidCallback onMessagePreview;
+  final VoidCallback onVerification;
 
   @override
   Widget build(BuildContext context) {
@@ -310,6 +323,11 @@ class _ManageActions extends StatelessWidget {
           icon: Icons.mail_outline,
           label: 'Message',
           onTap: onMessagePreview,
+        ),
+        _ActionChipButton(
+          icon: Icons.verified_user_outlined,
+          label: 'Verification',
+          onTap: onVerification,
         ),
         const _ActionChipButton(
           icon: Icons.event_outlined,

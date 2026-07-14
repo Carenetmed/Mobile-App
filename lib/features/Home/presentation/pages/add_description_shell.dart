@@ -5,7 +5,6 @@ import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
-import 'package:app_t/features/Home/presentation/state/public_profile_local_store.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
@@ -36,9 +35,7 @@ class _AddDescriptionShellPageState extends State<AddDescriptionShellPage> {
   @override
   void initState() {
     super.initState();
-    _descriptionController = TextEditingController(
-      text: PublicProfileLocalStore.profile.about,
-    );
+    _descriptionController = TextEditingController();
     _loadProfessionalProfile();
   }
 

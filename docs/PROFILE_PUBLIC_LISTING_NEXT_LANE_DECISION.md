@@ -1,7 +1,7 @@
 # Profile/public professional next lane decision
 
 **Task:** 52.28
-**Status:** Accepted decision before runtime wiring
+**Status:** Accepted decision; Search runtime wiring implemented in 52.29
 
 Purpose: choose the next profile/public-professional runtime lane after
 professional self-read and professional bio update are wired.
@@ -53,7 +53,7 @@ Recommended next slice:
 
 `52.29 - Wire Public Professional Listing To Search`
 
-Scope:
+Implemented:
 
 - Use `ProfileRepository.publicProfessionals`.
 - Map backend public professionals into a small presentation model for
@@ -63,8 +63,16 @@ Scope:
   public listing fields.
 - Show safe loading/error/empty states.
 - Do not send auth headers for public listing.
-- Keep local fallback only as an explicit unavailable-backend fallback, not as a
-  fake success claim.
+- Do not fall back to `SearchLocalStore` when the backend listing fails; show the
+  real error/empty state so integration failures can be debugged.
+
+Follow-up:
+
+`52.30 - Decide Next Backend-Integration Lane`
+
+Do not continue to public detail, Find Mentor, Specialist Details, availability,
+appointments, booking, ratings, prices, or payments without a new decision
+slice and backend contract check.
 
 ---
 

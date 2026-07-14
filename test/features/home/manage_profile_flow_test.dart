@@ -130,14 +130,15 @@ void main() {
     await _pumpManageProfile(tester);
 
     expect(find.text('Manage Profile'), findsOneWidget);
-    expect(find.text('Old People Circle'), findsOneWidget);
+    expect(find.text('Professional profile'), findsOneWidget);
     expect(
       find.text('Professional profile has not been created yet.'),
       findsOneWidget,
     );
     expect(find.text('Basic'), findsOneWidget);
-    expect(find.text('Dr. Lagbaja Omo Tamedu'), findsOneWidget);
-    expect(find.text('Lagbaja Eye Clinic & Consulting firm'), findsOneWidget);
+    expect(find.text('Not available'), findsWidgets);
+    expect(find.text('Dr. Lagbaja Omo Tamedu'), findsNothing);
+    expect(find.text('Lagbaja Eye Clinic & Consulting firm'), findsNothing);
     expect(find.text('Business'), findsOneWidget);
 
     await tester.drag(find.byType(ListView), const Offset(0, -650));
@@ -190,7 +191,8 @@ void main() {
 
     expect(find.text('Backend is not configured yet.'), findsOneWidget);
     expect(find.text('Manage Profile'), findsOneWidget);
-    expect(find.text('Dr. Lagbaja Omo Tamedu'), findsOneWidget);
+    expect(find.text('Not available'), findsWidgets);
+    expect(find.text('Dr. Lagbaja Omo Tamedu'), findsNothing);
     expect(find.text('raw config message'), findsNothing);
   });
 

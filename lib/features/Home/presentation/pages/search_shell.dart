@@ -1,26 +1,40 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
+import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
-import 'package:app_t/features/Home/presentation/state/search_local_store.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SearchShellPage extends StatefulWidget {
-  const SearchShellPage({super.key});
+  const SearchShellPage({super.key, this.profileRepository});
+
+  final ProfileRepository? profileRepository;
 
   @override
   State<SearchShellPage> createState() => _SearchShellPageState();
 }
 
 class _SearchShellPageState extends State<SearchShellPage> {
+  static const String _allCategory = 'All';
+
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = SearchLocalStore.allCategory;
+  String _selectedCategory = _allCategory;
+  List<PublicProfessional> _publicProfessionals = const <PublicProfessional>[];
+  String? _publicListingMessage;
+  bool _isLoadingPublicProfessionals = true;
+
+  ProfileRepository get _profileRepository =>
+      widget.profileRepository ?? sl<ProfileRepository>();
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_handleSearchChanged);
+    _loadPublicProfessionals();
   }
 
   @override
@@ -34,138 +48,211 @@ class _SearchShellPageState extends State<SearchShellPage> {
     setState(() {});
   }
 
+  Future<void> _loadPublicProfessionals() async {
+    setState(() {
+      _isLoadingPublicProfessionals = true;
+      _publicListingMessage = 'Loading verified professionals...';
+    });
+
+    try {
+      final professionals = await _profileRepository.publicProfessionals();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _publicProfessionals = professionals;
+        _isLoadingPublicProfessionals = false;
+        _publicListingMessage =
+            professionals.isEmpty
+                ? 'No verified professionals are available yet.'
+                : null;
+      });
+    } on AuthFailure catch (failure) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _publicProfessionals = const <PublicProfessional>[];
+        _isLoadingPublicProfessionals = false;
+        _publicListingMessage = _safePublicListingError(failure);
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _publicProfessionals = const <PublicProfessional>[];
+        _isLoadingPublicProfessionals = false;
+        _publicListingMessage = 'Something went wrong. Please try again.';
+      });
+    }
+  }
+
+  String _safePublicListingError(AuthFailure failure) {
+    return switch (failure.type) {
+      AuthFailureType.missingConfiguration => 'Backend is not configured yet.',
+      AuthFailureType.unauthorized => 'Please sign in again.',
+      AuthFailureType.validation => 'Please check the details and try again.',
+      AuthFailureType.server ||
+      AuthFailureType.network => 'Service is unavailable. Please try again.',
+      AuthFailureType.invalidCredentials ||
+      AuthFailureType.unknown => 'Something went wrong. Please try again.',
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    final specialists = SearchLocalStore.filter(
+    final professionals = _resolveProfessionals(
       query: _searchController.text,
       category: _selectedCategory,
     );
+    final categories = _resolveCategories();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
-        child: ValueListenableBuilder<Set<String>>(
-          valueListenable: SearchLocalStore.requestedSpecialistIds,
-          builder: (context, requestedIds, _) {
-            return ListView(
-              padding: REdgeInsets.fromLTRB(16.w, 20.h, 16.w, 24.h),
+        child: ListView(
+          padding: REdgeInsets.fromLTRB(16.w, 20.h, 16.w, 24.h),
+          children: [
+            Text(
+              'Search specialists',
+              style: TextStyle(
+                fontSize: FontSizes.heading3,
+                fontFamily: AppFonts.montserrat,
+                fontWeight: FontWeight.w700,
+                color: AppColors.kBlack,
+              ),
+            ),
+            SizedBox(height: 14.h),
+            if (_publicListingMessage != null) ...[
+              _PublicListingStateCard(message: _publicListingMessage!),
+              SizedBox(height: 14.h),
+            ],
+            CarenetTextField(
+              controller: _searchController,
+              hintText: 'Search by specialist or condition',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon:
+                  _searchController.text.isEmpty
+                      ? null
+                      : IconButton(
+                        tooltip: 'Clear search',
+                        icon: const Icon(Icons.close),
+                        onPressed: _searchController.clear,
+                      ),
+            ),
+            SizedBox(height: 14.h),
+            SizedBox(
+              height: 38.h,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  final selected = category == _selectedCategory;
+                  return ChoiceChip(
+                    label: Text(category),
+                    selected: selected,
+                    onSelected:
+                        (_) => setState(() => _selectedCategory = category),
+                    selectedColor: AppColors.primaryBlue5,
+                    backgroundColor: AppColors.kWhite,
+                    labelStyle: TextStyle(
+                      fontFamily: AppFonts.montserrat,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                      color: selected ? AppColors.kWhite : AppColors.kBlack,
+                      fontSize: FontSizes.footer3,
+                    ),
+                    side: BorderSide(
+                      color:
+                          selected ? AppColors.primaryBlue5 : AppColors.white04,
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Row(
               children: [
+                Expanded(
+                  child: Text(
+                    'Available specialists',
+                    style: TextStyle(
+                      fontSize: FontSizes.body3,
+                      fontFamily: AppFonts.montserrat,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.kBlack,
+                    ),
+                  ),
+                ),
                 Text(
-                  'Search specialists',
+                  '${professionals.length} found',
                   style: TextStyle(
-                    fontSize: FontSizes.heading3,
+                    fontSize: FontSizes.footer3,
                     fontFamily: AppFonts.montserrat,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.kBlack,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.primaryBlue11,
                   ),
                 ),
-                SizedBox(height: 14.h),
-                CarenetTextField(
-                  controller: _searchController,
-                  hintText: 'Search by specialist or condition',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon:
-                      _searchController.text.isEmpty
-                          ? null
-                          : IconButton(
-                            tooltip: 'Clear search',
-                            icon: const Icon(Icons.close),
-                            onPressed: _searchController.clear,
-                          ),
-                ),
-                SizedBox(height: 14.h),
-                SizedBox(
-                  height: 38.h,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: SearchLocalStore.categories.length,
-                    separatorBuilder: (_, __) => SizedBox(width: 8.w),
-                    itemBuilder: (context, index) {
-                      final category = SearchLocalStore.categories[index];
-                      final selected = category == _selectedCategory;
-                      return ChoiceChip(
-                        label: Text(category),
-                        selected: selected,
-                        onSelected:
-                            (_) => setState(() => _selectedCategory = category),
-                        selectedColor: AppColors.primaryBlue5,
-                        backgroundColor: AppColors.kWhite,
-                        labelStyle: TextStyle(
-                          fontFamily: AppFonts.montserrat,
-                          fontWeight:
-                              selected ? FontWeight.w600 : FontWeight.w400,
-                          color: selected ? AppColors.kWhite : AppColors.kBlack,
-                          fontSize: FontSizes.footer3,
-                        ),
-                        side: BorderSide(
-                          color:
-                              selected
-                                  ? AppColors.primaryBlue5
-                                  : AppColors.white04,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: 20.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Available specialists',
-                        style: TextStyle(
-                          fontSize: FontSizes.body3,
-                          fontFamily: AppFonts.montserrat,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.kBlack,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      '${specialists.length} found',
-                      style: TextStyle(
-                        fontSize: FontSizes.footer3,
-                        fontFamily: AppFonts.montserrat,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.primaryBlue11,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12.h),
-                if (specialists.isEmpty)
-                  _SearchEmptyState(
-                    onReset:
-                        () => setState(() {
-                          _selectedCategory = SearchLocalStore.allCategory;
-                          _searchController.clear();
-                        }),
-                  )
-                else
-                  ...specialists.map(
-                    (specialist) => Padding(
-                      padding: REdgeInsets.only(bottom: 12.h),
-                      child: _SpecialistCard(
-                        specialist: specialist,
-                        requested: requestedIds.contains(specialist.id),
-                        onViewProfile:
-                            () => _showSpecialistProfile(context, specialist),
-                        onRequest:
-                            () => SearchLocalStore.markRequested(specialist.id),
-                      ),
-                    ),
-                  ),
               ],
-            );
-          },
+            ),
+            SizedBox(height: 12.h),
+            if (_isLoadingPublicProfessionals)
+              const SizedBox.shrink()
+            else if (professionals.isEmpty)
+              _SearchEmptyState(
+                onReset:
+                    () => setState(() {
+                      _selectedCategory = _allCategory;
+                      _searchController.clear();
+                    }),
+              )
+            else
+              ...professionals.map(
+                (professional) => Padding(
+                  padding: REdgeInsets.only(bottom: 12.h),
+                  child: _SpecialistCard(
+                    professional: professional,
+                    onViewProfile:
+                        () => _showSpecialistProfile(context, professional),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
 
+  List<_SearchProfessionalView> _resolveProfessionals({
+    required String query,
+    required String category,
+  }) {
+    return _publicProfessionals
+        .map(_SearchProfessionalView.fromPublic)
+        .where((professional) => professional.matches(query, category))
+        .toList(growable: false);
+  }
+
+  List<String> _resolveCategories() {
+    final categories = <String>{_allCategory};
+    for (final professional in _publicProfessionals) {
+      final category = professional.category.trim();
+      if (category.isNotEmpty) {
+        categories.add(category);
+      }
+      final specialty = professional.specialty?.trim();
+      if (specialty != null && specialty.isNotEmpty) {
+        categories.add(specialty);
+      }
+    }
+    return categories.toList(growable: false);
+  }
+
   void _showSpecialistProfile(
     BuildContext context,
-    SearchSpecialist specialist,
+    _SearchProfessionalView specialist,
   ) {
     showModalBottomSheet<void>(
       context: context,
@@ -222,16 +309,12 @@ class _SearchShellPageState extends State<SearchShellPage> {
 
 class _SpecialistCard extends StatelessWidget {
   const _SpecialistCard({
-    required this.specialist,
-    required this.requested,
+    required this.professional,
     required this.onViewProfile,
-    required this.onRequest,
   });
 
-  final SearchSpecialist specialist;
-  final bool requested;
+  final _SearchProfessionalView professional;
   final VoidCallback onViewProfile;
-  final VoidCallback onRequest;
 
   @override
   Widget build(BuildContext context) {
@@ -247,22 +330,15 @@ class _SpecialistCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(10.r),
-            child: Image.asset(
-              specialist.imageAsset,
+            child: Container(
               width: 72.r,
               height: 72.r,
-              fit: BoxFit.cover,
-              errorBuilder:
-                  (_, __, ___) => Container(
-                    width: 72.r,
-                    height: 72.r,
-                    color: AppColors.blue02,
-                    child: Icon(
-                      Icons.person_outline,
-                      color: AppColors.primaryBlue5,
-                      size: 30.r,
-                    ),
-                  ),
+              color: AppColors.blue02,
+              child: Icon(
+                Icons.verified_user_outlined,
+                color: AppColors.primaryBlue5,
+                size: 30.r,
+              ),
             ),
           ),
           SizedBox(width: 12.w),
@@ -271,7 +347,7 @@ class _SpecialistCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  specialist.name,
+                  professional.name,
                   style: TextStyle(
                     fontSize: FontSizes.footer2,
                     fontFamily: AppFonts.montserrat,
@@ -281,7 +357,7 @@ class _SpecialistCard extends StatelessWidget {
                 ),
                 SizedBox(height: 3.h),
                 Text(
-                  specialist.role,
+                  professional.role,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -295,17 +371,15 @@ class _SpecialistCard extends StatelessWidget {
                 Wrap(
                   spacing: 10.w,
                   runSpacing: 4.h,
-                  children: [
-                    _MetaLabel(icon: Icons.star, label: specialist.rating),
-                    _MetaLabel(
-                      icon: Icons.schedule,
-                      label: specialist.availability,
-                    ),
-                    _MetaLabel(
-                      icon: Icons.payments_outlined,
-                      label: specialist.priceLabel,
-                    ),
-                  ],
+                  children:
+                      professional.metaLabels
+                          .map(
+                            (label) => _MetaLabel(
+                              icon: label.icon,
+                              label: label.label,
+                            ),
+                          )
+                          .toList(),
                 ),
                 SizedBox(height: 10.h),
                 Wrap(
@@ -317,14 +391,9 @@ class _SpecialistCard extends StatelessWidget {
                       child: const Text('View profile'),
                     ),
                     FilledButton.icon(
-                      onPressed: onRequest,
-                      icon: Icon(
-                        requested
-                            ? Icons.check_circle_outline
-                            : Icons.calendar_today_outlined,
-                        size: 18.r,
-                      ),
-                      label: Text(requested ? 'Requested locally' : 'Schedule'),
+                      onPressed: null,
+                      icon: Icon(Icons.calendar_today_outlined, size: 18.r),
+                      label: const Text('Booking deferred'),
                     ),
                   ],
                 ),
@@ -332,6 +401,107 @@ class _SpecialistCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SearchProfessionalView {
+  const _SearchProfessionalView({
+    required this.id,
+    required this.name,
+    required this.role,
+    required this.categories,
+    required this.summary,
+    required this.metaLabels,
+  });
+
+  factory _SearchProfessionalView.fromPublic(PublicProfessional professional) {
+    final category = professional.category.trim();
+    final specialty = professional.specialty?.trim();
+    final categories = <String>[
+      if (category.isNotEmpty) category,
+      if (specialty != null && specialty.isNotEmpty) specialty,
+    ];
+    return _SearchProfessionalView(
+      id: professional.id,
+      name: professional.displayName,
+      role:
+          specialty == null || specialty.isEmpty
+              ? category
+              : '$category - $specialty',
+      categories: categories,
+      summary:
+          professional.bio?.trim().isNotEmpty == true
+              ? professional.bio!.trim()
+              : 'Verified professional profile.',
+      metaLabels: const <_ProfessionalMetaLabel>[
+        _ProfessionalMetaLabel(
+          icon: Icons.verified_outlined,
+          label: 'Verified',
+        ),
+      ],
+    );
+  }
+
+  final String id;
+  final String name;
+  final String role;
+  final List<String> categories;
+  final String summary;
+  final List<_ProfessionalMetaLabel> metaLabels;
+
+  bool matches(String query, String category) {
+    final normalizedQuery = query.trim().toLowerCase();
+    final categoryMatches =
+        category == _SearchShellPageState._allCategory ||
+        categories.any((item) => item.toLowerCase() == category.toLowerCase());
+
+    if (!categoryMatches) {
+      return false;
+    }
+    if (normalizedQuery.isEmpty) {
+      return true;
+    }
+
+    return name.toLowerCase().contains(normalizedQuery) ||
+        role.toLowerCase().contains(normalizedQuery) ||
+        summary.toLowerCase().contains(normalizedQuery) ||
+        categories.any((item) => item.toLowerCase().contains(normalizedQuery));
+  }
+}
+
+class _ProfessionalMetaLabel {
+  const _ProfessionalMetaLabel({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+}
+
+class _PublicListingStateCard extends StatelessWidget {
+  const _PublicListingStateCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: REdgeInsets.all(12.r),
+      decoration: BoxDecoration(
+        color: AppColors.kWhite,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.white04),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          fontSize: FontSizes.footer4,
+          fontFamily: AppFonts.montserrat,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primaryBlue5,
+          height: 1.35,
+        ),
       ),
     );
   }

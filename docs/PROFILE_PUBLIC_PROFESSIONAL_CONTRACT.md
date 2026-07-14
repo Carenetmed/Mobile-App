@@ -194,6 +194,10 @@ Next lane decision:
 
 Implemented as a decision in `PROFILE_PUBLIC_LISTING_NEXT_LANE_DECISION.md`.
 Decision summary: wire public verified professional listing to Search list cards
-only. Public detail, Find Mentor, Specialist Details, availability,
-appointments, booking, ratings, prices, payments, reviews, calls, calendar sync,
-verification, patient profile, and broader profile edits remain deferred.
+only.
+
+Implemented in 52.29: Search list cards read `ProfileRepository.publicProfessionals`
+without local seeded fallback on backend failure. Public detail, Find Mentor,
+Specialist Details, availability, appointments, booking, ratings, prices,
+payments, reviews, calls, calendar sync, verification, patient profile, and
+broader profile edits remain deferred.

@@ -492,3 +492,21 @@ no fake booked state, and no fallback request when the backend fails.
 
 Next: 52.39 should wire the patient's own appointment list read so submitted
 requests become visible before any lifecycle mutation UI is added.
+
+## D093 - Own appointment list read
+
+Task: 52.39
+
+Decision: Wire the `appointments` screen to `SchedulingRepository.ownAppointments`
+for backend-owned appointment visibility. Render backend appointment statuses
+as read-only upcoming/recent cards and show safe loading, empty, and error
+states without falling back to seeded local appointment cards.
+
+Reason: After Search can submit a real request, the user needs a backend-owned
+place to see requested/accepted/completed state before cancellation,
+rescheduling, professional lifecycle actions, payments, notifications, or
+calendar behavior are added.
+
+Next: 52.40 should decide the next scheduling UI lane deliberately: patient
+cancellation, professional availability management, professional lifecycle UI,
+or a regression checkpoint.

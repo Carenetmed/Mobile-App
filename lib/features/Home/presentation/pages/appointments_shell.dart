@@ -1,34 +1,39 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class AppointmentsShellPage extends StatelessWidget {
-  const AppointmentsShellPage({super.key});
+class AppointmentsShellPage extends StatefulWidget {
+  const AppointmentsShellPage({super.key, this.schedulingRepository, this.now});
 
-  static const List<_AppointmentItem> _upcoming = <_AppointmentItem>[
-    _AppointmentItem(
-      title: 'Private consult with Dr. Lagbaja',
-      date: 'Tue, 28 May',
-      time: '10:30 AM',
-      mode: 'Video visit',
-      status: 'Booked',
-    ),
-  ];
+  final SchedulingRepository? schedulingRepository;
+  final DateTime? now;
 
-  static const List<_AppointmentItem> _history = <_AppointmentItem>[
-    _AppointmentItem(
-      title: 'Nutrition follow-up',
-      date: 'Mon, 13 May',
-      time: '4:00 PM',
-      mode: 'In person',
-      status: 'Completed',
-    ),
-  ];
+  @override
+  State<AppointmentsShellPage> createState() => _AppointmentsShellPageState();
+}
+
+class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
+  late final Future<List<AppointmentSummary>> _appointmentsFuture;
+
+  SchedulingRepository get _schedulingRepository =>
+      widget.schedulingRepository ?? sl<SchedulingRepository>();
+
+  DateTime get _now => widget.now ?? DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _appointmentsFuture = _schedulingRepository.ownAppointments();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +75,7 @@ class AppointmentsShellPage extends StatelessWidget {
               ),
               SizedBox(height: 12.h),
               Text(
-                'This is local/mock scheduling state for now, but it gives appointment notifications a real home and a clean handoff into booking.',
+                'Backend appointment requests and statuses appear here when your session can read them.',
                 style: TextStyle(
                   fontSize: FontSizes.footer2,
                   fontFamily: AppFonts.montserrat,
@@ -90,18 +95,97 @@ class AppointmentsShellPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 24.h),
-              _SectionLabel(label: 'Upcoming'),
-              SizedBox(height: 10.h),
-              ..._upcoming.map((item) => _AppointmentCard(item: item)),
-              SizedBox(height: 24.h),
-              _SectionLabel(label: 'Recent'),
-              SizedBox(height: 10.h),
-              ..._history.map((item) => _AppointmentCard(item: item)),
+              FutureBuilder<List<AppointmentSummary>>(
+                future: _appointmentsFuture,
+                builder: (context, snapshot) {
+                  final state = snapshot.connectionState;
+                  if (state == ConnectionState.waiting ||
+                      state == ConnectionState.active) {
+                    return const _AppointmentStateCard(
+                      message: 'Loading appointments...',
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return _AppointmentStateCard(
+                      message: _safeAppointmentsError(snapshot.error),
+                    );
+                  }
+
+                  final appointments =
+                      snapshot.data ?? const <AppointmentSummary>[];
+                  if (appointments.isEmpty) {
+                    return const _AppointmentStateCard(
+                      message: 'No backend appointments are available yet.',
+                    );
+                  }
+
+                  final upcoming = appointments
+                      .where(_isUpcomingAppointment)
+                      .map(_AppointmentItem.fromSummary)
+                      .toList(growable: false);
+                  final recent = appointments
+                      .where(
+                        (appointment) => !_isUpcomingAppointment(appointment),
+                      )
+                      .map(_AppointmentItem.fromSummary)
+                      .toList(growable: false);
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SectionLabel(label: 'Upcoming'),
+                      SizedBox(height: 10.h),
+                      if (upcoming.isEmpty)
+                        const _AppointmentStateCard(
+                          message: 'No upcoming backend appointments.',
+                        )
+                      else
+                        ...upcoming.map((item) => _AppointmentCard(item: item)),
+                      SizedBox(height: 24.h),
+                      _SectionLabel(label: 'Recent'),
+                      SizedBox(height: 10.h),
+                      if (recent.isEmpty)
+                        const _AppointmentStateCard(
+                          message: 'No recent backend appointments.',
+                        )
+                      else
+                        ...recent.map((item) => _AppointmentCard(item: item)),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  bool _isUpcomingAppointment(AppointmentSummary appointment) {
+    if (appointment.status == AppointmentStatus.cancelled ||
+        appointment.status == AppointmentStatus.declined ||
+        appointment.status == AppointmentStatus.completed) {
+      return false;
+    }
+    return appointment.requestedStartAt.isAfter(_now) ||
+        appointment.requestedStartAt.isAtSameMomentAs(_now);
+  }
+
+  static String _safeAppointmentsError(Object? error) {
+    if (error is AuthFailure) {
+      return switch (error.type) {
+        AuthFailureType.missingConfiguration =>
+          'Backend is not configured yet.',
+        AuthFailureType.unauthorized => 'Please sign in again.',
+        AuthFailureType.validation => 'Please check the details and try again.',
+        AuthFailureType.server ||
+        AuthFailureType.network => 'Service is unavailable. Please try again.',
+        AuthFailureType.invalidCredentials ||
+        AuthFailureType.unknown => 'Something went wrong. Please try again.',
+      };
+    }
+    return 'Something went wrong. Please try again.';
   }
 }
 
@@ -530,11 +614,61 @@ class _AppointmentItem {
     required this.status,
   });
 
+  factory _AppointmentItem.fromSummary(AppointmentSummary summary) {
+    return _AppointmentItem(
+      title: 'Appointment with ${summary.professionalProfileId}',
+      date: _dateLabel(summary.requestedStartAt),
+      time: _timeLabel(summary.requestedStartAt),
+      mode: 'Backend appointment request',
+      status: summary.status.wireName,
+    );
+  }
+
   final String title;
   final String date;
   final String time;
   final String mode;
   final String status;
+
+  static String _dateLabel(DateTime date) {
+    return '${date.year.toString().padLeft(4, '0')}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
+  }
+
+  static String _timeLabel(DateTime date) {
+    return '${date.hour.toString().padLeft(2, '0')}:'
+        '${date.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+class _AppointmentStateCard extends StatelessWidget {
+  const _AppointmentStateCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: REdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: AppColors.blue02,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.white04),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          fontSize: FontSizes.footer3,
+          fontFamily: AppFonts.montserrat,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primaryBlue11,
+          height: 1.35,
+        ),
+      ),
+    );
+  }
 }
 
 class _BookedAppointmentDraft {

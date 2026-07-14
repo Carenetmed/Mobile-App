@@ -161,6 +161,12 @@ Implementation status:
 - keep own appointment list, professional lifecycle, payments, notifications,
   reviews, calls, calendar sync, notes, and prescriptions deferred
 
+Follow-up status:
+
+- Own appointment list read is done in 52.39 through `SchedulingRepository.ownAppointments`
+- Appointment lifecycle controls remain deferred until the next scheduling UI
+  lane is chosen
+
 ---
 
 ## Out of scope

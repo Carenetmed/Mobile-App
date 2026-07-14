@@ -189,7 +189,8 @@
 | 52.46 | Decide Professional Appointment Lifecycle UI Boundary: inspect Appointments role assumptions, scheduling repository lifecycle methods, backend contract, and current professional workspace readiness before choosing accept/decline/reschedule/complete UI scope; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.47 | Wire Professional Appointment Accept Decline: make Appointments role-aware from authenticated session state, show Accept/Decline only for professional users on eligible REQUESTED appointments, call SchedulingRepository accept/decline, update visible status from backend response, and keep reschedule/complete/payments/notifications/calendar/notes deferred | L | **DONE** |
 | 52.48 | Run Professional Appointment Lifecycle Regression: verify role-aware Appointments behavior for patient cancel, professional accept/decline, safe errors, terminal states, and no reschedule/complete/payment/calendar/notes UI before deciding any broader lifecycle action | M | **DONE** |
-| 52.49 | Decide Appointment Reschedule Or Completion Boundary: inspect current lifecycle proof, backend rules, Appointments UI readiness, and deferred risks before choosing reschedule, completion, or another regression/fix pass; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.49 | Decide Appointment Reschedule Or Completion Boundary: inspect current lifecycle proof, backend rules, Appointments UI readiness, and deferred risks before choosing reschedule, completion, or another regression/fix pass; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.50 | Wire Professional Appointment Completion: show Complete only for professional users on accepted appointments whose scheduled end time has passed, call SchedulingRepository.completeAppointment, update visible status from backend response, and keep reschedule/payments/notifications/calendar/reviews/notes/prescriptions deferred | L | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -205,18 +206,17 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.48)
+## Manual test (last completed: task 52.49)
 
-Task `52.48` is a professional appointment lifecycle regression checkpoint. It
-adds explicit proof that patient cancel and professional accept/decline remain
-role-aware, safe, and narrow before broader lifecycle actions.
+Task `52.49` is a decision-only appointment lifecycle boundary slice. It
+selects professional completion as the next narrow lifecycle action before
+reschedule.
 
-1. `flutter test test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart` - passes
-2. `flutter analyze lib/features/Home/presentation/pages/appointments_shell.dart test/features/home/appointments_flow_test.dart lib/features/Home/data/repositories/scheduling_repository.dart lib/features/Home/data/services/scheduling_api_client.dart test/features/home/scheduling_repository_test.dart` - no issues
+1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/APPOINTMENT_RESCHEDULE_COMPLETION_BOUNDARY_DECISION.md` - passes
+2. Confirm `APPOINTMENT_RESCHEDULE_COMPLETION_BOUNDARY_DECISION.md` chooses professional completion before reschedule.
 3. `git diff --check` - passes
-4. Confirm `PROFESSIONAL_APPOINTMENT_LIFECYCLE_REGRESSION.md` records role, state, failure, and deferred-action proof.
-5. Confirm professional reschedule/complete, payments, notifications, calendar sync, notes, and prescriptions remain deferred.
-6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.49`
+4. Confirm reschedule, payments, notifications, calendar sync, reviews, notes, and prescriptions remain deferred.
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.50`
 
 ## Previous runtime manual test baseline
 

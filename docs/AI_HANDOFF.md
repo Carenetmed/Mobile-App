@@ -183,7 +183,8 @@
 | 52.40 | Decide the next scheduling UI lane after request/list visibility: choose patient cancellation, professional availability management, professional appointment lifecycle, or regression checkpoint; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.41 | Wire patient appointment cancellation: add a cancel action only for eligible own appointment cards, call `SchedulingRepository.cancelAppointment`, show safe loading/success/error states, update visible status from backend response, and keep professional lifecycle/reschedule/complete/payments/notifications/calendar/notes deferred | M | **DONE** |
 | 52.42 | Decide whether to pause scheduling for regression or continue to professional availability management: review request/list/cancel coverage, known gaps, and UI readiness before adding professional availability or lifecycle controls; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.43 | Run scheduling patient-path regression: strengthen focused tests and docs for Search listing/availability/request plus Appointments own-list/cancel behavior, prove no local fallback/fake success returned, and do not add professional availability/lifecycle runtime behavior | M | **NEXT** |
+| 52.43 | Run scheduling patient-path regression: strengthen focused tests and docs for Search listing/availability/request plus Appointments own-list/cancel behavior, prove no local fallback/fake success returned, and do not add professional availability/lifecycle runtime behavior | M | **DONE** |
+| 52.44 | Decide Professional Availability Management UI Boundary: inspect Manage Profile business-hour/selected-date UI, scheduling repository own-availability read/replace contract, docs, and blueprint evidence before choosing the next narrow professional availability slice; do not implement runtime behavior in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -199,16 +200,18 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.42)
+## Manual test (last completed: task 52.43)
 
-Task `52.42` is a decision-only scheduling regression checkpoint slice. No
-runtime behavior changed.
+Task `52.43` is a scheduling patient-path regression slice. It adds proof for
+accepted appointment cancellation and records the regression surface without
+adding new scheduling product behavior.
 
-1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/SCHEDULING_REGRESSION_DECISION.md` - passes
-2. Confirm `SCHEDULING_REGRESSION_DECISION.md` selects scheduling patient-path regression before professional availability management.
+1. `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/search_flow_test.dart test/features/home/appointments_flow_test.dart` - passes
+2. `flutter analyze lib/features/Home/domain/services/appointment_request_time_options.dart lib/features/Home/presentation/pages/search_shell.dart lib/features/Home/presentation/pages/appointments_shell.dart test/features/home/appointment_request_time_options_test.dart test/features/home/search_flow_test.dart test/features/home/appointments_flow_test.dart` - no issues
 3. `git diff --check` - passes
-4. Confirm professional availability management, professional lifecycle UI, reschedule, complete, payments, notifications, calendar sync, notes, and prescriptions remain deferred.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.43`
+4. Confirm `SCHEDULING_PATIENT_PATH_REGRESSION.md` records Search listing/availability/request and Appointments own-list/cancel proof.
+5. Confirm professional availability management, professional lifecycle UI, reschedule, complete, payments, notifications, calendar sync, notes, and prescriptions remain deferred.
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.44`
 
 ## Previous runtime manual test baseline
 

@@ -223,6 +223,39 @@ void main() {
     expect(find.text('Cancel appointment'), findsNothing);
   });
 
+  testWidgets(
+    'accepted upcoming appointment can be cancelled through backend',
+    (tester) async {
+      final schedulingRepository = _FakeSchedulingRepository(
+        appointments: <AppointmentSummary>[
+          _appointment(
+            professionalProfileId: 'professional-accepted',
+            requestedStartAt: DateTime(2026, 7, 15, 10, 30),
+            status: AppointmentStatus.accepted,
+          ),
+        ],
+      );
+
+      await _pumpAppointments(
+        tester,
+        now: DateTime(2026, 7, 14, 8),
+        schedulingRepository: schedulingRepository,
+      );
+
+      expect(find.text('ACCEPTED'), findsOneWidget);
+
+      await tester.tap(find.text('Cancel appointment'));
+      await tester.pumpAndSettle();
+
+      expect(schedulingRepository.cancelledAppointmentIds, <String>[
+        'appointment-1',
+      ]);
+      expect(find.text('CANCELLED'), findsOneWidget);
+      expect(find.text('ACCEPTED'), findsNothing);
+      expect(find.text('Cancel appointment'), findsNothing);
+    },
+  );
+
   testWidgets('terminal appointments do not expose cancellation action', (
     tester,
   ) async {

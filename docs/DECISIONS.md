@@ -561,3 +561,21 @@ or hidden local state.
 
 Next: 52.43 should strengthen focused tests/docs for the scheduling patient
 path without adding new runtime product behavior.
+
+## D097 - Scheduling patient-path regression passed
+
+Task: 52.43
+
+Decision: Keep scheduling feature expansion frozen until the focused patient
+path regression is recorded, then move to a decision-only professional
+availability boundary slice.
+
+Reason: The current patient path has focused proof for public listing,
+availability, generated request options, backend request success/failure, own
+appointment list rendering, requested/accepted cancellation, terminal/recent
+hidden actions, and safe failure behavior. That gives a cleaner base before
+touching professional availability management.
+
+Next: 52.44 should decide the professional availability management UI boundary
+before replacing local business-hour/selected-date drafts with backend
+availability read/replace behavior.

@@ -340,6 +340,13 @@ void main() {
     expect(find.text('Weekly availability'), findsOneWidget);
     expect(find.text('Monday'), findsOneWidget);
     expect(find.text('09:00 - 17:00'), findsOneWidget);
+    expect(find.text('Payment'), findsNothing);
+    expect(find.text('Notification'), findsNothing);
+    expect(find.text('Calendar sync'), findsNothing);
+    expect(find.text('Review'), findsNothing);
+    expect(find.text('Prescription'), findsNothing);
+    expect(find.text('Call'), findsNothing);
+    expect(find.text('Admin'), findsNothing);
 
     await tester.tap(find.text('Save availability'));
     await tester.pumpAndSettle();

@@ -427,6 +427,14 @@ void main() {
     expect(find.text('07/14 09:00-09:30 (30 min)'), findsOneWidget);
     expect(find.text('Saturday'), findsNothing);
     expect(find.text('10:00am'), findsNothing);
+    expect(find.text('Payment'), findsNothing);
+    expect(find.text('Notification'), findsNothing);
+    expect(find.text('Calendar'), findsNothing);
+    expect(find.text('Review'), findsNothing);
+    expect(find.text('Notes'), findsNothing);
+    expect(find.text('Prescription'), findsNothing);
+    expect(find.text('Call'), findsNothing);
+    expect(find.text('Admin'), findsNothing);
   });
 
   testWidgets('profile sheet sends selected generated appointment request', (

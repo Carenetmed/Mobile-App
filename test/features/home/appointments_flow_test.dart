@@ -772,8 +772,13 @@ void main() {
     expect(find.text('Reschedule'), findsNothing);
     expect(find.text('Complete'), findsNothing);
     expect(find.text('Payment'), findsNothing);
+    expect(find.text('Notification'), findsNothing);
     expect(find.text('Calendar'), findsNothing);
+    expect(find.text('Review'), findsNothing);
     expect(find.text('Notes'), findsNothing);
+    expect(find.text('Prescription'), findsNothing);
+    expect(find.text('Call'), findsNothing);
+    expect(find.text('Admin'), findsNothing);
   });
 
   testWidgets(
@@ -800,10 +805,13 @@ void main() {
       expect(find.text('Cancel appointment'), findsNothing);
       expect(find.text('Reschedule'), findsNothing);
       expect(find.text('Payment'), findsNothing);
+      expect(find.text('Notification'), findsNothing);
       expect(find.text('Calendar'), findsNothing);
       expect(find.text('Review'), findsNothing);
       expect(find.text('Notes'), findsNothing);
       expect(find.text('Prescription'), findsNothing);
+      expect(find.text('Call'), findsNothing);
+      expect(find.text('Admin'), findsNothing);
     },
   );
 

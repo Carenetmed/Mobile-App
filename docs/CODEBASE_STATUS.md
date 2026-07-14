@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 post-completion scheduling lane decision added.
+**Last updated:** 2026-07-15 scheduling core regression checkpoint added.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -104,6 +104,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Professional appointment completion | `appointments` now shows `Complete` only to professional sessions for accepted backend appointments whose scheduled end time has passed. The action calls `SchedulingRepository.completeAppointment`, replaces visible status from the backend response, and keeps safe error handling. Reschedule, patient completion, payments, notifications, calendar sync, reviews, notes, prescriptions, admin override, no-show/disputes, and calls remain deferred |
 | Appointment completion regression | `APPOINTMENT_COMPLETION_REGRESSION.md` records focused proof for exact scheduled-end completion, patient denial, cancelled/declined/completed denial, safe failure behavior, and absence of reschedule/payment/calendar/review/notes/prescription controls on completion-eligible cards |
 | Post-completion scheduling lane | `POST_COMPLETION_SCHEDULING_LANE_DECISION.md` selects a broader scheduling core regression checkpoint before any reschedule UX/runtime work. Reschedule remains deferred until actor rules, eligible statuses, time/duration selection, availability re-checks, conflict handling, audit, notification, calendar, and payment boundaries are decided |
+| Scheduling core regression checkpoint | `SCHEDULING_CORE_REGRESSION_CHECKPOINT.md` records focused proof across Search public listing/availability/request, Appointments own-list/cancel/accept/decline/complete, selectedDates availability management, scheduling repository payload boundaries, safe error/no-fallback behavior, and absence of reschedule/payment/notification/calendar/review/notes/prescription/call/admin UI |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |

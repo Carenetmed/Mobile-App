@@ -176,7 +176,8 @@
 | 52.33 | Wire public availability read as the first scheduling UI surface: use `SchedulingRepository.publicAvailability` only for a selected public professional, show real loading/error/empty availability states, keep appointment request disabled/deferred, and do not reintroduce local specialist/slot fallback, public detail invention, payments, reviews, calls, calendar sync, notes, or prescriptions | M | **DONE** |
 | 52.34 | Decide the first appointment request UI path after public availability read: choose whether to adapt the existing `bookAppointment` form, add a constrained request action from the Search availability sheet, or pause for professional availability management first; do not implement runtime booking in this decision slice | S | **DONE** |
 | 52.35 | Remove local booking success from `bookAppointment`: keep the route available, remove `Confirmed locally` and fake booking completion behavior, show an honest deferred/backend-required state, update tests/docs, and do not call appointment request API yet | M | **DONE** |
-| 52.36 | Define the concrete appointment request UX after local booking success removal: choose date/time selection from backend public availability, duration options, Search sheet vs rewritten `bookAppointment` route arguments, and backend `REQUESTED` success handling; do not implement runtime booking in this decision slice | S | **NEXT** |
+| 52.36 | Define the concrete appointment request UX after local booking success removal: choose date/time selection from backend public availability, duration options, Search sheet vs rewritten `bookAppointment` route arguments, and backend `REQUESTED` success handling; do not implement runtime booking in this decision slice | S | **DONE** |
+| 52.37 | Add appointment request time-option helper: convert returned `AvailabilityWindow` values into near-term concrete request options for the next seven days with focused tests; do not call `requestAppointment`, do not wire runtime booking UI, and keep payments/notifications/reviews/calls/calendar/notes/prescriptions out of scope | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -192,14 +193,14 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.35)
+## Manual test (last completed: task 52.36)
 
-Task `52.35` removes local booking success from `bookAppointment`. The route still exists, but it no longer confirms or saves a fake appointment.
+Task `52.36` is a decision-only appointment request UX slice. No runtime behavior changed.
 
-1. `flutter test test/features/home/appointments_flow_test.dart test/features/home/public_profile_flow_test.dart` - passes
-2. `flutter analyze lib/features/Home/presentation/pages/appointments_shell.dart test/features/home/appointments_flow_test.dart test/features/home/public_profile_flow_test.dart` - no issues
-3. Confirm `bookAppointment` shows `Backend request not sent` and no `Confirm request` / `Confirmed locally` behavior.
-4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.36`
+1. `git diff --check docs/AI_HANDOFF.md docs/DOC_SYNC.md docs/CODEBASE_STATUS.md docs/DECISIONS.md docs/DEFERRED_WORK.md docs/APPOINTMENT_REQUEST_UX_DECISION.md docs/APPOINTMENT_REQUEST_UI_PATH_DECISION.md docs/SCHEDULING_AVAILABILITY_APPOINTMENT_CONTRACT.md` - passes
+2. Confirm `APPOINTMENT_REQUEST_UX_DECISION.md` selects Search public availability sheet as the first request UX.
+3. Confirm the next slice is a helper/test slice before runtime `requestAppointment`.
+4. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.37`
 
 ## Previous runtime manual test baseline
 
@@ -531,6 +532,7 @@ Task `52.35` removes local booking success from `bookAppointment`. The route sti
 | 2026-07-14 | 52.33 | DONE - Search profile sheet now reads public availability without local slot fallback while booking remains deferred |
 | 2026-07-14 | 52.34 | DONE - appointment request UI path selected: remove local booking success before real request wiring |
 | 2026-07-14 | 52.35 | DONE - `bookAppointment` local confirmation removed; route now shows backend-required request details only |
+| 2026-07-14 | 52.36 | DONE - concrete appointment request UX selected: Search availability sheet first, helper/test slice before runtime request |
 
 ---
 

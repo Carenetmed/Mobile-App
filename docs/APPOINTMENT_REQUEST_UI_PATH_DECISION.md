@@ -1,7 +1,7 @@
 # Appointment request UI path decision
 
 **Task:** 52.34
-**Status:** Accepted decision; local booking success removed in 52.35
+**Status:** Accepted decision; local booking success removed in 52.35; concrete request UX defined in 52.36
 
 Purpose: decide how the frontend should move from public availability display to
 real appointment request without preserving local/dummy booking success.
@@ -99,6 +99,15 @@ Likely scope:
 - decide whether the request action stays inside Search sheet or navigates to a
   rewritten booking route with typed arguments
 - keep free-text medical reason/notes out of the first request
+
+Decision result:
+
+- First request UX starts from the Search public professional profile sheet.
+- Request options should be generated from backend public availability.
+- Initial duration choices are 30, 45, and 60 minutes.
+- Backend success should display `REQUESTED`, not booked/confirmed.
+- 52.37 should add the time-option helper and tests before runtime request API
+  calls.
 
 ---
 

@@ -94,6 +94,7 @@ does not silently reinterpret established boundaries.
 | D087 | 2026-07-14 | Public availability read in Search | Wire the Search public professional profile sheet to `SchedulingRepository.publicAvailability` for the selected backend public professional id. Show real loading/error/empty availability states, render only returned backend windows, keep booking disabled/deferred, and do not reintroduce local specialist or slot fallback | Phase 22, task 52.33 |
 | D088 | 2026-07-14 | Appointment request UI path | Do not adapt the old free-text `bookAppointment` form directly into backend request wiring. First remove local `Confirmed locally`/fake booking success, then define a concrete request UX from backend public professional plus public availability; backend request success must mean `REQUESTED`, not booked/confirmed | Phase 22, task 52.34 |
 | D089 | 2026-07-14 | Remove local booking success | Remove local `Confirmed locally`/fake booking completion from `bookAppointment`. The route may still validate and review details, but it must show `Backend request not sent` and cannot claim save/confirmation until real appointment request wiring exists | Phase 22, task 52.35 |
+| D090 | 2026-07-14 | Concrete appointment request UX | Use the Search public professional profile sheet as the first real appointment request UX. Generate near-term concrete time options from backend public availability, offer fixed 30/45/60 minute durations, call `requestAppointment` only after helper logic is tested, and show backend success as `REQUESTED` only | Phase 22, task 52.36 |
 
 ## How to add a row
 
@@ -438,3 +439,19 @@ availability without competing with an older local confirmation state.
 
 Next: 52.36 should define the concrete appointment request UX before runtime
 booking is wired.
+
+## D090 - Concrete appointment request UX
+
+Task: 52.36
+
+Decision: The first real appointment request UX should live in the Search public
+professional profile sheet because that sheet already has a backend public
+professional id and real public availability. Do not start from the standalone
+old `bookAppointment` route.
+
+Reason: Runtime request needs a concrete backend professional id, concrete
+start time, and duration. A helper/test slice should generate requestable time
+options from returned availability before UI calls `requestAppointment`.
+
+Next: 52.37 should add the time-option helper and focused tests without calling
+the appointment request API.

@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 appointment reschedule regression added.
+**Last updated:** 2026-07-15 scheduling smoke checkpoint selected.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -109,6 +109,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Appointment reschedule UX boundary | `APPOINTMENT_RESCHEDULE_UX_BOUNDARY_DECISION.md` allows a constrained next runtime slice for patient/professional reschedule of upcoming `REQUESTED`/`ACCEPTED` appointments using existing public availability and generated request options. Success must replace the card from backend response, expected status returns to `REQUESTED`, and payments, notifications, calendar sync, reviews, calls, admin override, notes, prescriptions, medical records, free-text datetime entry, and reschedule reasons remain deferred |
 | Appointment reschedule wiring | `appointments` now exposes `Reschedule` only for patient/professional sessions on upcoming `REQUESTED`/`ACCEPTED` backend appointment cards. It loads public availability for the appointment professional, generates bounded request options, submits `requestedStartAt` and `durationMinutes` through `SchedulingRepository.rescheduleAppointment`, replaces visible status from the backend response, and keeps safe errors/no raw backend messages. Non-patient/non-professional roles, recent cards, and terminal states do not expose reschedule |
 | Appointment reschedule regression | `APPOINTMENT_RESCHEDULE_REGRESSION.md` records focused proof for patient/professional reschedule success, backend `REQUESTED` response handling, non-patient/non-professional hiding, recent/terminal hiding, empty generated-option handling, safe failure messages, narrow payload behavior, and continued absence of payments, notifications, calendar, reviews, calls, admin, notes, and prescriptions UI |
+| Scheduling smoke checkpoint decision | `SCHEDULING_CORE_PAUSE_OR_SMOKE_DECISION.md` pauses scheduling feature expansion and selects a staging smoke checkpoint next. The current local regression evidence is strong enough for the scoped core, but app-build/staging proof is still missing before claiming the scheduling core is externally proven |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
@@ -359,6 +360,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.55 test/analyze | Not needed: decision-only docs slice. `git diff --check` covers changed docs; no runtime code changed |
 | Focused task 52.56 test/analyze | Passed: `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart -r compact`; focused `flutter analyze` on Appointments reschedule wiring, scheduling repository/API client, and related tests reports no issues |
 | Focused task 52.57 test/analyze | Passed: `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart -r compact`; focused `flutter analyze` on Appointments reschedule regression, scheduling repository/API client, and related tests reports no issues |
+| Focused task 52.58 test/analyze | Not needed: decision-only docs slice. `git diff --check` covers changed docs; no runtime code changed |
 
 ## Design debt (fix in Phase 2+)
 

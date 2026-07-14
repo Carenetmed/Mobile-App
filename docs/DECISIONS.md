@@ -834,3 +834,22 @@ prescription UI.
 Next: 52.58 should decide whether the scheduling/appointment core can pause for
 a broader checkpoint, needs a real-device/staging smoke, or needs a small QA/fix
 slice from regression findings. It should not add runtime behavior.
+
+## D112 - Scheduling core should smoke before more features
+
+Task: 52.58
+
+Decision: Pause scheduling feature expansion and run a staging smoke checkpoint
+next.
+
+Reason: The scoped scheduling core now has local regression proof for public
+listing, public availability, appointment request, own appointment list,
+patient cancellation, professional accept/decline, professional completion,
+patient/professional reschedule, professional availability management, safe
+errors, no local fallback, and absence of broader deferred controls. The
+remaining confidence gap is not another local feature; it is app-build/staging
+proof against configured backend data.
+
+Next: 52.59 should run a scheduling core staging smoke checkpoint. It should
+prove only what available staging accounts/data can honestly prove, document any
+blocked paths exactly, and avoid runtime feature work or fake seed data.

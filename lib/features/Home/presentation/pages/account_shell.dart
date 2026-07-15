@@ -5,6 +5,7 @@ import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
@@ -20,10 +21,12 @@ class AccountShellPage extends StatefulWidget {
     super.key,
     this.authRepository,
     this.accountRepository,
+    this.googleIdTokenProvider,
   });
 
   final AuthRepository? authRepository;
   final AccountRepository? accountRepository;
+  final GoogleIdTokenProvider? googleIdTokenProvider;
 
   @override
   State<AccountShellPage> createState() => _AccountShellPageState();
@@ -32,14 +35,26 @@ class AccountShellPage extends StatefulWidget {
 class _AccountShellPageState extends State<AccountShellPage> {
   bool _isLoggingOut = false;
   bool _isLoadingCurrentAccount = true;
+  bool _isLinkingGoogle = false;
   String? _logoutError;
   String? _currentAccountError;
+  String? _googleLinkMessage;
+  String? _googleLinkError;
   AuthUser? _currentAccount;
 
   AuthRepository get _authRepository =>
       widget.authRepository ?? sl<AuthRepository>();
   AccountRepository get _accountRepository =>
       widget.accountRepository ?? sl<AccountRepository>();
+  GoogleIdTokenProvider? get _googleIdTokenProvider {
+    if (widget.googleIdTokenProvider != null) {
+      return widget.googleIdTokenProvider;
+    }
+    if (!sl.isRegistered<GoogleIdTokenProvider>()) {
+      return null;
+    }
+    return sl<GoogleIdTokenProvider>();
+  }
 
   @override
   void initState() {
@@ -106,6 +121,100 @@ class _AccountShellPageState extends State<AccountShellPage> {
     }
   }
 
+  Future<void> _linkGoogleAccount() async {
+    final provider = _googleIdTokenProvider;
+    if (provider == null || !provider.isConfigured) {
+      setState(() {
+        _googleLinkMessage = null;
+        _googleLinkError = 'Google account linking is not configured yet.';
+      });
+      return;
+    }
+    if (_isLoadingCurrentAccount || _isLinkingGoogle) {
+      return;
+    }
+
+    setState(() {
+      _isLinkingGoogle = true;
+      _googleLinkMessage = null;
+      _googleLinkError = null;
+    });
+
+    String idToken;
+    try {
+      idToken = await provider.signInIdToken();
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _googleLinkError = _safeGoogleProviderError(failure);
+        _isLinkingGoogle = false;
+      });
+      return;
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _googleLinkError = 'Google account linking failed. Please try again.';
+        _isLinkingGoogle = false;
+      });
+      return;
+    }
+
+    try {
+      await _authRepository.googleLink(idToken: idToken);
+      if (!mounted) return;
+      setState(() {
+        _googleLinkMessage = 'Google account linked.';
+        _googleLinkError = null;
+        _isLinkingGoogle = false;
+      });
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _googleLinkMessage = null;
+        _googleLinkError = _safeGoogleBackendLinkError(failure);
+        _isLinkingGoogle = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _googleLinkMessage = null;
+        _googleLinkError = 'Google account linking failed. Please try again.';
+        _isLinkingGoogle = false;
+      });
+    }
+  }
+
+  String _safeGoogleProviderError(AuthFailure failure) {
+    switch (failure.type) {
+      case AuthFailureType.missingConfiguration:
+        return 'Google account linking is not configured yet.';
+      case AuthFailureType.unauthorized:
+        return 'Please sign in again.';
+      case AuthFailureType.validation:
+      case AuthFailureType.invalidCredentials:
+      case AuthFailureType.network:
+      case AuthFailureType.server:
+      case AuthFailureType.unknown:
+        return failure.message;
+    }
+  }
+
+  String _safeGoogleBackendLinkError(AuthFailure failure) {
+    switch (failure.type) {
+      case AuthFailureType.missingConfiguration:
+        return 'Google account linking is not configured yet.';
+      case AuthFailureType.unauthorized:
+        return 'Please sign in again.';
+      case AuthFailureType.validation:
+      case AuthFailureType.invalidCredentials:
+        return 'This Google account cannot be linked here.';
+      case AuthFailureType.network:
+      case AuthFailureType.server:
+      case AuthFailureType.unknown:
+        return 'Google account linking failed. Please try again.';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,6 +249,22 @@ class _AccountShellPageState extends State<AccountShellPage> {
                     : _currentAccount == null
                     ? snapshot.authenticationLabel
                     : '${_currentAccount!.role} account - ${_currentAccount!.status.toLowerCase()}';
+            final googleProvider = _googleIdTokenProvider;
+            final isGoogleConfigured = googleProvider?.isConfigured ?? false;
+            final googleLinkSubtitle =
+                _isLinkingGoogle
+                    ? 'Linking Google account...'
+                    : _googleLinkMessage ??
+                        _googleLinkError ??
+                        (_isLoadingCurrentAccount
+                            ? 'Load account before linking Google'
+                            : !isGoogleConfigured
+                            ? 'Google account linking is not configured yet.'
+                            : 'Link Google account');
+            final canLinkGoogle =
+                !_isLoadingCurrentAccount &&
+                !_isLinkingGoogle &&
+                isGoogleConfigured;
             return ListView(
               padding: REdgeInsets.all(16.r),
               children: [
@@ -195,6 +320,12 @@ class _AccountShellPageState extends State<AccountShellPage> {
                       RouteName.changeAuthentication,
                     );
                   },
+                ),
+                _AccountTile(
+                  icon: Icons.link_outlined,
+                  title: 'Google account',
+                  subtitle: googleLinkSubtitle,
+                  onTap: canLinkGoogle ? _linkGoogleAccount : null,
                 ),
                 _AccountTile(
                   icon: Icons.manage_accounts_outlined,

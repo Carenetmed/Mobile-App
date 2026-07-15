@@ -1464,3 +1464,27 @@ iOS proof, and production claims remain out of scope.
 
 Next: 52.90 should define the Google account linking UI boundary before any
 runtime UI is implemented.
+
+## D144 - Google account linking UI boundary accepted
+
+Task: 52.90
+
+Decision: Place protected Google account linking in Account as a dedicated
+Google account entry below Authentication and before Settings & Profile. The
+next runtime slice may use configured `GoogleIdTokenProvider` to obtain a real
+ID token and call `AuthRepository.googleLink`, with safe loading, success, and
+error states.
+
+Reason: Linking modifies the authenticated account's provider identity, so
+Account is the correct host surface. The app already has Google ID-token
+acquisition and a repository method for protected linking. The UI must stay
+disabled when Google provider config is missing, must not mutate local
+session/user role/status/email after linking, and must not expose raw provider
+tokens, provider payloads, raw backend errors, or internal identifiers. Google
+sign-up role selection, unlinking, cross-email/recovery linking, recent re-auth,
+phone/OTP, MFA, production OAuth, release signing, iOS proof, profile creation,
+admin verification, payments, notifications, reviews, calls, calendar sync,
+notes, prescriptions, staging data, and production claims remain deferred.
+
+Next: 52.91 should wire the constrained Google account linking action with
+focused Account tests.

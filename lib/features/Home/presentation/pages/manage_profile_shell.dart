@@ -149,6 +149,11 @@ class _ManageProfileShellPageState extends State<ManageProfileShellPage> {
             _BasicSection(
               profile: profile,
               professional: professional,
+              onEditCategory:
+                  () => Navigator.pushNamed(
+                    context,
+                    RouteName.editProfessionalDetails,
+                  ),
               onEditAddress:
                   () => Navigator.pushNamed(context, RouteName.setAddress),
               onEditWebsite:
@@ -426,12 +431,14 @@ class _BasicSection extends StatelessWidget {
   const _BasicSection({
     required this.profile,
     required this.professional,
+    required this.onEditCategory,
     required this.onEditAddress,
     required this.onEditWebsite,
   });
 
   final PublicProfileContent profile;
   final ProfessionalProfile? professional;
+  final VoidCallback onEditCategory;
   final VoidCallback onEditAddress;
   final VoidCallback onEditWebsite;
 
@@ -470,6 +477,7 @@ class _BasicSection extends StatelessWidget {
           ),
           if (specialty != null && specialty.isNotEmpty)
             _InfoRow(label: 'Specialty', value: specialty),
+          _InlineActionRow(label: 'Edit category', onPressed: onEditCategory),
           _InfoRow(label: 'Contact Address', value: profile.address),
           _InfoRow(label: 'Website', value: profile.website),
           _InlineActionRow(label: 'Edit website', onPressed: onEditWebsite),

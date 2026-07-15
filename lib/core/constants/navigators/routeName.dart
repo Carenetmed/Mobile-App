@@ -81,6 +81,7 @@ class RouteName {
   static const String professionalVerificationDocuments =
       'professionalVerificationDocuments';
   static const String editYourName = 'editYourName';
+  static const String editProfessionalDetails = 'editProfessionalDetails';
   static const String editYourWebsite = 'editYourWebsite';
   static const String addDescription = 'addDescription';
   static const String setAddress = 'setAddress';

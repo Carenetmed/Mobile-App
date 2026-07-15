@@ -1555,3 +1555,28 @@ notes, prescriptions, phone/OTP, MFA, staging data, production release, and
 runtime admin UI remain deferred.
 
 Next: 52.94 should define the admin verification review surface boundary.
+
+## D148 - Admin verification review belongs outside mobile app
+
+Task: 52.94
+
+Decision: Do not implement admin verification review inside the current
+patient/professional Flutter mobile app. The accepted target surface for admin
+verification queue, signed-read document review, and approve/reject decisions
+is a separate admin dashboard or admin web console.
+
+Reason: The backend admin verification routes require `ADMIN` or
+`SUPER_ADMIN`, expose short-lived signed-read document access, and can change
+professional verification status. That is a sensitive reviewer operations
+workflow and should not be mixed into the patient/professional mobile shell by
+default. A separate admin surface keeps route exposure, role complexity, signed
+URL handling, document review ergonomics, and audit posture cleaner. The mobile
+app should continue to own professional upload/list behavior only. Runtime
+admin routes, hidden admin mode, signed-read handling, approve/reject controls,
+rejection reasons, admin audit display, staging claims, production readiness,
+payments, notifications, reviews, calls, calendar sync, notes, prescriptions,
+phone/OTP, and MFA remain deferred.
+
+Next: 52.95 should run a final backend-completed mobile surface checkpoint
+before choosing mobile milestone stabilization or another scoped mobile-facing
+backend surface.

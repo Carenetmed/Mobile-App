@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 professional category/specialty update wired.
+**Last updated:** 2026-07-15 professional category/specialty update regression passed.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -138,6 +138,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Next surface after display-name regression | `NEXT_SURFACE_AFTER_DISPLAY_NAME_REGRESSION_DECISION.md` selects professional category/specialty editing as the next backend-completed Flutter surface, with a boundary decision before runtime wiring. Profile creation, website/address persistence, verification/admin, scheduling staging data, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging, and production claims remain deferred |
 | Professional category/specialty edit boundary | `PROFESSIONAL_CATEGORY_SPECIALTY_EDIT_BOUNDARY.md` selects a new constrained category/specialty edit surface. The next implementation must require category, allow optional/cleared specialty as null, preserve existing displayName/bio, block profile creation, and keep website/address/account/verification/availability/appointment/payment/review/call/calendar/note/prescription data out |
 | Professional category/specialty update | Manage Profile Basic now exposes `Edit category`, opening `editProfessionalDetails`. The route reads the existing professional profile, prefills category/specialty, requires category, sends cleared specialty as `null`, preserves existing displayName/bio in `ProfileRepository.updateProfessionalMe`, blocks empty-profile creation, and shows safe loading/error/success states. Website/address, account identity, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain deferred |
+| Professional category/specialty update regression | `PROFESSIONAL_CATEGORY_SPECIALTY_UPDATE_REGRESSION.md` records focused proof for entry separation from display-name edit, backend category/specialty prefill, category-required validation, displayName/bio preservation, specialty clearing as `null`, empty-profile blocking, safe backend failure, and absence of broader profile/module behavior |
 | Logout/session clear | Account has a real `Log out` action that calls `AuthRepository.logout`; success clears the navigation stack back to onboarding, while failure shows a safe inline error. Destructive account deletion, MFA/PIN, phone auth, social auth, and password reset remain separately scoped |
 | Change authentication slice | `changeAuthentication` is now a registered route from Account -> Authentication. It shows local two-step verification copy and keeps Change PIN, Turn off, and Learn more visibly locked/deferred until auth backend, re-authentication, secure storage, audit, and product security copy exist |
 | Turn on authentication slice | `turnOnAuthentication` is now a registered route from Change Authentication -> Review turn-on setup. It shows blueprint two-step verification copy and keeps Turn on disabled until PIN/session/audit backend rules exist |
@@ -391,6 +392,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.58 test/analyze | Not needed: decision-only docs slice. `git diff --check` covers changed docs; no runtime code changed |
 | Focused task 52.59 test/analyze | Passed: `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=http://127.0.0.1:8080`; `flutter test test/features/home/appointment_request_time_options_test.dart test/features/home/appointments_flow_test.dart test/features/home/scheduling_repository_test.dart -r compact`; focused `flutter analyze` on scheduling config/API/repository/Search/Appointments/selectedDates and related tests reports no issues |
 | Focused task 52.87 test/analyze | Passed: `flutter test test/features/home/manage_profile_flow_test.dart -r expanded`; focused `flutter analyze` on route constants/router, Manage Profile, editProfessionalDetails, and manage-profile tests reports no issues |
+| Focused task 52.88 test/analyze | Passed: `flutter test test/features/home/manage_profile_flow_test.dart -r expanded`; focused regression searches confirmed update/preservation/null-clearing coverage and no new category/specialty runtime behavior for broader modules |
 
 ## Design debt (fix in Phase 2+)
 

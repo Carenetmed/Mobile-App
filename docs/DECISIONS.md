@@ -1603,3 +1603,22 @@ or release/infrastructure work, not missed first-pass wiring for completed
 mobile-facing backend routes.
 
 Next: 52.96 should define a mobile backend integration stabilization plan.
+
+## D150 - Move to grouped mobile backend integration regression
+
+Task: 52.96
+
+Decision: Accept `MOBILE_BACKEND_INTEGRATION_STABILIZATION_PLAN.md` as the
+stabilization plan for the already-wired backend mobile milestone. The next
+slice should execute grouped regression suites for auth/session/account,
+profile/verification, discovery/booking, and scheduling lifecycle before adding
+new mobile product surfaces.
+
+Reason: Task 52.95 found no remaining backend-completed surface that clearly
+belongs in the patient/professional Flutter app and is still waiting for
+first-pass wiring. The responsible next step is evidence: run the grouped
+tests, focused analyze, docs checks, and manual smoke checklist where data is
+available. Any failures should become targeted cleanup slices instead of
+opening broad new feature lanes.
+
+Next: 52.97 should execute the mobile backend integration regression pass.

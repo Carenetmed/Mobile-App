@@ -1424,3 +1424,22 @@ staging data, and production claims remain out of scope.
 
 Next: 52.88 should run a focused regression checkpoint before selecting any
 broader profile surface.
+
+## D142 - Professional category/specialty update regression passed
+
+Task: 52.88
+
+Decision: Treat the constrained professional category/specialty update path as
+regression-checked for the current frontend milestone boundary.
+
+Reason: Focused tests prove Manage Profile entry separation from the
+display-name edit path, backend category/specialty prefill, category-required
+validation, preservation of existing `displayName` and `bio`, cleared specialty
+as `null`, empty-profile blocking without partial profile creation, and safe
+backend save failure without raw error text. Targeted searches found no new
+runtime behavior for website/address, account identity, verification,
+availability, appointments, payments, reviews, calls, calendar sync, notes,
+prescriptions, staging data, production claims, or profile creation.
+
+Next: 52.89 should decide the next backend-completed Flutter surface before any
+additional runtime wiring.

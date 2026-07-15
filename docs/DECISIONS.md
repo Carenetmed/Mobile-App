@@ -1531,3 +1531,27 @@ broader account/provider behavior is exposed by this slice.
 
 Next: 52.93 should decide the next backend-completed Flutter surface before any
 additional runtime wiring.
+
+## D147 - Admin verification review boundary selected next
+
+Task: 52.93
+
+Decision: Select an admin verification review surface boundary decision as the
+next backend-completed Flutter lane. The next slice should decide whether the
+admin verification queue, private signed-read, and approve/reject routes belong
+in this Flutter app, a separate admin dashboard, or another frontend surface
+before any runtime admin UI is implemented.
+
+Reason: The major patient/professional mobile surfaces from completed backend
+work are already wired or regression-checked: auth/session/account, Google
+sign-in/link, patient and professional profile, professional verification
+upload/list, public professionals, public availability, professional
+availability, and appointment lifecycle. The remaining backend-completed
+surface with meaningful product impact is reviewer-side verification. Because
+that surface is sensitive and may not belong in the patient/professional app,
+it needs an explicit placement/access/signed-read/approve-reject boundary before
+runtime implementation. Payments, notifications, reviews, calls, calendar sync,
+notes, prescriptions, phone/OTP, MFA, staging data, production release, and
+runtime admin UI remain deferred.
+
+Next: 52.94 should define the admin verification review surface boundary.

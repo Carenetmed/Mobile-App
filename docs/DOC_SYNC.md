@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **52.89** - decide next backend-completed Flutter surface after category/specialty regression |
-| Last completed | **52.88** - professional category/specialty update regression checkpoint |
+| NEXT task | **52.90** - define Google account linking UI boundary |
+| Last completed | **52.89** - next backend-completed Flutter surface decision after category/specialty regression |
 | Registered routes | **72 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -115,6 +115,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-15 | Task 52.86 DONE - accepted a new constrained category/specialty edit surface with required category, optional specialty, displayName/bio preservation, and no profile creation; DOC_SYNC NEXT -> 52.87 |
 | 2026-07-15 | Task 52.87 DONE - wired Manage Profile category/specialty update through a new constrained route with backend prefill, displayName/bio preservation, null-cleared specialty, empty-profile blocking, and focused tests; DOC_SYNC NEXT -> 52.88 |
 | 2026-07-15 | Task 52.88 DONE - category/specialty update regression passed for entry separation, backend prefill, required category, displayName/bio preservation, null-cleared specialty, empty-profile blocking, safe failure, and deferred-work accuracy; DOC_SYNC NEXT -> 52.89 |
+| 2026-07-15 | Task 52.89 DONE - selected protected Google account linking as the next backend-completed Flutter surface and required a UI boundary decision before runtime wiring; DOC_SYNC NEXT -> 52.90 |
 | 2026-07-15 | Task 52.74 DONE - selected professional verification upload/list as the next backend-completed Flutter lane, with a required boundary decision before runtime wiring; DOC_SYNC NEXT -> 52.75 |
 | 2026-07-15 | Task 52.73 DONE - Find Mentor public professionals regression passed for loading, empty, success, filtering, backend id handoff, no local fallback/direct fake booking, dashboard compatibility, and Specialist Details compatibility; DOC_SYNC NEXT -> 52.74 |
 | 2026-07-15 | Task 52.72 DONE - Find Mentor now reads backend public professionals where available, routes backend ids to Specialist Details, and avoids local fallback/direct fake booking in the backend path; DOC_SYNC NEXT -> 52.73 |

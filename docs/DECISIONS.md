@@ -1643,3 +1643,21 @@ modules.
 
 Next: 52.98 should define the mobile milestone handoff and staging data
 boundary.
+
+## D152 - Handoff package before staging or release lanes
+
+Task: 52.98
+
+Decision: Proceed next with a mobile backend milestone handoff package. Treat
+staging seed-data/smoke setup, release-signing/app-link readiness, admin
+dashboard work, and deferred product modules as separate future lanes.
+
+Reason: Task 52.97 proves the already-wired mobile/backend integration at the
+grouped Flutter regression/analyze level, but it does not prove public staging
+demo readiness, production release readiness, store readiness, admin dashboard
+completion, or deferred product module completion. A handoff package is the
+lowest-risk next step because it lets the milestone be presented accurately:
+wired and regression-passed for scoped mobile surfaces, with exact remaining
+inputs and blockers named.
+
+Next: 52.99 should create the mobile backend milestone handoff package.

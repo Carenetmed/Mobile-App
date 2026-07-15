@@ -238,7 +238,8 @@
 | 52.95 | Run Final Backend-Completed Mobile Surface Checkpoint: review all completed backend routes already wired or intentionally excluded from this Flutter app, verify no mobile-facing backend-completed surface is being missed, update the completed-surface map if stale, and decide whether the next mobile-app lane is milestone stabilization/regression or another scoped mobile-facing backend surface; do not implement runtime behavior in this decision/checkpoint slice | S | **DONE** |
 | 52.96 | Define Mobile Backend Integration Stabilization Plan: create a focused stabilization/regression plan for the already-wired backend mobile milestone, choose grouped test suites/manual smoke checks/docs consistency checks, identify release/staging blockers, and decide whether the next slice should be grouped regression execution or targeted cleanup; do not implement runtime behavior in this planning slice | S | **DONE** |
 | 52.97 | Execute Mobile Backend Integration Regression Pass: run the grouped stabilization suites for auth/session/account, profile/verification, discovery/booking, and scheduling lifecycle from `MOBILE_BACKEND_INTEGRATION_STABILIZATION_PLAN.md`, run focused analyze/docs checks, record pass/fail evidence and any targeted cleanup slices, and do not add new runtime feature behavior unless fixing a verified regression within the scoped surface | M | **DONE** |
-| 52.98 | Define Mobile Milestone Handoff And Staging Data Boundary: review the passed mobile backend integration regression evidence, remaining staging-data/release/admin/product blockers, and decide whether the next lane is frontend milestone handoff package, staging seed-data/smoke setup, release-signing/app-link readiness, or another explicitly deferred product lane; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.98 | Define Mobile Milestone Handoff And Staging Data Boundary: review the passed mobile backend integration regression evidence, remaining staging-data/release/admin/product blockers, and decide whether the next lane is frontend milestone handoff package, staging seed-data/smoke setup, release-signing/app-link readiness, or another explicitly deferred product lane; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.99 | Create Mobile Backend Milestone Handoff Package: summarize the backend-completed mobile surfaces wired, grouped regression evidence, manual smoke/staging-data requirements, admin/release/deferred boundaries, and exact next-lane options so the milestone can be presented without production or full-product overclaiming; do not implement runtime behavior in this documentation slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -254,18 +255,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.97)
+## Manual test (last completed: task 52.98)
 
-Task `52.97` is the mobile backend integration regression execution pass.
+Task `52.98` is a docs-only handoff/staging boundary decision.
 
-1. Confirm `MOBILE_BACKEND_INTEGRATION_REGRESSION_PASS.md` records the initial password-recovery test-harness failure and the focused disabled-Google-provider fixture fix.
-2. Confirm the auth/session/account suite passes with `72 tests passed`.
-3. Confirm the profile/verification suite passes with `42 tests passed`.
-4. Confirm the discovery/booking suite passes with `27 tests passed`.
-5. Confirm the scheduling lifecycle suite passes with `42 tests passed`.
-6. Confirm focused analyze reports `No issues found`.
-7. `git diff --check` - no whitespace errors.
-8. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.98`
+1. Confirm `MOBILE_MILESTONE_HANDOFF_STAGING_BOUNDARY.md` selects the frontend milestone handoff package as the next lane.
+2. Confirm staging seed data/manual smoke, release-signing/app-link readiness, admin dashboard, and deferred product modules remain separate lanes.
+3. Confirm the next slice is `52.99 - Create Mobile Backend Milestone Handoff Package`.
+4. Confirm no runtime app code changed in task 52.98.
+5. `git diff --check` - no whitespace errors.
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.99`
 
 ## Previous runtime manual test baseline
 

@@ -230,7 +230,8 @@
 | 52.87 | Wire Professional Category Specialty Update: add a constrained Manage Profile Basic edit entry/screen for professional `category` and optional `specialty`, read an existing professional self profile, prefill category/specialty, save new category and specialty through `ProfileRepository.updateProfessionalMe` while preserving existing `displayName` and `bio`, send cleared specialty as null, block empty-profile/profile-creation and empty category saves, keep validation/loading/safe-error states honest, and do not send website, address, account, verification, availability, appointment, payment, review, call, calendar, note, prescription, staging, or production data | M | **DONE** |
 | 52.88 | Run Professional Category Specialty Update Regression Checkpoint: verify Manage Profile entry separation from display-name edit, backend category/specialty prefill, category-required validation, save preserving displayName/bio, clearing specialty as null, empty-profile blocking, safe backend failure, docs/deferred-work accuracy, and absence of profile creation, website/address, verification, availability, appointments, account identity, payments, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing any broader profile surface | M | **DONE** |
 | 52.89 | Decide Next Backend-Completed Flutter Surface After Category Specialty Regression: review the category/specialty regression, completed backend surface map, deferred-work register, scheduling staging-data blocker, remaining profile/account gaps, verification/admin deferrals, and release/staging risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.90 | Define Google Account Linking UI Boundary: decide where protected Google account linking belongs in the app, how it uses configured Google ID-token acquisition and `AuthRepository.googleLink`, when the action is visible/disabled, what safe errors/success states are allowed, and why Google sign-up role selection, unlinking, cross-email linking, recovery linking, recent re-auth, phone/OTP, MFA, production OAuth, release signing, iOS proof, profile creation, admin verification, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain out of scope; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.90 | Define Google Account Linking UI Boundary: decide where protected Google account linking belongs in the app, how it uses configured Google ID-token acquisition and `AuthRepository.googleLink`, when the action is visible/disabled, what safe errors/success states are allowed, and why Google sign-up role selection, unlinking, cross-email linking, recovery linking, recent re-auth, phone/OTP, MFA, production OAuth, release signing, iOS proof, profile creation, admin verification, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain out of scope; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.91 | Wire Google Account Linking From Account: add a constrained Account screen Google account linking entry below Authentication, require configured `GoogleIdTokenProvider`, obtain a real Google ID token, call `AuthRepository.googleLink`, show loading/success/safe-error states, keep session/user role/status/email backend-owned, and do not add Google sign-up role selection, unlinking, cross-email linking, recovery linking, recent re-auth, phone/OTP, MFA, production OAuth, release signing, iOS proof, profile creation, admin verification, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -246,16 +247,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.89)
+## Manual test (last completed: task 52.90)
 
-Task `52.89` is a decision-only next-surface slice after the professional
-category/specialty regression.
+Task `52.90` is a decision-only Google account linking UI boundary slice.
 
-1. Confirm `NEXT_SURFACE_AFTER_CATEGORY_SPECIALTY_REGRESSION_DECISION.md` selects Google account linking as the next backend-completed Flutter surface.
-2. Confirm profile creation, patient age/location mutation, website/address persistence, public detail, admin dashboard, phone/OTP, MFA, payments, reviews, notifications, calls, calendar sync, notes, prescriptions, production OAuth, release signing, and iOS proof remain deferred.
+1. Confirm `GOOGLE_ACCOUNT_LINKING_UI_BOUNDARY.md` places protected linking in Account, below Authentication and before Settings & Profile.
+2. Confirm the next runtime slice must use configured `GoogleIdTokenProvider`, `AuthRepository.googleLink`, safe loading/success/error states, and no frontend session/user mutation.
+3. Confirm Google sign-up role selection, unlinking, cross-email/recovery linking, recent re-auth, phone/OTP, MFA, production OAuth, release signing, iOS proof, profile creation, admin verification, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain deferred.
 3. Confirm no runtime Dart files changed in this decision slice.
 4. `git diff --check` - no whitespace errors.
-5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.90`
+5. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.91`
 
 ## Previous runtime manual test baseline
 
@@ -622,6 +623,7 @@ category/specialty regression.
 | 2026-07-15 | 52.87 | DONE - Manage Profile now opens a constrained category/specialty edit route that reads the existing professional profile, preserves displayName/bio, clears specialty as null, blocks empty-profile creation, and keeps broader fields deferred |
 | 2026-07-15 | 52.88 | DONE - professional category/specialty update regression passed for entry separation, backend prefill, required category, displayName/bio preservation, specialty clearing as null, empty-profile blocking, safe backend failure, and deferred-work accuracy |
 | 2026-07-15 | 52.89 | DONE - selected protected Google account linking as the next backend-completed Flutter surface, with a required UI boundary decision before runtime wiring |
+| 2026-07-15 | 52.90 | DONE - accepted Google account linking UI boundary: Account placement, configured provider gate, `AuthRepository.googleLink`, safe states, backend-owned account/session data, and explicit deferrals |
 
 ---
 

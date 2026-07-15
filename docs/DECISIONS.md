@@ -1443,3 +1443,24 @@ prescriptions, staging data, production claims, or profile creation.
 
 Next: 52.89 should decide the next backend-completed Flutter surface before any
 additional runtime wiring.
+
+## D143 - Google account linking selected next
+
+Task: 52.89
+
+Decision: Select protected Google account linking as the next
+backend-completed Flutter surface, but require a UI boundary decision before
+runtime wiring.
+
+Reason: The backend has `POST /auth/google/link`, and the Flutter
+`AuthRepository` already exposes `googleLink`. Google ID-token acquisition is
+already wired for sign-in when `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` is configured.
+This makes linking a narrow account/security lane that can move without
+scheduling staging seed data or verification storage. Profile creation,
+patient age/location mutation, website/address persistence, public detail,
+admin dashboard behavior, phone/OTP, MFA, payments, notifications, reviews,
+calls, calendar sync, notes, prescriptions, production OAuth, release signing,
+iOS proof, and production claims remain out of scope.
+
+Next: 52.90 should define the Google account linking UI boundary before any
+runtime UI is implemented.

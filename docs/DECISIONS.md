@@ -1512,3 +1512,22 @@ prescriptions, staging data, and production claims remain deferred.
 
 Next: 52.92 should run a Google account linking regression checkpoint before
 choosing any broader account/provider surface.
+
+## D146 - Google account linking regression passed
+
+Task: 52.92
+
+Decision: Treat the constrained Google account linking path as
+regression-checked for the current frontend milestone boundary.
+
+Reason: Focused Account tests prove the accepted placement below
+Authentication, disabled missing-config behavior, configured provider token
+handoff to `AuthRepository.googleLink`, success only after repository success,
+provider failure without backend link call, backend validation/unauthorized
+safe copy without raw text, and no fake local session/user email/role/status
+mutation. Source inspection also confirms no Google token, provider payload,
+Google unlinking, Google sign-up role selection, production OAuth claim, or
+broader account/provider behavior is exposed by this slice.
+
+Next: 52.93 should decide the next backend-completed Flutter surface before any
+additional runtime wiring.

@@ -1661,3 +1661,18 @@ wired and regression-passed for scoped mobile surfaces, with exact remaining
 inputs and blockers named.
 
 Next: 52.99 should create the mobile backend milestone handoff package.
+
+## D153 - Mobile backend milestone handoff package ready
+
+Task: 52.99
+
+Decision: Treat `MOBILE_BACKEND_MILESTONE_HANDOFF_PACKAGE.md` as the current
+presentation package for the regression-passed mobile backend integration
+milestone. Move next to staging seed-data and smoke execution planning.
+
+Reason: The handoff package summarizes wired surfaces, grouped regression
+evidence, manual smoke inputs, admin/release/deferred boundaries, and safe
+presentation wording. The next missing proof is not more app wiring; it is
+staging data and smoke execution against a real backend environment.
+
+Next: 53.1 should define the staging seed data and smoke execution plan.

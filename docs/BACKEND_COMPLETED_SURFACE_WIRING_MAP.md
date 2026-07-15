@@ -1,113 +1,138 @@
-# Backend completed surface wiring map
+# Backend Completed Surface Wiring Map
 
-Owner task: `52.17`
+Owner task: `52.95`
 
-Status: Accepted decision map
+Status: Updated checkpoint map
 
-Purpose: show which already-completed backend surfaces are ready for frontend
-wiring, which app surfaces already consume them, and which wiring slices should
-come next. This is a frontend planning document, not a backend production
-readiness claim.
+Purpose: show which already-completed backend surfaces are consumed by the
+Flutter app, which completed backend surfaces are intentionally outside this
+mobile app, and which gaps remain deferred. This is not a production-readiness
+or Play Store readiness claim.
 
 Backend source reviewed:
 
 - `C:\Users\asd\Music\carenet-backend-lab\docs\05-api-plan.md`
-- `C:\Users\asd\Music\carenet-backend-lab\docs\24-appointment-core-regression-plan.md`
-- `C:\Users\asd\Music\carenet-backend-lab\docs\25-auth-frontend-integration-contract.md`
-- `C:\Users\asd\Music\carenet-backend-lab\docs\36-frontend-backend-staging-contract.md`
-- `C:\Users\asd\Music\carenet-backend-lab\docs\45-frontend-backend-staging-integration-readiness.md`
-- `C:\Users\asd\Music\carenet-backend-lab\docs\48-auth-session-frontend-bridge-package.md`
-- `C:\Users\asd\Music\carenet-backend-lab\docs\49-frontend-auth-integration-handoff-to-app-repo.md`
+
+Mobile source reviewed:
+
+- auth/account repositories and tests
+- profile repository and tests
+- verification repository and Manage Profile tests
+- scheduling repository, Search, Specialist Details, selectedDates, and
+  Appointments tests
+- `CODEBASE_STATUS.md`, `DEFERRED_WORK.md`, and recent decision/regression docs
 
 ## Decision
 
-Do not start phone OTP, MFA, payments, notifications, reviews, calls,
-prescriptions, medical notes, public demo access, or production app-link work as
-the next runtime lane.
+The patient/professional mobile-facing routes from the completed backend surface
+are now either wired, regression-checked, or intentionally excluded from this
+Flutter app.
 
-The next frontend integration lane should consume already-completed backend
-surfaces in this order:
+Do not add phone/OTP, MFA, payments, notifications, reviews, calls, calendar
+sync, medical notes, prescriptions, public demo access, production app links, or
+admin verification review to this mobile app as the next runtime lane.
 
-1. Finish the auth/account frontend checkpoint against the staging bridge.
-2. Wire professional/public profile and verification-readable surfaces.
-3. Wire availability and appointment lifecycle surfaces in small batches.
-4. Keep admin verification dashboard, phone/OTP, MFA, and production/public
-   access as separate later lanes.
+The next mobile-app lane should be milestone stabilization/regression unless a
+new backend contract or product decision explicitly opens another mobile-facing
+surface.
 
-This order reduces rework because auth/session and API configuration are the
-shared base for every protected backend route.
+## Current Surface Status
 
-## Current backend-completed surface
-
-| Backend surface | Backend status from reviewed docs | Frontend status | Wiring estimate |
+| Backend surface | Backend status | Flutter status | Current decision |
 | --- | --- | --- | --- |
-| Health/readiness | `GET /health` and `GET /health/ready` exist for liveness/readiness proof | Not wired in app UI; useful for developer smoke only | 1 small smoke/checkpoint slice |
-| Email/password auth | Register, login, refresh, logout, and `GET /auth/me` exist | Email sign-in, email sign-up, restore, logout, and current account read are wired | Mostly complete; keep regression and staging smoke |
-| Email verification and password reset | Request and token-confirm routes exist; staging email can deliver internal links | Request and transient-token confirm routes are wired; production app-link entry is deferred | 1-2 slices for app-link/manual staging smoke if needed |
-| Google auth | `POST /auth/google/sign-in` and `POST /auth/google/link` exist | Social buttons remain disabled | 2-4 slices if Google frontend package/config is ready; otherwise defer |
-| Phone/OTP and MFA | Explicitly unsupported/deferred in backend docs | Local draft screens only | Do not wire now |
-| Patient self profile | Patient self read/update routes are listed in backend API plan | App account/profile screens are still mostly local/draft | 2-3 slices after auth checkpoint |
-| Professional self profile | Professional self read/update routes are listed in backend API plan | Manage Profile/Public Profile are local/draft | 3-5 slices with profile repository boundary |
-| Professional verification documents | Professional upload-init, upload-complete, and document list routes exist | No mobile upload/list wiring yet | 3-5 slices; needs file picker/storage UX decisions |
-| Public professionals | Public verified professional listing exists | Search/find mentor/specialist pages use local stores | 2-4 slices to replace discovery list/detail reads |
-| Public availability | Public verified-professional availability read exists | Specialist details uses local day/time chips | 2-3 slices after public professionals |
-| Professional availability management | `GET /availability/me` and `PUT /availability/me` exist | Selected Dates/Manage Profile business hours remain local drafts | 3-5 slices |
-| Appointment request/list | Protected patient request and own list routes exist | Appointment/booking screens are local draft state | 3-5 slices |
-| Appointment accept/decline/cancel/reschedule/complete | Protected lifecycle routes exist with state rules and audit behavior | No live lifecycle wiring yet | 5-8 slices after list/request wiring |
-| Admin verification review | Admin queue, signed-read, approve/reject routes exist | Mobile app has no admin dashboard wiring | Later separate admin-dashboard lane |
-| Public/stakeholder staging access | Backend supports developer-private Cloud Run Proxy only | App can be configured for local/proxy development, not public demo | Separate access/release decision |
+| Health/readiness | `GET /health` and `GET /health/ready` exist | Used for developer smoke/checkpoints, not app UI | Keep as developer/staging proof only |
+| Email/password auth | Register, login, refresh, logout, `GET /auth/me` exist | Email sign-in, email sign-up, session restore, logout, and current-account read are wired | Regression/stabilize only |
+| Password reset | Request and token-confirm routes exist | Reset request and transient-token confirm route are wired | Production app-link smoke remains deferred |
+| Email verification | Authenticated request and public token-confirm routes exist | Current-email request and transient-token confirm route are wired | Production app-link smoke remains deferred |
+| Google sign-in | `POST /auth/google/sign-in` exists | Sign-in phone/email Google rows use configured `GoogleIdTokenProvider` and `AuthRepository.googleSignIn` | Regression/stabilize only |
+| Google account linking | `POST /auth/google/link` exists | Account Google link uses configured provider and `AuthRepository.googleLink`; regression passed | Unlink/recovery/re-auth remain deferred |
+| Phone/OTP and MFA | Explicitly unsupported/deferred in backend docs | Local draft/security screens only | Do not wire now |
+| Patient self profile | `GET/PUT /patients/me` exist | Settings/Profile reads patient profile and updates backend patient name only | Age/location and local account fields remain deferred |
+| Professional self profile | `GET/PUT /professionals/me` exist | Manage Profile reads profile; Add Description updates bio; edit name/category/specialty are wired under preservation rules | Profile creation, website, address remain deferred |
+| Professional verification documents | Upload-init, upload-complete, document list exist | Manage Profile verification shell lists/upload documents with file picker and safe states | Admin review and advanced storage hardening remain deferred |
+| Public professionals | `GET /professionals` exists | Search, Find Mentor, and Specialist Details consume backend public professionals | Public detail endpoint and broader ranking/filtering remain deferred |
+| Public availability | Public verified-professional availability read exists | Search/Specialist Details read public availability and generate request options | Calendar/provider availability expansion remains deferred |
+| Professional availability management | `GET/PUT /availability/me` exist | selectedDates reads/replaces own availability while preserving backend rules | Exceptions, blocked dates, buffers, capacity remain deferred |
+| Appointment request/list | Protected request and own-list routes exist | Search/Specialist Details request appointments; Appointments reads own list | Auto-confirm booking remains deferred |
+| Appointment lifecycle | Accept, decline, cancel, reschedule, complete routes exist | Appointments supports patient/professional cancellation, professional accept/decline, professional completion, and patient/professional reschedule | Payments, notifications, calls, notes, prescriptions, reviews, calendar sync, admin override remain deferred |
+| Admin verification review | Admin queue, signed-read, approve/reject exist | Intentionally outside this mobile app by `ADMIN_VERIFICATION_REVIEW_SURFACE_BOUNDARY.md` | Separate admin dashboard/web-console lane |
+| Public/stakeholder staging access | Backend supports developer-private proxy/access patterns | App can build with staging config; public demo path is not claimed | Separate release/access decision |
 
-## Remaining frontend wiring from completed backend only
+## Mobile-Facing Completed Backend Result
 
-This excludes new backend product modules and excludes production release work.
+The current completed-backend mobile surface is functionally consumed for the
+patient/professional app boundary:
 
-| Scope | Approximate frontend slices remaining |
-| --- | --- |
-| Auth/account only | 3-6 |
-| Professional profile, verification, and public professional discovery | 7-12 |
-| Availability and appointment lifecycle | 8-14 |
-| Regression/staging smoke/docs around those lanes | 4-6 |
-| Total to consume completed backend surfaces in the mobile app | 22-38 |
+- auth/session/account
+- Google sign-in/link
+- patient profile read/name update
+- professional profile read/scoped edits
+- professional verification upload/list
+- public professional discovery
+- public and own availability
+- appointment request/list/lifecycle
 
-The earlier 18-30 estimate is still plausible if some UI slices are combined,
-but the safer planning range is 22-38 because verification upload and
-appointment lifecycle should not be rushed into oversized slices.
+This does not mean the full product is complete. It means the currently
+completed backend surfaces that belong in this mobile app are no longer waiting
+for first-pass runtime wiring.
 
-## Next frontend slice
+## Intentionally Excluded From This Mobile App
 
-Queue:
+- admin verification review queue
+- admin signed-read document access
+- admin approve/reject decisions
+- admin audit/reviewer workflows
 
-`52.18 - Auth/account staging smoke and remaining-backend checkpoint`
+These belong to a separate admin dashboard or admin web console unless a future
+decision explicitly accepts mobile admin risk.
+
+## Still Deferred Product/Backend Modules
+
+These are not missed mobile wiring from completed backend surfaces; they require
+new backend/product contracts or production infrastructure:
+
+- phone/OTP
+- MFA/PIN persistence
+- Google unlinking
+- cross-email/recovery linking
+- recent re-authentication
+- payments/refunds/payouts
+- notifications/reminders/push delivery
+- reviews/ratings
+- calls/video/audio
+- calendar provider sync
+- consultation notes
+- prescriptions/medical records
+- messaging backend/realtime transport
+- community backend
+- content/publishing backend
+- production app links
+- public/stakeholder staging access
+- release signing and store readiness
+
+## Next
+
+Queue a mobile milestone stabilization/regression lane.
+
+Recommended next slice:
+
+`52.96 - Define Mobile Backend Integration Stabilization Plan`
 
 Goal:
 
-- verify the already-wired auth/session/account frontend boundary still matches
-  the backend staging bridge
-- document exact environment/base URL setup for developer-private Cloud Run
-  Proxy
-- identify whether Google sign-in/link is ready for frontend runtime wiring or
-  should stay deferred
-- do not start profile, verification, availability, or appointment wiring until
-  this shared base is stable
+- select a focused regression/stabilization plan for the already-wired backend
+  mobile surfaces
+- choose which grouped test suites and manual smoke checks prove the milestone
+- update stale status/deferred docs if needed
+- do not add new runtime features
 
-## Stop conditions
-
-Stop and ask before implementation if:
-
-- a real-device/public staging access model is required
-- production app links or custom domains are required
-- Google frontend package/config decisions are missing
-- a route contract is not present in backend docs
-- wiring would require phone/OTP, MFA, payments, notifications, reviews, calls,
-  calendar sync, medical notes, prescriptions, or admin dashboard behavior
-
-## Non-claims
+## Non-Claims
 
 This document does not claim:
 
-- full frontend/backend wiring is complete
-- the backend is production-ready
-- public/stakeholder staging access is ready
-- phone/OTP, MFA, Google unlinking, payments, notifications, reviews, calls,
-  calendar sync, prescriptions, or medical records are ready
-- admin verification dashboard wiring belongs in the mobile app
+- the whole product is complete
+- the app is production-ready
+- Play Store/App Store readiness is complete
+- public staging access is complete
+- admin dashboard work is complete
+- deferred modules are available

@@ -1580,3 +1580,26 @@ phone/OTP, and MFA remain deferred.
 Next: 52.95 should run a final backend-completed mobile surface checkpoint
 before choosing mobile milestone stabilization or another scoped mobile-facing
 backend surface.
+
+## D149 - Mobile-facing completed backend surfaces checkpoint passed
+
+Task: 52.95
+
+Decision: Treat the currently completed backend surfaces that clearly belong in
+the patient/professional mobile app as first-pass wired or intentionally
+excluded. Move the mobile app into a stabilization/regression planning lane
+rather than selecting another runtime feature.
+
+Reason: The updated completed-surface map and checkpoint found coverage for
+auth/session/account, Google sign-in/link, patient profile, professional
+profile, professional verification upload/list, public professionals, public
+availability, professional availability, and appointment request/list/lifecycle.
+Admin verification review is intentionally assigned to a separate admin
+dashboard/web console. Remaining items such as phone/OTP, MFA, Google unlinking,
+payments, notifications, reviews, calls, calendar sync, notes, prescriptions,
+messaging backend, community backend, content backend, public staging access,
+production app links, release signing, and store readiness are deferred modules
+or release/infrastructure work, not missed first-pass wiring for completed
+mobile-facing backend routes.
+
+Next: 52.96 should define a mobile backend integration stabilization plan.

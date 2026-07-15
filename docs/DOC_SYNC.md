@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **53.1** - define staging seed data and smoke execution plan |
-| Last completed | **52.99** - mobile backend milestone handoff package |
+| NEXT task | **53.2** - execute staging seed data and mobile smoke pass |
+| Last completed | **53.1** - staging seed data and smoke execution plan |
 | Registered routes | **72 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -126,6 +126,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-15 | Task 52.97 DONE - executed the grouped mobile backend integration regression pass, fixed a password-recovery test-harness Google-provider fixture gap, and recorded green auth/account, profile/verification, discovery/booking, scheduling, analyze, and docs-check evidence; DOC_SYNC NEXT -> 52.98 |
 | 2026-07-15 | Task 52.98 DONE - accepted frontend milestone handoff package as the next lane, with staging seed-data/smoke, release-signing/app-link readiness, admin dashboard, and deferred product modules kept separate; DOC_SYNC NEXT -> 52.99 |
 | 2026-07-15 | Task 52.99 DONE - created the mobile backend milestone handoff package with wired surfaces, regression evidence, manual smoke inputs, admin/release/deferred boundaries, and presentation wording; DOC_SYNC NEXT -> 53.1 |
+| 2026-07-15 | Task 53.1 DONE - defined staging seed-data and smoke execution plan with required accounts/data/config, build and verification commands, manual smoke checklist, evidence requirements, blocker rules, and execution next; DOC_SYNC NEXT -> 53.2 |
 | 2026-07-15 | Task 52.74 DONE - selected professional verification upload/list as the next backend-completed Flutter lane, with a required boundary decision before runtime wiring; DOC_SYNC NEXT -> 52.75 |
 | 2026-07-15 | Task 52.73 DONE - Find Mentor public professionals regression passed for loading, empty, success, filtering, backend id handoff, no local fallback/direct fake booking, dashboard compatibility, and Specialist Details compatibility; DOC_SYNC NEXT -> 52.74 |
 | 2026-07-15 | Task 52.72 DONE - Find Mentor now reads backend public professionals where available, routes backend ids to Specialist Details, and avoids local fallback/direct fake booking in the backend path; DOC_SYNC NEXT -> 52.73 |

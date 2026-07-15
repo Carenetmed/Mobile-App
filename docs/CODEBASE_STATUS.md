@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-15 mobile backend milestone handoff package ready.
+**Last updated:** 2026-07-15 staging seed data and smoke plan accepted.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -86,6 +86,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Mobile backend integration regression pass | `MOBILE_BACKEND_INTEGRATION_REGRESSION_PASS.md` records green grouped regression evidence for auth/session/account, profile/verification, discovery/booking, and scheduling lifecycle after one password-recovery widget-test harness fixture fix. Focused analyze reports no issues. This is not a production, public staging, store, admin dashboard, or deferred-module completion claim |
 | Mobile milestone handoff/staging boundary | `MOBILE_MILESTONE_HANDOFF_STAGING_BOUNDARY.md` selects a frontend milestone handoff package as the next lane. Staging seed-data/smoke setup, release-signing/app-link readiness, admin dashboard, and deferred product modules remain separate future lanes |
 | Mobile backend milestone handoff package | `MOBILE_BACKEND_MILESTONE_HANDOFF_PACKAGE.md` is the current presentation package for the regression-passed frontend/backend mobile milestone. It lists wired surfaces, regression evidence, staging smoke inputs, admin/release/deferred boundaries, and safe wording. Next work should define staging seed data and smoke execution |
+| Staging seed data and smoke plan | `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md` defines the staging environment, accounts, verified professional data, availability, appointment lifecycle data, verification upload access, cleanup/reset rules, build commands, manual smoke checklist, evidence requirements, and blocker rules needed before public staging/demo proof can be claimed |
 | Profile/public professional contract | `PROFILE_PUBLIC_PROFESSIONAL_CONTRACT.md` defines the backend-backed profile lane. `ProfileRepository` now covers patient self profile, professional self profile, and public verified professional listing. Manage Profile reads the current professional profile for allowed display fields only, and Add Description can update existing professional profile `bio` only. Profile creation, name/category/specialty editing, patient profile UI, public listing UI, verification upload, admin dashboard, availability, appointment lifecycle, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, and public professional detail remain deferred |
 | Profile repository boundary | `ProfileApiClient` and `ProfileRepository` now cover `GET/PUT /patients/me`, `GET/PUT /professionals/me`, and public `GET /professionals` behind safe models/entities and focused tests. Protected calls require a stored session and bearer headers; `404` self-profile reads become empty-profile states; public listing sends no auth header. Manage Profile now uses the professional self-read path only |
 | Profile bio update | `addDescription` now reads an existing professional profile, preserves `displayName`, `category`, and `specialty`, and updates only `bio` through `ProfileRepository.updateProfessionalMe`. Missing professional profile disables save with an honest empty-profile state. Profile creation, name/category/specialty editing, website, address, patient profile, public listing, verification, availability, appointments, payments, reviews, calls, calendar sync, notes, and prescriptions remain deferred |
@@ -413,6 +414,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.97 test/analyze | Passed after one test-harness fix: auth/session/account suite `72 tests passed`; profile/verification suite `42 tests passed`; discovery/booking suite `27 tests passed`; scheduling lifecycle suite `42 tests passed`; focused analyze reports no issues; `git diff --check` reports no whitespace errors |
 | Focused task 52.98 test/analyze | Not needed: decision/docs slice. `MOBILE_MILESTONE_HANDOFF_STAGING_BOUNDARY.md` selects a handoff package as the next lane and keeps staging seed-data/smoke, release readiness, admin dashboard, and deferred product modules separate; no runtime Flutter code changed |
 | Focused task 52.99 test/analyze | Not needed: handoff/docs slice. `MOBILE_BACKEND_MILESTONE_HANDOFF_PACKAGE.md` summarizes the regression-passed milestone and selects staging seed-data/smoke planning next; no runtime Flutter code changed |
+| Focused task 53.1 test/analyze | Not needed: planning/docs slice. `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md` defines required staging data/config and smoke evidence rules; no runtime Flutter code changed |
 
 ## Design debt (fix in Phase 2+)
 

@@ -233,7 +233,8 @@
 | 52.90 | Define Google Account Linking UI Boundary: decide where protected Google account linking belongs in the app, how it uses configured Google ID-token acquisition and `AuthRepository.googleLink`, when the action is visible/disabled, what safe errors/success states are allowed, and why Google sign-up role selection, unlinking, cross-email linking, recovery linking, recent re-auth, phone/OTP, MFA, production OAuth, release signing, iOS proof, profile creation, admin verification, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain out of scope; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.91 | Wire Google Account Linking From Account: add a constrained Account screen Google account linking entry below Authentication, require configured `GoogleIdTokenProvider`, obtain a real Google ID token, call `AuthRepository.googleLink`, show loading/success/safe-error states, keep session/user role/status/email backend-owned, and do not add Google sign-up role selection, unlinking, cross-email linking, recovery linking, recent re-auth, phone/OTP, MFA, production OAuth, release signing, iOS proof, profile creation, admin verification, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims | M | **DONE** |
 | 52.92 | Run Google Account Linking Regression Checkpoint: verify Account placement below Authentication, disabled missing-config behavior, configured provider token to `AuthRepository.googleLink`, success only after repository success, provider cancellation/unavailable safe error with no repository call, backend validation/unauthorized safe errors without raw text, no session/user role/status/email mutation, docs/deferred-work accuracy, and absence of Google sign-up role selection, unlinking, cross-email/recovery linking, recent re-auth, phone/OTP, MFA, production OAuth, release signing, iOS proof, profile creation, admin verification, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, staging data, or production claims before choosing any broader account/provider surface | M | **DONE** |
-| 52.93 | Decide Next Backend-Completed Flutter Surface After Google Linking Regression: review the Google linking regression, completed backend surface map, deferred-work register, auth/account gaps, verification/admin deferrals, staging-data blockers, and release risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| 52.93 | Decide Next Backend-Completed Flutter Surface After Google Linking Regression: review the Google linking regression, completed backend surface map, deferred-work register, auth/account gaps, verification/admin deferrals, staging-data blockers, and release risks before choosing one narrow next Flutter lane; do not implement runtime behavior in this decision slice | S | **DONE** |
+| 52.94 | Define Admin Verification Review Surface Boundary: decide whether the backend-completed admin verification queue, private signed-read, and approve/reject routes belong in this Flutter app, a separate admin dashboard, or another frontend surface; define role/access expectations, safe document metadata, signed-read handling, approve/reject state/error boundaries, rejection-reason deferral, and evidence required before any runtime admin UI; do not implement runtime behavior in this decision slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -249,16 +250,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.92)
+## Manual test (last completed: task 52.93)
 
-Task `52.92` is the Google account linking regression checkpoint.
+Task `52.93` is a decision-only next-surface selection after Google linking regression.
 
-1. `flutter test test\features\home\account_flow_test.dart -r expanded` - 32 tests pass, including Google link placement, missing config, provider token handoff, provider failure/no repository call, backend validation failure, backend unauthorized failure, and no local account mutation.
-2. `flutter analyze lib\features\Home\presentation\pages\account_shell.dart test\features\home\account_flow_test.dart` - no issues.
-3. Confirm `GOOGLE_ACCOUNT_LINKING_REGRESSION.md` records proof for safe errors, no raw text/token exposure, and deferred provider/account expansion.
-4. Confirm Google sign-up role selection, unlinking, cross-email/recovery linking, recent re-auth, phone/OTP, MFA, production OAuth, release signing, iOS proof, profile creation, admin verification, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain deferred.
+1. Confirm `GOOGLE_ACCOUNT_LINKING_REGRESSION.md` proves the Google linking boundary.
+2. Confirm `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md`, `CODEBASE_STATUS.md`, and `DEFERRED_WORK.md` were reviewed for remaining backend-completed surfaces.
+3. Confirm `NEXT_SURFACE_AFTER_GOOGLE_LINKING_REGRESSION_DECISION.md` selects admin verification review boundary as the next lane without runtime behavior.
+4. Confirm payments, notifications, reviews, calls, calendar sync, notes, prescriptions, phone/OTP, MFA, production release, staging data, and runtime admin UI remain deferred.
 5. `git diff --check` - no whitespace errors.
-6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.93`
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.94`
 
 ## Previous runtime manual test baseline
 

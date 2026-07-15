@@ -1488,3 +1488,27 @@ notes, prescriptions, staging data, and production claims remain deferred.
 
 Next: 52.91 should wire the constrained Google account linking action with
 focused Account tests.
+
+## D145 - Google account linking wired
+
+Task: 52.91
+
+Decision: Wire protected Google account linking from Account as a constrained
+configured-provider action. The Account screen now shows `Google account` below
+Authentication, uses `GoogleIdTokenProvider.signInIdToken()` for the real ID
+token, calls `AuthRepository.googleLink`, and shows safe loading, success, and
+error states.
+
+Reason: The UI boundary in D144 was narrow enough to implement without adding
+new provider policy or account mutation behavior. Success is tied to the
+repository call, provider failures do not call the backend link endpoint, and
+backend validation/unauthorized failures are mapped to safe user-facing copy.
+The frontend does not mutate session, email, role, status, or profile fields
+after linking; those remain backend-owned. Google sign-up role selection,
+unlinking, cross-email/recovery linking, recent re-authentication, phone/OTP,
+MFA, production OAuth, release signing, iOS proof, profile creation, admin
+verification, payments, notifications, reviews, calls, calendar sync, notes,
+prescriptions, staging data, and production claims remain deferred.
+
+Next: 52.92 should run a Google account linking regression checkpoint before
+choosing any broader account/provider surface.

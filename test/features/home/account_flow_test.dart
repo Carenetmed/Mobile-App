@@ -2,6 +2,7 @@ import 'package:app_t/core/constants/navigators/router.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
@@ -42,6 +43,7 @@ Future<void> _pumpAccount(
   WidgetTester tester, {
   required _FakeAuthRepository repository,
   _FakeAccountRepository? accountRepository,
+  GoogleIdTokenProvider? googleIdTokenProvider,
 }) async {
   AccountLocalStore.reset();
   tester.view.physicalSize = _phoneSize;
@@ -56,6 +58,7 @@ Future<void> _pumpAccount(
             home: AccountShellPage(
               authRepository: repository,
               accountRepository: accountRepository,
+              googleIdTokenProvider: googleIdTokenProvider,
             ),
             routes: <String, WidgetBuilder>{
               RouteName.onboarding:
@@ -165,6 +168,165 @@ void main() {
     expect(find.text('backend-patient@carenet.app'), findsOneWidget);
     expect(find.text('PATIENT account - active'), findsOneWidget);
     expect(find.text('doctor@carenet.app'), findsNothing);
+  });
+
+  testWidgets('account exposes Google link entry below authentication', (
+    tester,
+  ) async {
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(),
+      googleIdTokenProvider: _FakeGoogleIdTokenProvider(),
+    );
+
+    expect(find.text('Authentication'), findsOneWidget);
+    expect(find.text('Google account'), findsOneWidget);
+    expect(find.text('Settings & Profile'), findsOneWidget);
+
+    final authenticationTop = tester.getTopLeft(find.text('Authentication')).dy;
+    final googleTop = tester.getTopLeft(find.text('Google account')).dy;
+    final settingsTop = tester.getTopLeft(find.text('Settings & Profile')).dy;
+    expect(authenticationTop < googleTop, isTrue);
+    expect(googleTop < settingsTop, isTrue);
+  });
+
+  testWidgets('Google link stays disabled without provider config', (
+    tester,
+  ) async {
+    final authRepository = _FakeAuthRepository();
+    final provider = _FakeGoogleIdTokenProvider(isConfigured: false);
+    await _pumpAccount(
+      tester,
+      repository: authRepository,
+      accountRepository: _FakeAccountRepository(),
+      googleIdTokenProvider: provider,
+    );
+
+    await tester.tap(find.text('Google account'));
+    await tester.pumpAndSettle();
+
+    expect(provider.signInCalls, 0);
+    expect(authRepository.googleLinkCalls, 0);
+    expect(
+      find.text('Google account linking is not configured yet.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Google link sends real provider token to repository', (
+    tester,
+  ) async {
+    final authRepository = _FakeAuthRepository();
+    final accountRepository = _FakeAccountRepository(
+      user: const AuthUser(
+        id: 'user-1',
+        email: 'backend-patient@carenet.app',
+        role: 'PATIENT',
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
+    );
+    final provider = _FakeGoogleIdTokenProvider(idToken: 'link-id-token');
+    await _pumpAccount(
+      tester,
+      repository: authRepository,
+      accountRepository: accountRepository,
+      googleIdTokenProvider: provider,
+    );
+
+    await tester.tap(find.text('Google account'));
+    await tester.pumpAndSettle();
+
+    expect(provider.signInCalls, 1);
+    expect(authRepository.googleLinkCalls, 1);
+    expect(authRepository.lastGoogleLinkIdToken, 'link-id-token');
+    expect(find.text('Google account linked.'), findsOneWidget);
+    expect(find.text('backend-patient@carenet.app'), findsOneWidget);
+    expect(find.text('PATIENT account - active'), findsOneWidget);
+    expect(find.text('link-id-token'), findsNothing);
+    expect(find.text('Google sign-up'), findsNothing);
+    expect(find.text('Unlink Google'), findsNothing);
+    expect(find.text('Production OAuth'), findsNothing);
+  });
+
+  testWidgets('Google provider failure shows safe copy without link call', (
+    tester,
+  ) async {
+    final authRepository = _FakeAuthRepository();
+    final provider = _FakeGoogleIdTokenProvider(
+      failure: const AuthFailure(
+        type: AuthFailureType.validation,
+        message: 'Google sign-in was cancelled.',
+      ),
+    );
+    await _pumpAccount(
+      tester,
+      repository: authRepository,
+      accountRepository: _FakeAccountRepository(),
+      googleIdTokenProvider: provider,
+    );
+
+    await tester.tap(find.text('Google account'));
+    await tester.pumpAndSettle();
+
+    expect(provider.signInCalls, 1);
+    expect(authRepository.googleLinkCalls, 0);
+    expect(find.text('Google sign-in was cancelled.'), findsOneWidget);
+    expect(find.text('Google account linked.'), findsNothing);
+  });
+
+  testWidgets('Google backend validation failure hides raw backend error', (
+    tester,
+  ) async {
+    final authRepository = _FakeAuthRepository(
+      googleLinkFailure: const AuthFailure(
+        type: AuthFailureType.validation,
+        message: 'raw google collision from backend',
+      ),
+    );
+    await _pumpAccount(
+      tester,
+      repository: authRepository,
+      accountRepository: _FakeAccountRepository(),
+      googleIdTokenProvider: _FakeGoogleIdTokenProvider(),
+    );
+
+    await tester.tap(find.text('Google account'));
+    await tester.pumpAndSettle();
+
+    expect(authRepository.googleLinkCalls, 1);
+    expect(
+      find.text('This Google account cannot be linked here.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw google collision from backend'), findsNothing);
+    expect(find.text('Google account linked.'), findsNothing);
+  });
+
+  testWidgets('Google backend unauthorized failure asks for sign in again', (
+    tester,
+  ) async {
+    final authRepository = _FakeAuthRepository(
+      googleLinkFailure: const AuthFailure(
+        type: AuthFailureType.unauthorized,
+        message: 'raw unauthorized backend message',
+      ),
+    );
+    await _pumpAccount(
+      tester,
+      repository: authRepository,
+      accountRepository: _FakeAccountRepository(),
+      googleIdTokenProvider: _FakeGoogleIdTokenProvider(),
+    );
+
+    await tester.tap(find.text('Google account'));
+    await tester.pumpAndSettle();
+
+    expect(authRepository.googleLinkCalls, 1);
+    expect(find.text('Please sign in again.'), findsOneWidget);
+    expect(find.text('raw unauthorized backend message'), findsNothing);
+    expect(find.text('Google account linked.'), findsNothing);
   });
 
   testWidgets('account read failure keeps local account display', (
@@ -1032,10 +1194,13 @@ void main() {
 }
 
 class _FakeAuthRepository implements AuthRepository {
-  _FakeAuthRepository({this.failure});
+  _FakeAuthRepository({this.failure, this.googleLinkFailure});
 
   final AuthFailure? failure;
+  final AuthFailure? googleLinkFailure;
   int logoutCalls = 0;
+  int googleLinkCalls = 0;
+  String? lastGoogleLinkIdToken;
 
   @override
   Future<void> logout() async {
@@ -1047,7 +1212,41 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> googleLink({required String idToken}) async {
+    googleLinkCalls += 1;
+    lastGoogleLinkIdToken = idToken;
+    final failure = googleLinkFailure;
+    if (failure != null) {
+      throw failure;
+    }
+  }
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeGoogleIdTokenProvider implements GoogleIdTokenProvider {
+  _FakeGoogleIdTokenProvider({
+    this.isConfigured = true,
+    this.idToken = 'google-id-token',
+    this.failure,
+  });
+
+  @override
+  final bool isConfigured;
+  final String idToken;
+  final AuthFailure? failure;
+  int signInCalls = 0;
+
+  @override
+  Future<String> signInIdToken() async {
+    signInCalls += 1;
+    final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
+    return idToken;
+  }
 }
 
 class _FakeAccountRepository implements AccountRepository {

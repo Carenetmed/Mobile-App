@@ -1676,3 +1676,23 @@ presentation wording. The next missing proof is not more app wiring; it is
 staging data and smoke execution against a real backend environment.
 
 Next: 53.1 should define the staging seed data and smoke execution plan.
+
+## D154 - Staging seed data and smoke plan accepted
+
+Task: 53.1
+
+Decision: Accept `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md` as the staging
+proof plan for the regression-passed mobile backend milestone. The next slice
+should execute the smoke pass only after required staging accounts, seeded data,
+API/build config, verification upload access, and cleanup/reset expectations are
+confirmed.
+
+Reason: The previous milestone is regression-passed locally, but public staging
+or demo confidence requires real backend environment proof. The plan defines the
+environment, patient/professional accounts, verified professional data,
+availability, appointment lifecycle data, verification upload access, build
+commands, manual smoke checklist, evidence requirements, and blocker rules
+without committing secrets or creating fake success.
+
+Next: 53.2 should execute the staging seed data and mobile smoke pass, stopping
+for project-lead input if required staging inputs are missing.

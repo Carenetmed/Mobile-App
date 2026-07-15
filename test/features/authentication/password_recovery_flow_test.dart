@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_password.dart';
@@ -30,8 +31,14 @@ Future<void> _pumpWithRoutes(
           (_, __) => MaterialApp(
             initialRoute: initialRoute,
             routes: {
-              RouteName.signInPhone: (_) => const SignInPhone(),
-              RouteName.signInEmail: (_) => const SignInEmail(),
+              RouteName.signInPhone:
+                  (_) => SignInPhone(
+                    googleIdTokenProvider: _disabledGoogleProvider,
+                  ),
+              RouteName.signInEmail:
+                  (_) => SignInEmail(
+                    googleIdTokenProvider: _disabledGoogleProvider,
+                  ),
               RouteName.enterEmail:
                   (_) => EnterEmailPage(authRepository: repository),
               RouteName.enterPassword: (_) => const EnterPasswordPage(),
@@ -328,6 +335,18 @@ void main() {
       expect(find.text('Reset link is invalid or expired.'), findsOneWidget);
     });
   });
+}
+
+const _disabledGoogleProvider = _FakeGoogleIdTokenProvider(isConfigured: false);
+
+class _FakeGoogleIdTokenProvider implements GoogleIdTokenProvider {
+  const _FakeGoogleIdTokenProvider({this.isConfigured = true});
+
+  @override
+  final bool isConfigured;
+
+  @override
+  Future<String> signInIdToken() async => 'google-id-token';
 }
 
 class _FakeAuthRepository implements AuthRepository {

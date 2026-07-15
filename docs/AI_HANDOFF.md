@@ -239,7 +239,8 @@
 | 52.96 | Define Mobile Backend Integration Stabilization Plan: create a focused stabilization/regression plan for the already-wired backend mobile milestone, choose grouped test suites/manual smoke checks/docs consistency checks, identify release/staging blockers, and decide whether the next slice should be grouped regression execution or targeted cleanup; do not implement runtime behavior in this planning slice | S | **DONE** |
 | 52.97 | Execute Mobile Backend Integration Regression Pass: run the grouped stabilization suites for auth/session/account, profile/verification, discovery/booking, and scheduling lifecycle from `MOBILE_BACKEND_INTEGRATION_STABILIZATION_PLAN.md`, run focused analyze/docs checks, record pass/fail evidence and any targeted cleanup slices, and do not add new runtime feature behavior unless fixing a verified regression within the scoped surface | M | **DONE** |
 | 52.98 | Define Mobile Milestone Handoff And Staging Data Boundary: review the passed mobile backend integration regression evidence, remaining staging-data/release/admin/product blockers, and decide whether the next lane is frontend milestone handoff package, staging seed-data/smoke setup, release-signing/app-link readiness, or another explicitly deferred product lane; do not implement runtime behavior in this decision slice | S | **DONE** |
-| 52.99 | Create Mobile Backend Milestone Handoff Package: summarize the backend-completed mobile surfaces wired, grouped regression evidence, manual smoke/staging-data requirements, admin/release/deferred boundaries, and exact next-lane options so the milestone can be presented without production or full-product overclaiming; do not implement runtime behavior in this documentation slice | S | **NEXT** |
+| 52.99 | Create Mobile Backend Milestone Handoff Package: summarize the backend-completed mobile surfaces wired, grouped regression evidence, manual smoke/staging-data requirements, admin/release/deferred boundaries, and exact next-lane options so the milestone can be presented without production or full-product overclaiming; do not implement runtime behavior in this documentation slice | S | **DONE** |
+| 53.1 | Define Staging Seed Data And Smoke Execution Plan: define the staging accounts, seeded verified professional/profile/availability/appointment data, verification upload storage access, cleanup/reset rules, API base URL/build configuration, and manual smoke commands needed to prove the regression-passed mobile milestone against a real backend environment; do not implement runtime app behavior in this planning slice | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -255,16 +256,16 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
-## Manual test (last completed: task 52.98)
+## Manual test (last completed: task 52.99)
 
-Task `52.98` is a docs-only handoff/staging boundary decision.
+Task `52.99` is a docs-only mobile backend milestone handoff package.
 
-1. Confirm `MOBILE_MILESTONE_HANDOFF_STAGING_BOUNDARY.md` selects the frontend milestone handoff package as the next lane.
-2. Confirm staging seed data/manual smoke, release-signing/app-link readiness, admin dashboard, and deferred product modules remain separate lanes.
-3. Confirm the next slice is `52.99 - Create Mobile Backend Milestone Handoff Package`.
-4. Confirm no runtime app code changed in task 52.98.
+1. Confirm `MOBILE_BACKEND_MILESTONE_HANDOFF_PACKAGE.md` summarizes wired surfaces, regression evidence, manual smoke inputs, admin/release/deferred boundaries, and suggested presentation wording.
+2. Confirm the package does not claim production readiness, full product completion, admin dashboard completion, or public staging demo proof.
+3. Confirm the next slice is `53.1 - Define Staging Seed Data And Smoke Execution Plan`.
+4. Confirm no runtime app code changed in task 52.99.
 5. `git diff --check` - no whitespace errors.
-6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `52.99`
+6. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `53.1`
 
 ## Previous runtime manual test baseline
 

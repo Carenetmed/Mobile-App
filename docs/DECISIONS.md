@@ -1622,3 +1622,24 @@ available. Any failures should become targeted cleanup slices instead of
 opening broad new feature lanes.
 
 Next: 52.97 should execute the mobile backend integration regression pass.
+
+## D151 - Mobile backend integration regression passed
+
+Task: 52.97
+
+Decision: Treat the already-wired backend mobile milestone as regression-passed
+at the grouped Flutter test/analyze level. The next slice should define the
+handoff and staging-data boundary before any additional product or release lane
+starts.
+
+Reason: The regression pass proved the scoped auth/session/account,
+profile/verification, discovery/booking, and scheduling lifecycle suites after
+fixing one isolated password-recovery widget-test harness gap. Focused analyze
+reported no issues. This is enough to move from "is the wired mobile surface
+internally coherent?" to "what exact handoff/staging/release lane comes next?"
+It is not enough to claim production release, public staging demo, app-link
+readiness, store readiness, admin dashboard completion, or deferred product
+modules.
+
+Next: 52.98 should define the mobile milestone handoff and staging data
+boundary.

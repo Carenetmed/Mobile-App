@@ -1,16 +1,16 @@
 # Staging Mobile Gateway Phone Install Checkpoint
 
 **Task:** 53.2 checkpoint
-**Status:** Seed/backend proof passed; real-device patient request and own appointment-list smoke passed; remaining professional/verification/cleanup phone smoke still open
+**Status:** Seed/backend proof passed; real-device patient request/list smoke and professional lifecycle smoke passed; remaining verification/detail/cleanup phone smoke still open
 **Date:** 2026-07-17
 
 ## Purpose
 
 Record the real-device install/launch proof, the staging seed/backend API
 proof, the patient phone UI walkthrough through a real appointment request,
-the patient own appointment-list proof, and the remaining phone-smoke gaps for
-the staging mobile build without claiming that the full real-device manual UI
-smoke pass is complete.
+the patient own appointment-list proof, professional appointment lifecycle
+proof, and the remaining phone-smoke gaps for the staging mobile build without
+claiming that the full real-device manual UI smoke pass is complete.
 
 This checkpoint proves that the Android app can be built with the public
 staging API Gateway URL, installed on the test phone, launched under the real
@@ -331,16 +331,105 @@ No passwords, API keys, OAuth client secrets, or tokens are recorded here.
 
     Result: all passed / no issues found / APK built.
 
+26. Cleared app data, launched the rebuilt APK, and signed into the phone build
+    as the seeded professional account.
+
+    Observed phone UI result:
+
+    ```text
+    PROFESSIONAL account - active
+    app53-2-professional-20260716092933@staging.carenet.example
+    ```
+
+27. Opened Notifications -> `Your appointment is booked` while signed in as
+    the seeded professional and proved role-aware backend appointment actions.
+
+    Observed phone UI result:
+
+    ```text
+    Upcoming
+    Appointment with cmrnd9w31000701s6tse0lyf1
+    REQUESTED
+    Accept
+    Decline
+    Reschedule
+    ```
+
+28. Performed a professional accept action on one requested appointment.
+
+    Observed phone UI result:
+
+    ```text
+    ACCEPTED
+    Appointment updated. Backend status: ACCEPTED.
+    ```
+
+29. Performed a professional decline action on a separate requested
+    appointment.
+
+    Observed phone UI result:
+
+    ```text
+    DECLINED
+    Appointment updated. Backend status: DECLINED.
+    ```
+
+30. Opened the reschedule flow for the accepted appointment, confirmed a
+    generated backend availability option, and observed the backend response.
+
+    Observed phone UI result:
+
+    ```text
+    Appointment rescheduled. Backend status: REQUESTED.
+    ```
+
+31. Scrolled to the recent section while signed in as the professional and
+    confirmed terminal appointment rows render without duplicate lifecycle
+    actions.
+
+    Observed phone UI result:
+
+    ```text
+    Recent
+    CANCELLED
+    COMPLETED
+    ```
+
+    The completed row did not expose `Complete`, so duplicate professional
+    completion was not available from the phone UI.
+
+32. Checked professional profile/verification navigation from the phone.
+
+    The drawer `Profile` entry routed to `Account`, where the seeded
+    professional account was correctly shown as active. `Settings & Profile` is
+    currently a patient-profile surface and showed:
+
+    ```text
+    Patient profile
+    Please sign in again.
+    ```
+
+    The existing `Manage Profile` and `Verification documents` routes are still
+    present in the app code, but this checkpoint did not find a reliable phone
+    navigation path from the authenticated professional shell to those routes.
+    Verification upload smoke therefore remains open as a route-access blocker,
+    not as a backend/upload failure.
+
 ## Current Blocker
 
 There is no current blocker for the patient Search -> public availability ->
-appointment request path or the patient Notifications -> Appointments own-list
-path. Both passed on the real Android phone after a fresh install/data reset and
-fresh sign-in.
+appointment request path, the patient Notifications -> Appointments own-list
+path, or the professional Notifications -> Appointments lifecycle path. These
+passed on the real Android phone after fresh app-data resets and fresh sign-ins.
 
 The appointment row tap did not navigate to a separate detail screen in this
 checkpoint, so a separate appointment-detail screen proof remains open instead
 of being claimed.
+
+Verification upload phone smoke is blocked by app navigation, not by a proven
+backend upload failure: the professional `Manage Profile`/`Verification
+documents` routes exist in code, but a reliable authenticated phone navigation
+path was not found in this checkpoint.
 
 ## What This Does Not Prove
 
@@ -348,10 +437,9 @@ This checkpoint does not prove the full real-device manual UI smoke pass.
 
 The following remain open under task 53.2:
 
-- signing into the phone build as the seeded professional
 - checking any separate appointment-detail screen if product keeps or adds one
-- running any feasible accept/decline/cancel/reschedule/complete walkthrough
-  from the phone UI
+- running a fresh professional completion action, if a non-terminal accepted
+  past appointment is available on the phone UI
 - verification upload smoke through the phone UI
 - cleanup/reset execution after the walkthrough
 
@@ -361,10 +449,11 @@ Play Store readiness, or full frontend/backend staging completion.
 ## Next Required Step
 
 Continue task 53.2 from the remaining real Android phone UI checklist in
-`STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, starting with professional-role
-scheduling lifecycle smoke and verification upload smoke. If a separate
-appointment-detail screen is required later, prove it as its own step instead
-of treating the appointment list as detail proof.
+`STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, starting with verification upload
+route access, any separate appointment-detail proof, optional fresh
+professional completion proof if suitable data exists, and cleanup/reset proof.
+If a separate appointment-detail screen is required later, prove it as its own
+step instead of treating the appointment list as detail proof.
 
 If any phone UI smoke step cannot be completed, stop and record the exact
 screen, role, route, and failure category instead of inventing fake success.

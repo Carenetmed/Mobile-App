@@ -53,6 +53,7 @@
 | Phase 22 | **In progress** |
 | NEXT task | **53.2** - execute staging seed data and mobile smoke pass |
 | Last completed | **53.1** - staging seed data and smoke execution plan |
+| Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, and has partial patient-device UI proof; public availability parsing and UTC request-time fixes are verified locally, but reinstall/final phone smoke is blocked until ADB sees the device again |
 | Registered routes | **72 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -127,6 +128,10 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-15 | Task 52.98 DONE - accepted frontend milestone handoff package as the next lane, with staging seed-data/smoke, release-signing/app-link readiness, admin dashboard, and deferred product modules kept separate; DOC_SYNC NEXT -> 52.99 |
 | 2026-07-15 | Task 52.99 DONE - created the mobile backend milestone handoff package with wired surfaces, regression evidence, manual smoke inputs, admin/release/deferred boundaries, and presentation wording; DOC_SYNC NEXT -> 53.1 |
 | 2026-07-15 | Task 53.1 DONE - defined staging seed-data and smoke execution plan with required accounts/data/config, build and verification commands, manual smoke checklist, evidence requirements, blocker rules, and execution next; DOC_SYNC NEXT -> 53.2 |
+| 2026-07-16 | Task 53.2 checkpoint - fixed Android native `MainActivity` package path for `com.carenet.app`, built the APK with the public staging API Gateway URL, installed it on the connected phone, and verified launch/process evidence; full staging seed-data/manual smoke remains NEXT |
+| 2026-07-16 | Task 53.2 checkpoint update - created staging-only patient/professional seed data, seeded professional verification through Cloud SQL Auth Proxy, proved public listing, public availability, and backend appointment request/accept/reschedule/cancel/complete through the staging API Gateway; real-device phone UI smoke remains NEXT |
+| 2026-07-16 | Task 53.2 checkpoint update - patient phone login, Account current-account display, Settings/Profile patient profile read, and Search public professional listing passed on device; fixed public availability parsing for the backend `availabilityWindows` envelope and omitted `active` flag; rebuilt APK passes focused tests/analyze/build, but final reinstall/device smoke is blocked until `adb devices -l` lists the phone again |
+| 2026-07-16 | Task 53.2 checkpoint update - fixed UTC request-time generation for backend `timezone: "UTC"` availability windows after phone request returned backend validation; focused tests/analyze/build pass, but reinstall/final phone smoke is blocked again because ADB dropped the phone during install |
 | 2026-07-15 | Task 52.74 DONE - selected professional verification upload/list as the next backend-completed Flutter lane, with a required boundary decision before runtime wiring; DOC_SYNC NEXT -> 52.75 |
 | 2026-07-15 | Task 52.73 DONE - Find Mentor public professionals regression passed for loading, empty, success, filtering, backend id handoff, no local fallback/direct fake booking, dashboard compatibility, and Specialist Details compatibility; DOC_SYNC NEXT -> 52.74 |
 | 2026-07-15 | Task 52.72 DONE - Find Mentor now reads backend public professionals where available, routes backend ids to Specialist Details, and avoids local fallback/direct fake booking in the backend path; DOC_SYNC NEXT -> 52.73 |

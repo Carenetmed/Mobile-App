@@ -18,7 +18,7 @@ void main() {
     test('public availability read sends no auth header', () async {
       final adapter = _FakeAdapter(
         responseJson: <String, dynamic>{
-          'items': <Map<String, dynamic>>[
+          'availabilityWindows': <Map<String, dynamic>>[
             _availabilityJson(id: 'availability-1'),
           ],
         },
@@ -41,6 +41,53 @@ void main() {
         isFalse,
       );
       expect(adapter.lastOptions?.headers.containsKey('Cookie'), isFalse);
+    });
+
+    test(
+      'public availability parses backend envelope with omitted active flag',
+      () async {
+        final adapter = _FakeAdapter(
+          responseJson: <String, dynamic>{
+            'professionalProfileId': 'professional-1',
+            'availabilityWindows': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 'availability-1',
+                'weekday': 6,
+                'startMinute': 540,
+                'endMinute': 1020,
+                'timezone': 'UTC',
+              },
+            ],
+          },
+        );
+        final repository = _repository(adapter: adapter, withSession: false);
+
+        final windows = await repository.publicAvailability(
+          professionalProfileId: 'professional-1',
+        );
+
+        expect(windows, hasLength(1));
+        expect(windows.single.id, 'availability-1');
+        expect(windows.single.weekday, 6);
+        expect(windows.single.active, isTrue);
+      },
+    );
+
+    test('explicit inactive availability remains inactive', () async {
+      final adapter = _FakeAdapter(
+        responseJson: <String, dynamic>{
+          'items': <Map<String, dynamic>>[
+            _availabilityJson(id: 'availability-1', active: false),
+          ],
+        },
+      );
+      final repository = _repository(adapter: adapter, withSession: false);
+
+      final windows = await repository.publicAvailability(
+        professionalProfileId: 'professional-1',
+      );
+
+      expect(windows.single.active, isFalse);
     });
 
     test('own availability read sends bearer auth', () async {
@@ -300,14 +347,17 @@ AuthSessionModel _session() {
   });
 }
 
-Map<String, dynamic> _availabilityJson({String id = 'availability-1'}) {
+Map<String, dynamic> _availabilityJson({
+  String id = 'availability-1',
+  bool active = true,
+}) {
   return <String, dynamic>{
     'id': id,
     'weekday': 1,
     'startMinute': 540,
     'endMinute': 1020,
     'timezone': 'Africa/Lagos',
-    'active': true,
+    'active': active,
     'createdAt': '2026-07-14T08:00:00.000Z',
     'updatedAt': '2026-07-14T08:00:00.000Z',
     'professionalProfileId': 'private-owner',

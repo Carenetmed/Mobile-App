@@ -30,13 +30,7 @@ class AppointmentRequestTimeOptions {
           continue;
         }
 
-        final requestedStartAt = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          window.startMinute ~/ 60,
-          window.startMinute % 60,
-        );
+        final requestedStartAt = _requestedStartAt(date, window);
 
         if (!requestedStartAt.isAfter(now)) {
           continue;
@@ -79,5 +73,14 @@ class AppointmentRequestTimeOptions {
         window.startMinute >= 0 &&
         window.endMinute <= _minutesPerDay &&
         window.startMinute < window.endMinute;
+  }
+
+  DateTime _requestedStartAt(DateTime date, AvailabilityWindow window) {
+    final hour = window.startMinute ~/ 60;
+    final minute = window.startMinute % 60;
+    if (window.timezone.toUpperCase() == 'UTC') {
+      return DateTime.utc(date.year, date.month, date.day, hour, minute);
+    }
+    return DateTime(date.year, date.month, date.day, hour, minute);
   }
 }

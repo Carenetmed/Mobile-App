@@ -183,7 +183,7 @@ void main() {
     test('own appointment list parses safe appointment statuses', () async {
       final adapter = _FakeAdapter(
         responseJson: <String, dynamic>{
-          'items': <Map<String, dynamic>>[
+          'appointments': <Map<String, dynamic>>[
             _appointmentJson(id: 'appointment-1', status: 'ACCEPTED'),
             _appointmentJson(id: 'appointment-2', status: 'COMPLETED'),
           ],

@@ -1,15 +1,16 @@
 # Staging Mobile Gateway Phone Install Checkpoint
 
 **Task:** 53.2 checkpoint
-**Status:** Seed/backend proof passed; real-device patient UI request smoke passed; remaining professional/verification/cleanup phone smoke still open
+**Status:** Seed/backend proof passed; real-device patient request and own appointment-list smoke passed; remaining professional/verification/cleanup phone smoke still open
 **Date:** 2026-07-17
 
 ## Purpose
 
 Record the real-device install/launch proof, the staging seed/backend API
 proof, the patient phone UI walkthrough through a real appointment request,
-and the remaining phone-smoke gaps for the staging mobile build without
-claiming that the full real-device manual UI smoke pass is complete.
+the patient own appointment-list proof, and the remaining phone-smoke gaps for
+the staging mobile build without claiming that the full real-device manual UI
+smoke pass is complete.
 
 This checkpoint proves that the Android app can be built with the public
 staging API Gateway URL, installed on the test phone, launched under the real
@@ -266,14 +267,80 @@ No passwords, API keys, OAuth client secrets, or tokens are recorded here.
     - `Day 6: 08:30 - 12:00 (UTC)`
     - generated request options for `07/18 08:30`
 
+22. Found and fixed a protected appointment-list parsing issue during the
+    phone smoke.
+
+    The staging backend returns own appointments as:
+
+    ```json
+    {
+      "appointments": []
+    }
+    ```
+
+    `SchedulingApiClient` previously parsed only raw lists, `{ "items": [] }`,
+    and the public availability `{ "availabilityWindows": [] }` envelope. The
+    phone UI therefore showed no backend appointments even though the same
+    seeded patient had appointments through the staging API Gateway. The app
+    now accepts the backend `appointments` envelope for own appointment list
+    reads.
+
+23. Found and fixed a fresh sign-in/session persistence reliability issue
+    during the phone smoke.
+
+    After the appointment-list envelope fix, installing over the existing app
+    could still leave the appointment screen at:
+
+    ```text
+    Please sign in again.
+    ```
+
+    A clean app-data reset plus rebuilt APK confirmed the app could sign in
+    again, but the session store also now writes auth/session fields in an
+    ordered sequence before protected routes reread them. This avoids a
+    half-written secure-storage session during immediate post-login navigation.
+
+24. Rebuilt and installed the corrected APK, cleared app data, signed in fresh
+    as the seeded patient, opened Notifications -> `Your appointment is
+    booked`, and proved the phone UI renders real backend appointment rows.
+
+    Observed phone UI result:
+
+    ```text
+    Upcoming
+    Appointment with cmrnd9w31000701s6tse0lyf1
+    REQUESTED
+    2026-07-21 - 09:30
+    Backend appointment request
+    Cancel appointment
+    Reschedule
+    ```
+
+    Additional rendered rows from the same backend response showed the same
+    seeded professional profile id with `REQUESTED` status for `2026-07-18 -
+    08:30`.
+
+25. Ran focused local verification after the appointment-list and session-store
+    fixes:
+
+    ```powershell
+    flutter test test\features\authentication\auth_infrastructure_test.dart test\features\authentication\session_restore_guard_test.dart test\features\home\scheduling_repository_test.dart test\features\home\appointments_flow_test.dart
+    flutter analyze lib\features\Authentication\data\storage\session_store.dart lib\features\Home\data\services\scheduling_api_client.dart test\features\home\scheduling_repository_test.dart lib\features\Home\presentation\pages\appointments_shell.dart test\features\home\appointments_flow_test.dart
+    flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev
+    ```
+
+    Result: all passed / no issues found / APK built.
+
 ## Current Blocker
 
 There is no current blocker for the patient Search -> public availability ->
-appointment request phone path. That path passed on the real Android phone.
+appointment request path or the patient Notifications -> Appointments own-list
+path. Both passed on the real Android phone after a fresh install/data reset and
+fresh sign-in.
 
-The `Open details` action after request success did not provide a separate
-confirmed navigation proof in this checkpoint, so appointment-list/details UI
-proof remains open instead of being claimed.
+The appointment row tap did not navigate to a separate detail screen in this
+checkpoint, so a separate appointment-detail screen proof remains open instead
+of being claimed.
 
 ## What This Does Not Prove
 
@@ -282,7 +349,7 @@ This checkpoint does not prove the full real-device manual UI smoke pass.
 The following remain open under task 53.2:
 
 - signing into the phone build as the seeded professional
-- checking own appointment list through the phone UI
+- checking any separate appointment-detail screen if product keeps or adds one
 - running any feasible accept/decline/cancel/reschedule/complete walkthrough
   from the phone UI
 - verification upload smoke through the phone UI
@@ -294,9 +361,10 @@ Play Store readiness, or full frontend/backend staging completion.
 ## Next Required Step
 
 Continue task 53.2 from the remaining real Android phone UI checklist in
-`STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, starting with appointment
-list/details proof if feasible, then professional-role scheduling lifecycle
-smoke and verification upload smoke.
+`STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, starting with professional-role
+scheduling lifecycle smoke and verification upload smoke. If a separate
+appointment-detail screen is required later, prove it as its own step instead
+of treating the appointment list as detail proof.
 
 If any phone UI smoke step cannot be completed, stop and record the exact
 screen, role, route, and failure category instead of inventing fake success.

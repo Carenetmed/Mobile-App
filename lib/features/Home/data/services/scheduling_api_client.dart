@@ -215,6 +215,8 @@ class SchedulingApiClient {
         : response is Map<String, dynamic> &&
             response['availabilityWindows'] is List
         ? response['availabilityWindows'] as List<dynamic>
+        : response is Map<String, dynamic> && response['appointments'] is List
+        ? response['appointments'] as List<dynamic>
         : const <dynamic>[];
   }
 

@@ -1,15 +1,15 @@
 # Staging Mobile Gateway Phone Install Checkpoint
 
 **Task:** 53.2 checkpoint
-**Status:** Seed/backend proof passed; real-device UI smoke partially passed; ADB device visibility currently blocks final walkthrough
-**Date:** 2026-07-16
+**Status:** Seed/backend proof passed; real-device patient UI request smoke passed; remaining professional/verification/cleanup phone smoke still open
+**Date:** 2026-07-17
 
 ## Purpose
 
 Record the real-device install/launch proof, the staging seed/backend API
-proof, the partial phone UI walkthrough, and the current phone-smoke blocker
-for the staging mobile build without claiming that the full real-device manual
-UI smoke pass is complete.
+proof, the patient phone UI walkthrough through a real appointment request,
+and the remaining phone-smoke gaps for the staging mobile build without
+claiming that the full real-device manual UI smoke pass is complete.
 
 This checkpoint proves that the Android app can be built with the public
 staging API Gateway URL, installed on the test phone, launched under the real
@@ -221,30 +221,59 @@ No passwords, API keys, OAuth client secrets, or tokens are recorded here.
 
     Result: all passed / no issues found.
 
+20. Found and fixed an Android auth-storage reliability issue during the phone
+    smoke.
+
+    After reinstalling the UTC-fixed APK and signing in as the seeded patient,
+    the phone UI still returned:
+
+    ```text
+    Please sign in again.
+    ```
+
+    A direct staging API Gateway replay with the same seeded patient credentials,
+    same professional profile, and same `2026-07-18T08:30:00.000Z` slot
+    succeeded with status `REQUESTED`, proving the staging backend, seed data,
+    and request payload were valid.
+
+    The app now disables Android app backup/restore:
+
+    ```xml
+    android:allowBackup="false"
+    android:fullBackupContent="false"
+    ```
+
+    This prevents stale restored secure-storage/auth state from surviving app
+    reinstall/test cycles and is also the safer production posture for an auth
+    app.
+
+21. Rebuilt, uninstalled the old app, installed the backup-disabled APK,
+    cleared app data, launched the app, signed in as the seeded patient, and
+    submitted the first generated appointment option from the real phone UI.
+
+    Observed phone UI result:
+
+    ```text
+    Request sent. Backend status: REQUESTED.
+    ```
+
+    The phone UI showed:
+
+    - `Staging Smoke Professional`
+    - `Public availability`
+    - `Day 0: 08:30 - 12:00 (UTC)`
+    - `Day 2: 09:30 - 13:00 (UTC)`
+    - `Day 6: 08:30 - 12:00 (UTC)`
+    - generated request options for `07/18 08:30`
+
 ## Current Blocker
 
-The rebuilt APK has not yet been reinstalled after the UTC request-time fix
-because ADB dropped the phone during install:
+There is no current blocker for the patient Search -> public availability ->
+appointment request phone path. That path passed on the real Android phone.
 
-```text
-adb.exe: no devices/emulators found
-```
-
-After that, ADB did not list the phone:
-
-```powershell
-adb devices -l
-```
-
-Observed result:
-
-```text
-List of devices attached
-```
-
-No device row was listed. The next run must reconnect or re-authorize the
-Android test phone, then reinstall the rebuilt APK and repeat the
-availability/appointment-request portion of the real-device smoke.
+The `Open details` action after request success did not provide a separate
+confirmed navigation proof in this checkpoint, so appointment-list/details UI
+proof remains open instead of being claimed.
 
 ## What This Does Not Prove
 
@@ -253,10 +282,6 @@ This checkpoint does not prove the full real-device manual UI smoke pass.
 The following remain open under task 53.2:
 
 - signing into the phone build as the seeded professional
-- confirming Search/Specialist Details still show the seeded public
-  availability after the UTC request-time rebuilt APK is installed
-- submitting an appointment request through the phone UI after the UTC
-  request-time rebuilt APK is installed
 - checking own appointment list through the phone UI
 - running any feasible accept/decline/cancel/reschedule/complete walkthrough
   from the phone UI
@@ -268,9 +293,10 @@ Play Store readiness, or full frontend/backend staging completion.
 
 ## Next Required Step
 
-Continue task 53.2 by reconnecting or re-authorizing the Android phone until
-`adb devices -l` lists it, then reinstall the rebuilt APK and resume the real
-Android phone UI checklist from `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`.
+Continue task 53.2 from the remaining real Android phone UI checklist in
+`STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, starting with appointment
+list/details proof if feasible, then professional-role scheduling lifecycle
+smoke and verification upload smoke.
 
 If any phone UI smoke step cannot be completed, stop and record the exact
 screen, role, route, and failure category instead of inventing fake success.

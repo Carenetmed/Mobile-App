@@ -272,18 +272,25 @@ records the current staging checkpoint:
 8. Professional verification was seeded to `VERIFIED` through Cloud SQL Auth Proxy because the mobile app cannot approve professionals.
 9. Public professional listing, public availability, and backend appointment request/accept/reschedule/cancel/complete proof passed through staging.
 10. Passwords are stored only in the local file `C:\Users\asd\Desktop\carenet-staging-smoke-credentials-20260716092933.txt`; do not commit or paste them.
-11. Phone UI smoke partially passed for patient sign-in, Account current-account display, Settings/Profile patient profile read, and Search public professional listing.
-12. Two phone-smoke bugs were found and fixed:
+11. Phone UI smoke passed for patient sign-in, Account current-account display, Settings/Profile patient profile read, Search public professional listing, public availability display, and real appointment request submission.
+12. Three phone-smoke issues were found and fixed:
     - public availability now parses the backend `availabilityWindows` envelope and treats omitted `active` as active while preserving explicit `active: false`
     - UTC availability windows now generate UTC appointment request instants instead of local instants that shift earlier when serialized with `toUtc()`
-13. Focused verification after those fixes passed:
+    - Android app backup/restore is disabled so stale restored secure-storage/auth state does not survive reinstall/test cycles
+13. Fresh patient phone request proof after reinstall passed:
+    - rebuilt the staging APK
+    - uninstalled the old app, installed the backup-disabled APK, cleared app data, and launched `com.carenet.app`
+    - signed in as `app53-2-patient-20260716092933@staging.carenet.example`
+    - opened Search -> `Staging Smoke Professional` -> public availability
+    - selected the first generated option for `07/18 08:30`
+    - observed `Request sent. Backend status: REQUESTED`
+14. Focused verification after the availability and UTC fixes passed:
     - `flutter test test\features\home\scheduling_repository_test.dart`
     - `flutter test test\features\home\search_flow_test.dart test\features\home\specialist_details_flow_test.dart test\features\home\appointment_request_time_options_test.dart`
     - `flutter analyze lib\features\Home\data\models\availability_window_model.dart lib\features\Home\data\services\scheduling_api_client.dart test\features\home\scheduling_repository_test.dart`
     - `flutter analyze lib\features\Home\domain\services\appointment_request_time_options.dart test\features\home\appointment_request_time_options_test.dart`
     - `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev`
-14. Reinstalling the rebuilt APK and finishing the device walkthrough is currently blocked because ADB dropped the phone during install and `adb devices -l` returns no connected device.
-15. Full real-device phone UI smoke is not done yet; continue 53.2 by reconnecting/re-authorizing the phone, reinstalling the rebuilt APK, and walking the remaining checklist from `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`.
+15. Full real-device phone UI smoke is not done yet. Appointment list/details, professional-role scheduling lifecycle, verification upload, and cleanup/reset proof remain open under 53.2.
 
 ## Manual test (last completed: task 53.1)
 

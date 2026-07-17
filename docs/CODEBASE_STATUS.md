@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-17 role-selection onboarding wired.
+**Last updated:** 2026-07-17 patient/professional onboarding requirements accepted.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -27,6 +27,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Role-based onboarding boundary | `ROLE_BASED_ONBOARDING_AUTH_BOUNDARY.md` records the PRD-backed product decision that CareNet sign-up must branch into patient and professional onboarding before Google sign-up or broader auth expansion. Professional accounts must proceed through profile, credential upload, and manual verification before public listing |
 | Role-registration backend contract | `ROLE_REGISTRATION_BACKEND_CONTRACT.md` records the exact frontend/backend boundary: email/password and Google-created accounts must use explicit `PATIENT`/`PROFESSIONAL` role selection before account creation is treated as complete. Existing linked Google sign-in and authenticated Google linking remain valid, but first-time Google sign-up stays disabled until role-selection onboarding exists |
 | Role-selection signup | `signUpRole` now sits between phone/email signup entry and `finishSignUp`; patient registration sends `PATIENT` and continues to community agreement, while professional registration sends `PROFESSIONAL` and continues to the existing professional onboarding surface. Google signup remains disabled |
+| Patient/professional onboarding requirements | `PATIENT_PROFESSIONAL_ONBOARDING_UI_REQUIREMENTS.md` defines the serious next onboarding flow against backend `CAR-BE-119` fields. Flutter still needs profile entity/model/repository expansion before polished patient/professional setup screens can save the new backend fields |
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
 | Sign-up email | Validates email, then routes to `finishSignUp` |
 | Sign-up to sign-in links | "Already have an account? Sign in" routes to `signInPhone` / `signInEmail` from matching entry screens |

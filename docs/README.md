@@ -42,6 +42,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 18 | **AUTH_ACCOUNT_STAGING_CHECKPOINT.md** | Developer-private staging proxy/auth checkpoint for Phase 22 |
 | 19 | **GOOGLE_SIGN_IN_FOUNDATION.md** | Real app identifiers required before Google OAuth setup |
 | 20 | **GOOGLE_SIGN_IN_SETUP_PREREQUISITES.md** | Google OAuth client prerequisites and fingerprints |
+| 21 | **ROLE_BASED_ONBOARDING_AUTH_BOUNDARY.md** | PRD-backed patient/professional onboarding and Google sign-up boundary |
 
 Current implementation policy:
 - Build frontend-complete, backend-ready slices.

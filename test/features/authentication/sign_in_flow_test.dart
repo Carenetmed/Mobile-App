@@ -136,7 +136,53 @@ void main() {
       },
     );
 
-    testWidgets('sign in email Google button is hidden by default', (
+    testWidgets(
+      'sign in email Google button authenticates with backend token',
+      (tester) async {
+        final repository = _FakeAuthRepository();
+        await _pumpWithRoutes(
+          tester,
+          home: SignInEmail(
+            authRepository: repository,
+            googleIdTokenProvider: _FakeGoogleIdTokenProvider(
+              idToken: 'id-token',
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Continue with Google'));
+        await tester.pumpAndSettle();
+
+        expect(repository.googleSignInCalls, 1);
+        expect(repository.lastGoogleIdToken, 'id-token');
+        expect(find.text('dashboard'), findsOneWidget);
+      },
+    );
+
+    testWidgets('sign in email Google button shows safe provider failure', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(
+          authRepository: _FakeAuthRepository(),
+          googleIdTokenProvider: _FakeGoogleIdTokenProvider(
+            failure: const AuthFailure(
+              type: AuthFailureType.validation,
+              message: 'Google sign-in was cancelled.',
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Google sign-in was cancelled.'), findsOneWidget);
+      expect(find.text('dashboard'), findsNothing);
+    });
+
+    testWidgets('sign in email Google button stays disabled without config', (
       tester,
     ) async {
       final repository = _FakeAuthRepository();
@@ -151,7 +197,9 @@ void main() {
         ),
       );
 
-      expect(find.text('Continue with Google'), findsNothing);
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pumpAndSettle();
+
       expect(repository.googleSignInCalls, 0);
       expect(find.text('dashboard'), findsNothing);
     });
@@ -188,7 +236,7 @@ void main() {
       expect(find.text('dashboard'), findsOneWidget);
     });
 
-    testWidgets('sign in phone Google button is hidden by default', (
+    testWidgets('sign in phone Google button uses backend Google sign-in', (
       tester,
     ) async {
       final repository = _FakeAuthRepository();
@@ -202,9 +250,12 @@ void main() {
         ),
       );
 
-      expect(find.text('Continue with Google'), findsNothing);
-      expect(repository.googleSignInCalls, 0);
-      expect(find.text('dashboard'), findsNothing);
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pumpAndSettle();
+
+      expect(repository.googleSignInCalls, 1);
+      expect(repository.lastGoogleIdToken, 'phone-id');
+      expect(find.text('dashboard'), findsOneWidget);
     });
 
     testWidgets('sign in email routes to sign up email entry', (tester) async {
@@ -279,14 +330,23 @@ class _FakeAuthRepository implements AuthRepository {
 }
 
 class _FakeGoogleIdTokenProvider implements GoogleIdTokenProvider {
-  const _FakeGoogleIdTokenProvider({this.isConfigured = true, this.idToken});
+  const _FakeGoogleIdTokenProvider({
+    this.isConfigured = true,
+    this.idToken,
+    this.failure,
+  });
 
   @override
   final bool isConfigured;
   final String? idToken;
+  final AuthFailure? failure;
 
   @override
   Future<String> signInIdToken() async {
+    final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
     return idToken ?? 'google-id-token';
   }
 }

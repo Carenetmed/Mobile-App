@@ -104,6 +104,14 @@ flutter build apk --debug `
   --dart-define=GOOGLE_SIGN_IN_SERVER_CLIENT_ID=<web-client-id-if-used>
 ```
 
+For Google phone smoke, prefer the helper so the app is built with the Web
+OAuth client ID instead of accidentally using an Android client ID:
+
+```powershell
+.\scripts\build-staging-google-apk.ps1 `
+  -GoogleWebClientJson "C:\path\to\web-client-secret.json"
+```
+
 Focused static check before smoke:
 
 ```powershell

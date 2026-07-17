@@ -1742,24 +1742,26 @@ Next: use the installed phone build and the local-only credential file to run
 the real-device UI checklist from `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`.
 Record pass/fail evidence without secrets.
 
-## D157 - Google auth UI hidden by default until real-device proof
+## D157 - Google auth phone-smoke fix boundary
 
 Task: 53.2
 
-Decision: Hide mobile Google sign-in and Account Google-linking UI by default
-behind `CARENET_ENABLE_GOOGLE_AUTH_UI=false`.
+Decision: Keep mobile Google sign-in and Account Google-linking UI available
+when `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` is configured, and fix/prove the real
+phone path instead of hiding the UI.
 
 Reason: During staging/mobile smoke, the user reported that Google auth is not
 working in the UI. The backend route and Flutter provider/repository code still
-exist, but real-device Google sign-in/linking is not proven. The app must not
-expose provider actions as ready when the phone UI path is unreliable.
+exist, and the correct product response is to diagnose the OAuth/config/device
+path, not to remove the user-facing entry. The likely local build risk is using
+an Android OAuth client ID where the Flutter `google_sign_in` provider expects
+the Web client ID as `GOOGLE_SIGN_IN_SERVER_CLIENT_ID`.
 
-Consequences: Sign-in phone/email no longer show `Continue with Google` by
-default. Account no longer shows the `Google account` linking entry by default.
-The underlying provider and repository code remains available for a future
-explicitly enabled build, but that build must pass fresh phone proof with
-`CARENET_ENABLE_GOOGLE_AUTH_UI=true`, `GOOGLE_SIGN_IN_SERVER_CLIENT_ID`, correct
-OAuth/SHA/release setup, and backend readiness.
+Consequences: Sign-in phone/email keep the configured Google action. Account
+keeps the configured Google account-linking action. If
+`GOOGLE_SIGN_IN_SERVER_CLIENT_ID` is missing, those actions remain disabled
+with safe copy. The staging APK used for phone proof must be rebuilt with the
+Web OAuth client ID, not the Android OAuth client ID or any client secret.
 
 Deferred: Google sign-up role selection, unlink, cross-email/recovery linking,
 recent re-authentication, iOS proof, release/Play signing fingerprints,

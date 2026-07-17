@@ -318,7 +318,7 @@ records the current staging checkpoint:
     - initial phone file selection returned `Service is unavailable. Please try again.`
     - direct staging API replay with the same seeded professional login found `POST /verification/documents/upload-init` returning HTTP 500 before signed PUT/upload-complete
     - after the backend storage injection fix was deployed, the phone upload path was repeated with a selected document and reached the uploaded state
-20. Google auth is not proven working in the phone UI, so Google sign-in/linking UI is hidden by default behind `CARENET_ENABLE_GOOGLE_AUTH_UI=false` until a dedicated real-device OAuth proof slice passes (`DECISIONS.md` D157).
+20. Google auth was reported not working in the phone UI. The fix boundary is to rebuild/prove the app with the Web OAuth client ID passed as `GOOGLE_SIGN_IN_SERVER_CLIENT_ID`, not to hide the configured Google UI (`DECISIONS.md` D157).
 21. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, cleanup/reset proof, and a dedicated Google OAuth phone proof remain open under 53.2.
 
 ## Manual test (last completed: task 53.1)

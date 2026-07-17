@@ -480,11 +480,12 @@ No passwords, API keys, OAuth client secrets, or tokens are recorded here.
     Follow-up app decision:
 
     ```text
-    Hide Google sign-in/linking UI by default behind CARENET_ENABLE_GOOGLE_AUTH_UI=false.
+    Keep configured Google sign-in/linking UI and prove the phone path with the
+    Web OAuth client ID passed as GOOGLE_SIGN_IN_SERVER_CLIENT_ID.
     ```
 
-    This keeps the earlier Google provider code as disabled infrastructure until
-    a dedicated real-device OAuth proof slice passes.
+    This keeps the earlier Google provider code user-facing when configured and
+    treats the likely build/config issue as the thing to fix.
 
 ## Current Blocker
 
@@ -503,8 +504,9 @@ upload-init HTTP 500 after the backend storage fix. The Account ->
 backend state before upload, and a selected document reached the uploaded state
 on the phone.
 
-Google auth remains unproven on the phone UI and is hidden by default until a
-dedicated OAuth proof slice passes.
+Google auth remains unproven on the phone UI until a fresh staging APK is built
+with the Web OAuth client ID as `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` and the
+sign-in/linking path is smoke-tested on the phone.
 
 ## What This Does Not Prove
 
@@ -516,8 +518,8 @@ The following remain open under task 53.2:
 - running a fresh professional completion action, if a non-terminal accepted
   past appointment is available on the phone UI
 - cleanup/reset execution after the walkthrough
-- a dedicated Google OAuth phone proof before re-enabling Google sign-in/linking
-  UI by default
+- a dedicated Google OAuth phone proof using the Web OAuth client ID in the
+  staging APK build
 
 Do not present this checkpoint as public demo readiness, production readiness,
 Play Store readiness, or full frontend/backend staging completion.
@@ -528,7 +530,7 @@ Continue task 53.2 from the remaining real Android phone UI checklist in
 `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, starting with any separate
 appointment-detail proof, optional fresh professional completion proof if
 suitable data exists, cleanup/reset proof, and a future dedicated Google OAuth
-phone proof before re-enabling Google UI by default. If a separate
+phone proof using the Web OAuth client ID. If a separate
 appointment-detail screen is required later, prove it as its own step instead
 of treating the appointment list as detail proof.
 

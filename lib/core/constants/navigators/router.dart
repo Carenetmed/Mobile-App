@@ -64,7 +64,7 @@ import 'package:app_t/features/Onboarding/presentation/pages/commitment_screen.d
 import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/onboarding.dart';
-import 'package:app_t/features/Onboarding/presentation/pages/profession.dart';
+import 'package:app_t/features/Onboarding/presentation/pages/profile_setup.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/user_edit.dart';
 import 'package:app_t/features/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -103,12 +103,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
     case RouteName.communityAgreement:
       return _page(settings, CommunityCommitment());
+    case RouteName.patientOnboardingSetup:
+      return _page(settings, const PatientOnboardingSetupPage());
     case RouteName.notificationAgreement:
       return _page(settings, NotificationScreen());
     case RouteName.medicalAgreement:
       return _page(settings, MedicalAgreement());
     case RouteName.medicalProfessional:
-      return _page(settings, ProfessionScreen());
+      return _page(settings, const ProfessionalOnboardingSetupPage());
     case RouteName.signUpPhone:
       return _page(settings, SignUpPhone());
     case RouteName.signUpEmail:

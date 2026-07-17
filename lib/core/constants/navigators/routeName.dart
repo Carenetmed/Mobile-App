@@ -16,6 +16,7 @@ class RouteName {
   static const String signUpEmail = 'signUpEmail';
   static const String signUpRole = 'signUpRole';
   static const String finishSignUp = 'finishSignUp';
+  static const String patientOnboardingSetup = 'patientOnboardingSetup';
 
   // --- Agreements (Flow A) ---
   static const String communityAgreement = 'communityAgreement';

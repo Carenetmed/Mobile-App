@@ -38,6 +38,8 @@ Future<void> _pumpFinishSignUp(
                   ),
               RouteName.communityAgreement:
                   (_) => const Scaffold(body: Text('community-agreement')),
+              RouteName.patientOnboardingSetup:
+                  (_) => const Scaffold(body: Text('patient-setup')),
               RouteName.medicalProfessional:
                   (_) => const Scaffold(body: Text('professional-onboarding')),
             },
@@ -63,6 +65,7 @@ void main() {
       expect(find.text('Email Address is required'), findsOneWidget);
       expect(find.text('Please enter your password'), findsNWidgets(2));
       expect(find.text('community-agreement'), findsNothing);
+      expect(find.text('patient-setup'), findsNothing);
     });
 
     testWidgets('registers through repository when form fields are valid', (
@@ -89,7 +92,7 @@ void main() {
       expect(repository.lastEmail, 'john@example.com');
       expect(repository.lastRole, 'PATIENT');
       expect(repository.lastProfile?['firstName'], 'John');
-      expect(find.text('community-agreement'), findsOneWidget);
+      expect(find.text('patient-setup'), findsOneWidget);
     });
 
     testWidgets(
@@ -110,6 +113,7 @@ void main() {
         expect(repository.lastRole, 'PROFESSIONAL');
         expect(find.text('professional-onboarding'), findsOneWidget);
         expect(find.text('community-agreement'), findsNothing);
+        expect(find.text('patient-setup'), findsNothing);
       },
     );
 
@@ -141,6 +145,7 @@ void main() {
 
       expect(find.text('Backend is not configured yet.'), findsOneWidget);
       expect(find.text('community-agreement'), findsNothing);
+      expect(find.text('patient-setup'), findsNothing);
     });
 
     testWidgets('shows loading state while registration is pending', (
@@ -158,11 +163,12 @@ void main() {
 
       expect(find.text('Creating account...'), findsOneWidget);
       expect(find.text('community-agreement'), findsNothing);
+      expect(find.text('patient-setup'), findsNothing);
 
       completer.complete(_session());
       await tester.pumpAndSettle();
 
-      expect(find.text('community-agreement'), findsOneWidget);
+      expect(find.text('patient-setup'), findsOneWidget);
     });
 
     testWidgets('blocks navigation when confirm password does not match', (
@@ -186,6 +192,7 @@ void main() {
 
       expect(find.text('Passwords do not match'), findsOneWidget);
       expect(find.text('community-agreement'), findsNothing);
+      expect(find.text('patient-setup'), findsNothing);
     });
   });
 }

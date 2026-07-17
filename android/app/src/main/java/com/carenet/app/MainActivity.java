@@ -1,4 +1,4 @@
-package com.example.app_t;
+package com.carenet.app;
 
 import io.flutter.embedding.android.FlutterActivity;
 

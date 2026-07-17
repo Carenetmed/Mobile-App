@@ -257,6 +257,70 @@ Tokens, `CarenetButton`, `CarenetTextField`, and onboarding/sign-up phone/email 
 
 ---
 
+## Manual test (current: task 53.2 partial checkpoint)
+
+Task `53.2` is still in progress. `STAGING_MOBILE_GATEWAY_PHONE_INSTALL_CHECKPOINT.md`
+records the current staging checkpoint:
+
+1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
+2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
+3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.
+4. `adb shell am start -W -n com.carenet.app/.MainActivity` - returned `Status: ok` and launched `com.carenet.app/.MainActivity`.
+5. `adb shell pidof com.carenet.app` - returned a running process id.
+6. `flutter analyze android/app/src/main/java/com/carenet/app/MainActivity.java` - no issues found.
+7. Staging-only patient/professional accounts were created through the real staging API Gateway.
+8. Professional verification was seeded to `VERIFIED` through Cloud SQL Auth Proxy because the mobile app cannot approve professionals.
+9. Public professional listing, public availability, and backend appointment request/accept/reschedule/cancel/complete proof passed through staging.
+10. Passwords are stored only in the local file `C:\Users\asd\Desktop\carenet-staging-smoke-credentials-20260716092933.txt`; do not commit or paste them.
+11. Phone UI smoke passed for patient sign-in, Account current-account display, Settings/Profile patient profile read, Search public professional listing, public availability display, real appointment request submission, patient Notifications -> Appointments own-list rendering, professional sign-in, and professional Notifications -> Appointments lifecycle actions.
+12. Three phone-smoke issues were found and fixed:
+    - public availability now parses the backend `availabilityWindows` envelope and treats omitted `active` as active while preserving explicit `active: false`
+    - UTC availability windows now generate UTC appointment request instants instead of local instants that shift earlier when serialized with `toUtc()`
+    - Android app backup/restore is disabled so stale restored secure-storage/auth state does not survive reinstall/test cycles
+13. Additional phone-smoke issues were found and fixed:
+    - own appointment list now parses the backend `appointments` envelope instead of treating real staging responses as empty
+    - secure session save now writes fields in order before protected routes reread the session after login
+14. Fresh patient phone request proof after reinstall passed:
+    - rebuilt the staging APK
+    - uninstalled the old app, installed the backup-disabled APK, cleared app data, and launched `com.carenet.app`
+    - signed in as `app53-2-patient-20260716092933@staging.carenet.example`
+    - opened Search -> `Staging Smoke Professional` -> public availability
+    - selected the first generated option for `07/18 08:30`
+    - observed `Request sent. Backend status: REQUESTED`
+15. Fresh patient appointment-list proof passed after rebuilding with the appointment-list/session fixes:
+    - cleared app data and signed in as `app53-2-patient-20260716092933@staging.carenet.example`
+    - opened Notifications -> `Your appointment is booked`
+    - observed `Upcoming`, `Appointment with cmrnd9w31000701s6tse0lyf1`, `REQUESTED`, `2026-07-21 - 09:30`, `Backend appointment request`, `Cancel appointment`, and `Reschedule`
+    - tapping the row did not navigate to a separate detail screen, so separate appointment-detail proof remains open
+16. Focused verification after the availability, UTC, appointment-list, and session-store fixes passed:
+    - `flutter test test\features\home\scheduling_repository_test.dart`
+    - `flutter test test\features\home\search_flow_test.dart test\features\home\specialist_details_flow_test.dart test\features\home\appointment_request_time_options_test.dart`
+    - `flutter test test\features\authentication\auth_infrastructure_test.dart test\features\authentication\session_restore_guard_test.dart test\features\home\scheduling_repository_test.dart test\features\home\appointments_flow_test.dart`
+    - `flutter analyze lib\features\Home\data\models\availability_window_model.dart lib\features\Home\data\services\scheduling_api_client.dart test\features\home\scheduling_repository_test.dart`
+    - `flutter analyze lib\features\Home\domain\services\appointment_request_time_options.dart test\features\home\appointment_request_time_options_test.dart`
+    - `flutter analyze lib\features\Authentication\data\storage\session_store.dart lib\features\Home\data\services\scheduling_api_client.dart test\features\home\scheduling_repository_test.dart lib\features\Home\presentation\pages\appointments_shell.dart test\features\home\appointments_flow_test.dart`
+    - `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev`
+17. Professional phone smoke passed:
+    - cleared app data and signed in as `app53-2-professional-20260716092933@staging.carenet.example`
+    - Account showed `PROFESSIONAL account - active`
+    - Notifications -> `Your appointment is booked` opened Appointments with backend rows for `cmrnd9w31000701s6tse0lyf1`
+    - requested rows exposed `Accept`, `Decline`, and `Reschedule`
+    - accept updated a row to `ACCEPTED` with `Appointment updated. Backend status: ACCEPTED.`
+    - decline updated a separate row to `DECLINED` with `Appointment updated. Backend status: DECLINED.`
+    - reschedule on the accepted row loaded generated backend availability options and returned `Appointment rescheduled. Backend status: REQUESTED.`
+    - recent terminal rows rendered `CANCELLED` and `COMPLETED`; the completed row did not expose duplicate `Complete`
+18. Professional Account route access was fixed and proved on phone:
+    - Account now shows professional-only `Manage Profile` and `Verification documents` entries for `PROFESSIONAL` current accounts
+    - patient accounts do not expose those professional-only entries
+    - Account -> `Manage Profile` opened `Staging Smoke Professional`, `Mental Health`, and `Stress Support`
+    - Account -> `Verification documents` opened the backend-backed document screen with `Upload document`, `Choose file to upload`, and `No verification documents are submitted yet.`
+19. Verification upload phone smoke is still open because staging upload-init fails server-side:
+    - phone file selection returned `Service is unavailable. Please try again.`
+    - direct staging API replay with the same seeded professional login succeeded for auth but failed at `POST /verification/documents/upload-init`
+    - observed replay result: `upload-init=failed status=500 body={"statusCode":500,"message":"Internal server error"}`
+    - signed file PUT and upload-complete were not reached
+20. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, successful verification upload after backend/storage upload-init is fixed, and cleanup/reset proof remain open under 53.2.
+
 ## Manual test (last completed: task 53.1)
 
 Task `53.1` is a docs-only staging seed-data and smoke execution plan.

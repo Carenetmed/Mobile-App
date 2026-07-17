@@ -29,20 +29,23 @@ class SecureSessionStore implements SessionStore {
 
   @override
   Future<void> save(AuthSessionModel session) async {
-    await Future.wait(<Future<void>>[
-      _storage.write(key: _accessTokenKey, value: session.accessToken),
-      _storage.write(key: _refreshTokenKey, value: session.refreshToken),
-      _storage.write(key: _tokenTypeKey, value: session.tokenType),
-      _storage.write(key: _expiresInKey, value: session.expiresIn.toString()),
-      _storage.write(key: _userIdKey, value: session.user.id),
-      _storage.write(key: _userEmailKey, value: session.user.email),
-      _storage.write(key: _userRoleKey, value: session.user.role),
-      _storage.write(key: _userStatusKey, value: session.user.status),
-      _storage.write(
-        key: _userEmailVerifiedKey,
-        value: session.user.emailVerified.toString(),
-      ),
-    ]);
+    // Encrypted Android preferences are a shared persistent store. Complete the
+    // session as one ordered write sequence before a protected route rereads it.
+    await _storage.write(key: _accessTokenKey, value: session.accessToken);
+    await _storage.write(key: _refreshTokenKey, value: session.refreshToken);
+    await _storage.write(key: _tokenTypeKey, value: session.tokenType);
+    await _storage.write(
+      key: _expiresInKey,
+      value: session.expiresIn.toString(),
+    );
+    await _storage.write(key: _userIdKey, value: session.user.id);
+    await _storage.write(key: _userEmailKey, value: session.user.email);
+    await _storage.write(key: _userRoleKey, value: session.user.role);
+    await _storage.write(key: _userStatusKey, value: session.user.status);
+    await _storage.write(
+      key: _userEmailVerifiedKey,
+      value: session.user.emailVerified.toString(),
+    );
   }
 
   @override

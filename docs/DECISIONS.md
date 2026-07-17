@@ -1696,3 +1696,48 @@ without committing secrets or creating fake success.
 
 Next: 53.2 should execute the staging seed data and mobile smoke pass, stopping
 for project-lead input if required staging inputs are missing.
+
+## D155 - Staging gateway phone install checkpoint accepted as partial proof
+
+Task: 53.2 checkpoint
+
+Decision: Treat the public-staging-gateway Android phone install and launch as
+a real partial pass for task 53.2, but do not mark the full staging seed-data
+smoke pass complete yet.
+
+Reason: The app now builds with
+`CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev`,
+installs on the connected Android phone, and launches under
+`com.carenet.app`. During the install proof, an Android native entrypoint
+mismatch was found and fixed: `MainActivity` now lives under the
+`com.carenet.app` package path instead of `com.example.app_t`.
+
+This proves the app package can run against the public staging gateway, but it
+does not prove patient/professional login, verified professional seed data,
+availability, appointment request/list/lifecycle, verification upload, or
+cleanup/reset behavior.
+
+Next: continue 53.2 by confirming the required staging accounts, seed data, and
+cleanup/reset rules from `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`; stop and
+record blockers if any required input is missing.
+
+## D156 - Staging seed and backend lifecycle proof recorded
+
+Task: 53.2 checkpoint
+
+Decision: Treat the staging-only seed data and backend API lifecycle proof as
+ready for the real-device phone UI walkthrough, but do not mark task 53.2 fully
+complete until the installed app is walked through with the seeded accounts.
+
+Reason: Fresh staging-only patient/professional accounts were created through
+the real staging API Gateway. The professional profile was seeded to
+`VERIFIED` through Cloud SQL Auth Proxy because the mobile app has no admin
+approval path and public listing requires verified professionals. Public
+professional listing, public availability, and appointment request, accept,
+reschedule, cancel, and completion proof passed through the staging API
+Gateway. Passwords are stored only in a local Desktop credential file and are
+not committed.
+
+Next: use the installed phone build and the local-only credential file to run
+the real-device UI checklist from `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`.
+Record pass/fail evidence without secrets.

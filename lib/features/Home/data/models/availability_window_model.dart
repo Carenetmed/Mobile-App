@@ -19,7 +19,7 @@ class AvailabilityWindowModel extends AvailabilityWindow {
       startMinute: _asInt(json['startMinute']),
       endMinute: _asInt(json['endMinute']),
       timezone: (json['timezone'] as String?) ?? '',
-      active: json['active'] == true,
+      active: json['active'] is bool ? json['active'] as bool : true,
       createdAt: _asDateTime(json['createdAt']),
       updatedAt: _asDateTime(json['updatedAt']),
     );

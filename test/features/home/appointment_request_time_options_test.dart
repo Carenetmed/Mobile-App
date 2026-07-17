@@ -70,6 +70,26 @@ void main() {
       expect(options.single.timezone, 'Asia/Kolkata');
     });
 
+    test('generates UTC backend windows as UTC instants', () {
+      final options = helper.generate(
+        now: DateTime.utc(2026, 7, 16, 8),
+        durationMinutes: const <int>[30],
+        windows: const <AvailabilityWindow>[
+          AvailabilityWindow(
+            id: 'utc-window',
+            weekday: DateTime.saturday,
+            startMinute: 8 * 60 + 30,
+            endMinute: 12 * 60,
+            timezone: 'UTC',
+            active: true,
+          ),
+        ],
+      );
+
+      expect(options.single.requestedStartAt, DateTime.utc(2026, 7, 18, 8, 30));
+      expect(options.single.requestedStartAt.isUtc, isTrue);
+    });
+
     test('keeps only durations that fit inside the availability window', () {
       final options = helper.generate(
         now: DateTime(2026, 7, 14, 8),

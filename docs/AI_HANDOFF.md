@@ -308,6 +308,16 @@ the client still cannot send verification/admin/public-listing state. The next
 runtime slice should build the polished patient/professional onboarding setup UI
 against this expanded contract.
 
+Product-owner interruption: APP-60 accepted
+`PATIENT_PROFESSIONAL_ONBOARDING_SETUP_UI.md` records the runtime onboarding
+setup implementation. Patient sign-up now routes through
+`patientOnboardingSetup` to save backend patient profile fields before community
+agreement. Professional sign-up now routes through a real professional
+credential/practice setup form on `medicalProfessional`, saves backend
+professional profile fields, and then opens verification documents. Google
+sign-up, admin review, regulator validation, public listing approval, payments,
+reviews, calls, notes, and prescriptions remain deferred.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

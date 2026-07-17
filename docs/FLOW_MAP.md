@@ -22,7 +22,7 @@ signUpPhone  ←──► signUpEmail  (switch auth method)
   ▼
 signUpRole  (Patient → finishSignUp as PATIENT; Professional → finishSignUp as PROFESSIONAL)
   ▼
-finishSignUp  (Agree & continue)
+finishSignUp  (Agree & continue; APP-60 routes patient to patientOnboardingSetup and professional to medicalProfessional setup)
   ▼ Patient
 communityAgreement  (Agree → notificationAgreement)
   ▼

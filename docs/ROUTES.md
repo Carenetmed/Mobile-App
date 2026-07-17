@@ -12,10 +12,11 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `signUpEmail` | `signUpEmail` | `SignUpEmail` | `lib/features/Authentication/presentation/pages/sign_up_email.dart` |
 | `signUpRole` | `signUpRole` | `SignUpRoleSelectionPage` | `lib/features/Authentication/presentation/pages/sign_up_role_selection.dart` |
 | `finishSignUp` | `finishSignUp` | `FinSignUp` | `lib/features/Authentication/presentation/pages/sign_up_con.dart` |
+| `patientOnboardingSetup` | `patientOnboardingSetup` | `PatientOnboardingSetupPage` | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
 | `communityAgreement` | `communityAgreement` | `CommunityCommitment` | `lib/features/Onboarding/presentation/pages/commitment_screen.dart` |
 | `notificationAgreement` | `notificationAgreement` | `NotificationScreen` | `lib/features/Onboarding/presentation/pages/notification.dart` |
 | `medicalAgreement` | `medicalAgreement` | `MedicalAgreement` | `lib/features/Onboarding/presentation/pages/medical_agreement.dart` |
-| `medicalProfessional` | `medicalProfessional` | `ProfessionScreen` | `lib/features/Onboarding/presentation/pages/profession.dart` |
+| `medicalProfessional` | `medicalProfessional` | `ProfessionalOnboardingSetupPage` | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
 | `medicalEdit` | `medicalEdit` | `UserEdit` | `lib/features/Onboarding/presentation/pages/user_edit.dart` |
 | `signInPhone` | `signInPhone` | `SignInPhone` | `lib/features/Authentication/presentation/pages/sign_in_phone.dart` |
 | `signInEmail` | `signInEmail` | `SignInEmail` | `lib/features/Authentication/presentation/pages/sign_in_email.dart` |

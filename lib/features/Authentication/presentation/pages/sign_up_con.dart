@@ -328,7 +328,7 @@ class _FinSignUpState extends State<FinSignUp> {
       Navigator.of(context).popAndPushNamed(
         widget.selectedRole == SignUpRole.professional
             ? RouteName.medicalProfessional
-            : RouteName.communityAgreement,
+            : RouteName.patientOnboardingSetup,
       );
     } on AuthFailure catch (failure) {
       if (!mounted) {

@@ -6,6 +6,7 @@ import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/features/Authentication/presentation/widget/bordered_keyboard_input.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
@@ -13,9 +14,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class FinSignUp extends StatefulWidget {
-  const FinSignUp({super.key, this.initialEmail, this.authRepository});
+  const FinSignUp({
+    super.key,
+    this.initialEmail,
+    this.selectedRole = SignUpRole.patient,
+    this.authRepository,
+  });
 
   final String? initialEmail;
+  final SignUpRole selectedRole;
   final AuthRepository? authRepository;
 
   @override
@@ -202,6 +209,16 @@ class _FinSignUpState extends State<FinSignUp> {
               ),
               SizedBox(height: 3.h),
               Text(
+                'Account type: ${widget.selectedRole.title}',
+                style: TextStyle(
+                  fontFamily: AppFonts.montserrat,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primaryBlue5,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Text(
                 'Your password must be at least 8 characters long including\nnumbers and special characters.',
                 style: TextStyle(
                   fontFamily: AppFonts.montserrat,
@@ -298,7 +315,7 @@ class _FinSignUpState extends State<FinSignUp> {
       await _authRepository.register(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        role: 'PATIENT',
+        role: widget.selectedRole.backendValue,
         profile: <String, dynamic>{
           'firstName': _firstNameController.text.trim(),
           'lastName': _lastNameController.text.trim(),
@@ -308,7 +325,11 @@ class _FinSignUpState extends State<FinSignUp> {
       if (!mounted) {
         return;
       }
-      Navigator.of(context).popAndPushNamed(RouteName.communityAgreement);
+      Navigator.of(context).popAndPushNamed(
+        widget.selectedRole == SignUpRole.professional
+            ? RouteName.medicalProfessional
+            : RouteName.communityAgreement,
+      );
     } on AuthFailure catch (failure) {
       if (!mounted) {
         return;

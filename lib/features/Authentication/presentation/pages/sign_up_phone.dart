@@ -72,7 +72,7 @@ class _SignUpPhoneState extends State<SignUpPhone> {
     });
 
     if (_canContinue) {
-      Navigator.pushNamed(context, RouteName.finishSignUp);
+      Navigator.pushNamed(context, RouteName.signUpRole);
     }
   }
 

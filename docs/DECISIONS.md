@@ -1800,3 +1800,29 @@ claim is added by this contract.
 Next: implement a role-selection onboarding slice before account creation, then
 wire email/password registration through the selected role. Google sign-up can
 follow only after the same role branch and destinations exist.
+
+## D159 - Role selection before email/password account creation
+
+Task: APP-57
+
+Decision: Add a `signUpRole` route between sign-up entry and `finishSignUp`.
+Phone/email sign-up Continue now routes to role selection. Patient selection
+passes `PATIENT` into `finishSignUp`; professional selection passes
+`PROFESSIONAL`. `finishSignUp` submits the selected backend role instead of
+hardcoding `PATIENT`.
+
+Reason: APP-56 established that account creation must not happen without an
+explicit patient/professional choice. The backend already accepts both roles,
+and the previous Flutter path silently created patient accounts from the shared
+finish screen.
+
+Consequences: Patient registration keeps the existing community agreement
+destination. Professional registration routes to the existing professional
+onboarding surface after backend success, without claiming profile setup,
+credential upload, admin verification, or public listing is complete. Google
+sign-up remains disabled until the same role branch can safely send `idToken`
+plus selected role.
+
+Next: add a focused role-selection regression/checkpoint or continue into
+professional onboarding/profile setup only after deciding the next narrow
+runtime boundary.

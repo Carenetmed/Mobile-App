@@ -14,6 +14,7 @@ class RouteName {
   // --- Sign up (Flow A) ---
   static const String signUpPhone = 'signUpPhone';
   static const String signUpEmail = 'signUpEmail';
+  static const String signUpRole = 'signUpRole';
   static const String finishSignUp = 'finishSignUp';
 
   // --- Agreements (Flow A) ---

@@ -280,6 +280,15 @@ send a real Google `idToken` plus the selected role and route into the correct
 patient or professional onboarding destination. This does not mark `53.2`
 complete and does not change runtime behavior.
 
+Product-owner interruption: APP-57 accepted
+`signUpRole` is now a registered runtime route between phone/email signup and
+`finishSignUp`. Patient selection submits `PATIENT` to the backend and keeps the
+existing community agreement destination. Professional selection submits
+`PROFESSIONAL` and routes to the existing professional onboarding surface after
+registration success. Google signup remains disabled until it can use the same
+role branch with a real Google `idToken` plus selected role. This does not mark
+`53.2` complete.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.
@@ -719,6 +728,7 @@ Task `53.1` is a docs-only staging seed-data and smoke execution plan.
 | 2026-07-15 | 52.90 | DONE - accepted Google account linking UI boundary: Account placement, configured provider gate, `AuthRepository.googleLink`, safe states, backend-owned account/session data, and explicit deferrals |
 | 2026-07-17 | APP-55 | DONE - role-based onboarding/auth boundary accepted from the PRD: patient and professional sign-up must branch before Google sign-up expansion; professional public listing requires profile, credential upload, and manual verification |
 | 2026-07-17 | APP-56 | DONE - role-registration backend contract accepted: email/password and first-time Google-created accounts require explicit patient/professional role selection before runtime onboarding expansion |
+| 2026-07-17 | APP-57 | DONE - role-selection onboarding wired before email/password account creation; selected patient/professional role now controls backend registration role |
 
 ---
 

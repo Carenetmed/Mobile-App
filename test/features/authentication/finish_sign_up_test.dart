@@ -5,6 +5,7 @@ import 'package:app_t/features/Authentication/data/repositories/auth_repository.
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,6 +17,7 @@ Future<void> _pumpFinishSignUp(
   WidgetTester tester, {
   _FakeAuthRepository? authRepository,
   String? initialEmail,
+  SignUpRole selectedRole = SignUpRole.patient,
 }) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
@@ -32,9 +34,12 @@ Future<void> _pumpFinishSignUp(
                   (_) => FinSignUp(
                     authRepository: authRepository ?? _FakeAuthRepository(),
                     initialEmail: initialEmail,
+                    selectedRole: selectedRole,
                   ),
               RouteName.communityAgreement:
                   (_) => const Scaffold(body: Text('community-agreement')),
+              RouteName.medicalProfessional:
+                  (_) => const Scaffold(body: Text('professional-onboarding')),
             },
           ),
     ),
@@ -86,6 +91,27 @@ void main() {
       expect(repository.lastProfile?['firstName'], 'John');
       expect(find.text('community-agreement'), findsOneWidget);
     });
+
+    testWidgets(
+      'registers professional role and routes to professional setup',
+      (tester) async {
+        final repository = _FakeAuthRepository();
+        await _pumpFinishSignUp(
+          tester,
+          authRepository: repository,
+          selectedRole: SignUpRole.professional,
+        );
+
+        await _fillValidForm(tester);
+        await tester.tap(find.text(' Agree & continue'));
+        await tester.pumpAndSettle();
+
+        expect(repository.registerCalls, 1);
+        expect(repository.lastRole, 'PROFESSIONAL');
+        expect(find.text('professional-onboarding'), findsOneWidget);
+        expect(find.text('community-agreement'), findsNothing);
+      },
+    );
 
     testWidgets('prefills email passed from email sign-up entry', (
       tester,

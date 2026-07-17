@@ -318,6 +318,14 @@ professional profile fields, and then opens verification documents. Google
 sign-up, admin review, regulator validation, public listing approval, payments,
 reviews, calls, notes, and prescriptions remain deferred.
 
+Product-owner interruption: APP-61 accepted
+`ONBOARDING_SETUP_REGRESSION_AND_PHONE_SMOKE.md` records the follow-up
+regression checkpoint for the role-based signup and patient/professional setup
+work. The grouped auth/onboarding/profile/account test run passed 116 tests,
+focused analyze passed, and the staging-configured debug APK built. ADB reported
+no connected Android device, so phone install/manual smoke was not completed in
+APP-61 and must not be treated as passed evidence.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

@@ -1770,3 +1770,33 @@ runtime UI expansion.
 Next: the next auth/onboarding implementation lane should define the
 role-based backend contract and Flutter role-selection flow before enabling
 Google sign-up.
+
+## D158 - Role registration backend contract before runtime onboarding
+
+Task: APP-56
+
+Decision: Use the backend's existing role-capable auth routes, but require
+Flutter role selection before any new patient/professional account creation is
+treated as product-complete. Email/password registration may submit
+`PATIENT` or `PROFESSIONAL` only after the user explicitly enters that role's
+onboarding path. Google sign-up must remain disabled until Flutter can call the
+backend with both a real Google `idToken` and the selected role, then route the
+user into the correct patient or professional onboarding destination.
+
+Reason: The backend already supports `POST /auth/register` with patient and
+professional roles and `POST /auth/google/sign-in` with optional role for
+first-time Google-created accounts. The current Flutter sign-up path still
+hardcodes `PATIENT` and has no professional onboarding branch, so enabling
+Google sign-up or broader registration from that surface would create bad
+accounts and hide product work behind auth success.
+
+Consequences: Existing linked Google sign-in and signed-in Google account
+linking remain valid. First-time Google signup requires a future role-selection
+runtime slice. Professional signup must lead to profile setup, credential
+upload, and manual verification before public listing. No payment, call,
+review, medical note, prescription, admin dashboard, or production compliance
+claim is added by this contract.
+
+Next: implement a role-selection onboarding slice before account creation, then
+wire email/password registration through the selected role. Google sign-up can
+follow only after the same role branch and destinations exist.

@@ -269,6 +269,17 @@ Professional onboarding must include profile/credential upload and manual
 verification before public listing. This does not mark `53.2` complete and does
 not change runtime behavior.
 
+Product-owner interruption: APP-56 accepted
+`ROLE_REGISTRATION_BACKEND_CONTRACT.md` defines the exact role-registration
+frontend/backend contract. Backend already supports role-capable
+`POST /auth/register` and `POST /auth/google/sign-in`, but the Flutter app must
+add explicit patient/professional role selection before account creation is
+treated as complete. Existing linked Google sign-in and authenticated Google
+linking remain valid. First-time Google sign-up remains disabled until it can
+send a real Google `idToken` plus the selected role and route into the correct
+patient or professional onboarding destination. This does not mark `53.2`
+complete and does not change runtime behavior.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.
@@ -707,6 +718,7 @@ Task `53.1` is a docs-only staging seed-data and smoke execution plan.
 | 2026-07-15 | 52.89 | DONE - selected protected Google account linking as the next backend-completed Flutter surface, with a required UI boundary decision before runtime wiring |
 | 2026-07-15 | 52.90 | DONE - accepted Google account linking UI boundary: Account placement, configured provider gate, `AuthRepository.googleLink`, safe states, backend-owned account/session data, and explicit deferrals |
 | 2026-07-17 | APP-55 | DONE - role-based onboarding/auth boundary accepted from the PRD: patient and professional sign-up must branch before Google sign-up expansion; professional public listing requires profile, credential upload, and manual verification |
+| 2026-07-17 | APP-56 | DONE - role-registration backend contract accepted: email/password and first-time Google-created accounts require explicit patient/professional role selection before runtime onboarding expansion |
 
 ---
 

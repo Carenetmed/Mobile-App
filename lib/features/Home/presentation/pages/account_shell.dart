@@ -249,6 +249,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
                     : _currentAccount == null
                     ? snapshot.authenticationLabel
                     : '${_currentAccount!.role} account - ${_currentAccount!.status.toLowerCase()}';
+            final showGoogleAuthUi = GoogleAuthUiConfig.isEnabled;
             final googleProvider = _googleIdTokenProvider;
             final isGoogleConfigured = googleProvider?.isConfigured ?? false;
             final googleLinkSubtitle =
@@ -323,12 +324,13 @@ class _AccountShellPageState extends State<AccountShellPage> {
                     );
                   },
                 ),
-                _AccountTile(
-                  icon: Icons.link_outlined,
-                  title: 'Google account',
-                  subtitle: googleLinkSubtitle,
-                  onTap: canLinkGoogle ? _linkGoogleAccount : null,
-                ),
+                if (showGoogleAuthUi)
+                  _AccountTile(
+                    icon: Icons.link_outlined,
+                    title: 'Google account',
+                    subtitle: googleLinkSubtitle,
+                    onTap: canLinkGoogle ? _linkGoogleAccount : null,
+                  ),
                 if (isProfessionalAccount)
                   _AccountTile(
                     icon: Icons.badge_outlined,

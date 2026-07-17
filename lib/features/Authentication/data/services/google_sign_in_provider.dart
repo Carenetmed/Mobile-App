@@ -19,6 +19,15 @@ class GoogleSignInConfig {
   bool get isConfigured => serverClientId.trim().isNotEmpty;
 }
 
+class GoogleAuthUiConfig {
+  static const String enabledEnvironmentKey = 'CARENET_ENABLE_GOOGLE_AUTH_UI';
+
+  static const bool isEnabled = bool.fromEnvironment(
+    enabledEnvironmentKey,
+    defaultValue: false,
+  );
+}
+
 abstract class GoogleIdTokenProvider {
   bool get isConfigured;
 

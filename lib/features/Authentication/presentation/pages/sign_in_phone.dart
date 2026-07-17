@@ -147,6 +147,7 @@ class _SignInPhoneState extends State<SignInPhone> {
 
   @override
   Widget build(BuildContext context) {
+    final showGoogleAuthUi = GoogleAuthUiConfig.isEnabled;
     final signInOptions = [
       AuthenticationModel(
         assetPath: AssetsIcon.mail,
@@ -155,14 +156,15 @@ class _SignInPhoneState extends State<SignInPhone> {
           Navigator.pushNamed(context, RouteName.signInEmail);
         },
       ),
-      AuthenticationModel(
-        assetPath: AssetsIcon.google,
-        title: 'Continue with Google',
-        btnAction:
-            _isSubmitting || !_googleIdTokenProvider.isConfigured
-                ? null
-                : _onGoogleSignIn,
-      ),
+      if (showGoogleAuthUi)
+        AuthenticationModel(
+          assetPath: AssetsIcon.google,
+          title: 'Continue with Google',
+          btnAction:
+              _isSubmitting || !_googleIdTokenProvider.isConfigured
+                  ? null
+                  : _onGoogleSignIn,
+        ),
       AuthenticationModel(
         assetPath: AssetsIcon.facebook,
         title: 'Continue with Facebook',

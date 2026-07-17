@@ -1,7 +1,7 @@
 # Staging Mobile Gateway Phone Install Checkpoint
 
 **Task:** 53.2 checkpoint
-**Status:** Seed/backend proof passed; real-device patient request/list smoke and professional lifecycle smoke passed; remaining verification/detail/cleanup phone smoke still open
+**Status:** Seed/backend proof passed; real-device patient request/list smoke, professional lifecycle smoke, and verification upload smoke passed; remaining detail/completion/cleanup proof still open
 **Date:** 2026-07-17
 
 ## Purpose
@@ -9,7 +9,7 @@
 Record the real-device install/launch proof, the staging seed/backend API
 proof, the patient phone UI walkthrough through a real appointment request,
 the patient own appointment-list proof, professional appointment lifecycle
-proof, and the remaining phone-smoke gaps for the staging mobile build without
+proof, verification upload proof, and the remaining phone-smoke gaps for the staging mobile build without
 claiming that the full real-device manual UI smoke pass is complete.
 
 This checkpoint proves that the Android app can be built with the public
@@ -459,6 +459,33 @@ No passwords, API keys, OAuth client secrets, or tokens are recorded here.
     staging backend/storage upload-init blocker, not a fake frontend success and
     not a missing phone navigation path.
 
+36. After the backend storage injection fix was deployed to staging, repeated
+    the professional verification upload from the phone UI and selected a local
+    document.
+
+    Observed phone UI result:
+
+    ```text
+    Uploaded
+    ```
+
+    This proves the mobile path can reach the real backend upload flow after the
+    staging upload-init blocker was fixed. It does not prove file preview,
+    download, admin review, rejection reasons, scanning/provider verification,
+    batch/background upload, or production storage readiness.
+
+37. During the same phone-smoke period, the user reported that Google auth is
+    not working in the UI.
+
+    Follow-up app decision:
+
+    ```text
+    Hide Google sign-in/linking UI by default behind CARENET_ENABLE_GOOGLE_AUTH_UI=false.
+    ```
+
+    This keeps the earlier Google provider code as disabled infrastructure until
+    a dedicated real-device OAuth proof slice passes.
+
 ## Current Blocker
 
 There is no current blocker for the patient Search -> public availability ->
@@ -470,9 +497,14 @@ The appointment row tap did not navigate to a separate detail screen in this
 checkpoint, so a separate appointment-detail screen proof remains open instead
 of being claimed.
 
-Verification upload phone smoke is blocked by staging backend upload-init
-returning HTTP 500. The Account -> `Verification documents` phone path is now
-proven and the document screen loads backend state before upload.
+Verification upload phone smoke is no longer blocked by the old staging
+upload-init HTTP 500 after the backend storage fix. The Account ->
+`Verification documents` phone path is proven, the document screen loads
+backend state before upload, and a selected document reached the uploaded state
+on the phone.
+
+Google auth remains unproven on the phone UI and is hidden by default until a
+dedicated OAuth proof slice passes.
 
 ## What This Does Not Prove
 
@@ -483,9 +515,9 @@ The following remain open under task 53.2:
 - checking any separate appointment-detail screen if product keeps or adds one
 - running a fresh professional completion action, if a non-terminal accepted
   past appointment is available on the phone UI
-- successful verification upload through the phone UI after staging
-  upload-init is fixed
 - cleanup/reset execution after the walkthrough
+- a dedicated Google OAuth phone proof before re-enabling Google sign-in/linking
+  UI by default
 
 Do not present this checkpoint as public demo readiness, production readiness,
 Play Store readiness, or full frontend/backend staging completion.
@@ -493,12 +525,12 @@ Play Store readiness, or full frontend/backend staging completion.
 ## Next Required Step
 
 Continue task 53.2 from the remaining real Android phone UI checklist in
-`STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, starting with the staging
-verification upload-init backend/storage blocker, any separate
+`STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, starting with any separate
 appointment-detail proof, optional fresh professional completion proof if
-suitable data exists, and cleanup/reset proof. If a separate appointment-detail
-screen is required later, prove it as its own step instead of treating the
-appointment list as detail proof.
+suitable data exists, cleanup/reset proof, and a future dedicated Google OAuth
+phone proof before re-enabling Google UI by default. If a separate
+appointment-detail screen is required later, prove it as its own step instead
+of treating the appointment list as detail proof.
 
 If any phone UI smoke step cannot be completed, stop and record the exact
 screen, role, route, and failure category instead of inventing fake success.

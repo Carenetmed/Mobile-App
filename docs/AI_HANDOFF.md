@@ -314,12 +314,12 @@ records the current staging checkpoint:
     - patient accounts do not expose those professional-only entries
     - Account -> `Manage Profile` opened `Staging Smoke Professional`, `Mental Health`, and `Stress Support`
     - Account -> `Verification documents` opened the backend-backed document screen with `Upload document`, `Choose file to upload`, and `No verification documents are submitted yet.`
-19. Verification upload phone smoke is still open because staging upload-init fails server-side:
-    - phone file selection returned `Service is unavailable. Please try again.`
-    - direct staging API replay with the same seeded professional login succeeded for auth but failed at `POST /verification/documents/upload-init`
-    - observed replay result: `upload-init=failed status=500 body={"statusCode":500,"message":"Internal server error"}`
-    - signed file PUT and upload-complete were not reached
-20. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, successful verification upload after backend/storage upload-init is fixed, and cleanup/reset proof remain open under 53.2.
+19. Verification upload phone smoke is now past the old staging upload-init blocker:
+    - initial phone file selection returned `Service is unavailable. Please try again.`
+    - direct staging API replay with the same seeded professional login found `POST /verification/documents/upload-init` returning HTTP 500 before signed PUT/upload-complete
+    - after the backend storage injection fix was deployed, the phone upload path was repeated with a selected document and reached the uploaded state
+20. Google auth is not proven working in the phone UI, so Google sign-in/linking UI is hidden by default behind `CARENET_ENABLE_GOOGLE_AUTH_UI=false` until a dedicated real-device OAuth proof slice passes (`DECISIONS.md` D157).
+21. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, cleanup/reset proof, and a dedicated Google OAuth phone proof remain open under 53.2.
 
 ## Manual test (last completed: task 53.1)
 

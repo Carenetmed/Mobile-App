@@ -54,7 +54,7 @@
 | NEXT task | **53.2** - execute staging seed data and mobile smoke pass |
 | Last completed | **53.1** - staging seed data and smoke execution plan |
 | Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, patient-device proof through real Search/public availability/appointment request plus own-list rendering, and professional-device proof through role-aware appointment accept/decline/reschedule plus terminal-row behavior; Android backup is disabled, own-list parses the backend `appointments` envelope, secure session writes are ordered, and professional Account now exposes Manage Profile/Verification documents. Verification upload route access is proven, but upload-init returns staging HTTP 500; separate appointment-detail, optional fresh completion, successful upload after backend fix, and cleanup phone smoke remain open |
-| Product interruption | **APP-58** - patient/professional onboarding UI requirements accepted against backend `CAR-BE-119`; next runtime work should expand Flutter profile models/repository before building polished setup screens |
+| Product interruption | **APP-59** - Flutter profile entities/models/API payloads/repository now support backend `CAR-BE-119` onboarding fields; next runtime work should build polished patient/professional setup screens |
 | Registered routes | **73 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 

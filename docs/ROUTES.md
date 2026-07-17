@@ -10,6 +10,7 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `onboarding` | `onboarding` | `OnboardingView` | `lib/features/Onboarding/presentation/pages/onboarding.dart` |
 | `signUpPhone` | `signUpPhone` | `SignUpPhone` | `lib/features/Authentication/presentation/pages/sign_up_phone.dart` |
 | `signUpEmail` | `signUpEmail` | `SignUpEmail` | `lib/features/Authentication/presentation/pages/sign_up_email.dart` |
+| `signUpRole` | `signUpRole` | `SignUpRoleSelectionPage` | `lib/features/Authentication/presentation/pages/sign_up_role_selection.dart` |
 | `finishSignUp` | `finishSignUp` | `FinSignUp` | `lib/features/Authentication/presentation/pages/sign_up_con.dart` |
 | `communityAgreement` | `communityAgreement` | `CommunityCommitment` | `lib/features/Onboarding/presentation/pages/commitment_screen.dart` |
 | `notificationAgreement` | `notificationAgreement` | `NotificationScreen` | `lib/features/Onboarding/presentation/pages/notification.dart` |

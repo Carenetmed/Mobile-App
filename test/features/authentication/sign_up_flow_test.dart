@@ -1,6 +1,8 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_role_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,8 +24,25 @@ Future<void> _pumpWithRoutes(
           (_, __) => MaterialApp(
             home: home,
             routes: {
-              RouteName.finishSignUp:
-                  (_) => const Scaffold(body: Text('finish-sign-up')),
+              RouteName.signUpRole: (context) {
+                final args = ModalRoute.of(context)?.settings.arguments;
+                return SignUpRoleSelectionPage(
+                  initialEmail:
+                      args is SignUpRoleSelectionArgs
+                          ? args.initialEmail
+                          : null,
+                );
+              },
+              RouteName.finishSignUp: (context) {
+                final args = ModalRoute.of(context)?.settings.arguments;
+                return Scaffold(
+                  body: Text(
+                    args is FinishSignUpArgs
+                        ? 'finish-sign-up-${args.role.backendValue}-${args.initialEmail ?? 'no-email'}'
+                        : 'finish-sign-up',
+                  ),
+                );
+              },
               RouteName.signInPhone:
                   (_) => const Scaffold(body: Text('sign-in-phone')),
               RouteName.signInEmail:
@@ -53,7 +72,17 @@ void main() {
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
-      expect(find.text('finish-sign-up'), findsOneWidget);
+      expect(find.text('Choose account type'), findsOneWidget);
+      expect(find.text('I need medical guidance'), findsOneWidget);
+      expect(find.text('I am a medical professional'), findsOneWidget);
+
+      await tester.tap(find.text('I need medical guidance'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('finish-sign-up-PATIENT-hello@example.com'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('sign up phone validates fields before navigation', (
@@ -77,7 +106,12 @@ void main() {
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
-      expect(find.text('finish-sign-up'), findsOneWidget);
+      expect(find.text('Choose account type'), findsOneWidget);
+
+      await tester.tap(find.text('I am a medical professional'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('finish-sign-up-PROFESSIONAL-no-email'), findsOneWidget);
     });
 
     testWidgets('sign up phone routes to sign in phone entry', (tester) async {

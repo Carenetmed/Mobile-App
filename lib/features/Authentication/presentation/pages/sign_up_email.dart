@@ -5,6 +5,7 @@ import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/model/sign_in_model.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/shared/widgets/auth_widget.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
@@ -62,8 +63,10 @@ class _SignUpEmailState extends State<SignUpEmail> {
     if (_emailError == null) {
       Navigator.pushNamed(
         context,
-        RouteName.finishSignUp,
-        arguments: _emailController.text.trim(),
+        RouteName.signUpRole,
+        arguments: SignUpRoleSelectionArgs(
+          initialEmail: _emailController.text.trim(),
+        ),
       );
     }
   }

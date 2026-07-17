@@ -5,6 +5,8 @@ import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.d
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_role_selection.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_password.dart';
 import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
@@ -76,13 +78,27 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.onboarding:
       return _page(settings, const OnboardingView());
     case RouteName.finishSignUp:
+      final args = settings.arguments;
       return _page(
         settings,
         FinSignUp(
           initialEmail:
-              settings.arguments is String
-                  ? settings.arguments as String
+              args is FinishSignUpArgs
+                  ? args.initialEmail
+                  : args is String
+                  ? args
                   : null,
+          selectedRole:
+              args is FinishSignUpArgs ? args.role : SignUpRole.patient,
+        ),
+      );
+    case RouteName.signUpRole:
+      final args = settings.arguments;
+      return _page(
+        settings,
+        SignUpRoleSelectionPage(
+          initialEmail:
+              args is SignUpRoleSelectionArgs ? args.initialEmail : null,
         ),
       );
     case RouteName.communityAgreement:

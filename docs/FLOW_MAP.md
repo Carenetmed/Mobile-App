@@ -18,10 +18,12 @@ splash
 onboarding (3 pages; Skip → last page; Get started → signUpPhone)
   ▼
 signUpPhone  ←──► signUpEmail  (switch auth method)
-  │  Continue → finishSignUp
+  │  Continue → signUpRole
+  ▼
+signUpRole  (Patient → finishSignUp as PATIENT; Professional → finishSignUp as PROFESSIONAL)
   ▼
 finishSignUp  (Agree & continue)
-  ▼
+  ▼ Patient
 communityAgreement  (Agree → notificationAgreement)
   ▼
 notificationAgreement  (→ medicalAgreement)
@@ -41,8 +43,8 @@ dashboard
 |------|-------|-------|
 | splash → onboarding | Yes | 800ms timer |
 | onboarding → signUpPhone | Yes | Get started on last page |
-| signUp → finishSignUp | Yes | Entry validation gates navigation |
-| finishSignUp → community | Yes | Agree button |
+| signUp → signUpRole → finishSignUp | Yes | Entry validation gates navigation; role selection controls backend registration role |
+| finishSignUp → community / professional onboarding | Yes | Agree button; patient goes to community agreement, professional goes to professional onboarding |
 | community → notification | Yes | |
 | notification → medical | Yes | |
 | medical → professional | Yes | |

@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-17 patient/professional onboarding setup UI wired.
+**Last updated:** 2026-07-17 onboarding setup regression and staging APK build checkpoint.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -30,6 +30,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Patient/professional onboarding requirements | `PATIENT_PROFESSIONAL_ONBOARDING_UI_REQUIREMENTS.md` defines the serious next onboarding flow against backend `CAR-BE-119` fields. Profile entity/model/repository expansion is now complete; polished patient/professional setup screens remain the next runtime slice |
 | Profile contract expansion | `PROFILE_NIGERIA_ONBOARDING_CONTRACT_EXPANSION.md` records that patient/professional profile entities, models, API payloads, and repository methods now support the backend `CAR-BE-119` onboarding fields. Runtime polished setup screens are still the next slice |
 | Patient/professional setup UI | `patientOnboardingSetup` saves backend patient profile fields before community agreement. `medicalProfessional` now renders a professional credential/practice setup form and saves required backend professional fields before opening verification documents. Public listing still waits for backend verification |
+| Onboarding setup regression | `ONBOARDING_SETUP_REGRESSION_AND_PHONE_SMOKE.md` records APP-61 grouped regression proof: 116 auth/onboarding/profile/account tests passed, focused analyze passed, and the staging-configured debug APK built. Phone install/manual smoke is still pending because ADB reported no connected device during APP-61 |
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
 | Sign-up email | Validates email, then routes to `finishSignUp` |
 | Sign-up to sign-in links | "Already have an account? Sign in" routes to `signInPhone` / `signInEmail` from matching entry screens |

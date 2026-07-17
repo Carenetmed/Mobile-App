@@ -37,12 +37,13 @@ Passed:
 - `flutter test test/features/authentication/finish_sign_up_test.dart test/features/onboarding/profile_setup_test.dart`
 - `flutter analyze` on changed onboarding/auth route files and focused tests
 
-## Next Slice
+## Follow-Up
 
-Recommended next slice:
+Follow-up checkpoint:
 
 `APP-61 - Onboarding Setup Regression And Phone Smoke`
 
-That slice should run broader auth/onboarding/profile tests, rebuild the staging
-APK, and manually smoke patient/professional setup on the phone before adding
-more product modules.
+`ONBOARDING_SETUP_REGRESSION_AND_PHONE_SMOKE.md` records that grouped
+auth/onboarding/profile/account regression and staging APK build passed. Phone
+install/manual smoke was not completed in APP-61 because ADB did not report a
+connected device.

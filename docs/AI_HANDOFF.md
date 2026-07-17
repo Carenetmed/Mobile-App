@@ -299,6 +299,15 @@ profile creation. The current Flutter profile repository is still shallow, so
 the next runtime slice should expand profile entities/models/API payloads before
 building the polished multi-step onboarding UI.
 
+Product-owner interruption: APP-59 accepted
+`PROFILE_NIGERIA_ONBOARDING_CONTRACT_EXPANSION.md` records that Flutter
+patient/professional profile entities, JSON models, API payloads, and
+repository methods now support the backend `CAR-BE-119` onboarding fields.
+Public professional listing remains limited to the safe public projection, and
+the client still cannot send verification/admin/public-listing state. The next
+runtime slice should build the polished patient/professional onboarding setup UI
+against this expanded contract.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

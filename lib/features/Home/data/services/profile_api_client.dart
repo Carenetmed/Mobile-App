@@ -32,6 +32,11 @@ class ProfileApiClient {
     required String name,
     int? age,
     String? location,
+    DateTime? dateOfBirth,
+    String? city,
+    String? state,
+    String? country,
+    String? healthInterests,
   }) async {
     final data = await _put(
       patientMePath,
@@ -40,6 +45,11 @@ class ProfileApiClient {
         'name': name,
         if (age != null) 'age': age,
         if (location != null) 'location': location,
+        if (dateOfBirth != null) 'dateOfBirth': dateOfBirth.toIso8601String(),
+        if (city != null) 'city': city,
+        if (state != null) 'state': state,
+        if (country != null) 'country': country,
+        if (healthInterests != null) 'healthInterests': healthInterests,
       },
     );
     return PatientProfileModel.fromJson(data);
@@ -60,17 +70,37 @@ class ProfileApiClient {
     required String accessToken,
     required String displayName,
     required String category,
+    String? legalName,
     String? specialty,
     String? bio,
+    String? licenseNumber,
+    String? licensingCouncil,
+    String? qualifications,
+    int? yearsOfExperience,
+    String? practiceName,
+    String? practiceAddress,
+    String? practiceCity,
+    String? practiceState,
+    String? practiceCountry,
   }) async {
     final data = await _put(
       professionalMePath,
       accessToken: accessToken,
       data: <String, dynamic>{
+        if (legalName != null) 'legalName': legalName,
         'displayName': displayName,
         'category': category,
         if (specialty != null) 'specialty': specialty,
         if (bio != null) 'bio': bio,
+        if (licenseNumber != null) 'licenseNumber': licenseNumber,
+        if (licensingCouncil != null) 'licensingCouncil': licensingCouncil,
+        if (qualifications != null) 'qualifications': qualifications,
+        if (yearsOfExperience != null) 'yearsOfExperience': yearsOfExperience,
+        if (practiceName != null) 'practiceName': practiceName,
+        if (practiceAddress != null) 'practiceAddress': practiceAddress,
+        if (practiceCity != null) 'practiceCity': practiceCity,
+        if (practiceState != null) 'practiceState': practiceState,
+        if (practiceCountry != null) 'practiceCountry': practiceCountry,
       },
     );
     return ProfessionalProfileModel.fromJson(data);

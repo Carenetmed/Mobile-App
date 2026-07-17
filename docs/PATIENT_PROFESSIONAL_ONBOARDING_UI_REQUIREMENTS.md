@@ -161,8 +161,9 @@ Next implementation should therefore either:
 2. implement the new UI with a disabled/blocked save state until the repository
    expansion slice is complete.
 
-Recommended next slice: expand the frontend profile contract/repository for
-the new backend fields before building the polished multi-step UI.
+`APP-59` expanded the frontend profile contract/repository for the new backend
+fields. The next runtime slice can build the polished multi-step UI against that
+contract.
 
 ## Explicitly Deferred
 
@@ -191,7 +192,7 @@ Stop before implementation if a future slice tries to:
 
 ## Decision Summary
 
-Build onboarding as a real patient/professional medical-product flow. The next
-runtime work should expand Flutter's profile repository/models for the new
-backend fields, then build polished patient and professional setup screens
-against those fields.
+Build onboarding as a real patient/professional medical-product flow. Flutter's
+profile repository/models now support the backend fields, so the next runtime
+work should build polished patient and professional setup screens against those
+fields.

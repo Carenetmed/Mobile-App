@@ -42,6 +42,11 @@ void main() {
           'name': 'Jane Patient',
           'age': 32,
           'location': 'Lagos',
+          'dateOfBirth': '1991-04-20T00:00:00.000Z',
+          'city': 'Ikeja',
+          'state': 'Lagos',
+          'country': 'Nigeria',
+          'healthInterests': 'Primary care, wellness',
         },
       );
       final repository = _repository(adapter: adapter, withSession: true);
@@ -50,15 +55,30 @@ void main() {
         name: 'Jane Patient',
         age: 32,
         location: 'Lagos',
+        dateOfBirth: DateTime.utc(1991, 4, 20),
+        city: 'Ikeja',
+        state: 'Lagos',
+        country: 'Nigeria',
+        healthInterests: 'Primary care, wellness',
       );
 
       expect(profile.name, 'Jane Patient');
+      expect(profile.dateOfBirth, DateTime.utc(1991, 4, 20));
+      expect(profile.city, 'Ikeja');
+      expect(profile.state, 'Lagos');
+      expect(profile.country, 'Nigeria');
+      expect(profile.healthInterests, 'Primary care, wellness');
       expect(adapter.lastOptions?.method, 'PUT');
       expect(adapter.lastOptions?.uri.toString(), endsWith('/patients/me'));
       expect(adapter.lastOptions?.data, <String, dynamic>{
         'name': 'Jane Patient',
         'age': 32,
         'location': 'Lagos',
+        'dateOfBirth': '1991-04-20T00:00:00.000Z',
+        'city': 'Ikeja',
+        'state': 'Lagos',
+        'country': 'Nigeria',
+        'healthInterests': 'Primary care, wellness',
       });
       expect(
         (adapter.lastOptions?.data as Map<String, dynamic>).containsKey(
@@ -74,33 +94,73 @@ void main() {
         final adapter = _FakeAdapter(
           responseJson: <String, dynamic>{
             'id': 'professional-1',
+            'legalName': 'Ada Okafor',
             'displayName': 'Dr. Care',
             'category': 'Cardiologist',
             'specialty': 'Heart health',
             'bio': 'Focused on prevention.',
             'verificationStatus': 'PENDING',
+            'licenseNumber': 'MDCN-12345',
+            'licensingCouncil': 'MDCN',
+            'qualifications': 'MBBS, FWACP',
+            'yearsOfExperience': 12,
+            'practiceName': 'Care Clinic',
+            'practiceAddress': '1 Care Street',
+            'practiceCity': 'Ikeja',
+            'practiceState': 'Lagos',
+            'practiceCountry': 'Nigeria',
           },
         );
         final repository = _repository(adapter: adapter, withSession: true);
 
         final profile = await repository.updateProfessionalMe(
+          legalName: 'Ada Okafor',
           displayName: 'Dr. Care',
           category: 'Cardiologist',
           specialty: 'Heart health',
           bio: 'Focused on prevention.',
+          licenseNumber: 'MDCN-12345',
+          licensingCouncil: 'MDCN',
+          qualifications: 'MBBS, FWACP',
+          yearsOfExperience: 12,
+          practiceName: 'Care Clinic',
+          practiceAddress: '1 Care Street',
+          practiceCity: 'Ikeja',
+          practiceState: 'Lagos',
+          practiceCountry: 'Nigeria',
         );
 
+        expect(profile.legalName, 'Ada Okafor');
         expect(profile.displayName, 'Dr. Care');
+        expect(profile.licenseNumber, 'MDCN-12345');
+        expect(profile.licensingCouncil, 'MDCN');
+        expect(profile.qualifications, 'MBBS, FWACP');
+        expect(profile.yearsOfExperience, 12);
+        expect(profile.practiceName, 'Care Clinic');
+        expect(profile.practiceAddress, '1 Care Street');
+        expect(profile.practiceCity, 'Ikeja');
+        expect(profile.practiceState, 'Lagos');
+        expect(profile.practiceCountry, 'Nigeria');
         expect(adapter.lastOptions?.method, 'PUT');
         expect(
           adapter.lastOptions?.uri.toString(),
           endsWith('/professionals/me'),
         );
         expect(adapter.lastOptions?.data, <String, dynamic>{
+          'legalName': 'Ada Okafor',
           'displayName': 'Dr. Care',
           'category': 'Cardiologist',
           'specialty': 'Heart health',
           'bio': 'Focused on prevention.',
+          'licenseNumber': 'MDCN-12345',
+          'licensingCouncil': 'MDCN',
+          'qualifications': 'MBBS, FWACP',
+          'yearsOfExperience': 12,
+          'practiceName': 'Care Clinic',
+          'practiceAddress': '1 Care Street',
+          'practiceCity': 'Ikeja',
+          'practiceState': 'Lagos',
+          'practiceCountry': 'Nigeria',
         });
         expect(
           (adapter.lastOptions?.data as Map<String, dynamic>).containsKey(

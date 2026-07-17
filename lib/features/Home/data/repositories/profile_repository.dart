@@ -26,6 +26,11 @@ class ProfileRepository {
     required String name,
     int? age,
     String? location,
+    DateTime? dateOfBirth,
+    String? city,
+    String? state,
+    String? country,
+    String? healthInterests,
   }) async {
     final current = await _requireSession();
     return _apiClient.updatePatientMe(
@@ -33,6 +38,11 @@ class ProfileRepository {
       name: name,
       age: age,
       location: location,
+      dateOfBirth: dateOfBirth,
+      city: city,
+      state: state,
+      country: country,
+      healthInterests: healthInterests,
     );
   }
 
@@ -44,16 +54,36 @@ class ProfileRepository {
   Future<ProfessionalProfile> updateProfessionalMe({
     required String displayName,
     required String category,
+    String? legalName,
     String? specialty,
     String? bio,
+    String? licenseNumber,
+    String? licensingCouncil,
+    String? qualifications,
+    int? yearsOfExperience,
+    String? practiceName,
+    String? practiceAddress,
+    String? practiceCity,
+    String? practiceState,
+    String? practiceCountry,
   }) async {
     final current = await _requireSession();
     return _apiClient.updateProfessionalMe(
       accessToken: current.accessToken,
       displayName: displayName,
       category: category,
+      legalName: legalName,
       specialty: specialty,
       bio: bio,
+      licenseNumber: licenseNumber,
+      licensingCouncil: licensingCouncil,
+      qualifications: qualifications,
+      yearsOfExperience: yearsOfExperience,
+      practiceName: practiceName,
+      practiceAddress: practiceAddress,
+      practiceCity: practiceCity,
+      practiceState: practiceState,
+      practiceCountry: practiceCountry,
     );
   }
 

@@ -1741,3 +1741,32 @@ not committed.
 Next: use the installed phone build and the local-only credential file to run
 the real-device UI checklist from `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`.
 Record pass/fail evidence without secrets.
+
+## D157 - Role-based onboarding before Google sign-up expansion
+
+Task: APP-55
+
+Decision: CareNet onboarding must branch by role before any broader sign-up or
+Google sign-up expansion. The accepted mobile app account types are `PATIENT`
+and `PROFESSIONAL`; admin/reviewer accounts remain outside this
+patient/professional app. Patient onboarding may collect a minimal profile,
+while professional onboarding must lead into professional profile setup,
+credential upload, and manual verification before public listing.
+
+Reason: The PRD defines CareNet as a dual-sided healthcare marketplace with
+regular users and licensed medical professionals. Google identity proves an
+email/account identity, but it does not decide role, collect professional
+credentials, or satisfy medical marketplace trust/compliance requirements.
+Auto-creating every Google user as a patient or professional would create bad
+accounts and later rework.
+
+Consequences: Existing linked users may continue to use Google sign-in, and
+signed-in users may link Google from Account when configured. Google sign-up
+remains deferred until it can pass through role selection and the same patient
+or professional onboarding rules as email/password signup. Future backend work
+should define role-based registration and Google sign-up/link behavior before
+runtime UI expansion.
+
+Next: the next auth/onboarding implementation lane should define the
+role-based backend contract and Flutter role-selection flow before enabling
+Google sign-up.

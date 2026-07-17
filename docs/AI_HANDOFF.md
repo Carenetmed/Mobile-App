@@ -289,6 +289,16 @@ registration success. Google signup remains disabled until it can use the same
 role branch with a real Google `idToken` plus selected role. This does not mark
 `53.2` complete.
 
+Product-owner interruption: APP-58 accepted
+`PATIENT_PROFESSIONAL_ONBOARDING_UI_REQUIREMENTS.md` defines the next serious
+patient/professional onboarding flow against backend `CAR-BE-119` fields.
+Patient setup should collect backend-owned profile details, while professional
+setup must collect legal name, public professional name, category, license,
+licensing council/body, qualifications, experience, and practice fields before
+profile creation. The current Flutter profile repository is still shallow, so
+the next runtime slice should expand profile entities/models/API payloads before
+building the polished multi-step onboarding UI.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

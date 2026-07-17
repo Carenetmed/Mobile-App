@@ -309,8 +309,17 @@ records the current staging checkpoint:
     - decline updated a separate row to `DECLINED` with `Appointment updated. Backend status: DECLINED.`
     - reschedule on the accepted row loaded generated backend availability options and returned `Appointment rescheduled. Backend status: REQUESTED.`
     - recent terminal rows rendered `CANCELLED` and `COMPLETED`; the completed row did not expose duplicate `Complete`
-18. Verification upload phone smoke is still open because no reliable authenticated phone navigation path to `Manage Profile` / `Verification documents` was found. The drawer `Profile` entry routed to Account, and `Settings & Profile` remained a patient-profile surface that showed `Patient profile` / `Please sign in again.` for the professional session.
-19. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, verification upload route access/upload proof, and cleanup/reset proof remain open under 53.2.
+18. Professional Account route access was fixed and proved on phone:
+    - Account now shows professional-only `Manage Profile` and `Verification documents` entries for `PROFESSIONAL` current accounts
+    - patient accounts do not expose those professional-only entries
+    - Account -> `Manage Profile` opened `Staging Smoke Professional`, `Mental Health`, and `Stress Support`
+    - Account -> `Verification documents` opened the backend-backed document screen with `Upload document`, `Choose file to upload`, and `No verification documents are submitted yet.`
+19. Verification upload phone smoke is still open because staging upload-init fails server-side:
+    - phone file selection returned `Service is unavailable. Please try again.`
+    - direct staging API replay with the same seeded professional login succeeded for auth but failed at `POST /verification/documents/upload-init`
+    - observed replay result: `upload-init=failed status=500 body={"statusCode":500,"message":"Internal server error"}`
+    - signed file PUT and upload-complete were not reached
+20. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, successful verification upload after backend/storage upload-init is fixed, and cleanup/reset proof remain open under 53.2.
 
 ## Manual test (last completed: task 53.1)
 

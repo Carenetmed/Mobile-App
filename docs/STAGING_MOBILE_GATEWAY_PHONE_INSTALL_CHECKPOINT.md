@@ -409,11 +409,55 @@ No passwords, API keys, OAuth client secrets, or tokens are recorded here.
     Please sign in again.
     ```
 
-    The existing `Manage Profile` and `Verification documents` routes are still
-    present in the app code, but this checkpoint did not find a reliable phone
-    navigation path from the authenticated professional shell to those routes.
-    Verification upload smoke therefore remains open as a route-access blocker,
-    not as a backend/upload failure.
+    The authenticated professional shell now exposes Account -> `Manage
+    Profile` and Account -> `Verification documents` directly for professional
+    accounts. Patient accounts do not expose these professional-only entries.
+
+33. Proved Account -> `Manage Profile` from the phone after a fresh
+    professional sign-in.
+
+    Observed phone UI result:
+
+    ```text
+    Manage Profile
+    Staging Smoke Professional
+    Mental Health
+    Stress Support
+    ```
+
+34. Proved Account -> `Verification documents` from the phone after a fresh
+    professional sign-in.
+
+    Observed phone UI result:
+
+    ```text
+    Verification documents
+    Professional verification
+    Document status is loaded from your backend account.
+    Upload document
+    Choose file to upload
+    No verification documents are submitted yet.
+    ```
+
+35. Attempted verification upload from the phone UI with a valid file selected.
+
+    Observed phone UI result:
+
+    ```text
+    Service is unavailable. Please try again.
+    ```
+
+    A direct staging API Gateway replay with the same seeded professional
+    credentials and a tiny PDF found the backend boundary:
+
+    ```text
+    login=ok role=PROFESSIONAL
+    upload-init=failed status=500 body={"statusCode":500,"message":"Internal server error"}
+    ```
+
+    The failure occurs before signed file PUT or upload-complete. This is a
+    staging backend/storage upload-init blocker, not a fake frontend success and
+    not a missing phone navigation path.
 
 ## Current Blocker
 
@@ -426,10 +470,9 @@ The appointment row tap did not navigate to a separate detail screen in this
 checkpoint, so a separate appointment-detail screen proof remains open instead
 of being claimed.
 
-Verification upload phone smoke is blocked by app navigation, not by a proven
-backend upload failure: the professional `Manage Profile`/`Verification
-documents` routes exist in code, but a reliable authenticated phone navigation
-path was not found in this checkpoint.
+Verification upload phone smoke is blocked by staging backend upload-init
+returning HTTP 500. The Account -> `Verification documents` phone path is now
+proven and the document screen loads backend state before upload.
 
 ## What This Does Not Prove
 
@@ -440,7 +483,8 @@ The following remain open under task 53.2:
 - checking any separate appointment-detail screen if product keeps or adds one
 - running a fresh professional completion action, if a non-terminal accepted
   past appointment is available on the phone UI
-- verification upload smoke through the phone UI
+- successful verification upload through the phone UI after staging
+  upload-init is fixed
 - cleanup/reset execution after the walkthrough
 
 Do not present this checkpoint as public demo readiness, production readiness,
@@ -449,11 +493,12 @@ Play Store readiness, or full frontend/backend staging completion.
 ## Next Required Step
 
 Continue task 53.2 from the remaining real Android phone UI checklist in
-`STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, starting with verification upload
-route access, any separate appointment-detail proof, optional fresh
-professional completion proof if suitable data exists, and cleanup/reset proof.
-If a separate appointment-detail screen is required later, prove it as its own
-step instead of treating the appointment list as detail proof.
+`STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, starting with the staging
+verification upload-init backend/storage blocker, any separate
+appointment-detail proof, optional fresh professional completion proof if
+suitable data exists, and cleanup/reset proof. If a separate appointment-detail
+screen is required later, prove it as its own step instead of treating the
+appointment list as detail proof.
 
 If any phone UI smoke step cannot be completed, stop and record the exact
 screen, role, route, and failure category instead of inventing fake success.

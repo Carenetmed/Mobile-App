@@ -265,6 +265,8 @@ class _AccountShellPageState extends State<AccountShellPage> {
                 !_isLoadingCurrentAccount &&
                 !_isLinkingGoogle &&
                 isGoogleConfigured;
+            final isProfessionalAccount =
+                _currentAccount?.role.toUpperCase() == 'PROFESSIONAL';
             return ListView(
               padding: REdgeInsets.all(16.r),
               children: [
@@ -327,6 +329,27 @@ class _AccountShellPageState extends State<AccountShellPage> {
                   subtitle: googleLinkSubtitle,
                   onTap: canLinkGoogle ? _linkGoogleAccount : null,
                 ),
+                if (isProfessionalAccount)
+                  _AccountTile(
+                    icon: Icons.badge_outlined,
+                    title: 'Manage Profile',
+                    subtitle: 'Professional profile and verification documents',
+                    onTap: () {
+                      Navigator.pushNamed(context, RouteName.manageProfile);
+                    },
+                  ),
+                if (isProfessionalAccount)
+                  _AccountTile(
+                    icon: Icons.verified_user_outlined,
+                    title: 'Verification documents',
+                    subtitle: 'Upload and review professional documents',
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        RouteName.professionalVerificationDocuments,
+                      );
+                    },
+                  ),
                 _AccountTile(
                   icon: Icons.manage_accounts_outlined,
                   title: 'Settings & Profile',

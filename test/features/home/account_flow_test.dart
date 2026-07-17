@@ -63,6 +63,12 @@ Future<void> _pumpAccount(
             routes: <String, WidgetBuilder>{
               RouteName.onboarding:
                   (_) => const Scaffold(body: Text('onboarding')),
+              RouteName.manageProfile:
+                  (_) => const Scaffold(body: Text('manage-profile-route')),
+              RouteName.professionalVerificationDocuments:
+                  (_) => const Scaffold(
+                    body: Text('verification-documents-route'),
+                  ),
             },
           ),
     ),
@@ -168,6 +174,87 @@ void main() {
     expect(find.text('backend-patient@carenet.app'), findsOneWidget);
     expect(find.text('PATIENT account - active'), findsOneWidget);
     expect(find.text('doctor@carenet.app'), findsNothing);
+  });
+
+  testWidgets('professional account exposes manage profile route', (
+    tester,
+  ) async {
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(
+        user: const AuthUser(
+          id: 'professional-1',
+          email: 'professional@carenet.app',
+          role: 'PROFESSIONAL',
+          status: 'ACTIVE',
+          emailVerified: true,
+        ),
+      ),
+    );
+
+    expect(find.text('PROFESSIONAL account - active'), findsOneWidget);
+    expect(find.text('Manage Profile'), findsOneWidget);
+    expect(
+      find.text('Professional profile and verification documents'),
+      findsOneWidget,
+    );
+    expect(find.text('Verification documents'), findsOneWidget);
+    expect(
+      find.text('Upload and review professional documents'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Manage Profile'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('manage-profile-route'), findsOneWidget);
+  });
+
+  testWidgets('professional account opens verification documents route', (
+    tester,
+  ) async {
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(
+        user: const AuthUser(
+          id: 'professional-1',
+          email: 'professional@carenet.app',
+          role: 'PROFESSIONAL',
+          status: 'ACTIVE',
+          emailVerified: true,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Verification documents'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('verification-documents-route'), findsOneWidget);
+  });
+
+  testWidgets('patient account does not expose professional manage profile', (
+    tester,
+  ) async {
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(
+        user: const AuthUser(
+          id: 'patient-1',
+          email: 'patient@carenet.app',
+          role: 'PATIENT',
+          status: 'ACTIVE',
+          emailVerified: true,
+        ),
+      ),
+    );
+
+    expect(find.text('PATIENT account - active'), findsOneWidget);
+    expect(find.text('Manage Profile'), findsNothing);
+    expect(find.text('Verification documents'), findsNothing);
+    expect(find.text('Settings & Profile'), findsOneWidget);
   });
 
   testWidgets('account exposes Google link entry below authentication', (

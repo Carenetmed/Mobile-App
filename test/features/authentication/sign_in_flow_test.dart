@@ -43,6 +43,8 @@ Future<void> _pumpWithRoutes(
                   (_) => const Scaffold(body: Text('sign-up-phone')),
               RouteName.signUpEmail:
                   (_) => const Scaffold(body: Text('sign-up-email')),
+              RouteName.medicalProfessional:
+                  (_) => const Scaffold(body: Text('professional-status')),
             },
           ),
     ),
@@ -137,6 +139,30 @@ void main() {
     );
 
     testWidgets(
+      'sign in email sends professional session to readiness surface',
+      (tester) async {
+        final repository = _FakeAuthRepository(sessionRole: 'PROFESSIONAL');
+        await _pumpWithRoutes(
+          tester,
+          home: SignInEmail(
+            authRepository: repository,
+            googleIdTokenProvider: _disabledGoogleProvider,
+          ),
+        );
+
+        final fields = find.byType(EditableText);
+        await tester.enterText(fields.at(0), 'doctor@example.com');
+        await tester.enterText(fields.at(1), 'secret123');
+        await tester.tap(find.text('Continue'));
+        await tester.pumpAndSettle();
+
+        expect(repository.loginCalls, 1);
+        expect(find.text('professional-status'), findsOneWidget);
+        expect(find.text('dashboard'), findsNothing);
+      },
+    );
+
+    testWidgets(
       'sign in email Google button authenticates with backend token',
       (tester) async {
         final repository = _FakeAuthRepository();
@@ -156,6 +182,30 @@ void main() {
         expect(repository.googleSignInCalls, 1);
         expect(repository.lastGoogleIdToken, 'id-token');
         expect(find.text('dashboard'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'sign in email Google sends professional session to readiness surface',
+      (tester) async {
+        final repository = _FakeAuthRepository(sessionRole: 'PROFESSIONAL');
+        await _pumpWithRoutes(
+          tester,
+          home: SignInEmail(
+            authRepository: repository,
+            googleIdTokenProvider: _FakeGoogleIdTokenProvider(
+              idToken: 'doctor-id-token',
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Continue with Google'));
+        await tester.pumpAndSettle();
+
+        expect(repository.googleSignInCalls, 1);
+        expect(repository.lastGoogleIdToken, 'doctor-id-token');
+        expect(find.text('professional-status'), findsOneWidget);
+        expect(find.text('dashboard'), findsNothing);
       },
     );
 
@@ -287,10 +337,15 @@ void main() {
 const _disabledGoogleProvider = _FakeGoogleIdTokenProvider(isConfigured: false);
 
 class _FakeAuthRepository implements AuthRepository {
-  _FakeAuthRepository({this.failure, this.completer});
+  _FakeAuthRepository({
+    this.failure,
+    this.completer,
+    this.sessionRole = 'PATIENT',
+  });
 
   final AuthFailure? failure;
   final Completer<AuthSession>? completer;
+  final String sessionRole;
   int loginCalls = 0;
   int googleSignInCalls = 0;
   String? lastEmail;
@@ -311,7 +366,7 @@ class _FakeAuthRepository implements AuthRepository {
     if (completer != null) {
       return completer.future;
     }
-    return _session();
+    return _session(role: sessionRole);
   }
 
   @override
@@ -325,7 +380,7 @@ class _FakeAuthRepository implements AuthRepository {
     if (failure != null) {
       throw failure;
     }
-    return _session();
+    return _session(role: sessionRole);
   }
 
   @override
@@ -354,8 +409,8 @@ class _FakeGoogleIdTokenProvider implements GoogleIdTokenProvider {
   }
 }
 
-AuthSession _session() {
-  return const AuthSession(
+AuthSession _session({String role = 'PATIENT'}) {
+  return AuthSession(
     accessToken: 'access',
     refreshToken: 'refresh',
     tokenType: 'Bearer',
@@ -363,7 +418,7 @@ AuthSession _session() {
     user: AuthUser(
       id: 'user-1',
       email: 'hello@example.com',
-      role: 'PATIENT',
+      role: role,
       status: 'ACTIVE',
       emailVerified: false,
     ),

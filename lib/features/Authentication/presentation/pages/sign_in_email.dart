@@ -9,6 +9,7 @@ import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Authentication/domain/services/onboarding_readiness_resolver.dart';
 import 'package:app_t/shared/widgets/auth_widget.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
@@ -75,6 +76,9 @@ class _SignInEmailState extends State<SignInEmail> {
   GoogleIdTokenProvider get _googleIdTokenProvider =>
       widget.googleIdTokenProvider ?? sl<GoogleIdTokenProvider>();
 
+  final OnboardingReadinessResolver _readinessResolver =
+      const OnboardingReadinessResolver();
+
   CarenetTextFieldValidationState _validationStateFor(String? error) {
     if (!_attemptedSubmit) {
       return CarenetTextFieldValidationState.none;
@@ -100,14 +104,14 @@ class _SignInEmailState extends State<SignInEmail> {
     });
 
     try {
-      await _authRepository.login(
+      final session = await _authRepository.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
       if (!mounted) {
         return;
       }
-      Navigator.pushNamed(context, RouteName.dashboard);
+      Navigator.pushNamed(context, _readinessResolver.routeForSession(session));
     } on AuthFailure catch (failure) {
       if (!mounted) {
         return;
@@ -139,11 +143,11 @@ class _SignInEmailState extends State<SignInEmail> {
 
     try {
       final idToken = await _googleIdTokenProvider.signInIdToken();
-      await _authRepository.googleSignIn(idToken: idToken);
+      final session = await _authRepository.googleSignIn(idToken: idToken);
       if (!mounted) {
         return;
       }
-      Navigator.pushNamed(context, RouteName.dashboard);
+      Navigator.pushNamed(context, _readinessResolver.routeForSession(session));
     } on AuthFailure catch (failure) {
       if (!mounted) {
         return;

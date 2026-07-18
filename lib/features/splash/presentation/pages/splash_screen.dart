@@ -1,18 +1,19 @@
 import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
-import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
+import 'package:app_t/features/Authentication/domain/services/onboarding_readiness_resolver.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key, this.authRepository});
+  const SplashScreen({super.key, this.authRepository, this.readinessResolver});
 
   final AuthRepository? authRepository;
+  final OnboardingReadinessResolver? readinessResolver;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -24,6 +25,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   AuthRepository get _authRepository =>
       widget.authRepository ?? sl<AuthRepository>();
+
+  OnboardingReadinessResolver get _readinessResolver =>
+      widget.readinessResolver ?? const OnboardingReadinessResolver();
 
   @override
   void initState() {
@@ -40,16 +44,8 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     if (!mounted) return;
-    final routeName =
-        _hasUsableSession(session) ? RouteName.dashboard : RouteName.onboarding;
+    final routeName = _readinessResolver.routeForSession(session);
     Navigator.of(context).pushReplacementNamed(routeName);
-  }
-
-  bool _hasUsableSession(AuthSession? session) {
-    if (session == null) return false;
-    return session.accessToken.trim().isNotEmpty &&
-        session.refreshToken.trim().isNotEmpty &&
-        session.user.id.trim().isNotEmpty;
   }
 
   @override

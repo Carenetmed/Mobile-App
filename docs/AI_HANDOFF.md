@@ -390,6 +390,18 @@ should add the readiness resolver shell next; patient setup redesign,
 professional application redesign, server drafts, licence lifecycle, and status
 hubs remain future slices.
 
+Product-owner interruption: APP-68 accepted
+`ONBOARDING_READINESS_RESOLVER_SHELL.md` records the conservative session
+readiness resolver. Splash restore, email/password sign-in, email Google sign-in,
+and phone Google sign-in now route returned sessions through
+`OnboardingReadinessResolver`. Missing/invalid sessions go to onboarding, patient
+sessions go to dashboard, and professional sessions go to `medicalProfessional`
+until a backend readiness snapshot proves profile/application/verification
+eligibility for dashboard access. APP-69 should improve patient setup/booking
+gate UI next; professional application/status redesign, backend readiness
+endpoint, server drafts, licence lifecycle, and support/status hubs remain
+future slices.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

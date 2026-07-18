@@ -28,6 +28,8 @@ Future<void> _pumpSplash(
                   (_) => const Scaffold(body: Text('dashboard')),
               RouteName.onboarding:
                   (_) => const Scaffold(body: Text('onboarding')),
+              RouteName.medicalProfessional:
+                  (_) => const Scaffold(body: Text('professional-status')),
             },
           ),
     ),
@@ -47,6 +49,24 @@ void main() {
       expect(find.text('dashboard'), findsOneWidget);
       expect(find.text('onboarding'), findsNothing);
     });
+
+    testWidgets(
+      'routes professional sessions to professional readiness surface',
+      (tester) async {
+        final repository = _FakeAuthRepository(
+          session: _session(role: 'PROFESSIONAL'),
+        );
+
+        await _pumpSplash(tester, repository: repository);
+        await tester.pump(const Duration(milliseconds: 801));
+        await tester.pumpAndSettle();
+
+        expect(repository.restoreCalls, 1);
+        expect(find.text('professional-status'), findsOneWidget);
+        expect(find.text('dashboard'), findsNothing);
+        expect(find.text('onboarding'), findsNothing);
+      },
+    );
 
     testWidgets('routes missing sessions to onboarding', (tester) async {
       final repository = _FakeAuthRepository();
@@ -111,6 +131,7 @@ class _FakeAuthRepository implements AuthRepository {
 AuthSession _session({
   String accessToken = 'access',
   String userId = 'user-1',
+  String role = 'PATIENT',
 }) {
   return AuthSession(
     accessToken: accessToken,
@@ -120,7 +141,7 @@ AuthSession _session({
     user: AuthUser(
       id: userId,
       email: 'patient@example.com',
-      role: 'PATIENT',
+      role: role,
       status: 'ACTIVE',
       emailVerified: false,
     ),

@@ -1981,3 +1981,28 @@ server-side professional drafts, licence lifecycle, duplicate regulator checks,
 terms/privacy payloads, and recovery/status hubs remain separate slices.
 
 Next: APP-68 - Onboarding readiness resolver shell.
+
+## D169 - Onboarding readiness resolver shell
+
+Task: APP-68
+
+Decision: Add a shared `OnboardingReadinessResolver` for session-producing auth
+paths. Missing or invalid sessions route to `onboarding`, patient sessions route
+to `dashboard`, and professional sessions route to `medicalProfessional` until
+the backend provides an authoritative readiness snapshot.
+
+Reason: Sign-in, Google sign-in, and session restore should not independently
+decide dashboard access. A serious healthcare app must not let a professional
+session bypass profile/application/verification readiness checks merely because
+the user has valid auth tokens. The current backend/session payload does not yet
+prove professional profile completion, document review, licence lifecycle, or
+operational readiness, so the conservative route is the professional setup/status
+surface.
+
+Consequences: This centralizes current routing without adding fake readiness
+claims. Patient sessions continue to dashboard. Professional sessions are routed
+to `medicalProfessional` from restore and real backend sign-in paths. A future
+backend readiness endpoint should replace this coarse role-only resolver with
+state-driven next actions.
+
+Next: APP-69 - Patient setup and booking gate contract UI.

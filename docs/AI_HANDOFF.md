@@ -326,6 +326,19 @@ focused analyze passed, and the staging-configured debug APK built. ADB reported
 no connected Android device, so phone install/manual smoke was not completed in
 APP-61 and must not be treated as passed evidence.
 
+Product-owner interruption: APP-62 accepted
+`AUTH_SIGNUP_STAGING_CONTRACT_FIX.md` records the staging contract correction
+after professional setup returned `Please check details and try again`.
+Backend staging was deployed to the `CAR-BE-119` Nigeria onboarding profile
+schema/API, including migration `20260717143000_nigeria_onboarding_profile_schema`
+and Cloud Run revision `carenet-backend-staging-00016-dw4`. Flutter
+email/password signup now sends only `email`, `password`, and selected role to
+registration, and local password validation matches the backend 15-character
+minimum. Professional setup fields are accepted through the staging gateway.
+Google first-time signup remains a real next gap and must not be treated as
+fixed by APP-62; it needs a dedicated role-selection + real Google `idToken`
+slice before sign-up Google is enabled.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-17 onboarding setup regression and staging APK build checkpoint.
+**Last updated:** 2026-07-18 auth signup staging contract fix.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -26,10 +26,10 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Onboarding UI | 3 pages, skip, next, get started -> sign up phone |
 | Role-based onboarding boundary | `ROLE_BASED_ONBOARDING_AUTH_BOUNDARY.md` records the PRD-backed product decision that CareNet sign-up must branch into patient and professional onboarding before Google sign-up or broader auth expansion. Professional accounts must proceed through profile, credential upload, and manual verification before public listing |
 | Role-registration backend contract | `ROLE_REGISTRATION_BACKEND_CONTRACT.md` records the exact frontend/backend boundary: email/password and Google-created accounts must use explicit `PATIENT`/`PROFESSIONAL` role selection before account creation is treated as complete. Existing linked Google sign-in and authenticated Google linking remain valid, but first-time Google sign-up stays disabled until role-selection onboarding exists |
-| Role-selection signup | `signUpRole` now sits between phone/email signup entry and `finishSignUp`; patient registration sends `PATIENT`, then continues to `patientOnboardingSetup`; professional registration sends `PROFESSIONAL`, then continues to the professional setup surface. Google signup remains disabled |
+| Role-selection signup | `signUpRole` now sits between phone/email signup entry and `finishSignUp`; email/password registration sends only `email`, `password`, and the selected backend role. Patient registration sends `PATIENT`, then continues to `patientOnboardingSetup`; professional registration sends `PROFESSIONAL`, then continues to the professional setup surface. Google signup remains disabled until first-time Google role selection is wired |
 | Patient/professional onboarding requirements | `PATIENT_PROFESSIONAL_ONBOARDING_UI_REQUIREMENTS.md` defines the serious next onboarding flow against backend `CAR-BE-119` fields. Profile entity/model/repository expansion is now complete; polished patient/professional setup screens remain the next runtime slice |
 | Profile contract expansion | `PROFILE_NIGERIA_ONBOARDING_CONTRACT_EXPANSION.md` records that patient/professional profile entities, models, API payloads, and repository methods now support the backend `CAR-BE-119` onboarding fields. Runtime polished setup screens are still the next slice |
-| Patient/professional setup UI | `patientOnboardingSetup` saves backend patient profile fields before community agreement. `medicalProfessional` now renders a professional credential/practice setup form and saves required backend professional fields before opening verification documents. Public listing still waits for backend verification |
+| Patient/professional setup UI | `patientOnboardingSetup` saves backend patient profile fields before community agreement. `medicalProfessional` now renders a professional credential/practice setup form and saves required backend professional fields before opening verification documents. Staging backend has been updated to the `CAR-BE-119` profile schema so those professional fields are accepted. Public listing still waits for backend verification |
 | Onboarding setup regression | `ONBOARDING_SETUP_REGRESSION_AND_PHONE_SMOKE.md` records APP-61 grouped regression proof: 116 auth/onboarding/profile/account tests passed, focused analyze passed, and the staging-configured debug APK built. Phone install/manual smoke is still pending because ADB reported no connected device during APP-61 |
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
 | Sign-up email | Validates email, then routes to `finishSignUp` |
@@ -37,8 +37,8 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Sign-in phone | Validates country/region, phone, and password locally, then routes to `dashboard`; configured Google sign-in obtains a real Google ID token and calls `AuthRepository.googleSignIn` |
 | Sign-in email | Validates email and password locally, then routes to `dashboard`; configured Google sign-in obtains a real Google ID token and calls `AuthRepository.googleSignIn` |
 | Password recovery | `Forgot Password?` routes to `enterEmail`; valid email requests reset through `AuthRepository.requestPasswordReset`; `resetPasswordConfirm` can complete password reset only when opened with a transient reset token, sends `{ token, newPassword }`, clears local session, and returns to email sign-in. Production app-link setup remains deferred |
-| Finish sign-up | Validates required fields, date picker birthday, password strength, and confirm password match before routing to `communityAgreement` |
-| Social auth rows on sign-up | Google / Facebook / Apple remain explicitly disabled until sign-up role-selection/provider rules exist |
+| Finish sign-up | Validates required fields, date picker birthday, 15-character password policy, and confirm password match before calling backend registration and routing into the selected role's next setup step |
+| Social auth rows on sign-up | Google / Facebook / Apple remain explicitly disabled on sign-up until first-time provider signup can require explicit role selection and route through patient/professional setup. Sign-in Google remains separate and configured for existing/linked accounts |
 | Dashboard shell | Bottom nav tabs all render real screens; Home tab keeps drawer; Notifications now opens the dedicated notifications feature screen directly |
 | Search slice | The dashboard Search tab and `search` route now show real local consultant discovery with keyword filtering, category chips, specialist cards, local profile sheet, and local request state. The search lane intentionally stops here before live availability, appointment time/type selection, payment, real booking, and provider-profile APIs |
 | Home inner tabs | `Feed`, `Messages`, and `Articles` all render real content; Messages preview hands off to the dedicated `messages` route |

@@ -1829,3 +1829,31 @@ plus selected role.
 Next: add a focused role-selection regression/checkpoint or continue into
 professional onboarding/profile setup only after deciding the next narrow
 runtime boundary.
+
+## D163 - Auth signup staging contract fix
+
+Task: APP-62
+
+Decision: Align Flutter email/password signup with the current staging backend
+auth contract. `finishSignUp` must register using only `email`, `password`, and
+the explicitly selected `PATIENT` or `PROFESSIONAL` role. Patient and
+professional profile fields belong to the post-registration setup screens, not
+the `POST /auth/register` payload. Flutter password validation must match the
+backend 15-character minimum.
+
+Reason: Professional onboarding setup failed because staging was behind the
+`CAR-BE-119` Nigeria onboarding profile schema and Flutter still sent a stale
+nested `profile` object during registration. The backend now accepts professional
+profile setup fields after registration, and the frontend registration payload
+must not send rejected fields or weaker password input.
+
+Consequences: Email/password patient and professional signup now has the right
+contract boundary for staging profile setup. Google first-time signup remains
+separate and is not fixed by this decision. A future Google signup slice must
+use a real Google ID token plus explicit role selection, then route into the
+same patient/professional setup requirements without trusting Google display
+names as professional profile data.
+
+Next: implement `APP-63 - Google First-Time Signup With Role Selection` only if
+the project lead wants to continue auth/onboarding; otherwise keep Google signup
+visibly disabled and move to the next approved product lane.

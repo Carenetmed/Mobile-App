@@ -82,8 +82,8 @@ void main() {
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
       await tester.enterText(fields.at(3), 'john@example.com');
-      await tester.enterText(fields.at(4), 'Strong1!');
-      await tester.enterText(fields.at(5), 'Strong1!');
+      await tester.enterText(fields.at(4), 'StrongPassword1!');
+      await tester.enterText(fields.at(5), 'StrongPassword1!');
 
       await tester.tap(find.text(' Agree & continue'));
       await tester.pumpAndSettle();
@@ -91,7 +91,7 @@ void main() {
       expect(repository.registerCalls, 1);
       expect(repository.lastEmail, 'john@example.com');
       expect(repository.lastRole, 'PATIENT');
-      expect(repository.lastProfile?['firstName'], 'John');
+      expect(repository.lastProfile, isEmpty);
       expect(find.text('patient-setup'), findsOneWidget);
     });
 
@@ -184,8 +184,8 @@ void main() {
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
       await tester.enterText(fields.at(3), 'john@example.com');
-      await tester.enterText(fields.at(4), 'Strong1!');
-      await tester.enterText(fields.at(5), 'Mismatch1!');
+      await tester.enterText(fields.at(4), 'StrongPassword1!');
+      await tester.enterText(fields.at(5), 'MismatchPassword1!');
 
       await tester.tap(find.text(' Agree & continue'));
       await tester.pumpAndSettle();
@@ -206,8 +206,8 @@ Future<void> _fillValidForm(WidgetTester tester) async {
   await tester.tap(find.text('OK'));
   await tester.pumpAndSettle();
   await tester.enterText(fields.at(3), 'john@example.com');
-  await tester.enterText(fields.at(4), 'Strong1!');
-  await tester.enterText(fields.at(5), 'Strong1!');
+  await tester.enterText(fields.at(4), 'StrongPassword1!');
+  await tester.enterText(fields.at(5), 'StrongPassword1!');
 }
 
 class _FakeAuthRepository implements AuthRepository {

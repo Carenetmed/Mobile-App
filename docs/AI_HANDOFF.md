@@ -439,6 +439,15 @@ full `flutter test` passed 293 tests, `flutter analyze` passed, `git diff
 smoke is not claimed because `adb devices -l` listed no attached device. APP-73
 should review the stacked PR chain and merge readiness before new feature work.
 
+Product-owner interruption: APP-73 accepted
+`AUTH_ONBOARDING_PR_REVIEW_MERGE_READINESS.md` records the auth/onboarding PR
+chain readiness. APP-64 is already merged. APP-65 through APP-72 are open draft
+PRs targeting `feature/frontend-milestone` and currently report clean merge
+state, but sampled PR branches have no reported GitHub checks. Review and merge
+one PR at a time into `feature/frontend-milestone`; do not merge to
+`main`/`master` without explicit release approval. APP-74 should run final
+milestone regression after the chain is merged.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

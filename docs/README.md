@@ -53,6 +53,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 29 | **PROFESSIONAL_APPLICATION_SHELL_VISUAL_SYSTEM.md** | APP-70 runtime professional application UI: structured credential application shell without fake drafts or approval |
 | 30 | **PROFESSIONAL_EVIDENCE_STATUS_EXPERIENCE.md** | APP-71 runtime verification evidence status UI: checklist/status from real documents without admin or approval claims |
 | 31 | **AUTH_ONBOARDING_REGRESSION_DEVICE_SMOKE.md** | APP-72 regression proof for APP-66 through APP-71; local tests/build passed, device smoke blocked by no attached ADB device |
+| 32 | **AUTH_ONBOARDING_PR_REVIEW_MERGE_READINESS.md** | APP-73 PR-chain readiness: APP-65 through APP-72 review/merge order, blockers, and no-main-merge boundary |
 
 Current implementation policy:
 - Build frontend-complete, backend-ready slices.

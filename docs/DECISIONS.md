@@ -2093,3 +2093,24 @@ Consequences: The redesign is locally regression-green but still needs PR-chain
 review/merge readiness and final real-device smoke when a phone is attached.
 
 Next: APP-73 - Auth onboarding PR review and merge readiness.
+
+## D174 - Auth onboarding PR review and merge readiness
+
+Task: APP-73
+
+Decision: Treat APP-65 through APP-72 as a stacked PR review chain targeting
+`feature/frontend-milestone`, not `main`/`master`. APP-64 is already merged.
+APP-65 through APP-72 are open draft PRs, currently clean, and should be
+reviewed/marked ready/merged one at a time in order. Sampled PR checks report
+no GitHub checks, so readiness is based on local APP-72 verification until CI is
+available.
+
+Reason: The auth/onboarding redesign touches the first-user journey and should
+not be merged as an unreviewed batch or sent to the release branch by accident.
+The safe path is ordered milestone review, then a final milestone regression.
+
+Consequences: No new runtime feature work should start from this chain until
+the project lead reviews merge order. Final real-device smoke and GitHub CI
+proof remain separate blockers before production/release claims.
+
+Next: APP-74 - Auth onboarding chain final milestone regression.

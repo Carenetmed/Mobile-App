@@ -89,8 +89,11 @@ class AuthRepository {
     await _sessionStore.clear();
   }
 
-  Future<AuthSession> googleSignIn({required String idToken}) async {
-    final session = await _apiClient.googleSignIn(idToken: idToken);
+  Future<AuthSession> googleSignIn({
+    required String idToken,
+    String? role,
+  }) async {
+    final session = await _apiClient.googleSignIn(idToken: idToken, role: role);
     await _sessionStore.save(session);
     return session;
   }

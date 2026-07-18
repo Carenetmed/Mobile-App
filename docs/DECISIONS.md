@@ -1857,3 +1857,28 @@ names as professional profile data.
 Next: implement `APP-63 - Google First-Time Signup With Role Selection` only if
 the project lead wants to continue auth/onboarding; otherwise keep Google signup
 visibly disabled and move to the next approved product lane.
+
+## D164 - Google first-time signup requires role selection
+
+Task: APP-63
+
+Decision: Enable Google first-time signup only through the existing
+patient/professional role selection boundary. Sign-up Google starts provider
+auth only when `GoogleIdTokenProvider` is configured, then `signUpRole` sends
+the real Google `idToken` plus selected backend role to `POST /auth/google/sign-in`.
+Successful patient signups route to `patientOnboardingSetup`; successful
+professional signups route to `medicalProfessional`.
+
+Reason: Google identity can prove account identity, but it cannot choose a
+CareNet account type or provide trusted medical professional profile data. The
+PRD-backed product boundary requires patient and professional onboarding to stay
+explicit, especially for professional credential and practice details in Nigeria.
+
+Consequences: Google signup is no longer a disabled placeholder when configured,
+but it still does not skip onboarding, does not trust Google display names as
+professional profile authority, and does not add Facebook/Apple signup, Google
+unlink, iOS/release OAuth proof, production OAuth consent/app verification,
+phone/OTP, MFA, admin review, payments, calls, reviews, notes, or prescriptions.
+
+Next: run device/staging smoke for Google first-time signup when an Android
+device is visible to ADB and a suitable test Google account is available.

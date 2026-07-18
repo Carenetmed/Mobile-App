@@ -99,6 +99,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         SignUpRoleSelectionPage(
           initialEmail:
               args is SignUpRoleSelectionArgs ? args.initialEmail : null,
+          googleSignUp:
+              args is SignUpRoleSelectionArgs ? args.googleSignUp : false,
+          authRepository:
+              args is SignUpRoleSelectionArgs ? args.authRepository : null,
+          googleIdTokenProvider:
+              args is SignUpRoleSelectionArgs
+                  ? args.googleIdTokenProvider
+                  : null,
         ),
       );
     case RouteName.communityAgreement:

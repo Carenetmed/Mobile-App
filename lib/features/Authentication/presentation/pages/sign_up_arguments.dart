@@ -1,3 +1,6 @@
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
+
 enum SignUpRole {
   patient,
   professional;
@@ -22,9 +25,17 @@ enum SignUpRole {
 }
 
 class SignUpRoleSelectionArgs {
-  const SignUpRoleSelectionArgs({this.initialEmail});
+  const SignUpRoleSelectionArgs({
+    this.initialEmail,
+    this.googleSignUp = false,
+    this.authRepository,
+    this.googleIdTokenProvider,
+  });
 
   final String? initialEmail;
+  final bool googleSignUp;
+  final AuthRepository? authRepository;
+  final GoogleIdTokenProvider? googleIdTokenProvider;
 }
 
 class FinishSignUpArgs {

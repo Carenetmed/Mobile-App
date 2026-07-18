@@ -431,6 +431,14 @@ listing activation, licence lifecycle, payouts, calls, notes, or prescriptions.
 APP-72 should run the auth/onboarding regression and device smoke pass before
 new product expansion.
 
+Product-owner interruption: APP-72 accepted
+`AUTH_ONBOARDING_REGRESSION_DEVICE_SMOKE.md` records the auth/onboarding
+regression proof. Focused APP-66 through APP-71 regression passed 70 tests,
+full `flutter test` passed 293 tests, `flutter analyze` passed, `git diff
+--check` passed, and a staging-configured debug APK built. Device install/manual
+smoke is not claimed because `adb devices -l` listed no attached device. APP-73
+should review the stacked PR chain and merge readiness before new feature work.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

@@ -2073,3 +2073,23 @@ verification, public listing, licence renewal, duplicate regulator checks,
 rejection reason details, or admin decisions.
 
 Next: APP-72 - Auth/onboarding regression and device smoke.
+
+## D173 - Auth onboarding regression and device smoke
+
+Task: APP-72
+
+Decision: Freeze auth/onboarding feature expansion after APP-66 through APP-71
+and record regression evidence before more product work. Local focused
+auth/onboarding regression, full Flutter tests, analyzer, whitespace check, and
+staging-configured APK build passed. Device install/manual smoke is not claimed
+because `adb devices -l` listed no attached device.
+
+Reason: The first-user journey is sensitive. It should be proven as a coherent
+system before adding readiness endpoints, booking gates, phone OTP,
+professional draft/resume behavior, licence lifecycle, public listing
+activation, or admin/rejection flows.
+
+Consequences: The redesign is locally regression-green but still needs PR-chain
+review/merge readiness and final real-device smoke when a phone is attached.
+
+Next: APP-73 - Auth onboarding PR review and merge readiness.

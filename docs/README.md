@@ -52,6 +52,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 28 | **PATIENT_SETUP_BOOKING_GATE_UI.md** | APP-69 runtime patient setup UI: real profile save, honest skip for browsing, booking readiness deferred |
 | 29 | **PROFESSIONAL_APPLICATION_SHELL_VISUAL_SYSTEM.md** | APP-70 runtime professional application UI: structured credential application shell without fake drafts or approval |
 | 30 | **PROFESSIONAL_EVIDENCE_STATUS_EXPERIENCE.md** | APP-71 runtime verification evidence status UI: checklist/status from real documents without admin or approval claims |
+| 31 | **AUTH_ONBOARDING_REGRESSION_DEVICE_SMOKE.md** | APP-72 regression proof for APP-66 through APP-71; local tests/build passed, device smoke blocked by no attached ADB device |
 
 Current implementation policy:
 - Build frontend-complete, backend-ready slices.

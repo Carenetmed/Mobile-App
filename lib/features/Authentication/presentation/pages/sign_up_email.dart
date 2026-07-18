@@ -101,10 +101,7 @@ class _SignUpEmailState extends State<SignUpEmail> {
     final List<AuthenticationModel> signUp = [
       AuthenticationModel(
         assetPath: AssetsIcon.phone,
-        title: 'Continue with Phone',
-        btnAction: () {
-          Navigator.pushNamed(context, RouteName.signUpPhone);
-        },
+        title: 'Phone signup unavailable',
       ),
       AuthenticationModel(
         assetPath: AssetsIcon.google,

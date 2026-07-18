@@ -86,7 +86,14 @@ class _SignUpPhoneState extends State<SignUpPhone> {
     });
 
     if (_canContinue) {
-      Navigator.pushNamed(context, RouteName.signUpRole);
+      Navigator.pushNamed(
+        context,
+        RouteName.signUpRole,
+        arguments: SignUpRoleSelectionArgs(
+          authRepository: widget.authRepository,
+          googleIdTokenProvider: widget.googleIdTokenProvider,
+        ),
+      );
     }
   }
 
@@ -109,7 +116,7 @@ class _SignUpPhoneState extends State<SignUpPhone> {
         assetPath: AssetsIcon.mail,
         title: 'Continue with Email',
         btnAction: () {
-          Navigator.pushNamed(context, RouteName.signUpEmail);
+          Navigator.pushNamed(context, RouteName.signUpRole);
         },
       ),
       AuthenticationModel(

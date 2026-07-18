@@ -1930,3 +1930,29 @@ licence lifecycle, retention/deletion guarantees, duplicate licence enforcement,
 and support/admin recovery remain deferred until backend contracts exist.
 
 Next: approve APP-64 and APP-65, then start APP-66 as the first runtime slice.
+
+## D167 - Auth gateway and role-first entry
+
+Task: APP-66
+
+Decision: Replace the old first-launch carousel/phone-first entry with a
+healthcare welcome gateway and make create-account flow role-first. The gateway
+offers guest public-care browsing, account creation, and email sign-in. The
+signup role screen now lets users choose Patient or Medical professional before
+choosing Google/email, keeps the selected role visible, and shows phone signup
+as unavailable until real OTP exists.
+
+Reason: The production experience contract requires role before method,
+guest-browse support, no fake phone signup, and a more premium healthcare UI
+direction. Sending `Get started` directly to phone signup was both product-wrong
+and technically misleading because phone OTP is not implemented.
+
+Consequences: This starts the auth/onboarding redesign without attempting the
+full rewrite. Email signup still needs APP-67 cleanup because `finishSignUp`
+contains authoritative profile fields that should move out of generic auth.
+Splash still needs APP-68 readiness resolver work. Patient setup,
+professional application, status hubs, server-side drafts, licence lifecycle,
+retention/deletion, duplicate regulator identity, and support recovery remain
+deferred to their own slices.
+
+Next: APP-67 - Auth form cleanup and method convergence.

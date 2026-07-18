@@ -369,6 +369,17 @@ resolver before dashboard, and the visual direction should be premium healthcare
 rather than the current generic form UI. Runtime implementation should begin
 with APP-66 only after APP-64 and APP-65 are approved.
 
+Product-owner interruption: APP-66 accepted
+`AUTH_GATEWAY_ROLE_FIRST_ENTRY.md` records the first runtime auth/onboarding
+redesign slice. `OnboardingView` is now a healthcare welcome gateway with
+`Browse verified care`, `Create account`, and email sign-in. `Create account`
+opens role-first signup, and the role page now shows selected-role method choice
+for Google/email while marking phone signup unavailable until real OTP exists.
+The shared auth option row was fixed so longer disabled labels do not overflow.
+APP-67 should clean generic auth fields next; readiness resolver, patient setup
+redesign, professional application redesign, server drafts, and lifecycle/status
+hubs remain future slices.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

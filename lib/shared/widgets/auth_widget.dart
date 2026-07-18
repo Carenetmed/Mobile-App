@@ -38,21 +38,27 @@ class AuthWidget extends StatelessWidget {
               ),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SvgImage(imgName: assetPath),
-                Spacer(),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: FontSizes.body3,
-                    fontFamily: AppFonts.montserrat,
-                    fontWeight: FontWeight.w400,
-                    color:
-                        isEnabled ? AppColors.primaryBlue11 : AppColors.white04,
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: FontSizes.body3,
+                      fontFamily: AppFonts.montserrat,
+                      fontWeight: FontWeight.w400,
+                      color:
+                          isEnabled
+                              ? AppColors.primaryBlue11
+                              : AppColors.white04,
+                    ),
                   ),
                 ),
-                Spacer(),
+                SizedBox(width: 12.w),
               ],
             ),
           ),

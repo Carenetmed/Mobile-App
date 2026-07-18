@@ -352,6 +352,23 @@ phone/OTP, MFA, admin review, payments, calls, reviews, notes, and prescriptions
 remain deferred. Device/staging Google signup smoke is still pending because ADB
 was not listing a connected phone after APP-62.
 
+Product-owner interruption: APP-64 accepted as proposal for review
+`AUTH_ONBOARDING_PRODUCTION_FLOW_PROPOSAL.md` records the product-level
+production auth/onboarding direction: role-first account creation, guest browse,
+converged email/Google signup, backend-owned readiness/resume routing,
+low-friction patient setup, professional application onboarding, regulator-aware
+fields, licence lifecycle, duplicate/fraud controls, data lifecycle, operational
+recovery, and Nigerian patient/professional validation before production claims.
+This does not change runtime behavior.
+
+Product-owner interruption: APP-65 accepted as draft contract for review
+`AUTH_ONBOARDING_EXPERIENCE_CONTRACT.md` turns APP-64 into a screen/state/field
+contract for the redesign. Every auth/onboarding screen must have a state, every
+field must have one owner, sign-in/signup must route through a readiness
+resolver before dashboard, and the visual direction should be premium healthcare
+rather than the current generic form UI. Runtime implementation should begin
+with APP-66 only after APP-64 and APP-65 are approved.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

@@ -1882,3 +1882,51 @@ phone/OTP, MFA, admin review, payments, calls, reviews, notes, or prescriptions.
 
 Next: run device/staging smoke for Google first-time signup when an Android
 device is visible to ADB and a suitable test Google account is available.
+
+## D165 - Auth onboarding production flow proposal
+
+Task: APP-64
+
+Decision: Define a production auth/onboarding direction before more runtime UI
+patching. CareNet should move to role-first account creation, guest browsing,
+converged email/Google signup, low-friction patient setup, professional
+application onboarding, backend-owned readiness/resume routing, regulator-aware
+professional fields, licence lifecycle, duplicate/fraud controls, data lifecycle
+and operational recovery boundaries.
+
+Reason: The current onboarding/auth UI works in narrow staging paths but is not
+product-grade for a serious medical marketplace. The app was asking/placing some
+data at the wrong layer, routing restored sessions directly to dashboard, and
+using a basic flow that would cause rework if polished without first settling the
+product contract.
+
+Consequences: APP-64 is a decision proposal only. It does not change runtime
+Flutter behavior. Runtime implementation must wait for product-lead acceptance
+or amendment and must be sliced rather than rebuilt as one broad auth rewrite.
+
+Next: accept/amend the APP-64 proposal, then use APP-65 as the screen/state
+experience contract before APP-66 runtime work.
+
+## D166 - Auth onboarding experience contract
+
+Task: APP-65
+
+Decision: Treat `AUTH_ONBOARDING_EXPERIENCE_CONTRACT.md` as the source of truth
+for the production auth/onboarding redesign after APP-64 approval. Every screen
+must have a state, every field must have one owner, all sign-in/signup paths
+must pass through a readiness resolver before dashboard, and the visual direction
+must be premium healthcare rather than the current generic form UI.
+
+Reason: Product-quality auth/onboarding cannot be fixed by only making screens
+prettier. The app needs a stable contract for app open, guest browse, role
+selection, method choice, patient setup, professional application, email
+verification, interrupted sessions, pending/rejected/expired professional states,
+and safe error/recovery behavior.
+
+Consequences: APP-65 is docs-only and does not implement runtime behavior.
+APP-66 should be the first implementation slice: auth gateway and role-first
+entry. Backend-dependent claims such as server-side professional drafts,
+licence lifecycle, retention/deletion guarantees, duplicate licence enforcement,
+and support/admin recovery remain deferred until backend contracts exist.
+
+Next: approve APP-64 and APP-65, then start APP-66 as the first runtime slice.

@@ -259,16 +259,25 @@ class _ProfessionalOnboardingSetupPageState
   @override
   Widget build(BuildContext context) {
     return _SetupScaffold(
-      title: 'Professional verification profile',
+      title: 'Apply as a professional',
       subtitle:
-          'These details support credential review. Public listing still waits for manual verification.',
-      stepLabel: 'Professional setup',
+          'Complete the details CareNet needs before document review. Your profile is not public until verification is approved.',
+      stepLabel: 'Professional application',
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const _ProfessionalApplicationIntro(),
+            SizedBox(height: 22.h),
+            const _ApplicationProgress(
+              currentStep: 1,
+              totalSteps: 2,
+              label: 'Profile details before evidence upload',
+            ),
+            SizedBox(height: 22.h),
             const _SectionHeader('Identity'),
+            const _PrivacyLabel('Private for review'),
             CarenetTextField(
               label: 'Legal name',
               hintText: 'Name on your license',
@@ -276,13 +285,22 @@ class _ProfessionalOnboardingSetupPageState
               textInputAction: TextInputAction.next,
               validator: _required('Legal name is required'),
             ),
+            SizedBox(height: 8.h),
+            const _FieldHelp(
+              'Use the legal name that appears on your licence or registration record.',
+            ),
             SizedBox(height: 14.h),
+            const _PrivacyLabel('Shown publicly after approval'),
             CarenetTextField(
               label: 'Public professional name',
               hintText: 'Dr. Ada Okafor',
               controller: _displayNameController,
               textInputAction: TextInputAction.next,
               validator: _required('Public professional name is required'),
+            ),
+            SizedBox(height: 8.h),
+            const _FieldHelp(
+              'This is the name patients will see only after CareNet approves your profile.',
             ),
             SizedBox(height: 14.h),
             CarenetTextField(
@@ -291,6 +309,10 @@ class _ProfessionalOnboardingSetupPageState
               controller: _categoryController,
               textInputAction: TextInputAction.next,
               validator: _required('Profession/category is required'),
+            ),
+            SizedBox(height: 8.h),
+            const _FieldHelp(
+              'Use your regulated healthcare profession. Catalog selection is deferred until profession lists are available.',
             ),
             SizedBox(height: 14.h),
             CarenetTextField(
@@ -301,12 +323,17 @@ class _ProfessionalOnboardingSetupPageState
             ),
             SizedBox(height: 24.h),
             const _SectionHeader('Credentials'),
+            const _PrivacyLabel('Private for review'),
             CarenetTextField(
               label: 'License or registration number',
               hintText: 'MDCN-12345',
               controller: _licenseNumberController,
               textInputAction: TextInputAction.next,
               validator: _required('License number is required'),
+            ),
+            SizedBox(height: 8.h),
+            const _FieldHelp(
+              'CareNet uses this for credential review. It is not shown to patients from this form.',
             ),
             SizedBox(height: 14.h),
             CarenetTextField(
@@ -315,6 +342,10 @@ class _ProfessionalOnboardingSetupPageState
               controller: _licensingCouncilController,
               textInputAction: TextInputAction.next,
               validator: _required('Licensing council is required'),
+            ),
+            SizedBox(height: 8.h),
+            const _FieldHelp(
+              'Examples include MDCN, NMCN, PCN, or another Nigerian regulator/council.',
             ),
             SizedBox(height: 14.h),
             CarenetTextField(
@@ -335,12 +366,17 @@ class _ProfessionalOnboardingSetupPageState
             ),
             SizedBox(height: 24.h),
             const _SectionHeader('Practice'),
+            const _PrivacyLabel('Reviewed before public listing'),
             CarenetTextField(
               label: 'Practice or facility name',
               hintText: 'Care Clinic',
               controller: _practiceNameController,
               textInputAction: TextInputAction.next,
               validator: _required('Practice name is required'),
+            ),
+            SizedBox(height: 8.h),
+            const _FieldHelp(
+              'Use the facility, clinic, or practice patients should associate with your work after approval.',
             ),
             SizedBox(height: 14.h),
             CarenetTextField(
@@ -383,12 +419,15 @@ class _ProfessionalOnboardingSetupPageState
             SizedBox(height: 16.h),
             const _InfoCard(
               message:
-                  'Next you will upload license, identity, or certification documents. CareNet will not mark your profile verified from this form alone.',
+                  'Next you will upload licence, identity, or certification documents. This saves your profile details only; approval and public listing require backend verification.',
             ),
             _StatusText(message: _message),
             SizedBox(height: 20.h),
             CarenetButton(
-              label: _isSaving ? 'Saving profile...' : 'Save and verify',
+              label:
+                  _isSaving
+                      ? 'Saving application...'
+                      : 'Save application and upload evidence',
               onPressed: _isSaving ? null : _saveProfessionalProfile,
             ),
           ],
@@ -622,6 +661,127 @@ class _PatientSetupPoint extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfessionalApplicationIntro extends StatelessWidget {
+  const _ProfessionalApplicationIntro();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: const [
+        _PatientSetupPoint(
+          icon: Icons.badge_outlined,
+          title: 'Tell us who you are',
+          body:
+              'Legal identity and public display name stay separate for review.',
+        ),
+        _PatientSetupPoint(
+          icon: Icons.verified_user_outlined,
+          title: 'Prepare regulated credentials',
+          body:
+              'Licence, council, qualifications, and experience are required before evidence upload.',
+        ),
+        _PatientSetupPoint(
+          icon: Icons.business_outlined,
+          title: 'Confirm your practice details',
+          body:
+              'CareNet reviews these details before any public listing or patient booking.',
+        ),
+      ],
+    );
+  }
+}
+
+class _ApplicationProgress extends StatelessWidget {
+  const _ApplicationProgress({
+    required this.currentStep,
+    required this.totalSteps,
+    required this.label,
+  });
+
+  final int currentStep;
+  final int totalSteps;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = currentStep / totalSteps;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.r),
+      decoration: BoxDecoration(
+        color: CarenetColors.neutral100,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: CarenetColors.neutral200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Step $currentStep of $totalSteps',
+            style: TextStyle(
+              color: CarenetColors.brand,
+              fontFamily: AppFonts.montserrat,
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            label,
+            style: TextStyle(
+              color: CarenetColors.neutral700,
+              fontFamily: AppFonts.montserrat,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 10.h),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999.r),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6.h,
+              backgroundColor: CarenetColors.neutral200,
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                CarenetColors.brand,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrivacyLabel extends StatelessWidget {
+  const _PrivacyLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.lock_outline, color: CarenetColors.neutral400, size: 14.r),
+          SizedBox(width: 5.w),
+          Text(
+            label,
+            style: TextStyle(
+              color: CarenetColors.neutral500,
+              fontFamily: AppFonts.montserrat,
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

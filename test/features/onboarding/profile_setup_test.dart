@@ -103,9 +103,14 @@ void main() {
         child: ProfessionalOnboardingSetupPage(profileRepository: repository),
       );
 
-      await tester.ensureVisible(find.text('Save and verify'));
+      expect(find.text('Step 1 of 2'), findsOneWidget);
+      expect(find.text('Private for review'), findsWidgets);
+
+      await tester.ensureVisible(
+        find.text('Save application and upload evidence'),
+      );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Save and verify'));
+      await tester.tap(find.text('Save application and upload evidence'));
       await tester.pump();
 
       expect(repository.updateProfessionalCalls, 0);
@@ -140,9 +145,11 @@ void main() {
       await tester.enterText(fields.at(11), 'Lagos');
       await tester.enterText(fields.at(12), 'Nigeria');
 
-      await tester.ensureVisible(find.text('Save and verify'));
+      await tester.ensureVisible(
+        find.text('Save application and upload evidence'),
+      );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Save and verify'));
+      await tester.tap(find.text('Save application and upload evidence'));
       await tester.pumpAndSettle();
 
       expect(repository.updateProfessionalCalls, 1);
@@ -173,7 +180,7 @@ void main() {
       );
 
       await _fillMinimumProfessionalForm(tester);
-      await tester.tap(find.text('Save and verify'));
+      await tester.tap(find.text('Save application and upload evidence'));
       await tester.pumpAndSettle();
 
       expect(
@@ -197,7 +204,7 @@ Future<void> _fillMinimumProfessionalForm(WidgetTester tester) async {
   await tester.enterText(fields.at(8), 'Care Clinic');
   await tester.enterText(fields.at(10), 'Ikeja');
   await tester.enterText(fields.at(11), 'Lagos');
-  await tester.ensureVisible(find.text('Save and verify'));
+  await tester.ensureVisible(find.text('Save application and upload evidence'));
   await tester.pumpAndSettle();
 }
 

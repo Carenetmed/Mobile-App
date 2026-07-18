@@ -411,6 +411,16 @@ should focus on the professional application shell/visual system next, without
 fake server-side drafts, verification approval, licence lifecycle, public
 listing, payouts, calls, notes, prescriptions, or admin decisions.
 
+Product-owner interruption: APP-70 accepted
+`PROFESSIONAL_APPLICATION_SHELL_VISUAL_SYSTEM.md` records the professional setup
+runtime cleanup. `medicalProfessional` now reads as an application-style
+credential review step with `Step 1 of 2`, privacy labels, clearer Nigerian
+regulator/practice guidance, real `updateProfessionalMe` save, and no fake
+verification/public-listing claim. APP-71 should focus on professional
+evidence/status experience using the existing verification document surface
+without faking approval, rejection reasons, licence lifecycle, admin decisions,
+payouts, calls, notes, prescriptions, or public listing.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

@@ -2028,3 +2028,26 @@ needs an application-grade redesign with status/review structure and no fake
 server-side drafts.
 
 Next: APP-70 - Professional application shell and visual system.
+
+## D171 - Professional application shell visual system
+
+Task: APP-70
+
+Decision: Reshape professional setup into an application-style credential
+surface while preserving the existing real backend save boundary. The screen
+now introduces credential review, shows application progress, labels private
+review/public-after-approval data, saves through
+`ProfileRepository.updateProfessionalMe`, and routes to evidence upload only
+after save success.
+
+Reason: A medical marketplace cannot treat professional onboarding like a
+generic profile edit. Nigerian professional identity, regulator, licence,
+qualification, experience, and practice fields need clearer field ownership and
+review expectations before verification upload.
+
+Consequences: The app still does not claim server-side drafts, approval,
+public listing, licence lifecycle, duplicate regulator checks, admin decisions,
+payouts, calls, notes, prescriptions, or medical records. Those require
+separate backend/product contracts.
+
+Next: APP-71 - Professional evidence/status experience.

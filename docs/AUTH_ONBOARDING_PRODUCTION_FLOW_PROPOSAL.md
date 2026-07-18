@@ -265,6 +265,53 @@ A pending professional may access account settings, help, and educational/public
 content. The normal professional operational dashboard must not imply that the
 profile is live or accepting bookings.
 
+### Professional licence lifecycle
+
+Professional verification is not a one-time forever state. The backend must
+track the licence or registration evidence that justified verification and must
+know whether that evidence is current, expired, superseded, rejected, or under
+review.
+
+Recommended MVP boundary:
+
+- A professional must supply the licence/registration number, issuing regulator,
+  issue date when available, and expiry or renewal date when applicable.
+- The public listing and appointment-acceptance gates must depend on current
+  backend verification, not on old uploaded files alone.
+- Expired or suspended verification should remove the professional from public
+  booking surfaces until renewal/review is complete.
+- Existing accepted appointments during an expiry/review event require a
+  dedicated operational policy slice; the UI must not guess this behavior.
+- Renewal, suspension, reinstatement, regulator status polling, and periodic
+  re-verification are backend/admin lifecycle concerns, not frontend-only
+  reminders.
+
+The first implementation can start with manual review and date-based expiry
+metadata. It should not claim automatic regulator verification until that
+integration exists.
+
+### Duplicate, fraud, and regulator identity
+
+The professional application must not allow the same real-world licence to
+silently create multiple public CareNet professionals.
+
+Recommended boundary:
+
+- Normalize and store regulator identity as controlled fields, for example
+  `profession`, `regulator`, and normalized `registrationNumber`.
+- Treat the tuple of regulator plus normalized registration number as a
+  high-risk duplicate key that requires uniqueness or admin review.
+- Do not let a professional self-override duplicate, expired, rejected, or
+  mismatched regulator evidence.
+- Public display name may differ from legal name only under a product-approved
+  rule; legal identity must remain private and backend-owned.
+- Manual review notes, fraud signals, rejection reasons, and admin evidence must
+  never leak to public listings or normal users.
+
+The product can later decide whether a verified professional may operate under
+multiple facilities or specialties, but that is different from allowing
+duplicate professional identities.
+
 ## Age, Consent, And Legal Records
 
 The PRD targets adult account holders and separately mentions parents seeking
@@ -294,6 +341,70 @@ Recommended separation:
 
 The legal text itself requires Nigerian legal/compliance approval. This proposal
 defines placement and proof only; it does not draft or approve legal wording.
+
+### Account role and identity rules
+
+Role choice is a product and security boundary, not a styling preference. A
+patient account and a professional account can share the same human in real life,
+but the MVP should not allow casual role switching after account creation.
+
+Recommended boundary:
+
+- Account role is set at account creation and remains immutable through normal
+  self-service flows.
+- If a user chose the wrong role before meaningful activity, correction should
+  go through a controlled support/admin process or a product-approved fresh
+  account path.
+- Dual-capability accounts, linked patient/professional identities, organization
+  accounts, clinic staff, and admin impersonation remain deferred until a
+  dedicated identity model exists.
+- Google sign-in proves provider identity only. It must still pass through the
+  CareNet role and profile readiness contract.
+
+This prevents a verified professional surface from accidentally inheriting
+patient-only assumptions, and prevents patient booking data from being mixed
+into a professional application state.
+
+### Data lifecycle and retention
+
+Medical onboarding data, legal acceptance records, verification documents, and
+application audit history need retention rules before production. This proposal
+does not define final legal retention periods, but the system must be designed
+so those decisions can be enforced.
+
+Recommended boundary:
+
+- Abandoned professional drafts should have a documented retention and reminder
+  policy.
+- Uploaded documents should not be deleted or exposed solely by frontend state.
+  Backend storage, audit, and admin review policy own the lifecycle.
+- Account deletion, consent withdrawal, profile removal, and document deletion
+  requests must be handled as regulated data operations, not simple local logout.
+- Required audit/legal records may need restricted retention even when a user
+  requests deletion; legal/compliance must approve the production policy.
+- The app must not claim permanent deletion, compliance completion, or verified
+  medical status unless the backend and policy actually support it.
+
+These rules are especially important under the Nigeria Data Protection Act 2023
+and for professional credential evidence.
+
+### Operational recovery cases
+
+The product needs safe paths for common real-world problems before launch:
+
+- rejected application with correction/resubmission rules
+- legal name change
+- changed email or lost email access
+- regulator mismatch or typo in registration number
+- expired licence evidence
+- duplicate licence conflict
+- document upload stuck after partial failure
+- application submitted under the wrong role
+- professional wants to pause public listing
+
+The first app UI does not need every support tool built, but it must not trap
+users in impossible states. Each recovery case should either have a working
+backend/admin path or be clearly deferred before production launch.
 
 ## Interruption And Resume Contract
 
@@ -408,6 +519,16 @@ validation and state conflicts should receive specific, non-leaking guidance.
 7. Add audit events for professional application submission and resubmission.
 8. Define versioned terms/privacy/professional-declaration acceptance records.
 9. Define adult account eligibility and defer dependent/minor profiles explicitly.
+10. Define professional licence lifecycle fields, expiry handling, renewal
+    review, suspension/reinstatement boundaries, and public-listing effects.
+11. Define duplicate professional identity rules around regulator plus normalized
+    registration number.
+12. Define account role correction, dual-capability deferral, and support/admin
+    recovery paths.
+13. Define data retention and deletion-request behavior for drafts, documents,
+    application decisions, and audit/legal records.
+14. Define operational recovery states for stuck uploads, rejected submissions,
+    wrong-role signup, legal-name change, and lost email access.
 
 These are targeted extensions to the existing auth/profile/verification
 foundation, not a broad backend rewrite.
@@ -443,6 +564,22 @@ foundation, not a broad backend rewrite.
    interruption/resume, expired session, slow/offline recovery, duplicate retry,
    text scaling, and accessibility checks.
 
+### Validation before production implementation freeze
+
+Before the redesigned flow is treated as production-ready, run a small usability
+validation pass with real target users:
+
+- 3-5 Nigerian patients or patient proxies
+- 3-5 licensed practitioners across at least two regulator categories
+- one low-bandwidth/interrupted-session scenario
+- one small-screen Android scenario
+- one accessibility/text-scaling pass
+
+The goal is not cosmetic preference collection. The goal is to prove that users
+understand role choice, professional evidence requirements, save/resume behavior,
+booking gates, rejected/pending states, and recovery instructions. Findings
+should become explicit fix slices, not informal tweaks.
+
 Each item remains its own branch/PR slice. Do not combine the entire redesign
 into one large implementation PR.
 
@@ -470,6 +607,21 @@ The product lead should accept or amend these decisions before implementation:
     consent and relationship contract.
 12. Terms/privacy and professional declarations are versioned backend records,
     not frontend-only checkboxes or route transitions.
+13. Professional verification has a lifecycle: expiry, renewal review,
+    suspension/reinstatement, and public-listing effects must be backend-owned.
+14. Duplicate professional identity is controlled by regulator plus normalized
+    registration number or an equivalent backend-approved uniqueness/review
+    rule.
+15. Account role is immutable through normal self-service after creation; wrong
+    role, dual-role, organization, and support correction paths require explicit
+    backend/admin policy.
+16. Drafts, uploaded documents, audit records, deletion requests, and consent
+    withdrawal require a backend-owned data lifecycle and retention policy.
+17. Rejected applications, legal-name changes, lost email access, expired
+    documents, stuck uploads, and regulator mismatches require documented
+    operational recovery paths before launch.
+18. Production readiness requires a small Nigerian patient/professional
+    usability validation pass; unresolved findings become tracked slices.
 
 ## Out Of Scope For This Proposal
 
@@ -483,9 +635,12 @@ The product lead should accept or amend these decisions before implementation:
 - Final professional category/specialty catalog
 - Phone OTP, Facebook, Apple, MFA, and Google unlink
 - Production OAuth/release signing
+- Organization/clinic staff accounts and dual patient/professional capability
+- Final data retention schedule, deletion policy, and regulator integration
+- Full support/admin tooling for every recovery case
 
 ## Review Result Needed
 
 APP-64 is ready for product-lead review when this proposal is presented. It is
-not an accepted runtime specification until the product lead approves the twelve
+not an accepted runtime specification until the product lead approves the eighteen
 proposed acceptance decisions or records amendments.

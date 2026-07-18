@@ -424,6 +424,26 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.99 test/analyze | Not needed: handoff/docs slice. `MOBILE_BACKEND_MILESTONE_HANDOFF_PACKAGE.md` summarizes the regression-passed milestone and selects staging seed-data/smoke planning next; no runtime Flutter code changed |
 | Focused task 53.1 test/analyze | Not needed: planning/docs slice. `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md` defines required staging data/config and smoke evidence rules; no runtime Flutter code changed |
 
+## Identity/onboarding production gap
+
+APP-ID-001 records that the current auth/onboarding work is a real bridge, not
+the final production model. Google/email role-first signup works, patient setup
+and professional setup can save backend profile fields, and verification upload
+uses real backend routes. However, production quality still requires backend
+identity/catalog decisions and runtime hardening for duplicate accounts,
+role-switching, country/state/city selectors, professional/regulator catalogs,
+licence normalization, required evidence by profession, backend-owned
+application drafts/readiness, and patient booking-gate fields.
+
+Next source of truth:
+
+- `docs/IDENTITY_ONBOARDING_PRODUCT_FOUNDATION.md`
+- `docs/IDENTITY_ONBOARDING_OPEN_QUESTIONS.md`
+
+Next queued slice:
+
+`APP-ID-002 - Backend Identity And Catalog Contract`
+
 ## Design debt (fix in Phase 2+)
 
 | Issue | Where |

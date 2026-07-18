@@ -1882,3 +1882,32 @@ phone/OTP, MFA, admin review, payments, calls, reviews, notes, or prescriptions.
 
 Next: run device/staging smoke for Google first-time signup when an Android
 device is visible to ADB and a suitable test Google account is available.
+
+## D175 - Identity and onboarding product foundation
+
+Task: APP-ID-001
+
+Decision: Treat CareNet identity, role selection, patient setup, professional
+application, Nigeria catalogs, and verification readiness as one product
+boundary before more feature expansion. MVP self-service should use one normal
+role per user account, no casual patient/professional switching, backend-owned
+duplicate/collision handling, backend-owned onboarding readiness, controlled
+Nigeria-first location and professional catalogs, regulator-aware professional
+application fields, and manual/backend-owned verification. Patient diseases or
+conditions should not be collected as casual onboarding free text.
+
+Reason: The PRD defines a trusted healthcare marketplace with licensed,
+verified professionals and guest/patient/professional flows. Current Flutter
+screens are honest bridges but still allow free-text country/state/city,
+profession, council, specialty, qualifications, health interests, and licence
+numbers. That is not strong enough for production identity, fraud resistance,
+search quality, or professional verification.
+
+Consequences: Broad feature work should pause in this area until the APP-ID
+series hardens backend contracts, schema/API rules, frontend catalogs/readiness,
+patient booking gates, professional application flow, evidence requirements, and
+regression smoke. Dual-role self-service, automatic regulator validation,
+dependent/minor profiles, legal-policy completion, payments, reviews, calls,
+notes, prescriptions, and other modules remain deferred.
+
+Next: APP-ID-002 - Backend Identity And Catalog Contract.

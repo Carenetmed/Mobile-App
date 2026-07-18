@@ -339,6 +339,19 @@ Google first-time signup remains a real next gap and must not be treated as
 fixed by APP-62; it needs a dedicated role-selection + real Google `idToken`
 slice before sign-up Google is enabled.
 
+Product-owner interruption: APP-63 accepted
+`GOOGLE_FIRST_TIME_SIGNUP_ROLE_SELECTION.md` records the first-time Google
+signup implementation. Configured signup Google rows now route to account-type
+selection, then call backend Google auth with a real provider `idToken` plus the
+selected `PATIENT` or `PROFESSIONAL` role. Patient Google signup routes to
+`patientOnboardingSetup`; professional Google signup routes to
+`medicalProfessional`. Google display names are not trusted as profile data, and
+the setup screens remain authoritative for required patient/professional fields.
+Facebook/Apple signup, Google unlink, iOS/release OAuth proof, production OAuth,
+phone/OTP, MFA, admin review, payments, calls, reviews, notes, and prescriptions
+remain deferred. Device/staging Google signup smoke is still pending because ADB
+was not listing a connected phone after APP-62.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

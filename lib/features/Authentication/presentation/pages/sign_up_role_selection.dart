@@ -1,22 +1,102 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class SignUpRoleSelectionPage extends StatelessWidget {
-  const SignUpRoleSelectionPage({super.key, this.initialEmail});
+class SignUpRoleSelectionPage extends StatefulWidget {
+  const SignUpRoleSelectionPage({
+    super.key,
+    this.initialEmail,
+    this.googleSignUp = false,
+    this.authRepository,
+    this.googleIdTokenProvider,
+  });
 
   final String? initialEmail;
+  final bool googleSignUp;
+  final AuthRepository? authRepository;
+  final GoogleIdTokenProvider? googleIdTokenProvider;
 
-  void _continueAs(BuildContext context, SignUpRole role) {
-    Navigator.pushNamed(
-      context,
-      RouteName.finishSignUp,
-      arguments: FinishSignUpArgs(initialEmail: initialEmail, role: role),
-    );
+  @override
+  State<SignUpRoleSelectionPage> createState() =>
+      _SignUpRoleSelectionPageState();
+}
+
+class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
+  bool _isSubmitting = false;
+  String? _error;
+
+  AuthRepository get _authRepository =>
+      widget.authRepository ?? sl<AuthRepository>();
+
+  GoogleIdTokenProvider get _googleIdTokenProvider =>
+      widget.googleIdTokenProvider ?? sl<GoogleIdTokenProvider>();
+
+  Future<void> _continueAs(SignUpRole role) async {
+    if (!widget.googleSignUp) {
+      Navigator.pushNamed(
+        context,
+        RouteName.finishSignUp,
+        arguments: FinishSignUpArgs(
+          initialEmail: widget.initialEmail,
+          role: role,
+        ),
+      );
+      return;
+    }
+
+    if (_isSubmitting) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
+
+    try {
+      final idToken = await _googleIdTokenProvider.signInIdToken();
+      await _authRepository.googleSignIn(
+        idToken: idToken,
+        role: role.backendValue,
+      );
+      if (!mounted) {
+        return;
+      }
+      Navigator.pushNamed(
+        context,
+        role == SignUpRole.professional
+            ? RouteName.medicalProfessional
+            : RouteName.patientOnboardingSetup,
+      );
+    } on AuthFailure catch (failure) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _error = failure.message;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _error = 'Google sign-up failed. Please try again.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   @override
@@ -44,7 +124,9 @@ class SignUpRoleSelectionPage extends StatelessWidget {
               ),
               SizedBox(height: 10.h),
               Text(
-                'CareNet uses different onboarding for patients and medical professionals.',
+                widget.googleSignUp
+                    ? 'Choose the account type for this Google sign-up. CareNet will still collect required profile details after account creation.'
+                    : 'CareNet uses different onboarding for patients and medical professionals.',
                 style: TextStyle(
                   fontFamily: AppFonts.montserrat,
                   fontSize: 14.sp,
@@ -53,18 +135,36 @@ class SignUpRoleSelectionPage extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 32.h),
+              if (_error != null) ...[
+                Text(
+                  _error!,
+                  style: TextStyle(
+                    fontFamily: AppFonts.montserrat,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.red.shade700,
+                  ),
+                ),
+                SizedBox(height: 14.h),
+              ],
               _RoleCard(
                 title: 'I need medical guidance',
                 subtitle:
                     'Create a patient account for consultations, content, and health support.',
-                onTap: () => _continueAs(context, SignUpRole.patient),
+                onTap:
+                    _isSubmitting
+                        ? null
+                        : () => _continueAs(SignUpRole.patient),
               ),
               SizedBox(height: 14.h),
               _RoleCard(
                 title: 'I am a medical professional',
                 subtitle:
                     'Create a professional account for profile setup and credential verification.',
-                onTap: () => _continueAs(context, SignUpRole.professional),
+                onTap:
+                    _isSubmitting
+                        ? null
+                        : () => _continueAs(SignUpRole.professional),
               ),
               const Spacer(),
               CarenetButton(
@@ -90,7 +190,7 @@ class _RoleCard extends StatelessWidget {
 
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

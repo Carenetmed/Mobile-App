@@ -315,7 +315,10 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthSession> googleSignIn({required String idToken}) async {
+  Future<AuthSession> googleSignIn({
+    required String idToken,
+    String? role,
+  }) async {
     googleSignInCalls += 1;
     lastGoogleIdToken = idToken;
     final failure = this.failure;

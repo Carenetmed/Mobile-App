@@ -108,10 +108,16 @@ class AuthApiClient {
     );
   }
 
-  Future<AuthSessionModel> googleSignIn({required String idToken}) async {
+  Future<AuthSessionModel> googleSignIn({
+    required String idToken,
+    String? role,
+  }) async {
     final data = await _post(
       googleSignInPath,
-      data: <String, dynamic>{'idToken': idToken},
+      data: <String, dynamic>{
+        'idToken': idToken,
+        if (role != null) 'role': role,
+      },
     );
     return AuthSessionModel.fromJson(data);
   }

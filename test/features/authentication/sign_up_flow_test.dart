@@ -1,4 +1,8 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
@@ -31,6 +35,18 @@ Future<void> _pumpWithRoutes(
                       args is SignUpRoleSelectionArgs
                           ? args.initialEmail
                           : null,
+                  googleSignUp:
+                      args is SignUpRoleSelectionArgs
+                          ? args.googleSignUp
+                          : false,
+                  authRepository:
+                      args is SignUpRoleSelectionArgs
+                          ? args.authRepository
+                          : null,
+                  googleIdTokenProvider:
+                      args is SignUpRoleSelectionArgs
+                          ? args.googleIdTokenProvider
+                          : null,
                 );
               },
               RouteName.finishSignUp: (context) {
@@ -47,6 +63,10 @@ Future<void> _pumpWithRoutes(
                   (_) => const Scaffold(body: Text('sign-in-phone')),
               RouteName.signInEmail:
                   (_) => const Scaffold(body: Text('sign-in-email')),
+              RouteName.patientOnboardingSetup:
+                  (_) => const Scaffold(body: Text('patient-setup')),
+              RouteName.medicalProfessional:
+                  (_) => const Scaffold(body: Text('professional-setup')),
             },
           ),
     ),
@@ -59,7 +79,10 @@ void main() {
     testWidgets('sign up email blocks invalid input and navigates when valid', (
       tester,
     ) async {
-      await _pumpWithRoutes(tester, home: SignUpEmail());
+      await _pumpWithRoutes(
+        tester,
+        home: SignUpEmail(googleIdTokenProvider: _disabledGoogleProvider),
+      );
 
       await tester.tap(find.text('Continue'));
       await tester.pump();
@@ -88,7 +111,10 @@ void main() {
     testWidgets('sign up phone validates fields before navigation', (
       tester,
     ) async {
-      await _pumpWithRoutes(tester, home: SignUpPhone());
+      await _pumpWithRoutes(
+        tester,
+        home: SignUpPhone(googleIdTokenProvider: _disabledGoogleProvider),
+      );
 
       await tester.tap(find.text('Continue'));
       await tester.pump();
@@ -115,7 +141,10 @@ void main() {
     });
 
     testWidgets('sign up phone routes to sign in phone entry', (tester) async {
-      await _pumpWithRoutes(tester, home: SignUpPhone());
+      await _pumpWithRoutes(
+        tester,
+        home: SignUpPhone(googleIdTokenProvider: _disabledGoogleProvider),
+      );
 
       await tester.tap(find.text('Already have an account? Sign in'));
       await tester.pumpAndSettle();
@@ -124,12 +153,138 @@ void main() {
     });
 
     testWidgets('sign up email routes to sign in email entry', (tester) async {
-      await _pumpWithRoutes(tester, home: SignUpEmail());
+      await _pumpWithRoutes(
+        tester,
+        home: SignUpEmail(googleIdTokenProvider: _disabledGoogleProvider),
+      );
 
       await tester.tap(find.text('Already have an account? Sign in'));
       await tester.pumpAndSettle();
 
       expect(find.text('sign-in-email'), findsOneWidget);
     });
+
+    testWidgets(
+      'sign up email Google creates patient account after role pick',
+      (tester) async {
+        final repository = _FakeAuthRepository();
+        final provider = _FakeGoogleIdTokenProvider(idToken: 'signup-id-token');
+        await _pumpWithRoutes(
+          tester,
+          home: SignUpEmail(
+            authRepository: repository,
+            googleIdTokenProvider: provider,
+          ),
+        );
+
+        await tester.tap(find.text('Continue with Google'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('I need medical guidance'));
+        await tester.pumpAndSettle();
+
+        expect(repository.googleSignInCalls, 1);
+        expect(repository.lastGoogleIdToken, 'signup-id-token');
+        expect(repository.lastGoogleRole, 'PATIENT');
+        expect(find.text('patient-setup'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'sign up phone Google creates professional account after role pick',
+      (tester) async {
+        final repository = _FakeAuthRepository();
+        final provider = _FakeGoogleIdTokenProvider(idToken: 'pro-id-token');
+        await _pumpWithRoutes(
+          tester,
+          home: SignUpPhone(
+            authRepository: repository,
+            googleIdTokenProvider: provider,
+          ),
+        );
+
+        await tester.tap(find.text('Continue with Google'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('I am a medical professional'));
+        await tester.pumpAndSettle();
+
+        expect(repository.googleSignInCalls, 1);
+        expect(repository.lastGoogleIdToken, 'pro-id-token');
+        expect(repository.lastGoogleRole, 'PROFESSIONAL');
+        expect(find.text('professional-setup'), findsOneWidget);
+      },
+    );
+
+    testWidgets('sign up Google remains disabled without provider config', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository();
+      await _pumpWithRoutes(
+        tester,
+        home: SignUpEmail(
+          authRepository: repository,
+          googleIdTokenProvider: const _FakeGoogleIdTokenProvider(
+            isConfigured: false,
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pumpAndSettle();
+
+      expect(repository.googleSignInCalls, 0);
+      expect(find.text('Choose account type'), findsNothing);
+    });
   });
+}
+
+const _disabledGoogleProvider = _FakeGoogleIdTokenProvider(isConfigured: false);
+
+class _FakeAuthRepository implements AuthRepository {
+  _FakeAuthRepository();
+  int googleSignInCalls = 0;
+  String? lastGoogleIdToken;
+  String? lastGoogleRole;
+
+  @override
+  Future<AuthSession> googleSignIn({
+    required String idToken,
+    String? role,
+  }) async {
+    googleSignInCalls += 1;
+    lastGoogleIdToken = idToken;
+    lastGoogleRole = role;
+    return _session(role: role ?? 'PATIENT');
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeGoogleIdTokenProvider implements GoogleIdTokenProvider {
+  const _FakeGoogleIdTokenProvider({this.isConfigured = true, this.idToken});
+
+  @override
+  final bool isConfigured;
+  final String? idToken;
+
+  @override
+  Future<String> signInIdToken() async {
+    return idToken ?? 'google-id-token';
+  }
+}
+
+AuthSession _session({required String role}) {
+  return AuthSession(
+    accessToken: 'access',
+    refreshToken: 'refresh',
+    tokenType: 'Bearer',
+    expiresIn: 900,
+    user: AuthUser(
+      id: 'user-1',
+      email: 'hello@example.com',
+      role: role,
+      status: 'ACTIVE',
+      emailVerified: true,
+    ),
+  );
 }

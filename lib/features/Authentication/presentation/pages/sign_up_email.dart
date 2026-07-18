@@ -2,9 +2,12 @@ import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/sign_in_model.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/shared/widgets/auth_widget.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
@@ -13,7 +16,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SignUpEmail extends StatefulWidget {
-  const SignUpEmail({super.key});
+  const SignUpEmail({
+    super.key,
+    this.authRepository,
+    this.googleIdTokenProvider,
+  });
+
+  final AuthRepository? authRepository;
+  final GoogleIdTokenProvider? googleIdTokenProvider;
 
   @override
   State<SignUpEmail> createState() => _SignUpEmailState();
@@ -45,6 +55,9 @@ class _SignUpEmailState extends State<SignUpEmail> {
 
   String? get _emailError => Validators.validateEmail(_emailController.text);
 
+  GoogleIdTokenProvider get _googleIdTokenProvider =>
+      widget.googleIdTokenProvider ?? sl<GoogleIdTokenProvider>();
+
   CarenetTextFieldValidationState get _emailValidationState {
     if (!_attemptedSubmit) {
       return CarenetTextFieldValidationState.none;
@@ -71,6 +84,18 @@ class _SignUpEmailState extends State<SignUpEmail> {
     }
   }
 
+  void _onGoogleSignUp() {
+    Navigator.pushNamed(
+      context,
+      RouteName.signUpRole,
+      arguments: SignUpRoleSelectionArgs(
+        googleSignUp: true,
+        authRepository: widget.authRepository,
+        googleIdTokenProvider: widget.googleIdTokenProvider,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<AuthenticationModel> signUp = [
@@ -84,6 +109,7 @@ class _SignUpEmailState extends State<SignUpEmail> {
       AuthenticationModel(
         assetPath: AssetsIcon.google,
         title: 'Continue with Google',
+        btnAction: _googleIdTokenProvider.isConfigured ? _onGoogleSignUp : null,
       ),
       AuthenticationModel(
         assetPath: AssetsIcon.facebook,

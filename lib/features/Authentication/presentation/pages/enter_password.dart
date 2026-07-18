@@ -161,7 +161,7 @@ class _EnterPasswordPageState extends State<EnterPasswordPage> {
               ),
               SizedBox(height: 15.h),
               Text(
-                'Your password must be at least 8 characters long including numbers and special characters. Final password change requires the secure reset token from the email link.',
+                'Your password must be at least 15 characters long including numbers and special characters. Final password change requires the secure reset token from the email link.',
                 style: TextStyle(
                   fontSize: FontSizes.footer2,
                   fontFamily: AppFonts.montserrat,

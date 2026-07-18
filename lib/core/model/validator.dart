@@ -50,10 +50,10 @@ class Validators {
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your password';
-    } else if (value.length < 8) {
-      return 'Password must be at least 8 characters long';
+    } else if (value.length < 15) {
+      return 'Password must be at least 15 characters long';
     } else if (!RegExp(
-      r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$&*~]).{8,}$',
+      r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$&*~]).{15,}$',
     ).hasMatch(value)) {
       return 'Must include uppercase, number, and special character';
     }
@@ -66,10 +66,10 @@ class Validators {
   }) {
     if (value == null || value.isEmpty) {
       return 'Please enter your password';
-    } else if (value.length < 8) {
-      return 'Password must be at least 8 characters long';
+    } else if (value.length < 15) {
+      return 'Password must be at least 15 characters long';
     } else if (!RegExp(
-      r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$&*~]).{8,}$',
+      r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$&*~]).{15,}$',
     ).hasMatch(value)) {
       return 'Must include uppercase, number, and special character';
     } else if (value != password) {

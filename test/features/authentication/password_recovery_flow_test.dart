@@ -195,13 +195,13 @@ void main() {
         expect(find.text('Please enter your password'), findsNWidgets(2));
 
         final fields = find.byType(EditableText);
-        await tester.enterText(fields.at(0), 'Strong1!');
-        await tester.enterText(fields.at(1), 'Mismatch1!');
+        await tester.enterText(fields.at(0), 'StrongPassword1!');
+        await tester.enterText(fields.at(1), 'MismatchPassword1!');
         await tester.tap(find.text('Review reset token requirement'));
         await tester.pump();
         expect(find.text('Passwords do not match'), findsOneWidget);
 
-        await tester.enterText(fields.at(1), 'Strong1!');
+        await tester.enterText(fields.at(1), 'StrongPassword1!');
         await tester.tap(find.text('Review reset token requirement'));
         await tester.pump();
 
@@ -277,19 +277,19 @@ void main() {
       expect(find.text('Please enter your password'), findsNWidgets(2));
 
       final fields = find.byType(EditableText);
-      await tester.enterText(fields.at(0), 'CareNet@123');
-      await tester.enterText(fields.at(1), 'Mismatch@123');
+      await tester.enterText(fields.at(0), 'CareNetPassword@123');
+      await tester.enterText(fields.at(1), 'MismatchPassword@123');
       await tester.tap(find.text('Update password'));
       await tester.pump();
       expect(find.text('Passwords do not match'), findsOneWidget);
 
-      await tester.enterText(fields.at(1), 'CareNet@123');
+      await tester.enterText(fields.at(1), 'CareNetPassword@123');
       await tester.tap(find.text('Update password'));
       await tester.pumpAndSettle();
 
       expect(repository.confirmPasswordResetCalls, 1);
       expect(repository.lastResetToken, 'opaque-reset-token');
-      expect(repository.lastResetPassword, 'CareNet@123');
+      expect(repository.lastResetPassword, 'CareNetPassword@123');
       expect(find.textContaining('Password updated'), findsOneWidget);
 
       await tester.tap(find.text('Back to sign in'));
@@ -326,8 +326,8 @@ void main() {
       await tester.pumpAndSettle();
 
       final fields = find.byType(EditableText);
-      await tester.enterText(fields.at(0), 'CareNet@123');
-      await tester.enterText(fields.at(1), 'CareNet@123');
+      await tester.enterText(fields.at(0), 'CareNetPassword@123');
+      await tester.enterText(fields.at(1), 'CareNetPassword@123');
       await tester.tap(find.text('Update password'));
       await tester.pumpAndSettle();
 

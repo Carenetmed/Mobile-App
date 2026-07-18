@@ -219,7 +219,7 @@ class _FinSignUpState extends State<FinSignUp> {
               ),
               SizedBox(height: 8.h),
               Text(
-                'Your password must be at least 8 characters long including\nnumbers and special characters.',
+                'Your password must be at least 15 characters long including\nnumbers and special characters.',
                 style: TextStyle(
                   fontFamily: AppFonts.montserrat,
                   fontSize: 12.sp,
@@ -316,11 +316,6 @@ class _FinSignUpState extends State<FinSignUp> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
         role: widget.selectedRole.backendValue,
-        profile: <String, dynamic>{
-          'firstName': _firstNameController.text.trim(),
-          'lastName': _lastNameController.text.trim(),
-          'birthday': _dateController.text.trim(),
-        },
       );
       if (!mounted) {
         return;

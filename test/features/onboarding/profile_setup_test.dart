@@ -55,6 +55,8 @@ void main() {
       await tester.enterText(fields.at(4), 'Nigeria');
       await tester.enterText(fields.at(5), 'Primary care, wellness');
 
+      await tester.ensureVisible(find.text('Save and continue'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Save and continue'));
       await tester.pumpAndSettle();
 
@@ -64,6 +66,30 @@ void main() {
       expect(repository.lastPatientState, 'Lagos');
       expect(repository.lastPatientCountry, 'Nigeria');
       expect(repository.lastPatientHealthInterests, 'Primary care, wellness');
+      expect(find.text('community-agreement'), findsOneWidget);
+    });
+
+    testWidgets('patient setup can be skipped without fake profile save', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository();
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        child: PatientOnboardingSetupPage(profileRepository: repository),
+      );
+
+      expect(
+        find.text('Skipping does not mark your profile ready for booking.'),
+        findsOneWidget,
+      );
+
+      await tester.ensureVisible(find.text('Skip for now'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Skip for now'));
+      await tester.pumpAndSettle();
+
+      expect(repository.updatePatientCalls, 0);
       expect(find.text('community-agreement'), findsOneWidget);
     });
 

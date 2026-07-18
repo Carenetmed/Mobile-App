@@ -49,6 +49,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 25 | **AUTH_GATEWAY_ROLE_FIRST_ENTRY.md** | APP-66 runtime entry slice: healthcare gateway and role-first signup method choice |
 | 26 | **AUTH_FORM_CLEANUP_METHOD_CONVERGENCE.md** | APP-67 runtime signup cleanup: auth collects credentials/role only, profile fields move to role-specific setup |
 | 27 | **ONBOARDING_READINESS_RESOLVER_SHELL.md** | APP-68 runtime resolver shell: session-producing auth paths route through a conservative readiness boundary |
+| 28 | **PATIENT_SETUP_BOOKING_GATE_UI.md** | APP-69 runtime patient setup UI: real profile save, honest skip for browsing, booking readiness deferred |
 
 Current implementation policy:
 - Build frontend-complete, backend-ready slices.

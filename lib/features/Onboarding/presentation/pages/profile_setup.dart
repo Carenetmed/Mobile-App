@@ -49,21 +49,28 @@ class _PatientOnboardingSetupPageState
   @override
   Widget build(BuildContext context) {
     return _SetupScaffold(
-      title: 'Set up your patient profile',
+      title: 'Your care profile',
       subtitle:
-          'Add the details CareNet needs for safer consultations and profile prompts.',
-      stepLabel: 'Patient setup',
+          'Add the basics now, or browse first and complete required details when you book.',
+      stepLabel: 'Patient setup - optional for browsing',
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const _PatientSetupSummary(),
+            SizedBox(height: 22.h),
+            const _SectionHeader('Basics'),
             CarenetTextField(
               label: 'Full name',
               hintText: 'e.g. Ada Okafor',
               controller: _nameController,
               textInputAction: TextInputAction.next,
               validator: _required('Full name is required'),
+            ),
+            SizedBox(height: 8.h),
+            const _FieldHelp(
+              'Use the name you want CareNet professionals to see before a consultation.',
             ),
             SizedBox(height: 14.h),
             CarenetTextField(
@@ -74,7 +81,12 @@ class _PatientOnboardingSetupPageState
               onTap: _pickDateOfBirth,
               suffixIcon: const Icon(Icons.calendar_today_outlined),
             ),
+            SizedBox(height: 8.h),
+            const _FieldHelp(
+              'This is optional now, but may be required before your first consultation.',
+            ),
             SizedBox(height: 14.h),
+            const _SectionHeader('Location'),
             Row(
               children: [
                 Expanded(
@@ -103,19 +115,30 @@ class _PatientOnboardingSetupPageState
               controller: _countryController,
               textInputAction: TextInputAction.next,
             ),
-            SizedBox(height: 14.h),
+            SizedBox(height: 22.h),
+            const _SectionHeader('Care interests'),
             CarenetTextField(
-              label: 'Health interests',
+              label: 'What are you looking for?',
               hintText: 'Primary care, wellness, diabetes support',
               controller: _healthInterestsController,
               minLines: 3,
               maxLines: 4,
+            ),
+            SizedBox(height: 8.h),
+            const _FieldHelp(
+              'Share only what helps personalize discovery. Do not enter emergency details here.',
             ),
             _StatusText(message: _message),
             SizedBox(height: 20.h),
             CarenetButton(
               label: _isSaving ? 'Saving profile...' : 'Save and continue',
               onPressed: _isSaving ? null : _savePatientProfile,
+            ),
+            SizedBox(height: 10.h),
+            CarenetButton(
+              label: 'Skip for now',
+              type: CarenetButtonType.outline,
+              onPressed: _isSaving ? null : _skipPatientProfile,
             ),
           ],
         ),
@@ -176,6 +199,10 @@ class _PatientOnboardingSetupPageState
         setState(() => _isSaving = false);
       }
     }
+  }
+
+  void _skipPatientProfile() {
+    Navigator.of(context).popAndPushNamed(RouteName.communityAgreement);
   }
 }
 
@@ -509,6 +536,114 @@ class _SectionHeader extends StatelessWidget {
           fontSize: 17.sp,
           fontWeight: FontWeight.w800,
         ),
+      ),
+    );
+  }
+}
+
+class _PatientSetupSummary extends StatelessWidget {
+  const _PatientSetupSummary();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: const [
+        _PatientSetupPoint(
+          icon: Icons.manage_accounts_outlined,
+          title: 'Create a useful care profile',
+          body:
+              'Professionals see your saved basics when a consultation needs them.',
+        ),
+        _PatientSetupPoint(
+          icon: Icons.lock_outline,
+          title: 'Keep sensitive care steps gated',
+          body: 'Booking, consent, and verified contact checks stay separate.',
+        ),
+        _PatientSetupPoint(
+          icon: Icons.explore_outlined,
+          title: 'Browse before completing everything',
+          body: 'Skipping does not mark your profile ready for booking.',
+        ),
+      ],
+    );
+  }
+}
+
+class _PatientSetupPoint extends StatelessWidget {
+  const _PatientSetupPoint({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 14.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 34.r,
+            height: 34.r,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: CarenetColors.info200,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(icon, color: CarenetColors.neutral700, size: 18.r),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: CarenetColors.neutral700,
+                    fontFamily: AppFonts.montserrat,
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  body,
+                  style: TextStyle(
+                    color: CarenetColors.neutral500,
+                    fontFamily: AppFonts.montserrat,
+                    fontSize: 12.sp,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FieldHelp extends StatelessWidget {
+  const _FieldHelp(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        color: CarenetColors.neutral400,
+        fontFamily: AppFonts.montserrat,
+        fontSize: 11.sp,
+        height: 1.35,
       ),
     );
   }

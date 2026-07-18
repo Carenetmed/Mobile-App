@@ -402,6 +402,15 @@ gate UI next; professional application/status redesign, backend readiness
 endpoint, server drafts, licence lifecycle, and support/status hubs remain
 future slices.
 
+Product-owner interruption: APP-69 accepted
+`PATIENT_SETUP_BOOKING_GATE_UI.md` records the patient setup runtime cleanup.
+`patientOnboardingSetup` now presents a lightweight care-profile step with real
+backend save and an honest `Skip for now` path for browsing. Skipping does not
+call profile mutation and does not mark the user ready for booking. APP-70
+should focus on the professional application shell/visual system next, without
+fake server-side drafts, verification approval, licence lifecycle, public
+listing, payouts, calls, notes, prescriptions, or admin decisions.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

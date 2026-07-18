@@ -2006,3 +2006,25 @@ backend readiness endpoint should replace this coarse role-only resolver with
 state-driven next actions.
 
 Next: APP-69 - Patient setup and booking gate contract UI.
+
+## D170 - Patient setup and booking gate UI
+
+Task: APP-69
+
+Decision: Make patient setup a lightweight care-profile screen that can save
+real backend patient profile fields or be skipped for browsing. `Save and
+continue` remains the only profile mutation path and calls
+`ProfileRepository.updatePatientMe`. `Skip for now` does not write local or
+backend profile data and does not claim booking readiness.
+
+Reason: Patient onboarding should not block basic browsing, but a serious
+healthcare product must not pretend a skipped or partial profile is ready for
+booking, consultation consent, verified-contact checks, payments, calls, notes,
+prescriptions, or medical records.
+
+Consequences: Patient setup is calmer and clearer, while the actual booking
+gate remains a future backend/profile/readiness slice. Professional setup still
+needs an application-grade redesign with status/review structure and no fake
+server-side drafts.
+
+Next: APP-70 - Professional application shell and visual system.

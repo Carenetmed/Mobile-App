@@ -421,6 +421,16 @@ evidence/status experience using the existing verification document surface
 without faking approval, rejection reasons, licence lifecycle, admin decisions,
 payouts, calls, notes, prescriptions, or public listing.
 
+Product-owner interruption: APP-71 accepted
+`PROFESSIONAL_EVIDENCE_STATUS_EXPERIENCE.md` records the verification evidence
+status cleanup. `professionalVerificationDocuments` now shows an evidence
+status summary and licence/identity/certification checklist from real owner
+documents while preserving the existing upload/list repository path. It does
+not expose signed URLs, object keys, reviewer notes, admin controls, public
+listing activation, licence lifecycle, payouts, calls, notes, or prescriptions.
+APP-72 should run the auth/onboarding regression and device smoke pass before
+new product expansion.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.

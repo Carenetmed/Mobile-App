@@ -284,6 +284,8 @@ class _ProfessionalVerificationDocumentsShellPageState
             children: [
               _IntroCard(onRefresh: _loadDocuments),
               SizedBox(height: 16.h),
+              _EvidenceStatusCard(documents: _documents),
+              SizedBox(height: 16.h),
               _UploadCard(
                 documentTypes: _documentTypes,
                 selectedDocumentType: _selectedDocumentType,
@@ -358,7 +360,7 @@ class _IntroCard extends StatelessWidget {
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  'Document status is loaded from your backend account.',
+                  'Upload evidence for review. CareNet only shows public professional profiles after backend approval.',
                   style: TextStyle(
                     fontSize: FontSizes.footer4,
                     fontFamily: AppFonts.montserrat,
@@ -374,6 +376,181 @@ class _IntroCard extends StatelessWidget {
             tooltip: 'Refresh',
             onPressed: onRefresh,
             icon: const Icon(Icons.refresh, color: AppColors.primaryBlue5),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EvidenceStatusCard extends StatelessWidget {
+  const _EvidenceStatusCard({required this.documents});
+
+  final List<VerificationDocument> documents;
+
+  static const List<String> _requiredTypes = <String>[
+    'LICENSE',
+    'IDENTITY',
+    'CERTIFICATION',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final submittedTypes =
+        documents.map((document) => _normalize(document.documentType)).toSet();
+    final approvedCount =
+        documents
+            .where((document) => _normalize(document.status) == 'APPROVED')
+            .length;
+    final pendingCount =
+        documents
+            .where((document) => _normalize(document.status) == 'PENDING')
+            .length;
+    final rejectedCount =
+        documents
+            .where((document) => _normalize(document.status) == 'REJECTED')
+            .length;
+    final submittedRequiredCount =
+        _requiredTypes.where(submittedTypes.contains).length;
+
+    final statusText =
+        documents.isEmpty
+            ? 'No evidence submitted yet'
+            : rejectedCount > 0
+            ? 'Action may be needed'
+            : approvedCount == documents.length
+            ? 'Evidence approved by backend'
+            : 'Review in progress';
+    final statusDetail =
+        documents.isEmpty
+            ? 'Start with licence, identity, or certification evidence. Uploading evidence does not approve the profile.'
+            : rejectedCount > 0
+            ? 'One or more documents need attention. CareNet does not expose private reviewer notes in this mobile app.'
+            : pendingCount > 0
+            ? 'Submitted evidence is waiting for backend review. Public listing remains disabled until approval.'
+            : 'Backend document status is approved. Profile readiness still depends on the broader professional verification state.';
+
+    return Container(
+      width: double.infinity,
+      padding: REdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: AppColors.kWhite,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.white04),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.fact_check_outlined,
+                color: AppColors.primaryBlue5,
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      statusText,
+                      style: TextStyle(
+                        fontSize: FontSizes.footer2,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.kBlack,
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Text(
+                      statusDetail,
+                      style: TextStyle(
+                        fontSize: FontSizes.footer4,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryBlue11,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Text(
+            'Evidence checklist',
+            style: TextStyle(
+              fontSize: FontSizes.footer3,
+              fontFamily: AppFonts.montserrat,
+              fontWeight: FontWeight.w700,
+              color: AppColors.kBlack,
+            ),
+          ),
+          SizedBox(height: 10.h),
+          ..._requiredTypes.map(
+            (type) => _EvidenceChecklistRow(
+              label: _documentTypeLabel(type),
+              complete: submittedTypes.contains(type),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            '$submittedRequiredCount of ${_requiredTypes.length} evidence types submitted',
+            style: TextStyle(
+              fontSize: FontSizes.footer4,
+              fontFamily: AppFonts.montserrat,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primaryBlue5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _normalize(String value) {
+    return value.trim().toUpperCase().replaceAll(RegExp(r'[\s-]+'), '_');
+  }
+
+  static String _documentTypeLabel(String value) {
+    return value
+        .split('_')
+        .where((part) => part.isNotEmpty)
+        .map((part) => '${part[0]}${part.substring(1).toLowerCase()}')
+        .join(' ');
+  }
+}
+
+class _EvidenceChecklistRow extends StatelessWidget {
+  const _EvidenceChecklistRow({required this.label, required this.complete});
+
+  final String label;
+  final bool complete;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: REdgeInsets.only(bottom: 8.h),
+      child: Row(
+        children: [
+          Icon(
+            complete ? Icons.check_circle : Icons.radio_button_unchecked,
+            color: complete ? AppColors.primaryBlue5 : AppColors.primaryBlue11,
+            size: 18.r,
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: FontSizes.footer4,
+                fontFamily: AppFonts.montserrat,
+                fontWeight: FontWeight.w600,
+                color: AppColors.kBlack,
+              ),
+            ),
           ),
         ],
       ),

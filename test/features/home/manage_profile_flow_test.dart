@@ -407,7 +407,12 @@ void main() {
 
     expect(find.text('Verification documents'), findsOneWidget);
     expect(find.text('Professional verification'), findsOneWidget);
+    expect(find.text('Review in progress'), findsOneWidget);
+    expect(find.text('Evidence checklist'), findsOneWidget);
+    expect(find.text('1 of 3 evidence types submitted'), findsOneWidget);
     expect(find.text('License'), findsWidgets);
+    expect(find.text('Identity'), findsOneWidget);
+    expect(find.text('Certification'), findsOneWidget);
     expect(find.text('PENDING'), findsOneWidget);
     expect(find.text('document-1'), findsOneWidget);
     expect(find.text('application/pdf'), findsOneWidget);
@@ -442,6 +447,9 @@ void main() {
       find.text('No verification documents are submitted yet.'),
       findsOneWidget,
     );
+    expect(find.text('No evidence submitted yet'), findsOneWidget);
+    expect(find.text('Evidence checklist'), findsOneWidget);
+    expect(find.text('0 of 3 evidence types submitted'), findsOneWidget);
     expect(find.text('Verification documents'), findsOneWidget);
   });
 
@@ -526,7 +534,7 @@ void main() {
 
     await tester.tap(find.text('Verification'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('License'));
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Identity').last);
     await tester.pumpAndSettle();

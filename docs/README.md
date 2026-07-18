@@ -51,6 +51,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 27 | **ONBOARDING_READINESS_RESOLVER_SHELL.md** | APP-68 runtime resolver shell: session-producing auth paths route through a conservative readiness boundary |
 | 28 | **PATIENT_SETUP_BOOKING_GATE_UI.md** | APP-69 runtime patient setup UI: real profile save, honest skip for browsing, booking readiness deferred |
 | 29 | **PROFESSIONAL_APPLICATION_SHELL_VISUAL_SYSTEM.md** | APP-70 runtime professional application UI: structured credential application shell without fake drafts or approval |
+| 30 | **PROFESSIONAL_EVIDENCE_STATUS_EXPERIENCE.md** | APP-71 runtime verification evidence status UI: checklist/status from real documents without admin or approval claims |
 
 Current implementation policy:
 - Build frontend-complete, backend-ready slices.

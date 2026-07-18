@@ -2051,3 +2051,25 @@ payouts, calls, notes, prescriptions, or medical records. Those require
 separate backend/product contracts.
 
 Next: APP-71 - Professional evidence/status experience.
+
+## D172 - Professional evidence status experience
+
+Task: APP-71
+
+Decision: Add a professional evidence status summary and required-evidence
+checklist to the existing verification documents screen. The summary is derived
+only from owner verification documents returned by the backend and does not
+expose signed URLs, object keys, private storage data, reviewer notes, or admin
+controls.
+
+Reason: After professional application setup, users need to understand what
+evidence is missing or pending without the mobile app pretending to be the admin
+review dashboard. Licence, identity, and certification evidence should be
+visible as a checklist while full profile verification remains backend-owned.
+
+Consequences: The app can show document-level pending/approved/rejected status
+when returned by the backend, but still does not claim full professional
+verification, public listing, licence renewal, duplicate regulator checks,
+rejection reason details, or admin decisions.
+
+Next: APP-72 - Auth/onboarding regression and device smoke.

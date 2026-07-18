@@ -54,7 +54,7 @@
 | NEXT task | **53.2** - execute staging seed data and mobile smoke pass |
 | Last completed | **53.1** - staging seed data and smoke execution plan |
 | Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, patient-device proof through real Search/public availability/appointment request plus own-list rendering, and professional-device proof through role-aware appointment accept/decline/reschedule plus terminal-row behavior; Android backup is disabled, own-list parses the backend `appointments` envelope, secure session writes are ordered, and professional Account now exposes Manage Profile/Verification documents. Verification upload route access is proven, but upload-init returns staging HTTP 500; separate appointment-detail, optional fresh completion, successful upload after backend fix, and cleanup phone smoke remain open |
-| Product interruption | **APP-66** - `AUTH_GATEWAY_ROLE_FIRST_ENTRY.md` records the first runtime auth/onboarding redesign slice: the old carousel/phone-first entry is replaced by a healthcare gateway, `Create account` enters role-first signup, selected role is shown before method choice, email/Google keep the selected role, and phone signup is unavailable until real OTP exists. APP-67 should clean up generic email signup fields next |
+| Product interruption | **APP-67** - `AUTH_FORM_CLEANUP_METHOD_CONVERGENCE.md` records that `finishSignUp` is now credentials/role only. First name, last name, birthday, legal identity, licence, qualifications, and practice details belong to patient/professional onboarding, not generic auth. APP-68 should add the readiness resolver shell next |
 | Registered routes | **73 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
@@ -65,7 +65,7 @@
 | Looks like a conflict | Resolution |
 |------------------------|------------|
 | Code has `Placeholder()` but WORKING_AGREEMENT forbids it | Stubs are **allowed in repo** until their phase task; a **new** task must not mark DONE while adding placeholders in its scope |
-| Sign-up entry screens use shared components, but `finishSignUp` still uses legacy input/button wrappers | Phase 2 fixed behavior first; shared-component adoption on `finishSignUp` is design debt, not a broken flow |
+| Old docs mention `finishSignUp` name/birthday collection | APP-67 supersedes that behavior: `finishSignUp` is credentials/role only; patient/professional identity belongs to setup screens |
 | Phase 1 is done but Flow A is not | Phase 1 was design-system + screen adoption; Flow A logic belongs to Phase 2 |
 | UI "close enough" vs exact Figma | `WORKING_AGREEMENT` priority #4 - function first |
 

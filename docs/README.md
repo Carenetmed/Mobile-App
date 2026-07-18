@@ -47,6 +47,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 23 | **AUTH_ONBOARDING_PRODUCTION_FLOW_PROPOSAL.md** | Product-level auth/onboarding decision proposal before redesign implementation |
 | 24 | **AUTH_ONBOARDING_EXPERIENCE_CONTRACT.md** | Screen/state/field/recovery/visual contract for the production auth/onboarding redesign |
 | 25 | **AUTH_GATEWAY_ROLE_FIRST_ENTRY.md** | APP-66 runtime entry slice: healthcare gateway and role-first signup method choice |
+| 26 | **AUTH_FORM_CLEANUP_METHOD_CONVERGENCE.md** | APP-67 runtime signup cleanup: auth collects credentials/role only, profile fields move to role-specific setup |
 
 Current implementation policy:
 - Build frontend-complete, backend-ready slices.

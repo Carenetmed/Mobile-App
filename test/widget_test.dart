@@ -25,7 +25,9 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('Splash navigates to onboarding after delay', (WidgetTester tester) async {
+  testWidgets('Splash navigates to onboarding after delay', (
+    WidgetTester tester,
+  ) async {
     await _pumpCarenetApp(tester);
 
     expect(find.text('CARENET'), findsOneWidget);
@@ -33,6 +35,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
 
-    expect(find.text('Where Knowledge Meets Collaboration'), findsOneWidget);
+    expect(find.text('Find verified care with confidence'), findsOneWidget);
+    expect(find.text('Create account'), findsOneWidget);
+    expect(find.text('Browse verified care'), findsOneWidget);
   });
 }

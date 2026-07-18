@@ -56,16 +56,26 @@ void main() {
     ) async {
       await _pumpFinishSignUp(tester);
 
-      await tester.tap(find.text(' Agree & continue'));
+      await tester.tap(find.text('Agree & continue'));
       await tester.pump();
 
-      expect(find.text('First name is required'), findsOneWidget);
-      expect(find.text('Last name is required'), findsOneWidget);
-      expect(find.text('Birthday is required'), findsOneWidget);
       expect(find.text('Email Address is required'), findsOneWidget);
       expect(find.text('Please enter your password'), findsNWidgets(2));
       expect(find.text('community-agreement'), findsNothing);
       expect(find.text('patient-setup'), findsNothing);
+    });
+
+    testWidgets('does not collect profile identity in account creation', (
+      tester,
+    ) async {
+      await _pumpFinishSignUp(tester);
+
+      expect(find.text('First name'), findsNothing);
+      expect(find.text('Last name'), findsNothing);
+      expect(find.text('Birthday'), findsNothing);
+      expect(find.textContaining('government ID'), findsNothing);
+      expect(find.text('Patient account'), findsOneWidget);
+      expect(find.textContaining('only when they are needed'), findsOneWidget);
     });
 
     testWidgets('registers through repository when form fields are valid', (
@@ -75,17 +85,11 @@ void main() {
       await _pumpFinishSignUp(tester, authRepository: repository);
 
       final fields = find.byType(EditableText);
-      await tester.enterText(fields.at(0), 'John');
-      await tester.enterText(fields.at(1), 'Doe');
-      await tester.tap(find.byType(TextFormField).at(2));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
-      await tester.pumpAndSettle();
-      await tester.enterText(fields.at(3), 'john@example.com');
-      await tester.enterText(fields.at(4), 'StrongPassword1!');
-      await tester.enterText(fields.at(5), 'StrongPassword1!');
+      await tester.enterText(fields.at(0), 'john@example.com');
+      await tester.enterText(fields.at(1), 'StrongPassword1!');
+      await tester.enterText(fields.at(2), 'StrongPassword1!');
 
-      await tester.tap(find.text(' Agree & continue'));
+      await tester.tap(find.text('Agree & continue'));
       await tester.pumpAndSettle();
 
       expect(repository.registerCalls, 1);
@@ -105,8 +109,10 @@ void main() {
           selectedRole: SignUpRole.professional,
         );
 
+        expect(find.text('Professional account'), findsOneWidget);
+
         await _fillValidForm(tester);
-        await tester.tap(find.text(' Agree & continue'));
+        await tester.tap(find.text('Agree & continue'));
         await tester.pumpAndSettle();
 
         expect(repository.registerCalls, 1);
@@ -140,7 +146,7 @@ void main() {
       );
 
       await _fillValidForm(tester);
-      await tester.tap(find.text(' Agree & continue'));
+      await tester.tap(find.text('Agree & continue'));
       await tester.pumpAndSettle();
 
       expect(find.text('Backend is not configured yet.'), findsOneWidget);
@@ -158,7 +164,7 @@ void main() {
       );
 
       await _fillValidForm(tester);
-      await tester.tap(find.text(' Agree & continue'));
+      await tester.tap(find.text('Agree & continue'));
       await tester.pump();
 
       expect(find.text('Creating account...'), findsOneWidget);
@@ -177,17 +183,11 @@ void main() {
       await _pumpFinishSignUp(tester);
 
       final fields = find.byType(EditableText);
-      await tester.enterText(fields.at(0), 'John');
-      await tester.enterText(fields.at(1), 'Doe');
-      await tester.tap(find.byType(TextFormField).at(2));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
-      await tester.pumpAndSettle();
-      await tester.enterText(fields.at(3), 'john@example.com');
-      await tester.enterText(fields.at(4), 'StrongPassword1!');
-      await tester.enterText(fields.at(5), 'MismatchPassword1!');
+      await tester.enterText(fields.at(0), 'john@example.com');
+      await tester.enterText(fields.at(1), 'StrongPassword1!');
+      await tester.enterText(fields.at(2), 'MismatchPassword1!');
 
-      await tester.tap(find.text(' Agree & continue'));
+      await tester.tap(find.text('Agree & continue'));
       await tester.pumpAndSettle();
 
       expect(find.text('Passwords do not match'), findsOneWidget);
@@ -199,15 +199,9 @@ void main() {
 
 Future<void> _fillValidForm(WidgetTester tester) async {
   final fields = find.byType(EditableText);
-  await tester.enterText(fields.at(0), 'John');
-  await tester.enterText(fields.at(1), 'Doe');
-  await tester.tap(find.byType(TextFormField).at(2));
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('OK'));
-  await tester.pumpAndSettle();
-  await tester.enterText(fields.at(3), 'john@example.com');
-  await tester.enterText(fields.at(4), 'StrongPassword1!');
-  await tester.enterText(fields.at(5), 'StrongPassword1!');
+  await tester.enterText(fields.at(0), 'john@example.com');
+  await tester.enterText(fields.at(1), 'StrongPassword1!');
+  await tester.enterText(fields.at(2), 'StrongPassword1!');
 }
 
 class _FakeAuthRepository implements AuthRepository {

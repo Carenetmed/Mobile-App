@@ -61,7 +61,7 @@ does not silently reinterpret established boundaries.
 | D054 | 2026-07-13 | Auth/session/account backend contract | Use the CareNet REST backend as the auth/session/account authority with environment-specific API base URL config, bearer access tokens only, secure refresh-token storage, safe auth/account repositories, generic auth errors, and explicit deferral of phone OTP, MFA/PIN enablement, provider unlink, destructive account APIs, production email, and profile/payment modules | Phase 22, task 51.2 |
 | D055 | 2026-07-13 | Auth infrastructure boundary | Add the auth/session/account infrastructure boundary before screen wiring: `CareNetApiConfig`, `AuthApiClient`, `SessionStore`, auth/session/user models, `AuthRepository`, and `AccountRepository`; use bearer-only headers, secure refresh-token storage, safe generic failures, and keep existing screens local until a dedicated wiring slice | Phase 22, task 52.1 |
 | D056 | 2026-07-13 | Email sign-in repository wiring | Wire only email sign-in to `AuthRepository.login` after existing local validation; navigate only after repository success, show safe loading/error states on pending/failure, and keep phone sign-in, sign-up, social auth, password reset, and account-security flows unchanged until their own slices | Phase 22, task 52.2 |
-| D057 | 2026-07-13 | Email sign-up repository wiring | Wire only email sign-up completion to `AuthRepository.register` after existing local form validation; pass the validated email from the email-entry step, submit patient role/profile data, navigate only after repository success, show safe loading/error states, and keep phone sign-up, social auth, password reset, and account-security flows unchanged until their own slices | Phase 22, task 52.3 |
+| D057 | 2026-07-13 | Email sign-up repository wiring | Wire only email sign-up completion to `AuthRepository.register` after existing local form validation; pass the validated email from the email-entry step, navigate only after repository success, show safe loading/error states, and keep phone sign-up, social auth, password reset, and account-security flows unchanged until their own slices. Superseded by D168 for credential-only registration with no profile-owned signup fields | Phase 22, task 52.3 |
 | D058 | 2026-07-13 | Session restore launch guard | Keep `RouteName.splash` as the app entry, then after the existing splash delay call `AuthRepository.restore`; route usable stored sessions to `dashboard`, route missing/invalid/failed restore to `onboarding`, and defer refresh validation, staging smoke, logout UI, password reset, phone/social auth, MFA/PIN, and account-security expansion to separate slices | Phase 22, task 52.4 |
 | D059 | 2026-07-13 | Logout session clearing | Add logout as a separate Account action that calls `AuthRepository.logout`, returns to onboarding with the previous authenticated navigation stack cleared on success, and shows a safe inline error on failure; destructive account deletion/deactivation, password reset, phone/social auth, MFA/PIN, and account-security mutation remain separately scoped | Phase 22, task 52.5 |
 | D060 | 2026-07-13 | Password reset request boundary | Wire the reset email step to `AuthRepository.requestPasswordReset` with safe loading/error states, but do not call `confirmPasswordReset` from the existing password-entry screen because it has no secure reset token; final password reset needs a deep-link or token-entry boundary before it can honestly complete | Phase 22, task 52.6 |
@@ -1956,3 +1956,28 @@ retention/deletion, duplicate regulator identity, and support recovery remain
 deferred to their own slices.
 
 Next: APP-67 - Auth form cleanup and method convergence.
+
+## D168 - Auth form cleanup and method convergence
+
+Task: APP-67
+
+Decision: Treat `finishSignUp` as an account-credential step only. It collects
+email, password, confirm password, and selected patient/professional role
+context. It must not collect first name, last name, birthday, legal identity,
+licence number, qualifications, experience, practice details, or other
+profile-owned data.
+
+Reason: In a healthcare app, profile and professional identity fields need a
+single trusted owner. Auth can create a session/account, but it cannot safely
+turn Google display names or generic signup names into patient medical identity
+or professional credential evidence. Keeping the form credential-only reduces
+future rework and avoids putting Nigerian professional onboarding data in the
+wrong backend boundary.
+
+Consequences: Email/password registration still sends only `email`,
+`password`, and selected backend `role`, then routes into the selected
+role-specific setup surface. Patient/professional setup, readiness routing,
+server-side professional drafts, licence lifecycle, duplicate regulator checks,
+terms/privacy payloads, and recovery/status hubs remain separate slices.
+
+Next: APP-68 - Onboarding readiness resolver shell.

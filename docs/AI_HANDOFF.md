@@ -380,6 +380,16 @@ APP-67 should clean generic auth fields next; readiness resolver, patient setup
 redesign, professional application redesign, server drafts, and lifecycle/status
 hubs remain future slices.
 
+Product-owner interruption: APP-67 accepted
+`AUTH_FORM_CLEANUP_METHOD_CONVERGENCE.md` records the credential-only signup
+cleanup. `finishSignUp` now collects email, password, confirm password, and the
+selected patient/professional role context only. First name, last name,
+birthday, legal identity, licence, qualifications, experience, and practice
+details belong to patient/professional onboarding, not generic auth. APP-68
+should add the readiness resolver shell next; patient setup redesign,
+professional application redesign, server drafts, licence lifecycle, and status
+hubs remain future slices.
+
 1. `flutter build apk --debug --dart-define=CARENET_API_BASE_URL=https://carenet-staging-mobile-gateway-2kbj9ok1.uc.gateway.dev` - passed.
 2. `adb install -r build\app\outputs\flutter-apk\app-debug.apk` - passed on connected Android device `6tkvkvindaqogurk`.
 3. Native Android `MainActivity` package mismatch fixed by moving it from `com.example.app_t` to `com.carenet.app`.
@@ -459,8 +469,8 @@ Task `53.1` is a docs-only staging seed-data and smoke execution plan.
 4. `flutter run` -> sign-up phone -> enter valid country + phone -> `Continue` routes to `finishSignUp`
 5. `flutter run` -> sign-up email -> tap `Continue` empty/invalid: email shows red error state and does not navigate
 6. `flutter run` -> sign-up email -> enter valid email -> `Continue` routes to `finishSignUp`
-7. `flutter run` -> `finishSignUp` -> tap `Agree & continue` empty: first name, last name, birthday, email, password, and confirm password all block navigation with inline errors
-8. `flutter run` -> `finishSignUp` -> enter valid birthday/email/password fields and matching passwords -> `Agree & continue` routes to `communityAgreement`
+7. `flutter run` -> `finishSignUp` -> tap `Agree & continue` empty: email, password, and confirm password block navigation with inline errors; first name, last name, and birthday are not present on generic auth
+8. `flutter run` -> `finishSignUp` -> enter valid email/password fields and matching passwords -> `Agree & continue` calls backend registration and routes to the selected role's setup surface
 9. `flutter run` -> sign-up phone/email -> Google, Facebook, and Apple rows appear visibly disabled and do not react to taps
 10. `flutter run` -> sign-up phone -> tap `Already have an account? Sign in` -> routes to `signInPhone`
 11. `flutter run` -> sign-up email -> tap `Already have an account? Sign in` -> routes to `signInEmail`

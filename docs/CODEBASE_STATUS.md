@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-19 Onboarding setup catalog-code payload alignment.
+**Last updated:** 2026-07-19 Production onboarding domain hardening boundary.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -32,6 +32,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Patient/professional setup UI | `patientOnboardingSetup` and `medicalProfessional` now load backend-owned onboarding catalogs and account readiness. Patient setup uses controlled country/state/primary-health-interest choices before saving profile fields. Professional setup uses controlled profession, derived regulator/council, controlled practice country/state, and account readiness copy before saving required profile fields and opening verification documents. Public listing still waits for backend verification |
 | Backend-owned onboarding catalog/readiness repository | `OnboardingApiClient` and `OnboardingRepository` consume backend `APP-ID-003` contracts for public `GET /catalogs/onboarding` and protected `GET /account/readiness`. Setup screens now consume this repository without fake local fallback, block save when catalog options are unavailable, and send catalog-owned codes through the currently accepted profile DTO fields |
 | Onboarding profile payload code alignment | `ONBOARDING_PROFILE_PAYLOAD_CODE_ALIGNMENT_DECISION.md` decides not to invent unsupported Flutter request fields for `countryCode`, `professionCode`, or `regulatorCode` yet. `ONBOARDING_SETUP_PAYLOAD_VALUE_ALIGNMENT.md` records that patient setup now sends `country`, `state`, and `healthInterests` as backend-accepted catalog codes, while professional setup sends `category`, `licensingCouncil`, `practiceCountry`, and `practiceState` as backend-accepted catalog/regulator codes through current DTO fields |
+| Production onboarding domain boundary | `PRODUCTION_ONBOARDING_DOMAIN_HARDENING_BOUNDARY.md` accepts the serious MVP boundary for onboarding: no in-app role switching or dual-mode accounts yet, duplicate identity/application state remains backend-owned, partial professional applications resume through readiness, professional setup stays Nigeria-catalog/regulator driven, required evidence guidance comes from backend catalogs/readiness, and the next slice should plan readiness/resume UX hardening before runtime edits |
 | Onboarding setup regression | `ONBOARDING_SETUP_REGRESSION_AND_PHONE_SMOKE.md` records APP-61 grouped regression proof: 116 auth/onboarding/profile/account tests passed, focused analyze passed, and the staging-configured debug APK built. Phone install/manual smoke is still pending because ADB reported no connected device during APP-61 |
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
 | Sign-up email | Validates email, then routes to `finishSignUp` |
@@ -429,6 +430,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused APP-ID-005 test/analyze | Passed: `flutter test test/features/onboarding/profile_setup_test.dart -r expanded`; focused `flutter analyze` on patient/professional setup UI and tests reports no issues |
 | Focused APP-ID-006 verification | Not needed beyond docs/source inspection: decision-only slice. Backend profile DTOs/service normalization were checked, and `git diff --check` passes |
 | Focused APP-ID-007 test/analyze | Passed: `flutter test test/features/onboarding/profile_setup_test.dart -r expanded`; focused `flutter analyze` on patient/professional setup catalog-code payload wiring and tests reports no issues |
+| Focused APP-ID-008 verification | Not needed beyond docs/source inspection: decision-only slice. Checked PRD, role/onboarding decision docs, backend API plan, and APP-ID-007 payload alignment before recording the production onboarding domain boundary |
 
 ## Design debt (fix in Phase 2+)
 

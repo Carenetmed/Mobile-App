@@ -69,9 +69,9 @@ void main() {
       expect(repository.updatePatientCalls, 1);
       expect(repository.lastPatientName, 'Ada Patient');
       expect(repository.lastPatientCity, 'Ikeja');
-      expect(repository.lastPatientState, 'Lagos');
-      expect(repository.lastPatientCountry, 'Nigeria');
-      expect(repository.lastPatientHealthInterests, 'Primary care');
+      expect(repository.lastPatientState, 'LA');
+      expect(repository.lastPatientCountry, 'NG');
+      expect(repository.lastPatientHealthInterests, 'PRIMARY_CARE');
       expect(find.text('community-agreement'), findsOneWidget);
     });
 
@@ -166,14 +166,15 @@ void main() {
       expect(repository.updateProfessionalCalls, 1);
       expect(repository.lastLegalName, 'Ada Okafor');
       expect(repository.lastDisplayName, 'Dr. Ada Okafor');
-      expect(repository.lastCategory, 'Doctor');
+      expect(repository.lastCategory, 'MEDICAL_DOCTOR');
       expect(repository.lastLicenseNumber, 'MDCN-12345');
       expect(repository.lastLicensingCouncil, 'MDCN');
       expect(repository.lastQualifications, 'MBBS, FWACP');
       expect(repository.lastYearsOfExperience, 12);
       expect(repository.lastPracticeName, 'Care Clinic');
       expect(repository.lastPracticeCity, 'Ikeja');
-      expect(repository.lastPracticeState, 'Lagos');
+      expect(repository.lastPracticeState, 'LA');
+      expect(repository.lastPracticeCountry, 'NG');
       expect(find.text('verification-documents'), findsOneWidget);
     });
 
@@ -253,7 +254,7 @@ class _FakeOnboardingRepository implements OnboardingRepository {
         applicationStatus: 'DRAFT',
         verificationStatus: 'NOT_SUBMITTED',
         countryCode: 'NG',
-        professionCode: 'DOCTOR',
+        professionCode: 'MEDICAL_DOCTOR',
         regulatorCode: 'MDCN',
         requiredProfileFields: <String>['licenseNumber'],
         requiredEvidence: <String>['LICENSE'],
@@ -276,8 +277,8 @@ const _catalog = OnboardingCatalog(
   ],
   professionalCatalog: <ProfessionalCatalogItem>[
     ProfessionalCatalogItem(
-      code: 'DOCTOR',
-      label: 'Doctor',
+      code: 'MEDICAL_DOCTOR',
+      label: 'Medical doctor',
       regulatorCode: 'MDCN',
       regulatorName: 'Medical and Dental Council of Nigeria',
       requiredEvidence: <String>['LICENSE'],
@@ -316,6 +317,7 @@ class _FakeProfileRepository implements ProfileRepository {
   String? lastPracticeName;
   String? lastPracticeCity;
   String? lastPracticeState;
+  String? lastPracticeCountry;
 
   @override
   Future<PatientProfile> updatePatientMe({
@@ -376,6 +378,7 @@ class _FakeProfileRepository implements ProfileRepository {
     lastPracticeName = practiceName;
     lastPracticeCity = practiceCity;
     lastPracticeState = practiceState;
+    lastPracticeCountry = practiceCountry;
     return ProfessionalProfile(
       legalName: legalName,
       displayName: displayName,

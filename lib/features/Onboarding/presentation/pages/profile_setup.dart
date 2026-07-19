@@ -249,9 +249,9 @@ class _PatientOnboardingSetupPageState
         name: _nameController.text.trim(),
         dateOfBirth: _dateOfBirth,
         city: _emptyToNull(_cityController.text),
-        state: _selectedState?.name,
-        country: _selectedCountry?.name,
-        healthInterests: _selectedHealthInterest?.label,
+        state: _selectedState?.code,
+        country: _selectedCountry?.code,
+        healthInterests: _selectedHealthInterest?.code,
       );
       if (!mounted) {
         return;
@@ -575,7 +575,7 @@ class _ProfessionalOnboardingSetupPageState
       await _profileRepository.updateProfessionalMe(
         legalName: _legalNameController.text.trim(),
         displayName: _displayNameController.text.trim(),
-        category: _selectedProfession!.label,
+        category: _selectedProfession!.code,
         specialty: _emptyToNull(_specialtyController.text),
         licenseNumber: _licenseNumberController.text.trim(),
         licensingCouncil: _selectedProfession!.regulatorCode,
@@ -584,8 +584,8 @@ class _ProfessionalOnboardingSetupPageState
         practiceName: _practiceNameController.text.trim(),
         practiceAddress: _emptyToNull(_practiceAddressController.text),
         practiceCity: _practiceCityController.text.trim(),
-        practiceState: _selectedState?.name,
-        practiceCountry: _selectedCountry?.name,
+        practiceState: _selectedState?.code,
+        practiceCountry: _selectedCountry?.code,
       );
       if (!mounted) {
         return;

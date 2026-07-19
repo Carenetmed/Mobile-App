@@ -245,7 +245,8 @@
 | APP-ID-003 | Backend Schema/API Alignment: add backend-owned Nigeria onboarding catalogs, readiness, account application status, duplicate professional registration guards, and profile setup validation for patient/professional onboarding | L | **DONE** |
 | APP-ID-004 | Flutter Catalog And Readiness Repository: add Flutter entities/models/API client/repository/DI/tests for `GET /catalogs/onboarding` and `GET /account/readiness`; do not wire runtime onboarding screens yet | M | **DONE** |
 | APP-ID-005 | Wire Onboarding Setup UI To Backend Catalogs And Readiness: consume backend catalogs/readiness in patient/professional setup, replace free-text country/state/profession/document choices with controlled backend-owned options, keep Google signup role flow and verification submission honest, and do not add unsupported admin/payment/review/call/note/prescription behavior | L | **DONE** |
-| APP-ID-006 | Decide Onboarding Profile Payload Code Alignment: review backend APP-ID-003 profile fields, current Flutter `ProfileRepository.updatePatientMe`/`updateProfessionalMe` payload shape, catalog codes, and readiness requirements before deciding whether the next slice should send native `countryCode`/`professionCode`/`regulatorCode` fields or keep existing label-field compatibility; do not implement runtime behavior in this decision slice | S | **NEXT** |
+| APP-ID-006 | Decide Onboarding Profile Payload Code Alignment: review backend APP-ID-003 profile fields, current Flutter `ProfileRepository.updatePatientMe`/`updateProfessionalMe` payload shape, catalog codes, and readiness requirements before deciding whether the next slice should send native `countryCode`/`professionCode`/`regulatorCode` fields or keep existing label-field compatibility; do not implement runtime behavior in this decision slice | S | **DONE** |
+| APP-ID-007 | Align Onboarding Setup Payload Values To Backend Catalog Contract: update patient/professional setup wiring and tests so selected backend catalog values are the only values sent through the currently accepted profile DTO fields; do not invent unsupported `countryCode`/`professionCode`/`regulatorCode` request fields unless backend DTO/docs accept them | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -415,17 +416,17 @@ was not listing a connected phone after APP-62.
     - signed file PUT and upload-complete were not reached
 20. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, successful verification upload after backend/storage upload-init is fixed, and cleanup/reset proof remain open under 53.2.
 
-## Manual test (last completed: APP-ID-005)
+## Manual test (last completed: APP-ID-006)
 
-APP-ID-005 wires the patient/professional setup screens to backend-owned
-catalog/readiness repositories.
+APP-ID-006 is a decision/docs slice. It does not change runtime Flutter screens.
 
-1. `flutter test test/features/onboarding/profile_setup_test.dart -r expanded`
-   - all 5 tests passed.
-2. Focused `flutter analyze` on `profile_setup.dart` and
-   `profile_setup_test.dart` reports no issues.
+1. Backend profile DTOs and service normalization behavior were inspected in
+   `C:\Users\asd\Music\carenet-backend-lab`.
+2. `ONBOARDING_PROFILE_PAYLOAD_CODE_ALIGNMENT_DECISION.md` records the accepted
+   boundary.
+3. `git diff --check` - no whitespace errors.
 3. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row:
-   `APP-ID-006`.
+   `APP-ID-007`.
 
 ## Manual test (historical: task 53.1)
 
@@ -438,7 +439,7 @@ Task `53.1` is a docs-only staging seed-data and smoke execution plan.
    moves through backend-owned onboarding catalogs/readiness.
 5. Confirm no runtime app code changed in task 53.1.
 6. `git diff --check` - no whitespace errors.
-7. Historical note only; the current `**NEXT**` row is `APP-ID-006`.
+7. Historical note only; the current `**NEXT**` row is `APP-ID-007`.
 
 ## Previous runtime manual test baseline
 

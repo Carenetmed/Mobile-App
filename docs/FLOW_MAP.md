@@ -15,10 +15,12 @@ agree with `ROUTES.md`, and backend-dependent gaps must be recorded in
 splash
   │  (auto 800ms)
   ▼
-onboarding (3 pages; Skip → last page; Get started → signUpPhone)
+onboarding gateway (Browse verified care / Create account / Sign in)
   ▼
-signUpPhone  ←──► signUpEmail  (switch auth method)
-  │  Continue → signUpRole
+Create account -> signUpRole
+  |
+signUpPhone <-> signUpEmail (entry screens still validate first)
+  | Continue -> signUpRole with passwordSignUp
   ▼
 signUpRole  (Patient → finishSignUp as PATIENT; Professional → finishSignUp as PROFESSIONAL)
   ▼

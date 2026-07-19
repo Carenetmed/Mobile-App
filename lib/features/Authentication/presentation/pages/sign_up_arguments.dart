@@ -29,6 +29,7 @@ class SignUpRoleSelectionArgs {
   const SignUpRoleSelectionArgs({
     this.initialEmail,
     this.googleSignUp = false,
+    this.passwordSignUp = false,
     this.authRepository,
     this.googleIdTokenProvider,
     this.onboardingRepository,
@@ -36,6 +37,7 @@ class SignUpRoleSelectionArgs {
 
   final String? initialEmail;
   final bool googleSignUp;
+  final bool passwordSignUp;
   final AuthRepository? authRepository;
   final GoogleIdTokenProvider? googleIdTokenProvider;
   final OnboardingRepository? onboardingRepository;

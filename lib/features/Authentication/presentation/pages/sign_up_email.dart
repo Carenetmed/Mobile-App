@@ -82,6 +82,7 @@ class _SignUpEmailState extends State<SignUpEmail> {
         RouteName.signUpRole,
         arguments: SignUpRoleSelectionArgs(
           initialEmail: _emailController.text.trim(),
+          passwordSignUp: true,
           onboardingRepository: widget.onboardingRepository,
         ),
       );

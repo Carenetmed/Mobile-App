@@ -144,7 +144,11 @@ class _PatientOnboardingSetupPageState
                       interest == null ? 'Health interest is required' : null,
             ),
             SizedBox(height: 16.h),
-            _InfoCard(message: _readinessCopy(_readiness, 'patient')),
+            _ReadinessProgressCard(
+              title: 'Patient readiness',
+              summary: _readinessSummary(_readiness, 'patient'),
+              items: _readinessItems(_readiness, 'patient'),
+            ),
             _StatusText(message: _message),
             SizedBox(height: 20.h),
             CarenetButton(
@@ -488,7 +492,11 @@ class _ProfessionalOnboardingSetupPageState
                   'Next you will upload license, identity, or certification documents. CareNet will not mark your profile verified from this form alone.',
             ),
             SizedBox(height: 12.h),
-            _InfoCard(message: _readinessCopy(_readiness, 'professional')),
+            _ReadinessProgressCard(
+              title: 'Professional readiness',
+              summary: _readinessSummary(_readiness, 'professional'),
+              items: _readinessItems(_readiness, 'professional'),
+            ),
             _StatusText(message: _message),
             SizedBox(height: 20.h),
             CarenetButton(
@@ -732,6 +740,85 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
+class _ReadinessProgressCard extends StatelessWidget {
+  const _ReadinessProgressCard({
+    required this.title,
+    required this.summary,
+    required this.items,
+  });
+
+  final String title;
+  final String summary;
+  final List<String> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12.r),
+      decoration: BoxDecoration(
+        color: CarenetColors.primary100,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: CarenetColors.neutral200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: CarenetColors.neutral700,
+              fontFamily: AppFonts.montserrat,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            summary,
+            style: TextStyle(
+              color: CarenetColors.neutral700,
+              fontFamily: AppFonts.montserrat,
+              fontSize: 12.sp,
+              height: 1.35,
+            ),
+          ),
+          if (items.isNotEmpty) ...[
+            SizedBox(height: 8.h),
+            ...items.map(
+              (item) => Padding(
+                padding: EdgeInsets.only(bottom: 4.h),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.radio_button_unchecked,
+                      size: 14.r,
+                      color: CarenetColors.info100,
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: Text(
+                        item,
+                        style: TextStyle(
+                          color: CarenetColors.neutral700,
+                          fontFamily: AppFonts.montserrat,
+                          fontSize: 11.sp,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class _CatalogSelect<T> extends StatelessWidget {
   const _CatalogSelect({
     required this.label,
@@ -941,7 +1028,7 @@ String _catalogHint(String fallback) {
   return fallback;
 }
 
-String _readinessCopy(AccountReadiness? readiness, String role) {
+String _readinessSummary(AccountReadiness? readiness, String role) {
   final current = readiness;
   if (current == null) {
     return 'Checking account readiness before profile submission.';
@@ -949,16 +1036,55 @@ String _readinessCopy(AccountReadiness? readiness, String role) {
   if (role == 'professional' && current.professional != null) {
     final missing = current.professional!.requiredProfileFields.length;
     return missing == 0
-        ? 'Your professional profile fields are ready for document review.'
-        : '$missing professional profile fields still need confirmation.';
+        ? 'Your professional profile fields are complete. Document guidance comes next.'
+        : '$missing professional profile field${missing == 1 ? '' : 's'} still need confirmation.';
   }
   if (role == 'patient' && current.patient != null) {
     final missing = current.patient!.requiredFields.length;
     return missing == 0
         ? 'Your patient profile is ready to continue.'
-        : '$missing patient profile fields still need confirmation.';
+        : '$missing patient profile field${missing == 1 ? '' : 's'} still need confirmation.';
   }
   return 'Next step: ${current.nextAction.replaceAll('_', ' ').toLowerCase()}.';
+}
+
+List<String> _readinessItems(AccountReadiness? readiness, String role) {
+  final current = readiness;
+  if (current == null) {
+    return const <String>[];
+  }
+  if (role == 'professional' && current.professional != null) {
+    return current.professional!.requiredProfileFields
+        .map((field) => 'Required profile field: ${_fieldLabel(field)}')
+        .toList(growable: false);
+  }
+  if (role == 'patient' && current.patient != null) {
+    return current.patient!.requiredFields
+        .map((field) => 'Required patient field: ${_fieldLabel(field)}')
+        .toList(growable: false);
+  }
+  return current.requiredActions
+      .map((action) => 'Required action: ${_fieldLabel(action)}')
+      .toList(growable: false);
+}
+
+String _fieldLabel(String value) {
+  final spaced =
+      value
+          .replaceAllMapped(
+            RegExp(r'([a-z])([A-Z])'),
+            (match) => '${match.group(1)} ${match.group(2)}',
+          )
+          .replaceAll('_', ' ')
+          .trim();
+  if (spaced.isEmpty) {
+    return value;
+  }
+  return spaced
+      .split(' ')
+      .where((part) => part.isNotEmpty)
+      .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+      .join(' ');
 }
 
 String _formatDate(DateTime date) {

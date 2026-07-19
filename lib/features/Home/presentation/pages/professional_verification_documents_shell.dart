@@ -3,7 +3,10 @@ import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/repositories/verification_repository.dart';
+import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
+import 'package:app_t/features/Home/domain/entities/onboarding_catalog.dart';
 import 'package:app_t/features/Home/domain/entities/verification_document.dart';
 import 'package:app_t/features/Home/domain/entities/verification_upload_request.dart';
 import 'package:file_picker/file_picker.dart';
@@ -69,10 +72,12 @@ class ProfessionalVerificationDocumentsShellPage extends StatefulWidget {
   const ProfessionalVerificationDocumentsShellPage({
     super.key,
     this.verificationRepository,
+    this.onboardingRepository,
     this.documentPicker,
   });
 
   final VerificationRepository? verificationRepository;
+  final OnboardingRepository? onboardingRepository;
   final VerificationDocumentPicker? documentPicker;
 
   @override
@@ -85,13 +90,18 @@ class _ProfessionalVerificationDocumentsShellPageState
   bool _isLoading = true;
   bool _isUploading = false;
   String? _error;
+  String? _readinessError;
   String? _uploadError;
   String? _uploadSuccess;
   String _selectedDocumentType = _documentTypes.first;
   List<VerificationDocument> _documents = const <VerificationDocument>[];
+  AccountReadiness? _readiness;
+  OnboardingCatalog? _catalog;
 
   VerificationRepository get _verificationRepository =>
       widget.verificationRepository ?? sl<VerificationRepository>();
+  OnboardingRepository get _onboardingRepository =>
+      widget.onboardingRepository ?? sl<OnboardingRepository>();
   VerificationDocumentPicker get _documentPicker =>
       widget.documentPicker ?? const FilePickerVerificationDocumentPicker();
 
@@ -105,7 +115,41 @@ class _ProfessionalVerificationDocumentsShellPageState
   @override
   void initState() {
     super.initState();
+    _loadReadiness();
     _loadDocuments();
+  }
+
+  Future<void> _loadReadiness() async {
+    setState(() {
+      _readinessError = null;
+    });
+
+    try {
+      final catalog = await _onboardingRepository.onboardingCatalog();
+      final readiness = await _onboardingRepository.accountReadiness();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _catalog = catalog;
+        _readiness = readiness;
+      });
+    } on AuthFailure catch (failure) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _readinessError = _safeVerificationError(failure);
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _readinessError =
+            'Could not load verification requirements. Please try again.';
+      });
+    }
   }
 
   Future<void> _loadDocuments() async {
@@ -282,7 +326,18 @@ class _ProfessionalVerificationDocumentsShellPageState
           child: ListView(
             padding: REdgeInsets.fromLTRB(16.w, 12.h, 16.w, 28.h),
             children: [
-              _IntroCard(onRefresh: _loadDocuments),
+              _IntroCard(
+                onRefresh: () {
+                  _loadReadiness();
+                  _loadDocuments();
+                },
+              ),
+              SizedBox(height: 16.h),
+              _VerificationReadinessCard(
+                readiness: _readiness,
+                catalog: _catalog,
+                error: _readinessError,
+              ),
               SizedBox(height: 16.h),
               _UploadCard(
                 documentTypes: _documentTypes,
@@ -502,6 +557,154 @@ class _UploadCard extends StatelessWidget {
         .where((part) => part.isNotEmpty)
         .map((part) => '${part[0]}${part.substring(1).toLowerCase()}')
         .join(' ');
+  }
+}
+
+class _VerificationReadinessCard extends StatelessWidget {
+  const _VerificationReadinessCard({
+    required this.readiness,
+    required this.catalog,
+    required this.error,
+  });
+
+  final AccountReadiness? readiness;
+  final OnboardingCatalog? catalog;
+  final String? error;
+
+  @override
+  Widget build(BuildContext context) {
+    final professional = readiness?.professional;
+    final evidence = professional?.requiredEvidence ?? const <String>[];
+    final missing = professional?.missingEvidence ?? const <String>[];
+    return Container(
+      width: double.infinity,
+      padding: REdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: AppColors.kWhite,
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: AppColors.white04),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Verification readiness',
+            style: TextStyle(
+              fontSize: FontSizes.footer3,
+              fontFamily: AppFonts.montserrat,
+              fontWeight: FontWeight.w700,
+              color: AppColors.kBlack,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            _statusCopy(readiness, error),
+            style: TextStyle(
+              fontSize: FontSizes.footer4,
+              fontFamily: AppFonts.montserrat,
+              fontWeight: FontWeight.w500,
+              color: AppColors.primaryBlue11,
+              height: 1.4,
+            ),
+          ),
+          if (evidence.isNotEmpty) ...[
+            SizedBox(height: 12.h),
+            Text(
+              'Required evidence',
+              style: TextStyle(
+                fontSize: FontSizes.footer4,
+                fontFamily: AppFonts.montserrat,
+                fontWeight: FontWeight.w700,
+                color: AppColors.kBlack,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            ...evidence.map(
+              (code) => _EvidenceRow(
+                label: _evidenceLabel(code, catalog),
+                isMissing: missing.contains(code),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  static String _statusCopy(AccountReadiness? readiness, String? error) {
+    if (error != null) {
+      return '$error Pull to refresh before uploading more documents.';
+    }
+    final professional = readiness?.professional;
+    if (professional == null) {
+      return 'Loading backend verification requirements.';
+    }
+    if (professional.requiredProfileFields.isNotEmpty) {
+      return 'Complete your professional profile before document review.';
+    }
+    if (professional.missingEvidence.isNotEmpty) {
+      return '${professional.missingEvidence.length} required evidence item${professional.missingEvidence.length == 1 ? '' : 's'} still need upload.';
+    }
+    return switch (professional.verificationStatus.toUpperCase()) {
+      'PENDING' => 'Your documents are uploaded and waiting for review.',
+      'REJECTED' =>
+        'Your verification needs attention. Review the required evidence and upload corrected documents.',
+      'VERIFIED' => 'Your professional account is verified by the backend.',
+      _ =>
+        'Your required evidence is uploaded. CareNet will review it before public verification.',
+    };
+  }
+
+  static String _evidenceLabel(String code, OnboardingCatalog? catalog) {
+    final evidenceTypes =
+        catalog?.verificationEvidenceTypes ??
+        const <VerificationEvidenceType>[];
+    for (final evidence in evidenceTypes) {
+      if (evidence.code == code) {
+        return evidence.label;
+      }
+    }
+    return code
+        .split('_')
+        .where((part) => part.isNotEmpty)
+        .map((part) => '${part[0]}${part.substring(1).toLowerCase()}')
+        .join(' ');
+  }
+}
+
+class _EvidenceRow extends StatelessWidget {
+  const _EvidenceRow({required this.label, required this.isMissing});
+
+  final String label;
+  final bool isMissing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: REdgeInsets.only(bottom: 8.h),
+      child: Row(
+        children: [
+          Icon(
+            isMissing ? Icons.error_outline : Icons.check_circle_outline,
+            size: 18.r,
+            color: isMissing ? Colors.orangeAccent : AppColors.primaryBlue5,
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              '${isMissing ? 'Missing' : 'Received'}: $label',
+              style: TextStyle(
+                fontSize: FontSizes.footer4,
+                fontFamily: AppFonts.montserrat,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryBlue11,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

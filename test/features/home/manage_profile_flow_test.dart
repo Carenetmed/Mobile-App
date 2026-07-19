@@ -3,8 +3,11 @@ import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart'
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
 import 'package:app_t/features/Home/data/repositories/verification_repository.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
+import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/availability_window.dart';
+import 'package:app_t/features/Home/domain/entities/onboarding_catalog.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
@@ -31,6 +34,7 @@ Future<void> _pumpManageProfile(
   ProfileRepository? profileRepository,
   SchedulingRepository? schedulingRepository,
   VerificationRepository? verificationRepository,
+  OnboardingRepository? onboardingRepository,
   VerificationDocumentPicker? verificationDocumentPicker,
 }) async {
   tester.view.physicalSize = _phoneSize;
@@ -70,6 +74,8 @@ Future<void> _pumpManageProfile(
                   (_) => ProfessionalVerificationDocumentsShellPage(
                     verificationRepository:
                         verificationRepository ?? _FakeVerificationRepository(),
+                    onboardingRepository:
+                        onboardingRepository ?? _FakeOnboardingRepository(),
                     documentPicker:
                         verificationDocumentPicker ??
                         const _FakeVerificationDocumentPicker(),
@@ -328,6 +334,104 @@ class _FakeVerificationDocumentPicker implements VerificationDocumentPicker {
   Future<VerificationPickedFile?> pick() async => file;
 }
 
+class _FakeOnboardingRepository implements OnboardingRepository {
+  _FakeOnboardingRepository({this.failure});
+
+  final AuthFailure? failure;
+
+  @override
+  Future<OnboardingCatalog> onboardingCatalog() async {
+    final error = failure;
+    if (error != null) {
+      throw error;
+    }
+    return _catalog;
+  }
+
+  @override
+  Future<AccountReadiness> accountReadiness() async {
+    final error = failure;
+    if (error != null) {
+      throw error;
+    }
+    return _professionalReadiness;
+  }
+}
+
+const _professionalReadiness = AccountReadiness(
+  account: ReadinessAccount(
+    role: 'PROFESSIONAL',
+    status: 'ACTIVE',
+    emailVerified: true,
+  ),
+  patient: null,
+  professional: ProfessionalReadiness(
+    applicationStatus: 'READY_TO_SUBMIT',
+    verificationStatus: 'NOT_SUBMITTED',
+    countryCode: 'NG',
+    professionCode: 'MEDICAL_DOCTOR',
+    regulatorCode: 'MDCN',
+    requiredProfileFields: <String>[],
+    requiredEvidence: <String>[
+      'GOVERNMENT_IDENTITY',
+      'PROFESSIONAL_REGISTRATION_OR_LICENSE',
+      'QUALIFICATION_CERTIFICATE',
+    ],
+    missingEvidence: <String>[
+      'GOVERNMENT_IDENTITY',
+      'PROFESSIONAL_REGISTRATION_OR_LICENSE',
+    ],
+  ),
+  nextAction: 'PROFESSIONAL_UPLOAD_EVIDENCE',
+  requiredActions: <String>[
+    'UPLOAD_GOVERNMENT_IDENTITY',
+    'UPLOAD_PROFESSIONAL_REGISTRATION_OR_LICENSE',
+  ],
+);
+
+const _catalog = OnboardingCatalog(
+  launchCountry: 'NG',
+  countries: <OnboardingCountry>[
+    OnboardingCountry(code: 'NG', name: 'Nigeria', status: 'ACTIVE'),
+  ],
+  nigeriaStates: <OnboardingRegion>[
+    OnboardingRegion(code: 'LA', name: 'Lagos'),
+  ],
+  professionalCatalog: <ProfessionalCatalogItem>[
+    ProfessionalCatalogItem(
+      code: 'MEDICAL_DOCTOR',
+      label: 'Medical doctor',
+      regulatorCode: 'MDCN',
+      regulatorName: 'Medical and Dental Council of Nigeria',
+      requiredEvidence: <String>[
+        'GOVERNMENT_IDENTITY',
+        'PROFESSIONAL_REGISTRATION_OR_LICENSE',
+        'QUALIFICATION_CERTIFICATE',
+      ],
+    ),
+  ],
+  verificationEvidenceTypes: <VerificationEvidenceType>[
+    VerificationEvidenceType(
+      code: 'GOVERNMENT_IDENTITY',
+      label: 'Government identity',
+      documentType: 'IDENTITY',
+    ),
+    VerificationEvidenceType(
+      code: 'PROFESSIONAL_REGISTRATION_OR_LICENSE',
+      label: 'Professional registration or license',
+      documentType: 'LICENSE',
+    ),
+    VerificationEvidenceType(
+      code: 'QUALIFICATION_CERTIFICATE',
+      label: 'Qualification certificate',
+      documentType: 'CERTIFICATION',
+    ),
+  ],
+  patientHealthInterestCatalog: <PatientHealthInterest>[
+    PatientHealthInterest(code: 'PRIMARY_CARE', label: 'Primary care'),
+  ],
+);
+
 void main() {
   testWidgets('manage profile shows local profile management sections', (
     tester,
@@ -407,6 +511,17 @@ void main() {
 
     expect(find.text('Verification documents'), findsOneWidget);
     expect(find.text('Professional verification'), findsOneWidget);
+    expect(find.text('Verification readiness'), findsOneWidget);
+    expect(
+      find.text('2 required evidence items still need upload.'),
+      findsOneWidget,
+    );
+    expect(find.text('Missing: Government identity'), findsOneWidget);
+    expect(
+      find.text('Missing: Professional registration or license'),
+      findsOneWidget,
+    );
+    expect(find.text('Received: Qualification certificate'), findsOneWidget);
     expect(find.text('License'), findsWidgets);
     expect(find.text('PENDING'), findsOneWidget);
     expect(find.text('document-1'), findsOneWidget);
@@ -461,10 +576,34 @@ void main() {
 
     expect(
       find.text('Service is unavailable. Please try again.'),
-      findsOneWidget,
+      findsWidgets,
     );
     expect(find.text('raw private storage failure'), findsNothing);
     expect(find.text('Verification documents'), findsOneWidget);
+  });
+
+  testWidgets('verification readiness shows safe requirement error', (
+    tester,
+  ) async {
+    await _pumpManageProfile(
+      tester,
+      onboardingRepository: _FakeOnboardingRepository(
+        failure: const AuthFailure(
+          type: AuthFailureType.network,
+          message: 'raw readiness network failure',
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Verification readiness'), findsOneWidget);
+    expect(
+      find.textContaining('Pull to refresh before uploading more documents.'),
+      findsOneWidget,
+    );
+    expect(find.text('raw readiness network failure'), findsNothing);
   });
 
   testWidgets(

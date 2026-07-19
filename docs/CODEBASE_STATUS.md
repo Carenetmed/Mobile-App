@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-19 Onboarding progress and evidence guidance plan.
+**Last updated:** 2026-07-19 Onboarding readiness progress panel.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -35,6 +35,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Production onboarding domain boundary | `PRODUCTION_ONBOARDING_DOMAIN_HARDENING_BOUNDARY.md` accepts the serious MVP boundary for onboarding: no in-app role switching or dual-mode accounts yet, duplicate identity/application state remains backend-owned, partial professional applications resume through readiness, professional setup stays Nigeria-catalog/regulator driven, required evidence guidance comes from backend catalogs/readiness, and the next slice should plan readiness/resume UX hardening before runtime edits |
 | Onboarding readiness route resolver | `ONBOARDING_READINESS_ROUTE_RESOLVER.md` records the runtime resolver. After successful email/password or first-time Google signup, Flutter calls backend `account/readiness` and routes by `nextAction`; readiness failure falls back by selected role so professionals do not go straight to dashboard |
 | Onboarding progress/evidence guidance plan | `ONBOARDING_PROGRESS_EVIDENCE_GUIDANCE_PLAN.md` records the next runtime boundary: patient/professional setup and professional verification documents should show backend readiness, required profile fields, required/missing evidence, status/retry copy, and no dummy local approval/readiness state |
+| Onboarding readiness progress panel | Patient setup, professional setup, and professional verification documents now show backend-owned readiness guidance. Setup screens display required profile fields returned by `account/readiness`; verification documents displays required/missing evidence with catalog labels plus safe retry copy when requirements cannot load |
 | Onboarding setup regression | `ONBOARDING_SETUP_REGRESSION_AND_PHONE_SMOKE.md` records APP-61 grouped regression proof: 116 auth/onboarding/profile/account tests passed, focused analyze passed, and the staging-configured debug APK built. Phone install/manual smoke is still pending because ADB reported no connected device during APP-61 |
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
 | Sign-up email | Validates email, then routes to `finishSignUp` |
@@ -436,6 +437,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused APP-ID-009 verification | Not needed beyond docs/source inspection: planning-only slice. Checked Flutter readiness models, signup routes, verification shell, and backend `AccountReadinessService`; `git diff --check` passes |
 | Focused APP-ID-010 test/analyze | Passed: `flutter test test/features/onboarding/onboarding_readiness_route_resolver_test.dart test/features/authentication/finish_sign_up_test.dart test/features/authentication/sign_up_flow_test.dart -r expanded`; focused `flutter analyze` on resolver, signup pages/arguments/router, and related tests reports no issues |
 | Focused APP-ID-011 verification | Not needed beyond docs/source inspection: planning-only slice. Checked setup screens, verification documents shell, readiness docs, and backend `AccountReadinessService`; `git diff --check` passes |
+| Focused APP-ID-012 test/analyze | Passed: `flutter test test/features/onboarding/profile_setup_test.dart test/features/home/manage_profile_flow_test.dart -r expanded`; focused `flutter analyze` on onboarding setup, verification documents shell, and related tests reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

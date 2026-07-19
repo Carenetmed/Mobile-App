@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **53.2** - execute staging seed data and mobile smoke pass |
-| Last completed | **53.1** - staging seed data and smoke execution plan |
+| NEXT task | **APP-ID-005** - wire onboarding setup UI to backend catalogs and readiness |
+| Last completed | **APP-ID-004** - Flutter catalog and readiness repository boundary |
 | Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, patient-device proof through real Search/public availability/appointment request plus own-list rendering, and professional-device proof through role-aware appointment accept/decline/reschedule plus terminal-row behavior; Android backup is disabled, own-list parses the backend `appointments` envelope, secure session writes are ordered, and professional Account now exposes Manage Profile/Verification documents. Verification upload route access is proven, but upload-init returns staging HTTP 500; separate appointment-detail, optional fresh completion, successful upload after backend fix, and cleanup phone smoke remain open |
 | Product interruption | **APP-63** - Google first-time signup now runs through explicit patient/professional role selection with a real Google ID token before backend account creation. Email/password signup remains aligned to the staging contract. Facebook/Apple signup, Google unlink, iOS/release OAuth proof, production OAuth consent/app verification, phone/OTP, MFA, and broader profile trust rules remain deferred |
 | Registered routes | **73 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
@@ -141,6 +141,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-17 | APP-56 DONE - accepted role-registration backend contract: email/password and first-time Google-created accounts require explicit `PATIENT`/`PROFESSIONAL` role selection, existing linked Google sign-in/linking remain valid, and next runtime work should add role-selection onboarding before account creation |
 | 2026-07-17 | APP-57 DONE - added `signUpRole` before `finishSignUp`, passed selected `PATIENT`/`PROFESSIONAL` role into backend registration, routed professionals to the existing professional onboarding surface after success, and kept Google signup disabled |
 | 2026-07-18 | APP-62 DONE - backend staging deployed the Nigeria onboarding profile schema/API, Flutter signup was aligned to register with email/password/role only, 15-character password validation was applied, and first-time Google signup was kept as the next explicit gap |
+| 2026-07-19 | APP-ID-004 DONE - added Flutter onboarding catalog/readiness entities, models, API client, repository, DI registration, and focused tests for backend `GET /catalogs/onboarding` plus protected `GET /account/readiness`; DOC_SYNC NEXT -> APP-ID-005 |
 | 2026-07-18 | APP-63 DONE - Google first-time signup was enabled only behind configured Google provider setup, required explicit patient/professional role selection, sent `idToken` plus selected role to backend auth, and routed into the matching setup surface without trusting Google profile data |
 | 2026-07-15 | Task 52.74 DONE - selected professional verification upload/list as the next backend-completed Flutter lane, with a required boundary decision before runtime wiring; DOC_SYNC NEXT -> 52.75 |
 | 2026-07-15 | Task 52.73 DONE - Find Mentor public professionals regression passed for loading, empty, success, filtering, backend id handoff, no local fallback/direct fake booking, dashboard compatibility, and Specialist Details compatibility; DOC_SYNC NEXT -> 52.74 |

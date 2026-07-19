@@ -7,8 +7,10 @@ import '../../features/Authentication/data/services/auth_api_client.dart';
 import '../../features/Authentication/data/services/google_sign_in_provider.dart';
 import '../../features/Authentication/data/storage/session_store.dart';
 import '../../features/Home/data/repositories/profile_repository.dart';
+import '../../features/Home/data/repositories/onboarding_repository.dart';
 import '../../features/Home/data/repositories/scheduling_repository.dart';
 import '../../features/Home/data/repositories/verification_repository.dart';
+import '../../features/Home/data/services/onboarding_api_client.dart';
 import '../../features/Home/data/services/profile_api_client.dart';
 import '../../features/Home/data/services/scheduling_api_client.dart';
 import '../../features/Home/data/services/verification_api_client.dart';
@@ -46,6 +48,11 @@ Future<void> configureDependencies() async {
       () => ProfileApiClient(config: sl<CareNetApiConfig>()),
     );
   }
+  if (!sl.isRegistered<OnboardingApiClient>()) {
+    sl.registerLazySingleton<OnboardingApiClient>(
+      () => OnboardingApiClient(config: sl<CareNetApiConfig>()),
+    );
+  }
   if (!sl.isRegistered<SchedulingApiClient>()) {
     sl.registerLazySingleton<SchedulingApiClient>(
       () => SchedulingApiClient(config: sl<CareNetApiConfig>()),
@@ -76,6 +83,14 @@ Future<void> configureDependencies() async {
     sl.registerLazySingleton<ProfileRepository>(
       () => ProfileRepository(
         apiClient: sl<ProfileApiClient>(),
+        sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<OnboardingRepository>()) {
+    sl.registerLazySingleton<OnboardingRepository>(
+      () => OnboardingRepository(
+        apiClient: sl<OnboardingApiClient>(),
         sessionStore: sl<SessionStore>(),
       ),
     );

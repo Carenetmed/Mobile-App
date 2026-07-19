@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-18 Google first-time signup role selection.
+**Last updated:** 2026-07-19 Backend-owned onboarding catalog/readiness repository boundary.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -30,6 +30,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Patient/professional onboarding requirements | `PATIENT_PROFESSIONAL_ONBOARDING_UI_REQUIREMENTS.md` defines the serious next onboarding flow against backend `CAR-BE-119` fields. Profile entity/model/repository expansion is now complete; polished patient/professional setup screens remain the next runtime slice |
 | Profile contract expansion | `PROFILE_NIGERIA_ONBOARDING_CONTRACT_EXPANSION.md` records that patient/professional profile entities, models, API payloads, and repository methods now support the backend `CAR-BE-119` onboarding fields. Runtime polished setup screens are still the next slice |
 | Patient/professional setup UI | `patientOnboardingSetup` saves backend patient profile fields before community agreement. `medicalProfessional` now renders a professional credential/practice setup form and saves required backend professional fields before opening verification documents. Staging backend has been updated to the `CAR-BE-119` profile schema so those professional fields are accepted. Public listing still waits for backend verification |
+| Backend-owned onboarding catalog/readiness repository | `OnboardingApiClient` and `OnboardingRepository` now consume backend `APP-ID-003` contracts for public `GET /catalogs/onboarding` and protected `GET /account/readiness`. This gives the next UI slice real Nigeria country/region/profession/regulator/document/health-interest catalogs and account readiness state without fake local fallback. Runtime setup screens are not wired to this repository yet |
 | Onboarding setup regression | `ONBOARDING_SETUP_REGRESSION_AND_PHONE_SMOKE.md` records APP-61 grouped regression proof: 116 auth/onboarding/profile/account tests passed, focused analyze passed, and the staging-configured debug APK built. Phone install/manual smoke is still pending because ADB reported no connected device during APP-61 |
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
 | Sign-up email | Validates email, then routes to `finishSignUp` |
@@ -423,6 +424,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Focused task 52.98 test/analyze | Not needed: decision/docs slice. `MOBILE_MILESTONE_HANDOFF_STAGING_BOUNDARY.md` selects a handoff package as the next lane and keeps staging seed-data/smoke, release readiness, admin dashboard, and deferred product modules separate; no runtime Flutter code changed |
 | Focused task 52.99 test/analyze | Not needed: handoff/docs slice. `MOBILE_BACKEND_MILESTONE_HANDOFF_PACKAGE.md` summarizes the regression-passed milestone and selects staging seed-data/smoke planning next; no runtime Flutter code changed |
 | Focused task 53.1 test/analyze | Not needed: planning/docs slice. `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md` defines required staging data/config and smoke evidence rules; no runtime Flutter code changed |
+| Focused APP-ID-004 test/analyze | Passed: `flutter test test/features/home/onboarding_repository_test.dart`; focused `flutter analyze` on onboarding catalog/readiness entities, models, API client, repository, DI, and tests reports no issues |
 
 ## Design debt (fix in Phase 2+)
 

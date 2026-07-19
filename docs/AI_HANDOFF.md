@@ -241,7 +241,10 @@
 | 52.98 | Define Mobile Milestone Handoff And Staging Data Boundary: review the passed mobile backend integration regression evidence, remaining staging-data/release/admin/product blockers, and decide whether the next lane is frontend milestone handoff package, staging seed-data/smoke setup, release-signing/app-link readiness, or another explicitly deferred product lane; do not implement runtime behavior in this decision slice | S | **DONE** |
 | 52.99 | Create Mobile Backend Milestone Handoff Package: summarize the backend-completed mobile surfaces wired, grouped regression evidence, manual smoke/staging-data requirements, admin/release/deferred boundaries, and exact next-lane options so the milestone can be presented without production or full-product overclaiming; do not implement runtime behavior in this documentation slice | S | **DONE** |
 | 53.1 | Define Staging Seed Data And Smoke Execution Plan: define the staging accounts, seeded verified professional/profile/availability/appointment data, verification upload storage access, cleanup/reset rules, API base URL/build configuration, and manual smoke commands needed to prove the regression-passed mobile milestone against a real backend environment; do not implement runtime app behavior in this planning slice | S | **DONE** |
-| 53.2 | Execute Staging Seed Data And Mobile Smoke Pass: confirm required staging inputs from `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, build/run the app against staging, execute the manual smoke checklist for auth/account, profile/verification, discovery/booking, and scheduling lifecycle, record pass/fail evidence without secrets, and stop for project-lead input if required staging accounts/data/config are missing | M | **NEXT** |
+| 53.2 | Execute Staging Seed Data And Mobile Smoke Pass: confirm required staging inputs from `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md`, build/run the app against staging, execute the manual smoke checklist for auth/account, profile/verification, discovery/booking, and scheduling lifecycle, record pass/fail evidence without secrets, and stop for project-lead input if required staging accounts/data/config are missing | M | **PAUSED** |
+| APP-ID-003 | Backend Schema/API Alignment: add backend-owned Nigeria onboarding catalogs, readiness, account application status, duplicate professional registration guards, and profile setup validation for patient/professional onboarding | L | **DONE** |
+| APP-ID-004 | Flutter Catalog And Readiness Repository: add Flutter entities/models/API client/repository/DI/tests for `GET /catalogs/onboarding` and `GET /account/readiness`; do not wire runtime onboarding screens yet | M | **DONE** |
+| APP-ID-005 | Wire Onboarding Setup UI To Backend Catalogs And Readiness: consume backend catalogs/readiness in patient/professional setup, replace free-text country/state/profession/document choices with controlled backend-owned options, keep Google signup role flow and verification submission honest, and do not add unsupported admin/payment/review/call/note/prescription behavior | L | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -411,17 +414,29 @@ was not listing a connected phone after APP-62.
     - signed file PUT and upload-complete were not reached
 20. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, successful verification upload after backend/storage upload-init is fixed, and cleanup/reset proof remain open under 53.2.
 
-## Manual test (last completed: task 53.1)
+## Manual test (last completed: APP-ID-004)
+
+APP-ID-004 is a repository/API-boundary slice. It does not change runtime screens
+or manual phone flow.
+
+1. `flutter test test/features/home/onboarding_repository_test.dart` - all 4 tests passed.
+2. Focused `flutter analyze` on onboarding catalog/readiness entities, models,
+   API client, repository, DI, and tests reports no issues.
+3. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row:
+   `APP-ID-005`.
+
+## Manual test (historical: task 53.1)
 
 Task `53.1` is a docs-only staging seed-data and smoke execution plan.
 
 1. Confirm `STAGING_SEED_DATA_SMOKE_EXECUTION_PLAN.md` lists required environment, account, seeded domain data, verification upload, and cleanup/reset inputs.
 2. Confirm the plan includes build/analyze/test commands, manual smoke checklist, evidence requirements, and blocker rules.
 3. Confirm no secrets, passwords, tokens, or real client IDs are committed.
-4. Confirm the next slice is `53.2 - Execute Staging Seed Data And Mobile Smoke Pass`.
+4. Confirm the staging smoke slice remains paused while the active product lane
+   moves through backend-owned onboarding catalogs/readiness.
 5. Confirm no runtime app code changed in task 53.1.
 6. `git diff --check` - no whitespace errors.
-7. Confirm `AI_HANDOFF.md` has exactly one task-table `**NEXT**` row: `53.2`
+7. Historical note only; the current `**NEXT**` row is `APP-ID-005`.
 
 ## Previous runtime manual test baseline
 

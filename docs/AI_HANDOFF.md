@@ -793,6 +793,7 @@ Task `53.1` is a docs-only staging seed-data and smoke execution plan.
 | 2026-07-17 | APP-56 | DONE - role-registration backend contract accepted: email/password and first-time Google-created accounts require explicit patient/professional role selection before runtime onboarding expansion |
 | 2026-07-17 | APP-57 | DONE - role-selection onboarding wired before email/password account creation; selected patient/professional role now controls backend registration role |
 | 2026-07-18 | APP-ID-001 | DONE - identity/onboarding product foundation added: one MVP role per account, no casual dual-role switching, backend-owned readiness/collisions, Nigeria-first controlled catalogs, regulator-aware professional application, evidence rules, and APP-ID implementation sequence |
+| 2026-07-19 | APP-ID-002 | DONE - backend identity/catalog contract added for Nigeria-only MVP: supported country, Nigeria location catalogs, profession/regulator matrix, evidence checklist, licence normalization/duplicate guard, readiness snapshot, and APP-ID-003 backend schema/API alignment next |
 
 ---
 

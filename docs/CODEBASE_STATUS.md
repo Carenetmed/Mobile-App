@@ -430,19 +430,21 @@ APP-ID-001 records that the current auth/onboarding work is a real bridge, not
 the final production model. Google/email role-first signup works, patient setup
 and professional setup can save backend profile fields, and verification upload
 uses real backend routes. However, production quality still requires backend
-identity/catalog decisions and runtime hardening for duplicate accounts,
-role-switching, country/state/city selectors, professional/regulator catalogs,
-licence normalization, required evidence by profession, backend-owned
-application drafts/readiness, and patient booking-gate fields.
+runtime hardening for duplicate accounts, role-switching, country/state/city
+selectors, professional/regulator catalogs, licence normalization, required
+evidence by profession, backend-owned application drafts/readiness, and patient
+booking-gate fields. APP-ID-002 now defines the backend identity/catalog
+contract for the Nigeria MVP before runtime schema/API work.
 
 Next source of truth:
 
 - `docs/IDENTITY_ONBOARDING_PRODUCT_FOUNDATION.md`
+- `docs/BACKEND_IDENTITY_CATALOG_CONTRACT.md`
 - `docs/IDENTITY_ONBOARDING_OPEN_QUESTIONS.md`
 
 Next queued slice:
 
-`APP-ID-002 - Backend Identity And Catalog Contract`
+`APP-ID-003 - Backend Schema/API Alignment`
 
 ## Design debt (fix in Phase 2+)
 

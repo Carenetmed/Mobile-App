@@ -293,6 +293,8 @@ Do not try to perfect this in one oversized PR.
 
 ### APP-ID-002 - Backend Identity And Catalog Contract
 
+Status: documented in `BACKEND_IDENTITY_CATALOG_CONTRACT.md`.
+
 Decide backend API/schema requirements for:
 
 - role immutability

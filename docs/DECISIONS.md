@@ -1911,3 +1911,31 @@ dependent/minor profiles, legal-policy completion, payments, reviews, calls,
 notes, prescriptions, and other modules remain deferred.
 
 Next: APP-ID-002 - Backend Identity And Catalog Contract.
+
+## D176 - Backend identity and catalog contract
+
+Task: APP-ID-002
+
+Decision: Define Nigeria-only MVP onboarding catalogs as backend-owned
+contracts before UI rebuild. The backend should own launch country `NG`,
+Nigeria state/city catalogs, supported professional catalog, regulator mapping,
+required evidence checklist, licence/registration normalization, duplicate
+regulator-registration handling, professional application readiness, and patient
+booking-readiness projection. Flutter must consume those contracts instead of
+shipping production free-text profession, regulator, country/state/city, or
+document-type authority.
+
+Reason: Country selection affects regulator, document requirements, verification
+readiness, public listing, and abuse controls. The current backend and Flutter
+bridge stores key fields as loose strings, which is not enough for a Nigeria
+medical marketplace where professionals must be licensed/current and public
+trust depends on verified profiles.
+
+Consequences: APP-ID-003 should be backend schema/API alignment, not a visual UI
+slice. Exact regulator licence-number formats remain deferred until official
+format proof is accepted, but basic normalization, safe character/length rules,
+and duplicate review/blocking are required. Unsupported professions, non-Nigeria
+professional onboarding, dual-role switching, automatic regulator verification,
+and patient disease intake remain deferred.
+
+Next: APP-ID-003 - Backend Schema/API Alignment.

@@ -93,6 +93,7 @@ class _SignUpPhoneState extends State<SignUpPhone> {
         context,
         RouteName.signUpRole,
         arguments: SignUpRoleSelectionArgs(
+          passwordSignUp: true,
           onboardingRepository: widget.onboardingRepository,
         ),
       );

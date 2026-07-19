@@ -103,6 +103,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
               args is SignUpRoleSelectionArgs ? args.initialEmail : null,
           googleSignUp:
               args is SignUpRoleSelectionArgs ? args.googleSignUp : false,
+          passwordSignUp:
+              args is SignUpRoleSelectionArgs ? args.passwordSignUp : false,
           authRepository:
               args is SignUpRoleSelectionArgs ? args.authRepository : null,
           googleIdTokenProvider:

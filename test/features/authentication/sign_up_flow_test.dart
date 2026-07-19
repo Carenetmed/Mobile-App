@@ -42,6 +42,10 @@ Future<void> _pumpWithRoutes(
                       args is SignUpRoleSelectionArgs
                           ? args.googleSignUp
                           : false,
+                  passwordSignUp:
+                      args is SignUpRoleSelectionArgs
+                          ? args.passwordSignUp
+                          : false,
                   authRepository:
                       args is SignUpRoleSelectionArgs
                           ? args.authRepository
@@ -104,11 +108,11 @@ void main() {
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Choose account type'), findsOneWidget);
-      expect(find.text('I need medical guidance'), findsOneWidget);
-      expect(find.text('I am a medical professional'), findsOneWidget);
+      expect(find.text('How will you use CareNet?'), findsOneWidget);
+      expect(find.text('Patient'), findsOneWidget);
+      expect(find.text('Medical professional'), findsOneWidget);
 
-      await tester.tap(find.text('I need medical guidance'));
+      await tester.tap(find.text('Patient'));
       await tester.pumpAndSettle();
 
       expect(
@@ -141,9 +145,9 @@ void main() {
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Choose account type'), findsOneWidget);
+      expect(find.text('How will you use CareNet?'), findsOneWidget);
 
-      await tester.tap(find.text('I am a medical professional'));
+      await tester.tap(find.text('Medical professional'));
       await tester.pumpAndSettle();
 
       expect(find.text('finish-sign-up-PROFESSIONAL-no-email'), findsOneWidget);
@@ -192,7 +196,7 @@ void main() {
 
         await tester.tap(find.text('Continue with Google'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('I need medical guidance'));
+        await tester.tap(find.text('Patient'));
         await tester.pumpAndSettle();
 
         expect(repository.googleSignInCalls, 1);
@@ -225,7 +229,7 @@ void main() {
 
         await tester.tap(find.text('Continue with Google'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('I am a medical professional'));
+        await tester.tap(find.text('Medical professional'));
         await tester.pumpAndSettle();
 
         expect(repository.googleSignInCalls, 1);
@@ -256,7 +260,7 @@ void main() {
 
         await tester.tap(find.text('Continue with Google'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('I am a medical professional'));
+        await tester.tap(find.text('Medical professional'));
         await tester.pumpAndSettle();
 
         expect(repository.googleSignInCalls, 1);
@@ -283,7 +287,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(repository.googleSignInCalls, 0);
-      expect(find.text('Choose account type'), findsNothing);
+      expect(find.text('How will you use CareNet?'), findsNothing);
     });
   });
 }

@@ -1,7 +1,8 @@
-import 'package:app_t/core/constants/app_colors.dart';
+import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
@@ -9,6 +10,7 @@ import 'package:app_t/features/Authentication/presentation/pages/sign_up_argumen
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
+import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -17,6 +19,7 @@ class SignUpRoleSelectionPage extends StatefulWidget {
     super.key,
     this.initialEmail,
     this.googleSignUp = false,
+    this.passwordSignUp = false,
     this.authRepository,
     this.googleIdTokenProvider,
     this.onboardingRepository,
@@ -24,6 +27,7 @@ class SignUpRoleSelectionPage extends StatefulWidget {
 
   final String? initialEmail;
   final bool googleSignUp;
+  final bool passwordSignUp;
   final AuthRepository? authRepository;
   final GoogleIdTokenProvider? googleIdTokenProvider;
   final OnboardingRepository? onboardingRepository;
@@ -34,6 +38,7 @@ class SignUpRoleSelectionPage extends StatefulWidget {
 }
 
 class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
+  SignUpRole? _selectedRole;
   bool _isSubmitting = false;
   String? _error;
 
@@ -48,20 +53,40 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
 
   static const _routeResolver = OnboardingReadinessRouteResolver();
 
-  Future<void> _continueAs(SignUpRole role) async {
-    if (!widget.googleSignUp) {
-      Navigator.pushNamed(
-        context,
-        RouteName.finishSignUp,
-        arguments: FinishSignUpArgs(
-          initialEmail: widget.initialEmail,
-          role: role,
-          onboardingRepository: widget.onboardingRepository,
-        ),
-      );
+  bool get _passwordSignUpFlow =>
+      widget.passwordSignUp ||
+      (widget.initialEmail != null && !widget.googleSignUp);
+
+  void _selectRole(SignUpRole role) {
+    if (_passwordSignUpFlow) {
+      _continueWithEmail(role);
       return;
     }
 
+    if (widget.googleSignUp) {
+      _continueWithGoogle(role);
+      return;
+    }
+
+    setState(() {
+      _selectedRole = role;
+      _error = null;
+    });
+  }
+
+  void _continueWithEmail(SignUpRole role) {
+    Navigator.pushNamed(
+      context,
+      RouteName.finishSignUp,
+      arguments: FinishSignUpArgs(
+        initialEmail: widget.initialEmail,
+        role: role,
+        onboardingRepository: widget.onboardingRepository,
+      ),
+    );
+  }
+
+  Future<void> _continueWithGoogle(SignUpRole role) async {
     if (_isSubmitting) {
       return;
     }
@@ -131,78 +156,41 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedRole = _selectedRole;
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF7FBFA),
       body: SafeArea(
-        child: Padding(
-          padding: REdgeInsets.symmetric(horizontal: 18.w, vertical: 28.h),
+        child: SingleChildScrollView(
+          padding: REdgeInsets.fromLTRB(20, 18, 20, 22),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconButton(
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: const Icon(Icons.arrow_back_ios),
-              ),
-              SizedBox(height: 24.h),
-              Text(
-                'Choose account type',
-                style: TextStyle(
-                  fontFamily: AppFonts.montserrat,
-                  fontSize: 24.sp,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.kBlack,
-                ),
-              ),
-              SizedBox(height: 10.h),
-              Text(
-                widget.googleSignUp
-                    ? 'Choose the account type for this Google sign-up. CareNet will still collect required profile details after account creation.'
-                    : 'CareNet uses different onboarding for patients and medical professionals.',
-                style: TextStyle(
-                  fontFamily: AppFonts.montserrat,
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.kBlack,
-                ),
-              ),
-              SizedBox(height: 32.h),
-              if (_error != null) ...[
-                Text(
-                  _error!,
-                  style: TextStyle(
-                    fontFamily: AppFonts.montserrat,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.red.shade700,
-                  ),
-                ),
-                SizedBox(height: 14.h),
-              ],
-              _RoleCard(
-                title: 'I need medical guidance',
-                subtitle:
-                    'Create a patient account for consultations, content, and health support.',
-                onTap:
-                    _isSubmitting
-                        ? null
-                        : () => _continueAs(SignUpRole.patient),
-              ),
-              SizedBox(height: 14.h),
-              _RoleCard(
-                title: 'I am a medical professional',
-                subtitle:
-                    'Create a professional account for profile setup and credential verification.',
-                onTap:
-                    _isSubmitting
-                        ? null
-                        : () => _continueAs(SignUpRole.professional),
-              ),
-              const Spacer(),
-              CarenetButton(
-                label: 'Already have an account? Sign in',
-                type: CarenetButtonType.outline,
                 onPressed:
-                    () => Navigator.pushNamed(context, RouteName.signInEmail),
+                    selectedRole == null
+                        ? () => Navigator.of(context).maybePop()
+                        : () => setState(() => _selectedRole = null),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
               ),
+              SizedBox(height: 16.h),
+              if (selectedRole == null)
+                _RoleStep(
+                  isSubmitting: _isSubmitting,
+                  error: _error,
+                  googleSignUp: widget.googleSignUp,
+                  onRoleSelected: _selectRole,
+                )
+              else
+                _MethodStep(
+                  role: selectedRole,
+                  isSubmitting: _isSubmitting,
+                  googleEnabled: _googleIdTokenProvider.isConfigured,
+                  error: _error,
+                  onChangeRole: () => setState(() => _selectedRole = null),
+                  onEmail: () => _continueWithEmail(selectedRole),
+                  onGoogle: () => _continueWithGoogle(selectedRole),
+                ),
             ],
           ),
         ),
@@ -211,65 +199,516 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
   }
 }
 
+class _RoleStep extends StatelessWidget {
+  const _RoleStep({
+    required this.isSubmitting,
+    required this.error,
+    required this.googleSignUp,
+    required this.onRoleSelected,
+  });
+
+  final bool isSubmitting;
+  final String? error;
+  final bool googleSignUp;
+  final ValueChanged<SignUpRole> onRoleSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SmallLabel(label: 'Create account'),
+        SizedBox(height: 10.h),
+        Text('How will you use CareNet?', style: _titleStyle()),
+        SizedBox(height: 10.h),
+        Text(
+          googleSignUp
+              ? 'Choose the CareNet account type for this Google sign-up. Profile setup still happens after account creation.'
+              : 'Choose this first so CareNet asks only the questions that belong to your care path.',
+          style: _bodyStyle(),
+        ),
+        SizedBox(height: 28.h),
+        if (error != null) ...[
+          _InlineError(message: error!),
+          SizedBox(height: 14.h),
+        ],
+        _RoleCard(
+          icon: Icons.favorite_border_rounded,
+          title: 'Patient',
+          subtitle:
+              'Find verified care, book appointments, and manage your care profile when needed.',
+          badge: 'Fast setup',
+          onTap: isSubmitting ? null : () => onRoleSelected(SignUpRole.patient),
+        ),
+        SizedBox(height: 14.h),
+        _RoleCard(
+          icon: Icons.medical_services_outlined,
+          title: 'Medical professional',
+          subtitle:
+              'Apply for profile review, submit credentials, and use professional tools after approval.',
+          badge: 'Verification required',
+          onTap:
+              isSubmitting
+                  ? null
+                  : () => onRoleSelected(SignUpRole.professional),
+        ),
+        SizedBox(height: 30.h),
+        CarenetButton(
+          label: 'Already have an account? Sign in',
+          type: CarenetButtonType.outline,
+          onPressed: () => Navigator.pushNamed(context, RouteName.signInEmail),
+        ),
+      ],
+    );
+  }
+}
+
+class _MethodStep extends StatelessWidget {
+  const _MethodStep({
+    required this.role,
+    required this.isSubmitting,
+    required this.googleEnabled,
+    required this.error,
+    required this.onChangeRole,
+    required this.onEmail,
+    required this.onGoogle,
+  });
+
+  final SignUpRole role;
+  final bool isSubmitting;
+  final bool googleEnabled;
+  final String? error;
+  final VoidCallback onChangeRole;
+  final VoidCallback onEmail;
+  final VoidCallback onGoogle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SmallLabel(label: 'Signup method'),
+        SizedBox(height: 10.h),
+        Text(
+          'Create your ${role.title.toLowerCase()} account',
+          style: _titleStyle(),
+        ),
+        SizedBox(height: 12.h),
+        _SelectedRolePill(role: role, onChangeRole: onChangeRole),
+        SizedBox(height: 20.h),
+        Text(
+          'Your signup method creates the secure account only. CareNet will ask role-specific profile details after this step.',
+          style: _bodyStyle(),
+        ),
+        SizedBox(height: 22.h),
+        if (error != null) ...[
+          _InlineError(message: error!),
+          SizedBox(height: 14.h),
+        ],
+        _MethodCard(
+          assetPath: AssetsIcon.google,
+          title:
+              isSubmitting ? 'Connecting to Google...' : 'Continue with Google',
+          subtitle:
+              googleEnabled
+                  ? 'Use a verified Google identity. CareNet profile fields are still entered separately.'
+                  : 'Google sign-up needs provider configuration before it can be used.',
+          onTap: isSubmitting || !googleEnabled ? null : onGoogle,
+        ),
+        SizedBox(height: 12.h),
+        _MethodCard(
+          icon: Icons.mail_outline_rounded,
+          title: 'Continue with email',
+          subtitle: 'Create an account with email and password.',
+          onTap: isSubmitting ? null : onEmail,
+        ),
+        SizedBox(height: 12.h),
+        const _MethodCard(
+          icon: Icons.phone_iphone_rounded,
+          title: 'Continue with phone',
+          subtitle:
+              'Phone signup is unavailable until real OTP verification is ready.',
+          onTap: null,
+        ),
+      ],
+    );
+  }
+}
+
 class _RoleCard extends StatelessWidget {
   const _RoleCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.badge,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String badge;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return _BaseCard(
+      enabled: onTap != null,
+      onTap: onTap,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _IconTile(icon: icon),
+          SizedBox(width: 13.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: Text(title, style: _cardTitleStyle())),
+                    SizedBox(width: 8.w),
+                    _Badge(label: badge),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                Text(subtitle, style: _cardBodyStyle()),
+              ],
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: const Color(0xFF155E63),
+            size: 24.sp,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MethodCard extends StatelessWidget {
+  const _MethodCard({
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.icon,
+    this.assetPath,
   });
 
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
+  final IconData? icon;
+  final String? assetPath;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8.r),
+    final enabled = onTap != null;
+
+    return _BaseCard(
+      enabled: enabled,
       onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: REdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.primaryBlue5),
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(Icons.account_circle_outlined, color: AppColors.primaryBlue5),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontFamily: AppFonts.montserrat,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.kBlack,
-                    ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _MethodIcon(icon: icon, assetPath: assetPath, enabled: enabled),
+          SizedBox(width: 13.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: _cardTitleStyle().copyWith(
+                    color:
+                        enabled
+                            ? const Color(0xFF102A2A)
+                            : CarenetColors.neutral400,
                   ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontFamily: AppFonts.montserrat,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.kBlack,
-                    ),
+                ),
+                SizedBox(height: 7.h),
+                Text(
+                  subtitle,
+                  style: _cardBodyStyle().copyWith(
+                    color:
+                        enabled
+                            ? CarenetColors.neutral500
+                            : CarenetColors.neutral400,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            SizedBox(width: 8.w),
-            Icon(Icons.chevron_right, color: AppColors.primaryBlue5),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BaseCard extends StatelessWidget {
+  const _BaseCard({required this.enabled, required this.child, this.onTap});
+
+  final bool enabled;
+  final Widget child;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: enabled ? 1 : 0.58,
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.r),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8.r),
+          child: Ink(
+            width: double.infinity,
+            padding: REdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.r),
+              border: Border.all(
+                color:
+                    enabled
+                        ? const Color(0xFFD8E9E6)
+                        : CarenetColors.neutral200,
+              ),
+              boxShadow:
+                  enabled
+                      ? [
+                        BoxShadow(
+                          color: const Color(
+                            0xFF155E63,
+                          ).withValues(alpha: 0.06),
+                          blurRadius: 18,
+                          offset: const Offset(0, 10),
+                        ),
+                      ]
+                      : null,
+            ),
+            child: child,
+          ),
         ),
       ),
     );
   }
+}
+
+class _IconTile extends StatelessWidget {
+  const _IconTile({required this.icon});
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 42.w,
+      height: 42.w,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE5F4F1),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Icon(icon, color: const Color(0xFF155E63), size: 22.sp),
+    );
+  }
+}
+
+class _MethodIcon extends StatelessWidget {
+  const _MethodIcon({this.icon, this.assetPath, required this.enabled});
+
+  final IconData? icon;
+  final String? assetPath;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final child =
+        assetPath != null
+            ? SvgImage(imgName: assetPath!)
+            : Icon(
+              icon,
+              color:
+                  enabled ? const Color(0xFF155E63) : CarenetColors.neutral400,
+              size: 21.sp,
+            );
+
+    return Container(
+      width: 38.w,
+      height: 38.w,
+      decoration: BoxDecoration(
+        color: enabled ? const Color(0xFFE5F4F1) : CarenetColors.neutral100,
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      padding: REdgeInsets.all(assetPath != null ? 9 : 0),
+      child: Center(child: child),
+    );
+  }
+}
+
+class _SelectedRolePill extends StatelessWidget {
+  const _SelectedRolePill({required this.role, required this.onChangeRole});
+
+  final SignUpRole role;
+  final VoidCallback onChangeRole;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: REdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE5F4F1),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            role == SignUpRole.professional
+                ? Icons.medical_services_outlined
+                : Icons.favorite_border_rounded,
+            color: const Color(0xFF155E63),
+            size: 18.sp,
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              '${role.title} account selected',
+              style: TextStyle(
+                fontFamily: AppFonts.montserrat,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF155E63),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: onChangeRole,
+            child: Text(
+              'Change',
+              style: TextStyle(
+                fontFamily: AppFonts.montserrat,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF155E63),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SmallLabel extends StatelessWidget {
+  const _SmallLabel({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label.toUpperCase(),
+      style: TextStyle(
+        fontFamily: AppFonts.montserrat,
+        fontSize: 11.sp,
+        fontWeight: FontWeight.w800,
+        color: const Color(0xFF155E63),
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: REdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF7EF),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: AppFonts.montserrat,
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w800,
+          color: const Color(0xFF18794E),
+        ),
+      ),
+    );
+  }
+}
+
+class _InlineError extends StatelessWidget {
+  const _InlineError({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: REdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: CarenetColors.error200,
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          fontFamily: AppFonts.montserrat,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w700,
+          color: CarenetColors.error100,
+        ),
+      ),
+    );
+  }
+}
+
+TextStyle _titleStyle() {
+  return TextStyle(
+    fontFamily: AppFonts.montserrat,
+    fontSize: 27.sp,
+    height: 1.16,
+    fontWeight: FontWeight.w800,
+    color: const Color(0xFF102A2A),
+  );
+}
+
+TextStyle _bodyStyle() {
+  return TextStyle(
+    fontFamily: AppFonts.montserrat,
+    fontSize: 14.sp,
+    height: 1.5,
+    fontWeight: FontWeight.w500,
+    color: CarenetColors.neutral500,
+  );
+}
+
+TextStyle _cardTitleStyle() {
+  return TextStyle(
+    fontFamily: AppFonts.montserrat,
+    fontSize: 15.sp,
+    fontWeight: FontWeight.w800,
+    color: const Color(0xFF102A2A),
+  );
+}
+
+TextStyle _cardBodyStyle() {
+  return TextStyle(
+    fontFamily: AppFonts.montserrat,
+    fontSize: 12.sp,
+    height: 1.38,
+    fontWeight: FontWeight.w500,
+    color: CarenetColors.neutral500,
+  );
 }

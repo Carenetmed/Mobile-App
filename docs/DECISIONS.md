@@ -108,6 +108,7 @@ does not silently reinterpret established boundaries.
 | D172 | 2026-07-19 | Onboarding destinations need backend-readiness progress guidance | After readiness routing, patient/professional setup and professional verification documents should display backend-owned progress, required profile fields, required/missing evidence, and safe status/retry copy. Flutter must not invent local readiness, verification approval, role switching, or new backend document-code contracts | APP-ID-011 |
 | D173 | 2026-07-19 | Onboarding progress panels must remain backend-owned | Patient/professional setup and professional verification documents may display required profile fields and evidence guidance from `account/readiness` and onboarding catalogs, but upload success remains pending review and Flutter must not claim approval, resolve duplicate identity, or invent application state | APP-ID-012 |
 | D174 | 2026-07-19 | Onboarding hardening needs a proof gate before expansion | Before more onboarding feature expansion or broad UI redesign, run a focused regression and staging Android phone-smoke gate that proves email/password signup, Google first-time signup, backend readiness routing, patient/professional setup, verification evidence guidance, safe failure states, and blocker recording | APP-ID-013 |
+| D175 | 2026-07-19 | Recover auth onboarding gateway without rolling back backend readiness | Restore the first-launch gateway and role-first signup method UX from older unmerged APP-66 through APP-73 work, but do not merge those branches wholesale or roll back APP-ID backend catalog/readiness/profile/verification wiring | APP-ID-015 |
 
 ## How to add a row
 
@@ -1892,3 +1893,27 @@ phone/OTP, MFA, admin review, payments, calls, reviews, notes, or prescriptions.
 
 Next: run device/staging smoke for Google first-time signup when an Android
 device is visible to ADB and a suitable test Google account is available.
+
+## D175 - Recover auth onboarding gateway without rolling back backend readiness
+
+Task: APP-ID-015
+
+Decision: Selectively recover the first-launch gateway and role-first signup
+method UX from the older APP-66 through APP-73 work. Do not merge those branches
+wholesale because they predate APP-ID backend catalog, readiness, profile setup,
+and verification guidance work.
+
+Reason: The current frontend milestone had the correct backend contracts but
+still displayed the older carousel that pushed users toward phone signup. That
+made the visible product feel regressed and inconsistent with the serious
+patient/professional onboarding boundary.
+
+Consequences: First launch now offers browse, create account, and sign-in
+choices. Create account opens role-first signup. Gateway role selection can then
+choose Google or email. Existing email/phone entry flows still validate their
+entry data before role selection and finish signup. Google signup still uses a
+real provider token and backend readiness routing; no dummy fallback, fake local
+account creation, or fake professional approval was introduced.
+
+Next: run APP-ID-016 real-device smoke on the recovered auth onboarding path
+before claiming the UX recovery works on phone.

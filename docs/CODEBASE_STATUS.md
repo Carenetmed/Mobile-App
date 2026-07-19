@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-19 Onboarding phone-smoke build checkpoint.
+**Last updated:** 2026-07-19 Auth onboarding UX recovery.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -23,7 +23,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Start screen | `RouteName.splash` (not notifications) |
 | Splash -> session guard | 800ms then `AuthRepository.restore()` routes usable stored sessions to `dashboard`; missing, invalid, or failed restore falls back to `onboarding` |
 | Named routes | **73 wired routes** in `router.dart` plus the reserved unused `login` constant (see `ROUTES.md`) |
-| Onboarding UI | 3 pages, skip, next, get started -> sign up phone |
+| Onboarding UI | First launch shows a care gateway with `Browse verified care`, `Create account`, and `Already have an account? Sign in`. Create account opens role-first signup instead of direct phone signup |
 | Role-based onboarding boundary | `ROLE_BASED_ONBOARDING_AUTH_BOUNDARY.md` records the PRD-backed product decision that CareNet sign-up must branch into patient and professional onboarding before Google sign-up or broader auth expansion. Professional accounts must proceed through profile, credential upload, and manual verification before public listing |
 | Role-registration backend contract | `ROLE_REGISTRATION_BACKEND_CONTRACT.md` records the exact frontend/backend boundary: email/password and Google-created accounts must use explicit `PATIENT`/`PROFESSIONAL` role selection before account creation is treated as complete. Existing linked Google sign-in and authenticated Google linking remain valid, but first-time Google sign-up stays disabled until role-selection onboarding exists |
 | Role-selection signup | `signUpRole` now sits between signup entry and account creation. Email/password registration sends only `email`, `password`, and the selected backend role. Configured Google signup also requires patient/professional role selection, sends a real Google `idToken` plus selected role, then routes into the matching setup surface. Patient registration continues to `patientOnboardingSetup`; professional registration continues to `medicalProfessional` |
@@ -38,6 +38,8 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | Onboarding readiness progress panel | Patient setup, professional setup, and professional verification documents now show backend-owned readiness guidance. Setup screens display required profile fields returned by `account/readiness`; verification documents displays required/missing evidence with catalog labels plus safe retry copy when requirements cannot load |
 | Onboarding regression and phone-smoke plan | `ONBOARDING_REGRESSION_AND_PHONE_SMOKE_PLAN.md` defines the focused proof gate for the hardened onboarding/auth setup: local regression, staging Android patient/professional signup, Google first-time signup, readiness routing, setup progress panels, verification evidence guidance, safe failure states, and exact blocker recording |
 | Onboarding phone-smoke execution | `ONBOARDING_PHONE_SMOKE_EXECUTION.md` records that the staging Android debug APK builds with staging gateway and Google config, but real phone smoke is blocked because no Android device is visible to Flutter/ADB |
+| Auth onboarding UX recovery | `AUTH_ONBOARDING_UX_RECOVERY.md` records APP-ID-015: the gateway and role-first signup UX from older unmerged APP-66 through APP-73 work was recovered without rolling back newer backend catalog/readiness/profile/verification contracts |
+| Recovered onboarding device checkpoint | APP-ID-016 checkpoint rebuilt the staging APK with Google config, installed it on Android device `6tkvkvindaqogurk`, launched `com.carenet.app`, and confirmed the recovered first-launch gateway through UI dump. Full role/signup/readiness manual smoke remains open |
 | Onboarding setup regression | `ONBOARDING_SETUP_REGRESSION_AND_PHONE_SMOKE.md` records APP-61 grouped regression proof: 116 auth/onboarding/profile/account tests passed, focused analyze passed, and the staging-configured debug APK built. Phone install/manual smoke is still pending because ADB reported no connected device during APP-61 |
 | Sign-up phone | Validates country/region + phone, then routes to `finishSignUp` |
 | Sign-up email | Validates email, then routes to `finishSignUp` |

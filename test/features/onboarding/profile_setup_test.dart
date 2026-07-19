@@ -75,6 +75,43 @@ void main() {
       expect(find.text('community-agreement'), findsOneWidget);
     });
 
+    testWidgets('patient setup shows backend required profile fields', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository();
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        child: PatientOnboardingSetupPage(
+          profileRepository: repository,
+          onboardingRepository: _FakeOnboardingRepository(
+            readiness: const AccountReadiness(
+              account: ReadinessAccount(
+                role: 'PATIENT',
+                status: 'ACTIVE',
+                emailVerified: false,
+              ),
+              patient: PatientReadiness(
+                profileStatus: 'DRAFT',
+                requiredFields: <String>['name', 'country'],
+              ),
+              professional: null,
+              nextAction: 'PATIENT_SETUP',
+              requiredActions: <String>['PATIENT_name', 'PATIENT_country'],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Patient readiness'), findsOneWidget);
+      expect(
+        find.text('2 patient profile fields still need confirmation.'),
+        findsOneWidget,
+      );
+      expect(find.text('Required patient field: Name'), findsOneWidget);
+      expect(find.text('Required patient field: Country'), findsOneWidget);
+    });
+
     testWidgets('patient setup blocks save when catalog cannot load', (
       tester,
     ) async {
@@ -129,6 +166,68 @@ void main() {
       expect(find.text('License number is required'), findsOneWidget);
       expect(find.text('Qualifications are required'), findsOneWidget);
       expect(find.text('verification-documents'), findsNothing);
+    });
+
+    testWidgets('professional setup shows backend required profile fields', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository();
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        child: ProfessionalOnboardingSetupPage(
+          profileRepository: repository,
+          onboardingRepository: _FakeOnboardingRepository(
+            readiness: const AccountReadiness(
+              account: ReadinessAccount(
+                role: 'PROFESSIONAL',
+                status: 'ACTIVE',
+                emailVerified: true,
+              ),
+              patient: null,
+              professional: ProfessionalReadiness(
+                applicationStatus: 'DRAFT',
+                verificationStatus: 'NOT_SUBMITTED',
+                countryCode: 'NG',
+                professionCode: 'MEDICAL_DOCTOR',
+                regulatorCode: 'MDCN',
+                requiredProfileFields: <String>[
+                  'licenseNumber',
+                  'practiceState',
+                ],
+                requiredEvidence: <String>[
+                  'PROFESSIONAL_REGISTRATION_OR_LICENSE',
+                ],
+                missingEvidence: <String>[
+                  'PROFESSIONAL_REGISTRATION_OR_LICENSE',
+                ],
+              ),
+              nextAction: 'PROFESSIONAL_RESUME_APPLICATION',
+              requiredActions: <String>[
+                'PROFESSIONAL_licenseNumber',
+                'PROFESSIONAL_practiceState',
+              ],
+            ),
+          ),
+        ),
+      );
+
+      await tester.ensureVisible(find.text('Professional readiness'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Professional readiness'), findsOneWidget);
+      expect(
+        find.text('2 professional profile fields still need confirmation.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Required profile field: License Number'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Required profile field: Practice State'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('professional setup saves required Nigeria profile fields', (
@@ -221,9 +320,10 @@ Future<void> _fillMinimumProfessionalForm(WidgetTester tester) async {
 }
 
 class _FakeOnboardingRepository implements OnboardingRepository {
-  _FakeOnboardingRepository({this.failure});
+  _FakeOnboardingRepository({this.failure, this.readiness});
 
   final AuthFailure? failure;
+  final AccountReadiness? readiness;
   int catalogCalls = 0;
   int readinessCalls = 0;
 
@@ -240,29 +340,30 @@ class _FakeOnboardingRepository implements OnboardingRepository {
   @override
   Future<AccountReadiness> accountReadiness() async {
     readinessCalls += 1;
-    return const AccountReadiness(
-      account: ReadinessAccount(
-        role: 'PATIENT',
-        status: 'ACTIVE',
-        emailVerified: true,
-      ),
-      patient: PatientReadiness(
-        profileStatus: 'INCOMPLETE',
-        requiredFields: <String>['name'],
-      ),
-      professional: ProfessionalReadiness(
-        applicationStatus: 'DRAFT',
-        verificationStatus: 'NOT_SUBMITTED',
-        countryCode: 'NG',
-        professionCode: 'MEDICAL_DOCTOR',
-        regulatorCode: 'MDCN',
-        requiredProfileFields: <String>['licenseNumber'],
-        requiredEvidence: <String>['LICENSE'],
-        missingEvidence: <String>['LICENSE'],
-      ),
-      nextAction: 'COMPLETE_PROFILE',
-      requiredActions: <String>[],
-    );
+    return readiness ??
+        const AccountReadiness(
+          account: ReadinessAccount(
+            role: 'PATIENT',
+            status: 'ACTIVE',
+            emailVerified: true,
+          ),
+          patient: PatientReadiness(
+            profileStatus: 'INCOMPLETE',
+            requiredFields: <String>['name'],
+          ),
+          professional: ProfessionalReadiness(
+            applicationStatus: 'DRAFT',
+            verificationStatus: 'NOT_SUBMITTED',
+            countryCode: 'NG',
+            professionCode: 'MEDICAL_DOCTOR',
+            regulatorCode: 'MDCN',
+            requiredProfileFields: <String>['licenseNumber'],
+            requiredEvidence: <String>['LICENSE'],
+            missingEvidence: <String>['LICENSE'],
+          ),
+          nextAction: 'COMPLETE_PROFILE',
+          requiredActions: <String>[],
+        );
   }
 }
 

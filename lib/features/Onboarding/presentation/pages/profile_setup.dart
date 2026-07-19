@@ -3,16 +3,24 @@ import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
+import 'package:app_t/features/Home/domain/entities/onboarding_catalog.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PatientOnboardingSetupPage extends StatefulWidget {
-  const PatientOnboardingSetupPage({super.key, this.profileRepository});
+  const PatientOnboardingSetupPage({
+    super.key,
+    this.profileRepository,
+    this.onboardingRepository,
+  });
 
   final ProfileRepository? profileRepository;
+  final OnboardingRepository? onboardingRepository;
 
   @override
   State<PatientOnboardingSetupPage> createState() =>
@@ -25,9 +33,12 @@ class _PatientOnboardingSetupPageState
   final _nameController = TextEditingController();
   final _dateOfBirthController = TextEditingController();
   final _cityController = TextEditingController();
-  final _stateController = TextEditingController();
-  final _countryController = TextEditingController(text: 'Nigeria');
-  final _healthInterestsController = TextEditingController();
+  OnboardingCatalog? _catalog;
+  OnboardingCountry? _selectedCountry;
+  OnboardingRegion? _selectedState;
+  PatientHealthInterest? _selectedHealthInterest;
+  AccountReadiness? _readiness;
+  bool _isLoadingCatalog = true;
   bool _isSaving = false;
   String? _message;
   DateTime? _dateOfBirth;
@@ -35,14 +46,20 @@ class _PatientOnboardingSetupPageState
   ProfileRepository get _profileRepository =>
       widget.profileRepository ?? sl<ProfileRepository>();
 
+  OnboardingRepository get _onboardingRepository =>
+      widget.onboardingRepository ?? sl<OnboardingRepository>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCatalog();
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _dateOfBirthController.dispose();
     _cityController.dispose();
-    _stateController.dispose();
-    _countryController.dispose();
-    _healthInterestsController.dispose();
     super.dispose();
   }
 
@@ -75,42 +92,59 @@ class _PatientOnboardingSetupPageState
               suffixIcon: const Icon(Icons.calendar_today_outlined),
             ),
             SizedBox(height: 14.h),
-            Row(
-              children: [
-                Expanded(
-                  child: CarenetTextField(
-                    label: 'City',
-                    hintText: 'Lagos',
-                    controller: _cityController,
-                    textInputAction: TextInputAction.next,
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: CarenetTextField(
-                    label: 'State',
-                    hintText: 'Lagos',
-                    controller: _stateController,
-                    textInputAction: TextInputAction.next,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 14.h),
             CarenetTextField(
-              label: 'Country',
-              hintText: 'Nigeria',
-              controller: _countryController,
+              label: 'City',
+              hintText: 'Lagos',
+              controller: _cityController,
               textInputAction: TextInputAction.next,
             ),
             SizedBox(height: 14.h),
-            CarenetTextField(
-              label: 'Health interests',
-              hintText: 'Primary care, wellness, diabetes support',
-              controller: _healthInterestsController,
-              minLines: 3,
-              maxLines: 4,
+            _CatalogSelect<OnboardingRegion>(
+              label: 'State',
+              hintText: _catalogHint('Select state'),
+              value: _selectedState,
+              items: _catalog?.nigeriaStates ?? const <OnboardingRegion>[],
+              itemLabel: (state) => state.name,
+              onChanged:
+                  _isCatalogReady
+                      ? (state) => setState(() => _selectedState = state)
+                      : null,
+              validator: (state) => state == null ? 'State is required' : null,
             ),
+            SizedBox(height: 14.h),
+            _CatalogSelect<OnboardingCountry>(
+              label: 'Country',
+              hintText: _catalogHint('Select country'),
+              value: _selectedCountry,
+              items: _catalog?.countries ?? const <OnboardingCountry>[],
+              itemLabel: (country) => country.name,
+              onChanged:
+                  _isCatalogReady
+                      ? (country) => setState(() => _selectedCountry = country)
+                      : null,
+              validator:
+                  (country) => country == null ? 'Country is required' : null,
+            ),
+            SizedBox(height: 14.h),
+            _CatalogSelect<PatientHealthInterest>(
+              label: 'Primary health interest',
+              hintText: _catalogHint('Select interest'),
+              value: _selectedHealthInterest,
+              items:
+                  _catalog?.patientHealthInterestCatalog ??
+                  const <PatientHealthInterest>[],
+              itemLabel: (interest) => interest.label,
+              onChanged:
+                  _isCatalogReady
+                      ? (interest) =>
+                          setState(() => _selectedHealthInterest = interest)
+                      : null,
+              validator:
+                  (interest) =>
+                      interest == null ? 'Health interest is required' : null,
+            ),
+            SizedBox(height: 16.h),
+            _InfoCard(message: _readinessCopy(_readiness, 'patient')),
             _StatusText(message: _message),
             SizedBox(height: 20.h),
             CarenetButton(
@@ -121,6 +155,62 @@ class _PatientOnboardingSetupPageState
         ),
       ),
     );
+  }
+
+  bool get _isCatalogReady => !_isLoadingCatalog && _catalog != null;
+
+  Future<void> _loadCatalog() async {
+    try {
+      final catalog = await _onboardingRepository.onboardingCatalog();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _catalog = catalog;
+        _selectedCountry = _firstLaunchCountry(catalog);
+        _selectedState =
+            catalog.nigeriaStates.isNotEmpty
+                ? catalog.nigeriaStates.first
+                : null;
+        _selectedHealthInterest =
+            catalog.patientHealthInterestCatalog.isNotEmpty
+                ? catalog.patientHealthInterestCatalog.first
+                : null;
+        _isLoadingCatalog = false;
+      });
+      _loadReadiness();
+    } on AuthFailure catch (failure) {
+      if (mounted) {
+        setState(() {
+          _message = failure.message;
+          _isLoadingCatalog = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _message = 'Could not load onboarding options. Please try again.';
+          _isLoadingCatalog = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadReadiness() async {
+    try {
+      final readiness = await _onboardingRepository.accountReadiness();
+      if (mounted) {
+        setState(() => _readiness = readiness);
+      }
+    } on AuthFailure catch (failure) {
+      if (mounted) {
+        setState(() => _message = failure.message);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _message = 'Could not load account readiness.');
+      }
+    }
   }
 
   Future<void> _pickDateOfBirth() async {
@@ -144,6 +234,10 @@ class _PatientOnboardingSetupPageState
     setState(() {
       _message = null;
     });
+    if (!_isCatalogReady) {
+      setState(() => _message = 'Onboarding options are still unavailable.');
+      return;
+    }
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
@@ -155,9 +249,9 @@ class _PatientOnboardingSetupPageState
         name: _nameController.text.trim(),
         dateOfBirth: _dateOfBirth,
         city: _emptyToNull(_cityController.text),
-        state: _emptyToNull(_stateController.text),
-        country: _emptyToNull(_countryController.text),
-        healthInterests: _emptyToNull(_healthInterestsController.text),
+        state: _selectedState?.name,
+        country: _selectedCountry?.name,
+        healthInterests: _selectedHealthInterest?.label,
       );
       if (!mounted) {
         return;
@@ -180,9 +274,14 @@ class _PatientOnboardingSetupPageState
 }
 
 class ProfessionalOnboardingSetupPage extends StatefulWidget {
-  const ProfessionalOnboardingSetupPage({super.key, this.profileRepository});
+  const ProfessionalOnboardingSetupPage({
+    super.key,
+    this.profileRepository,
+    this.onboardingRepository,
+  });
 
   final ProfileRepository? profileRepository;
+  final OnboardingRepository? onboardingRepository;
 
   @override
   State<ProfessionalOnboardingSetupPage> createState() =>
@@ -194,38 +293,45 @@ class _ProfessionalOnboardingSetupPageState
   final _formKey = GlobalKey<FormState>();
   final _legalNameController = TextEditingController();
   final _displayNameController = TextEditingController();
-  final _categoryController = TextEditingController();
   final _specialtyController = TextEditingController();
   final _licenseNumberController = TextEditingController();
-  final _licensingCouncilController = TextEditingController(text: 'MDCN');
   final _qualificationsController = TextEditingController();
   final _yearsController = TextEditingController();
   final _practiceNameController = TextEditingController();
   final _practiceAddressController = TextEditingController();
   final _practiceCityController = TextEditingController();
-  final _practiceStateController = TextEditingController();
-  final _practiceCountryController = TextEditingController(text: 'Nigeria');
+  OnboardingCatalog? _catalog;
+  OnboardingCountry? _selectedCountry;
+  OnboardingRegion? _selectedState;
+  ProfessionalCatalogItem? _selectedProfession;
+  AccountReadiness? _readiness;
+  bool _isLoadingCatalog = true;
   bool _isSaving = false;
   String? _message;
 
   ProfileRepository get _profileRepository =>
       widget.profileRepository ?? sl<ProfileRepository>();
 
+  OnboardingRepository get _onboardingRepository =>
+      widget.onboardingRepository ?? sl<OnboardingRepository>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCatalog();
+  }
+
   @override
   void dispose() {
     _legalNameController.dispose();
     _displayNameController.dispose();
-    _categoryController.dispose();
     _specialtyController.dispose();
     _licenseNumberController.dispose();
-    _licensingCouncilController.dispose();
     _qualificationsController.dispose();
     _yearsController.dispose();
     _practiceNameController.dispose();
     _practiceAddressController.dispose();
     _practiceCityController.dispose();
-    _practiceStateController.dispose();
-    _practiceCountryController.dispose();
     super.dispose();
   }
 
@@ -258,12 +364,24 @@ class _ProfessionalOnboardingSetupPageState
               validator: _required('Public professional name is required'),
             ),
             SizedBox(height: 14.h),
-            CarenetTextField(
+            _CatalogSelect<ProfessionalCatalogItem>(
               label: 'Profession/category',
-              hintText: 'Doctor, Nurse, Pharmacist',
-              controller: _categoryController,
-              textInputAction: TextInputAction.next,
-              validator: _required('Profession/category is required'),
+              hintText: _catalogHint('Select profession'),
+              value: _selectedProfession,
+              items:
+                  _catalog?.professionalCatalog ??
+                  const <ProfessionalCatalogItem>[],
+              itemLabel: (profession) => profession.label,
+              onChanged:
+                  _isCatalogReady
+                      ? (profession) =>
+                          setState(() => _selectedProfession = profession)
+                      : null,
+              validator:
+                  (profession) =>
+                      profession == null
+                          ? 'Profession/category is required'
+                          : null,
             ),
             SizedBox(height: 14.h),
             CarenetTextField(
@@ -282,12 +400,10 @@ class _ProfessionalOnboardingSetupPageState
               validator: _required('License number is required'),
             ),
             SizedBox(height: 14.h),
-            CarenetTextField(
+            _ReadOnlyValue(
               label: 'Licensing council/body',
-              hintText: 'MDCN, NMCN, PCN',
-              controller: _licensingCouncilController,
-              textInputAction: TextInputAction.next,
-              validator: _required('Licensing council is required'),
+              value: _selectedProfession?.regulatorName,
+              emptyText: _catalogHint('Selected from profession'),
             ),
             SizedBox(height: 14.h),
             CarenetTextField(
@@ -334,30 +450,45 @@ class _ProfessionalOnboardingSetupPageState
                     validator: _required('Practice city is required'),
                   ),
                 ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: CarenetTextField(
-                    label: 'Practice state',
-                    hintText: 'Lagos',
-                    controller: _practiceStateController,
-                    textInputAction: TextInputAction.next,
-                    validator: _required('Practice state is required'),
-                  ),
-                ),
               ],
             ),
             SizedBox(height: 14.h),
-            CarenetTextField(
+            _CatalogSelect<OnboardingRegion>(
+              label: 'Practice state',
+              hintText: _catalogHint('Select state'),
+              value: _selectedState,
+              items: _catalog?.nigeriaStates ?? const <OnboardingRegion>[],
+              itemLabel: (state) => state.name,
+              onChanged:
+                  _isCatalogReady
+                      ? (state) => setState(() => _selectedState = state)
+                      : null,
+              validator:
+                  (state) =>
+                      state == null ? 'Practice state is required' : null,
+            ),
+            SizedBox(height: 14.h),
+            _CatalogSelect<OnboardingCountry>(
               label: 'Practice country',
-              hintText: 'Nigeria',
-              controller: _practiceCountryController,
-              textInputAction: TextInputAction.done,
+              hintText: _catalogHint('Select country'),
+              value: _selectedCountry,
+              items: _catalog?.countries ?? const <OnboardingCountry>[],
+              itemLabel: (country) => country.name,
+              onChanged:
+                  _isCatalogReady
+                      ? (country) => setState(() => _selectedCountry = country)
+                      : null,
+              validator:
+                  (country) =>
+                      country == null ? 'Practice country is required' : null,
             ),
             SizedBox(height: 16.h),
             const _InfoCard(
               message:
                   'Next you will upload license, identity, or certification documents. CareNet will not mark your profile verified from this form alone.',
             ),
+            SizedBox(height: 12.h),
+            _InfoCard(message: _readinessCopy(_readiness, 'professional')),
             _StatusText(message: _message),
             SizedBox(height: 20.h),
             CarenetButton(
@@ -370,10 +501,70 @@ class _ProfessionalOnboardingSetupPageState
     );
   }
 
+  bool get _isCatalogReady => !_isLoadingCatalog && _catalog != null;
+
+  Future<void> _loadCatalog() async {
+    try {
+      final catalog = await _onboardingRepository.onboardingCatalog();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _catalog = catalog;
+        _selectedCountry = _firstLaunchCountry(catalog);
+        _selectedState =
+            catalog.nigeriaStates.isNotEmpty
+                ? catalog.nigeriaStates.first
+                : null;
+        _selectedProfession =
+            catalog.professionalCatalog.isNotEmpty
+                ? catalog.professionalCatalog.first
+                : null;
+        _isLoadingCatalog = false;
+      });
+      _loadReadiness();
+    } on AuthFailure catch (failure) {
+      if (mounted) {
+        setState(() {
+          _message = failure.message;
+          _isLoadingCatalog = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _message = 'Could not load onboarding options. Please try again.';
+          _isLoadingCatalog = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadReadiness() async {
+    try {
+      final readiness = await _onboardingRepository.accountReadiness();
+      if (mounted) {
+        setState(() => _readiness = readiness);
+      }
+    } on AuthFailure catch (failure) {
+      if (mounted) {
+        setState(() => _message = failure.message);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _message = 'Could not load account readiness.');
+      }
+    }
+  }
+
   Future<void> _saveProfessionalProfile() async {
     setState(() {
       _message = null;
     });
+    if (!_isCatalogReady || _selectedProfession == null) {
+      setState(() => _message = 'Onboarding options are still unavailable.');
+      return;
+    }
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
@@ -384,17 +575,17 @@ class _ProfessionalOnboardingSetupPageState
       await _profileRepository.updateProfessionalMe(
         legalName: _legalNameController.text.trim(),
         displayName: _displayNameController.text.trim(),
-        category: _categoryController.text.trim(),
+        category: _selectedProfession!.label,
         specialty: _emptyToNull(_specialtyController.text),
         licenseNumber: _licenseNumberController.text.trim(),
-        licensingCouncil: _licensingCouncilController.text.trim(),
+        licensingCouncil: _selectedProfession!.regulatorCode,
         qualifications: _qualificationsController.text.trim(),
         yearsOfExperience: int.parse(_yearsController.text.trim()),
         practiceName: _practiceNameController.text.trim(),
         practiceAddress: _emptyToNull(_practiceAddressController.text),
         practiceCity: _practiceCityController.text.trim(),
-        practiceState: _practiceStateController.text.trim(),
-        practiceCountry: _emptyToNull(_practiceCountryController.text),
+        practiceState: _selectedState?.name,
+        practiceCountry: _selectedCountry?.name,
       );
       if (!mounted) {
         return;
@@ -541,6 +732,156 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
+class _CatalogSelect<T> extends StatelessWidget {
+  const _CatalogSelect({
+    required this.label,
+    required this.hintText,
+    required this.value,
+    required this.items,
+    required this.itemLabel,
+    required this.onChanged,
+    required this.validator,
+  });
+
+  final String label;
+  final String hintText;
+  final T? value;
+  final List<T> items;
+  final String Function(T item) itemLabel;
+  final ValueChanged<T?>? onChanged;
+  final String? Function(T?) validator;
+
+  @override
+  Widget build(BuildContext context) {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6.r),
+      borderSide: const BorderSide(color: CarenetColors.neutral200),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontFamily: AppFonts.montserrat,
+            fontWeight: FontWeight.w400,
+            color: CarenetColors.neutral700,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        DropdownButtonFormField<T>(
+          initialValue: items.contains(value) ? value : null,
+          items: items
+              .map(
+                (item) => DropdownMenuItem<T>(
+                  value: item,
+                  child: Text(itemLabel(item), overflow: TextOverflow.ellipsis),
+                ),
+              )
+              .toList(growable: false),
+          onChanged: onChanged,
+          validator: validator,
+          isExpanded: true,
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: TextStyle(
+              fontSize: 16.sp,
+              fontFamily: AppFonts.montserrat,
+              color: CarenetColors.neutral300,
+            ),
+            filled: true,
+            fillColor:
+                onChanged == null
+                    ? CarenetColors.neutral100
+                    : CarenetColors.white,
+            isDense: true,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 16.w,
+              vertical: 12.h,
+            ),
+            enabledBorder: border,
+            focusedBorder: border.copyWith(
+              borderSide: const BorderSide(color: CarenetColors.info100),
+            ),
+            disabledBorder: border,
+            errorBorder: border.copyWith(
+              borderSide: const BorderSide(color: CarenetColors.error100),
+            ),
+            focusedErrorBorder: border.copyWith(
+              borderSide: const BorderSide(color: CarenetColors.error100),
+            ),
+            errorStyle: TextStyle(
+              fontSize: 10.sp,
+              fontFamily: AppFonts.montserrat,
+              color: CarenetColors.error100,
+            ),
+          ),
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontFamily: AppFonts.montserrat,
+            color: CarenetColors.neutral700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReadOnlyValue extends StatelessWidget {
+  const _ReadOnlyValue({
+    required this.label,
+    required this.value,
+    required this.emptyText,
+  });
+
+  final String label;
+  final String? value;
+  final String emptyText;
+
+  @override
+  Widget build(BuildContext context) {
+    final display =
+        value?.trim().isNotEmpty == true ? value!.trim() : emptyText;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontFamily: AppFonts.montserrat,
+            fontWeight: FontWeight.w400,
+            color: CarenetColors.neutral700,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          decoration: BoxDecoration(
+            color: CarenetColors.neutral100,
+            borderRadius: BorderRadius.circular(6.r),
+            border: Border.all(color: CarenetColors.neutral200),
+          ),
+          child: Text(
+            display,
+            style: TextStyle(
+              fontSize: 16.sp,
+              fontFamily: AppFonts.montserrat,
+              color:
+                  value?.trim().isNotEmpty == true
+                      ? CarenetColors.neutral700
+                      : CarenetColors.neutral300,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _StatusText extends StatelessWidget {
   const _StatusText({required this.message});
 
@@ -585,6 +926,39 @@ String? _yearsValidator(String? value) {
 String? _emptyToNull(String value) {
   final trimmed = value.trim();
   return trimmed.isEmpty ? null : trimmed;
+}
+
+OnboardingCountry? _firstLaunchCountry(OnboardingCatalog catalog) {
+  for (final country in catalog.countries) {
+    if (country.code == catalog.launchCountry) {
+      return country;
+    }
+  }
+  return catalog.countries.isNotEmpty ? catalog.countries.first : null;
+}
+
+String _catalogHint(String fallback) {
+  return fallback;
+}
+
+String _readinessCopy(AccountReadiness? readiness, String role) {
+  final current = readiness;
+  if (current == null) {
+    return 'Checking account readiness before profile submission.';
+  }
+  if (role == 'professional' && current.professional != null) {
+    final missing = current.professional!.requiredProfileFields.length;
+    return missing == 0
+        ? 'Your professional profile fields are ready for document review.'
+        : '$missing professional profile fields still need confirmation.';
+  }
+  if (role == 'patient' && current.patient != null) {
+    final missing = current.patient!.requiredFields.length;
+    return missing == 0
+        ? 'Your patient profile is ready to continue.'
+        : '$missing patient profile fields still need confirmation.';
+  }
+  return 'Next step: ${current.nextAction.replaceAll('_', ' ').toLowerCase()}.';
 }
 
 String _formatDate(DateTime date) {

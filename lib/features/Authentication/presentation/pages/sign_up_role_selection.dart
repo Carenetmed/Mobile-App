@@ -6,6 +6,8 @@ import 'package:app_t/features/Authentication/data/repositories/auth_repository.
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
+import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,12 +19,14 @@ class SignUpRoleSelectionPage extends StatefulWidget {
     this.googleSignUp = false,
     this.authRepository,
     this.googleIdTokenProvider,
+    this.onboardingRepository,
   });
 
   final String? initialEmail;
   final bool googleSignUp;
   final AuthRepository? authRepository;
   final GoogleIdTokenProvider? googleIdTokenProvider;
+  final OnboardingRepository? onboardingRepository;
 
   @override
   State<SignUpRoleSelectionPage> createState() =>
@@ -39,6 +43,11 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
   GoogleIdTokenProvider get _googleIdTokenProvider =>
       widget.googleIdTokenProvider ?? sl<GoogleIdTokenProvider>();
 
+  OnboardingRepository get _onboardingRepository =>
+      widget.onboardingRepository ?? sl<OnboardingRepository>();
+
+  static const _routeResolver = OnboardingReadinessRouteResolver();
+
   Future<void> _continueAs(SignUpRole role) async {
     if (!widget.googleSignUp) {
       Navigator.pushNamed(
@@ -47,6 +56,7 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
         arguments: FinishSignUpArgs(
           initialEmail: widget.initialEmail,
           role: role,
+          onboardingRepository: widget.onboardingRepository,
         ),
       );
       return;
@@ -70,12 +80,11 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
       if (!mounted) {
         return;
       }
-      Navigator.pushNamed(
-        context,
-        role == SignUpRole.professional
-            ? RouteName.medicalProfessional
-            : RouteName.patientOnboardingSetup,
-      );
+      final routeName = await _resolveNextRoute(role);
+      if (!mounted) {
+        return;
+      }
+      Navigator.pushNamed(context, routeName);
     } on AuthFailure catch (failure) {
       if (!mounted) {
         return;
@@ -96,6 +105,27 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
           _isSubmitting = false;
         });
       }
+    }
+  }
+
+  Future<String> _resolveNextRoute(SignUpRole role) async {
+    try {
+      final readiness = await _onboardingRepository.accountReadiness();
+      return _routeResolver.resolve(
+        readiness: readiness,
+        fallbackRole: role.backendValue,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Account created. We could not check the next setup step. Please continue setup.',
+            ),
+          ),
+        );
+      }
+      return _routeResolver.fallbackForRole(role.backendValue);
     }
   }
 

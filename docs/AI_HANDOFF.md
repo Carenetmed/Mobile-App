@@ -249,7 +249,8 @@
 | APP-ID-007 | Align Onboarding Setup Payload Values To Backend Catalog Contract: update patient/professional setup wiring and tests so selected backend catalog values are the only values sent through the currently accepted profile DTO fields; do not invent unsupported `countryCode`/`professionCode`/`regulatorCode` request fields unless backend DTO/docs accept them | M | **DONE** |
 | APP-ID-008 | Decide Production Onboarding Domain Hardening Boundary: define patient/professional onboarding UX and backend contract gaps for Nigeria launch, including role switching/duplicate account behavior, partial applications, state/city controls, profession/regulator/license requirements, required evidence guidance, profile readiness, and abuse-resistant validation before broader runtime redesign; do not implement runtime behavior in this decision slice | M | **DONE** |
 | APP-ID-009 | Onboarding Readiness Resume And UX Hardening Plan: inspect current setup screens and backend readiness data, define the exact runtime UX changes for resume/progress/error handling, map backend next actions to Flutter destinations, and queue one narrow runtime slice; do not implement runtime behavior in this planning slice | M | **DONE** |
-| APP-ID-010 | Add Onboarding Readiness Route Resolver: map backend `AccountReadiness.nextAction` plus role to Flutter destinations, use it after successful email/password and Google signup before choosing setup route, test every known action and safe fallback, and do not redesign setup forms or add new product modules | M | **NEXT** |
+| APP-ID-010 | Add Onboarding Readiness Route Resolver: map backend `AccountReadiness.nextAction` plus role to Flutter destinations, use it after successful email/password and Google signup before choosing setup route, test every known action and safe fallback, and do not redesign setup forms or add new product modules | M | **DONE** |
+| APP-ID-011 | Add Onboarding Progress And Required Evidence Guidance Plan: decide how patient/professional setup and verification screens should display backend readiness progress, required profile fields, required evidence, pending/rejected states, and safe retry copy before runtime UI implementation; do not implement runtime behavior in this planning slice | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -419,10 +420,12 @@ was not listing a connected phone after APP-62.
     - signed file PUT and upload-complete were not reached
 20. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, successful verification upload after backend/storage upload-init is fixed, and cleanup/reset proof remain open under 53.2.
 
-## Manual test (last completed: APP-ID-009)
+## Manual test (last completed: APP-ID-010)
 
-APP-ID-009 is a planning/docs slice. It does not change runtime Flutter screens.
-Runtime phone smoke should follow APP-ID-010 or the first UI-hardening slice.
+APP-ID-010 changes post-signup routing only. Phone smoke should prove new
+patient/professional email signup and Google signup still route through backend
+readiness without sending professionals directly to dashboard on readiness
+failure.
 
 1. Backend profile DTOs and service normalization behavior were inspected in
    `C:\Users\asd\Music\carenet-backend-lab`.

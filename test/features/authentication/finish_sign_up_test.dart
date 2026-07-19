@@ -7,6 +7,9 @@ import 'package:app_t/features/Authentication/domain/entities/auth_session.dart'
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
+import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
+import 'package:app_t/features/Home/domain/entities/onboarding_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +19,7 @@ const Size _phoneSize = Size(430, 932);
 Future<void> _pumpFinishSignUp(
   WidgetTester tester, {
   _FakeAuthRepository? authRepository,
+  _FakeOnboardingRepository? onboardingRepository,
   String? initialEmail,
   SignUpRole selectedRole = SignUpRole.patient,
 }) async {
@@ -33,6 +37,8 @@ Future<void> _pumpFinishSignUp(
               RouteName.finishSignUp:
                   (_) => FinSignUp(
                     authRepository: authRepository ?? _FakeAuthRepository(),
+                    onboardingRepository:
+                        onboardingRepository ?? _FakeOnboardingRepository(),
                     initialEmail: initialEmail,
                     selectedRole: selectedRole,
                   ),
@@ -42,6 +48,8 @@ Future<void> _pumpFinishSignUp(
                   (_) => const Scaffold(body: Text('patient-setup')),
               RouteName.medicalProfessional:
                   (_) => const Scaffold(body: Text('professional-onboarding')),
+              RouteName.professionalVerificationDocuments:
+                  (_) => const Scaffold(body: Text('verification-documents')),
             },
           ),
     ),
@@ -72,7 +80,12 @@ void main() {
       tester,
     ) async {
       final repository = _FakeAuthRepository();
-      await _pumpFinishSignUp(tester, authRepository: repository);
+      final onboardingRepository = _FakeOnboardingRepository();
+      await _pumpFinishSignUp(
+        tester,
+        authRepository: repository,
+        onboardingRepository: onboardingRepository,
+      );
 
       final fields = find.byType(EditableText);
       await tester.enterText(fields.at(0), 'John');
@@ -92,6 +105,7 @@ void main() {
       expect(repository.lastEmail, 'john@example.com');
       expect(repository.lastRole, 'PATIENT');
       expect(repository.lastProfile, isEmpty);
+      expect(onboardingRepository.readinessCalls, 1);
       expect(find.text('patient-setup'), findsOneWidget);
     });
 
@@ -99,9 +113,16 @@ void main() {
       'registers professional role and routes to professional setup',
       (tester) async {
         final repository = _FakeAuthRepository();
+        final onboardingRepository = _FakeOnboardingRepository(
+          readiness: _readiness(
+            nextAction: 'PROFESSIONAL_UPLOAD_EVIDENCE',
+            role: 'PROFESSIONAL',
+          ),
+        );
         await _pumpFinishSignUp(
           tester,
           authRepository: repository,
+          onboardingRepository: onboardingRepository,
           selectedRole: SignUpRole.professional,
         );
 
@@ -111,7 +132,9 @@ void main() {
 
         expect(repository.registerCalls, 1);
         expect(repository.lastRole, 'PROFESSIONAL');
-        expect(find.text('professional-onboarding'), findsOneWidget);
+        expect(onboardingRepository.readinessCalls, 1);
+        expect(find.text('verification-documents'), findsOneWidget);
+        expect(find.text('professional-onboarding'), findsNothing);
         expect(find.text('community-agreement'), findsNothing);
         expect(find.text('patient-setup'), findsNothing);
       },
@@ -155,6 +178,7 @@ void main() {
       await _pumpFinishSignUp(
         tester,
         authRepository: _FakeAuthRepository(completer: completer),
+        onboardingRepository: _FakeOnboardingRepository(),
       );
 
       await _fillValidForm(tester);
@@ -170,6 +194,25 @@ void main() {
 
       expect(find.text('patient-setup'), findsOneWidget);
     });
+
+    testWidgets(
+      'falls back to selected professional setup when readiness check fails',
+      (tester) async {
+        await _pumpFinishSignUp(
+          tester,
+          authRepository: _FakeAuthRepository(),
+          onboardingRepository: _FakeOnboardingRepository(failReadiness: true),
+          selectedRole: SignUpRole.professional,
+        );
+
+        await _fillValidForm(tester);
+        await tester.tap(find.text(' Agree & continue'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('professional-onboarding'), findsOneWidget);
+        expect(find.text('patient-setup'), findsNothing);
+      },
+    );
 
     testWidgets('blocks navigation when confirm password does not match', (
       tester,
@@ -246,6 +289,36 @@ class _FakeAuthRepository implements AuthRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class _FakeOnboardingRepository implements OnboardingRepository {
+  _FakeOnboardingRepository({
+    AccountReadiness? readiness,
+    this.failReadiness = false,
+  }) : readiness =
+           readiness ??
+           _readiness(nextAction: 'PATIENT_SETUP', role: 'PATIENT');
+
+  final AccountReadiness readiness;
+  final bool failReadiness;
+  int readinessCalls = 0;
+
+  @override
+  Future<AccountReadiness> accountReadiness() async {
+    readinessCalls += 1;
+    if (failReadiness) {
+      throw const AuthFailure(
+        type: AuthFailureType.network,
+        message: 'Service is unavailable. Please try again.',
+      );
+    }
+    return readiness;
+  }
+
+  @override
+  Future<OnboardingCatalog> onboardingCatalog() async {
+    throw UnimplementedError();
+  }
+}
+
 AuthSession _session() {
   return const AuthSession(
     accessToken: 'access',
@@ -259,5 +332,31 @@ AuthSession _session() {
       status: 'ACTIVE',
       emailVerified: false,
     ),
+  );
+}
+
+AccountReadiness _readiness({
+  required String nextAction,
+  required String role,
+}) {
+  return AccountReadiness(
+    account: ReadinessAccount(
+      role: role,
+      status: 'ACTIVE',
+      emailVerified: true,
+    ),
+    patient: const PatientReadiness(
+      profileStatus: 'DRAFT',
+      requiredFields: <String>['name'],
+    ),
+    professional: const ProfessionalReadiness(
+      applicationStatus: 'DRAFT',
+      verificationStatus: 'NOT_SUBMITTED',
+      requiredProfileFields: <String>[],
+      requiredEvidence: <String>[],
+      missingEvidence: <String>[],
+    ),
+    nextAction: nextAction,
+    requiredActions: const <String>[],
   );
 }

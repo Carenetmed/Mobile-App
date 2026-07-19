@@ -7,6 +7,9 @@ import 'package:app_t/features/Authentication/presentation/pages/sign_up_argumen
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_role_selection.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
+import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
+import 'package:app_t/features/Home/domain/entities/onboarding_catalog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,6 +50,10 @@ Future<void> _pumpWithRoutes(
                       args is SignUpRoleSelectionArgs
                           ? args.googleIdTokenProvider
                           : null,
+                  onboardingRepository:
+                      args is SignUpRoleSelectionArgs
+                          ? args.onboardingRepository
+                          : null,
                 );
               },
               RouteName.finishSignUp: (context) {
@@ -67,6 +74,8 @@ Future<void> _pumpWithRoutes(
                   (_) => const Scaffold(body: Text('patient-setup')),
               RouteName.medicalProfessional:
                   (_) => const Scaffold(body: Text('professional-setup')),
+              RouteName.professionalVerificationDocuments:
+                  (_) => const Scaffold(body: Text('verification-documents')),
             },
           ),
     ),
@@ -168,12 +177,16 @@ void main() {
       'sign up email Google creates patient account after role pick',
       (tester) async {
         final repository = _FakeAuthRepository();
+        final onboardingRepository = _FakeOnboardingRepository(
+          readiness: _readiness(nextAction: 'PATIENT_SETUP', role: 'PATIENT'),
+        );
         final provider = _FakeGoogleIdTokenProvider(idToken: 'signup-id-token');
         await _pumpWithRoutes(
           tester,
           home: SignUpEmail(
             authRepository: repository,
             googleIdTokenProvider: provider,
+            onboardingRepository: onboardingRepository,
           ),
         );
 
@@ -185,6 +198,7 @@ void main() {
         expect(repository.googleSignInCalls, 1);
         expect(repository.lastGoogleIdToken, 'signup-id-token');
         expect(repository.lastGoogleRole, 'PATIENT');
+        expect(onboardingRepository.readinessCalls, 1);
         expect(find.text('patient-setup'), findsOneWidget);
       },
     );
@@ -193,12 +207,19 @@ void main() {
       'sign up phone Google creates professional account after role pick',
       (tester) async {
         final repository = _FakeAuthRepository();
+        final onboardingRepository = _FakeOnboardingRepository(
+          readiness: _readiness(
+            nextAction: 'PROFESSIONAL_UPLOAD_EVIDENCE',
+            role: 'PROFESSIONAL',
+          ),
+        );
         final provider = _FakeGoogleIdTokenProvider(idToken: 'pro-id-token');
         await _pumpWithRoutes(
           tester,
           home: SignUpPhone(
             authRepository: repository,
             googleIdTokenProvider: provider,
+            onboardingRepository: onboardingRepository,
           ),
         );
 
@@ -210,7 +231,37 @@ void main() {
         expect(repository.googleSignInCalls, 1);
         expect(repository.lastGoogleIdToken, 'pro-id-token');
         expect(repository.lastGoogleRole, 'PROFESSIONAL');
+        expect(onboardingRepository.readinessCalls, 1);
+        expect(find.text('verification-documents'), findsOneWidget);
+        expect(find.text('professional-setup'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'sign up Google falls back to professional setup when readiness fails',
+      (tester) async {
+        final repository = _FakeAuthRepository();
+        await _pumpWithRoutes(
+          tester,
+          home: SignUpEmail(
+            authRepository: repository,
+            googleIdTokenProvider: const _FakeGoogleIdTokenProvider(
+              idToken: 'pro-id-token',
+            ),
+            onboardingRepository: _FakeOnboardingRepository(
+              failReadiness: true,
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Continue with Google'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('I am a medical professional'));
+        await tester.pumpAndSettle();
+
+        expect(repository.googleSignInCalls, 1);
         expect(find.text('professional-setup'), findsOneWidget);
+        expect(find.text('patient-setup'), findsNothing);
       },
     );
 
@@ -260,6 +311,33 @@ class _FakeAuthRepository implements AuthRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class _FakeOnboardingRepository implements OnboardingRepository {
+  _FakeOnboardingRepository({
+    AccountReadiness? readiness,
+    this.failReadiness = false,
+  }) : readiness =
+           readiness ??
+           _readiness(nextAction: 'PATIENT_SETUP', role: 'PATIENT');
+
+  final AccountReadiness readiness;
+  final bool failReadiness;
+  int readinessCalls = 0;
+
+  @override
+  Future<AccountReadiness> accountReadiness() async {
+    readinessCalls += 1;
+    if (failReadiness) {
+      throw Exception('readiness failed');
+    }
+    return readiness;
+  }
+
+  @override
+  Future<OnboardingCatalog> onboardingCatalog() async {
+    throw UnimplementedError();
+  }
+}
+
 class _FakeGoogleIdTokenProvider implements GoogleIdTokenProvider {
   const _FakeGoogleIdTokenProvider({this.isConfigured = true, this.idToken});
 
@@ -286,5 +364,31 @@ AuthSession _session({required String role}) {
       status: 'ACTIVE',
       emailVerified: true,
     ),
+  );
+}
+
+AccountReadiness _readiness({
+  required String nextAction,
+  required String role,
+}) {
+  return AccountReadiness(
+    account: ReadinessAccount(
+      role: role,
+      status: 'ACTIVE',
+      emailVerified: true,
+    ),
+    patient: const PatientReadiness(
+      profileStatus: 'DRAFT',
+      requiredFields: <String>['name'],
+    ),
+    professional: const ProfessionalReadiness(
+      applicationStatus: 'DRAFT',
+      verificationStatus: 'NOT_SUBMITTED',
+      requiredProfileFields: <String>[],
+      requiredEvidence: <String>[],
+      missingEvidence: <String>[],
+    ),
+    nextAction: nextAction,
+    requiredActions: const <String>[],
   );
 }

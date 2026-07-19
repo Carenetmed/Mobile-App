@@ -90,6 +90,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
                   : null,
           selectedRole:
               args is FinishSignUpArgs ? args.role : SignUpRole.patient,
+          onboardingRepository:
+              args is FinishSignUpArgs ? args.onboardingRepository : null,
         ),
       );
     case RouteName.signUpRole:
@@ -106,6 +108,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
           googleIdTokenProvider:
               args is SignUpRoleSelectionArgs
                   ? args.googleIdTokenProvider
+                  : null,
+          onboardingRepository:
+              args is SignUpRoleSelectionArgs
+                  ? args.onboardingRepository
                   : null,
         ),
       );

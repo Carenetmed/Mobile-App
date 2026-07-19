@@ -9,6 +9,7 @@ import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/shared/widgets/auth_widget.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
@@ -20,10 +21,12 @@ class SignUpPhone extends StatefulWidget {
     super.key,
     this.authRepository,
     this.googleIdTokenProvider,
+    this.onboardingRepository,
   });
 
   final AuthRepository? authRepository;
   final GoogleIdTokenProvider? googleIdTokenProvider;
+  final OnboardingRepository? onboardingRepository;
 
   @override
   State<SignUpPhone> createState() => _SignUpPhoneState();
@@ -86,7 +89,13 @@ class _SignUpPhoneState extends State<SignUpPhone> {
     });
 
     if (_canContinue) {
-      Navigator.pushNamed(context, RouteName.signUpRole);
+      Navigator.pushNamed(
+        context,
+        RouteName.signUpRole,
+        arguments: SignUpRoleSelectionArgs(
+          onboardingRepository: widget.onboardingRepository,
+        ),
+      );
     }
   }
 
@@ -98,6 +107,7 @@ class _SignUpPhoneState extends State<SignUpPhone> {
         googleSignUp: true,
         authRepository: widget.authRepository,
         googleIdTokenProvider: widget.googleIdTokenProvider,
+        onboardingRepository: widget.onboardingRepository,
       ),
     );
   }

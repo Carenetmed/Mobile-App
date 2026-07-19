@@ -1,13 +1,14 @@
 import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
-import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/features/Authentication/presentation/widget/bordered_keyboard_input.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
+import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
@@ -19,11 +20,13 @@ class FinSignUp extends StatefulWidget {
     this.initialEmail,
     this.selectedRole = SignUpRole.patient,
     this.authRepository,
+    this.onboardingRepository,
   });
 
   final String? initialEmail;
   final SignUpRole selectedRole;
   final AuthRepository? authRepository;
+  final OnboardingRepository? onboardingRepository;
 
   @override
   State<FinSignUp> createState() => _FinSignUpState();
@@ -47,6 +50,11 @@ class _FinSignUpState extends State<FinSignUp> {
 
   AuthRepository get _authRepository =>
       widget.authRepository ?? sl<AuthRepository>();
+
+  OnboardingRepository get _onboardingRepository =>
+      widget.onboardingRepository ?? sl<OnboardingRepository>();
+
+  static const _routeResolver = OnboardingReadinessRouteResolver();
 
   @override
   void initState() {
@@ -320,11 +328,11 @@ class _FinSignUpState extends State<FinSignUp> {
       if (!mounted) {
         return;
       }
-      Navigator.of(context).popAndPushNamed(
-        widget.selectedRole == SignUpRole.professional
-            ? RouteName.medicalProfessional
-            : RouteName.patientOnboardingSetup,
-      );
+      final routeName = await _resolveNextRoute();
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).popAndPushNamed(routeName);
     } on AuthFailure catch (failure) {
       if (!mounted) {
         return;
@@ -345,6 +353,27 @@ class _FinSignUpState extends State<FinSignUp> {
           _isSubmitting = false;
         });
       }
+    }
+  }
+
+  Future<String> _resolveNextRoute() async {
+    try {
+      final readiness = await _onboardingRepository.accountReadiness();
+      return _routeResolver.resolve(
+        readiness: readiness,
+        fallbackRole: widget.selectedRole.backendValue,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Account created. We could not check the next setup step. Please continue setup.',
+            ),
+          ),
+        );
+      }
+      return _routeResolver.fallbackForRole(widget.selectedRole.backendValue);
     }
   }
 }

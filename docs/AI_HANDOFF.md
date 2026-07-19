@@ -252,7 +252,8 @@
 | APP-ID-010 | Add Onboarding Readiness Route Resolver: map backend `AccountReadiness.nextAction` plus role to Flutter destinations, use it after successful email/password and Google signup before choosing setup route, test every known action and safe fallback, and do not redesign setup forms or add new product modules | M | **DONE** |
 | APP-ID-011 | Add Onboarding Progress And Required Evidence Guidance Plan: decide how patient/professional setup and verification screens should display backend readiness progress, required profile fields, required evidence, pending/rejected states, and safe retry copy before runtime UI implementation; do not implement runtime behavior in this planning slice | M | **DONE** |
 | APP-ID-012 | Add Onboarding Readiness Progress Panel: add backend-readiness progress/status guidance to patient setup, professional setup, and professional verification documents; show required profile fields, required/missing evidence, status/retry copy, and focused tests without inventing local readiness or changing backend contracts | M | **DONE** |
-| APP-ID-013 | Onboarding Regression And Phone Smoke Plan: define and run the focused proof path for the hardened onboarding/auth setup, including email/password and Google first-time signup, patient setup, professional setup, verification guidance display, safe backend failure states, and remaining blockers; do not add new product modules | M | **NEXT** |
+| APP-ID-013 | Onboarding Regression And Phone Smoke Plan: define and run the focused proof path for the hardened onboarding/auth setup, including email/password and Google first-time signup, patient setup, professional setup, verification guidance display, safe backend failure states, and remaining blockers; do not add new product modules | M | **DONE** |
+| APP-ID-014 | Onboarding Phone Smoke Execution: run the APP-ID-013 checklist against a staging-configured Android build, record pass/fail evidence and blockers, and do not add new onboarding features | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -422,10 +423,9 @@ was not listing a connected phone after APP-62.
     - signed file PUT and upload-complete were not reached
 20. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, successful verification upload after backend/storage upload-init is fixed, and cleanup/reset proof remain open under 53.2.
 
-## Manual test (last completed: APP-ID-012)
+## Manual test (last completed: APP-ID-013)
 
-APP-ID-012 adds readiness/evidence guidance on setup and verification screens.
-Phone smoke should prove new
+APP-ID-013 is a regression/phone-smoke plan. APP-ID-014 should prove new
 patient/professional email signup and Google signup still route through backend
 readiness without sending professionals directly to dashboard on readiness
 failure.

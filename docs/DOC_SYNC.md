@@ -51,8 +51,8 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **APP-ID-013** - onboarding regression and phone smoke plan |
-| Last completed | **APP-ID-012** - add onboarding readiness progress panel |
+| NEXT task | **APP-ID-014** - onboarding phone smoke execution |
+| Last completed | **APP-ID-013** - onboarding regression and phone smoke plan |
 | Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, patient-device proof through real Search/public availability/appointment request plus own-list rendering, and professional-device proof through role-aware appointment accept/decline/reschedule plus terminal-row behavior; Android backup is disabled, own-list parses the backend `appointments` envelope, secure session writes are ordered, and professional Account now exposes Manage Profile/Verification documents. Verification upload route access is proven, but upload-init returns staging HTTP 500; separate appointment-detail, optional fresh completion, successful upload after backend fix, and cleanup phone smoke remain open |
 | Product interruption | **APP-63** - Google first-time signup now runs through explicit patient/professional role selection with a real Google ID token before backend account creation. Email/password signup remains aligned to the staging contract. Facebook/Apple signup, Google unlink, iOS/release OAuth proof, production OAuth consent/app verification, phone/OTP, MFA, and broader profile trust rules remain deferred |
 | Registered routes | **73 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
@@ -150,6 +150,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-19 | APP-ID-010 DONE - added the onboarding readiness route resolver and wired email/password plus first-time Google signup to ask backend readiness before destination routing, with role-safe fallback and focused tests; DOC_SYNC NEXT -> APP-ID-011 |
 | 2026-07-19 | APP-ID-011 DONE - accepted the onboarding progress/evidence guidance plan: next runtime work should show backend readiness, required profile fields, required/missing professional evidence, status/retry copy, and no dummy local approval/readiness state; DOC_SYNC NEXT -> APP-ID-012 |
 | 2026-07-19 | APP-ID-012 DONE - added backend-readiness progress guidance to patient setup, professional setup, and professional verification documents, including required profile fields, required/missing evidence labels, safe retry copy, and focused tests; DOC_SYNC NEXT -> APP-ID-013 |
+| 2026-07-19 | APP-ID-013 DONE - created the onboarding regression and phone-smoke plan, separating local regression proof from staging Android smoke, with exact patient/professional signup, readiness, setup, verification guidance, failure-state, and blocker rules; DOC_SYNC NEXT -> APP-ID-014 |
 | 2026-07-18 | APP-63 DONE - Google first-time signup was enabled only behind configured Google provider setup, required explicit patient/professional role selection, sent `idToken` plus selected role to backend auth, and routed into the matching setup surface without trusting Google profile data |
 | 2026-07-15 | Task 52.74 DONE - selected professional verification upload/list as the next backend-completed Flutter lane, with a required boundary decision before runtime wiring; DOC_SYNC NEXT -> 52.75 |
 | 2026-07-15 | Task 52.73 DONE - Find Mentor public professionals regression passed for loading, empty, success, filtering, backend id handoff, no local fallback/direct fake booking, dashboard compatibility, and Specialist Details compatibility; DOC_SYNC NEXT -> 52.74 |

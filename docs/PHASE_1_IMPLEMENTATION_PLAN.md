@@ -39,6 +39,9 @@ payout, dual-role, or notification-provider contracts.
 
 ### APP-P1-001A - Preserve Committed Broad UI Baseline
 
+Status: completed; branch and annotated tag were pushed at exact commit
+`3e04d6e22b17c5ff195085153a1d9cf842cb8d24`.
+
 - **Purpose:** Create `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag
   `pre-phase1-broad-ui-2026-07-22` at exact commit `3e04d6e`.
 - **Files:** No source files; Git refs and a short preservation record only.

@@ -258,8 +258,8 @@
 | APP-ID-016 | Rebuild And Phone Smoke Recovered Auth Onboarding UX: install a staging-configured Android build and verify first launch, role-first signup, Google signup, email signup, and readiness routing on device | M | **DONE** |
 | APP-ID-017 | Select Next Lane After PR #147 Review: after APP-ID-016 is reviewed/merged or explicitly superseded, decide the next narrow frontend/backend integration lane from current product priorities; do not start new onboarding behavior before that review | S | **DONE - Phase 1 consultation marketplace selected** |
 | APP-P1-001 | Phase 1 Marketplace Scope Decision: inspect the committed broad UI, lock patient/professional navigation and product boundaries, classify every route/screen, map dependencies and preservation, define small implementation slices, and do not change runtime code | M | **DONE** |
-| APP-P1-001A | Preserve Committed Broad UI Baseline: after explicit approval, create and verify `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` at exact commit `3e04d6e`; do not touch or claim to preserve existing dirty files | S | **NEXT** |
-| APP-P1-002 | Role-Aware Phase 1 Navigation Shell And Active Route Pruning: after archive refs are verified, implement the approved patient/professional five-tab shell, header notification bell, active-nav pruning, and patient onboarding exit correction without deleting deferred source files or implementing unresolved backend modules | M | **PLANNED - next runtime slice** |
+| APP-P1-001A | Preserve Committed Broad UI Baseline: after explicit approval, create and verify `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` at exact commit `3e04d6e`; do not touch or claim to preserve existing dirty files | S | **DONE** |
+| APP-P1-002 | Role-Aware Phase 1 Navigation Shell And Active Route Pruning: after archive refs are verified, implement the approved patient/professional five-tab shell, header notification bell, active-nav pruning, and patient onboarding exit correction without deleting deferred source files or implementing unresolved backend modules | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -440,8 +440,9 @@ was not listing a connected phone after APP-62.
    and exactly one next runtime recommendation are recorded.
 4. Run `git diff --check` for all changed docs.
 5. Confirm `git diff --name-only` contains only `docs/` paths.
-6. Confirm `AI_HANDOFF.md` contains exactly one `**NEXT**` task:
-   `APP-P1-001A`.
+6. Confirm the archive branch and annotated tag resolve to exact committed
+   baseline `3e04d6e`, not the APP-P1-001 documentation commit.
+7. Confirm `AI_HANDOFF.md` contains exactly one `**NEXT**` task: `APP-P1-002`.
 
 ## Previous runtime manual test (APP-ID-016)
 

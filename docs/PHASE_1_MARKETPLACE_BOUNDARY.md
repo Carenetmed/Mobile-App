@@ -43,14 +43,15 @@ the baseline is not yet contained in that milestone branch. Therefore an
 archive created from `9385235` would omit `APP-ID-016` and would not preserve
 the latest committed onboarding state.
 
-Proposed immutable references, both pointing exactly to `3e04d6e`:
+Created immutable preservation references, both pointing exactly to `3e04d6e`:
 
 - Archive branch: `archive/pre-phase1-broad-ui-2026-07-22`
 - Annotated tag: `pre-phase1-broad-ui-2026-07-22`
 
-These references are proposed, not created by this decision slice. They preserve
-committed content only. They do not and must not claim to preserve the unrelated
-uncommitted files listed above.
+These references were pushed to `allcarenet/Mobile-App` after the APP-P1-001
+documentation commit. They preserve committed content only, deliberately point
+to the older baseline rather than the documentation commit, and do not claim to
+preserve the unrelated uncommitted files listed above.
 
 ## Product goal
 
@@ -252,8 +253,8 @@ These are removal or replacement requirements, not acceptable production data:
 
 ## Preservation plan
 
-1. After approval, create the proposed archive branch and annotated tag at
-   `3e04d6e`, never from a dirty working tree snapshot.
+1. The archive branch and annotated tag were created and verified at `3e04d6e`,
+   never from a dirty working tree snapshot.
 2. Keep this repository's route/screen inventory in
    `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md`.
 3. Keep local Figma mapping through `ROUTES.md`, `BLUEPRINT_OVERVIEW.md`, and the
@@ -294,7 +295,6 @@ The exactly one recommended next runtime slice is:
 
 `APP-P1-002 - Role-Aware Phase 1 Navigation Shell And Active Route Pruning`
 
-Precondition: project lead approves and creates the proposed archive refs at
-`3e04d6e`. The slice changes navigation exposure and route registration only; it
-does not delete deferred source files or implement payment, messaging, calls, or
-new backend behavior.
+The archive precondition is complete at `3e04d6e`. The slice changes navigation
+exposure and route registration only; it does not delete deferred source files
+or implement payment, messaging, calls, or new backend behavior.

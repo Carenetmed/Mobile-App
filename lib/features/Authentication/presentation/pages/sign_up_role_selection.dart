@@ -170,7 +170,10 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
                 onPressed:
                     selectedRole == null
                         ? () => Navigator.of(context).maybePop()
-                        : () => setState(() => _selectedRole = null),
+                        : () => setState(() {
+                          _selectedRole = null;
+                          _error = null;
+                        }),
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
               ),
               SizedBox(height: 16.h),
@@ -187,7 +190,11 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
                   isSubmitting: _isSubmitting,
                   googleEnabled: _googleIdTokenProvider.isConfigured,
                   error: _error,
-                  onChangeRole: () => setState(() => _selectedRole = null),
+                  onChangeRole:
+                      () => setState(() {
+                        _selectedRole = null;
+                        _error = null;
+                      }),
                   onEmail: () => _continueWithEmail(selectedRole),
                   onGoogle: () => _continueWithGoogle(selectedRole),
                 ),

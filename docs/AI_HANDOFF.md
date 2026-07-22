@@ -255,7 +255,8 @@
 | APP-ID-013 | Onboarding Regression And Phone Smoke Plan: define and run the focused proof path for the hardened onboarding/auth setup, including email/password and Google first-time signup, patient setup, professional setup, verification guidance display, safe backend failure states, and remaining blockers; do not add new product modules | M | **DONE** |
 | APP-ID-014 | Onboarding Phone Smoke Execution: run the APP-ID-013 checklist against a staging-configured Android build, record pass/fail evidence and blockers, and do not add new onboarding features | M | **DONE - CHECKPOINT** |
 | APP-ID-015 | Recover Auth Onboarding UX From APP-66-73: selectively restore the gateway and role-first signup UX without rolling back APP-ID backend catalog/readiness/profile/verification wiring; add regression proof | M | **DONE** |
-| APP-ID-016 | Rebuild And Phone Smoke Recovered Auth Onboarding UX: install a staging-configured Android build and verify first launch, role-first signup, Google signup, email signup, and readiness routing on device | M | **NEXT** |
+| APP-ID-016 | Rebuild And Phone Smoke Recovered Auth Onboarding UX: install a staging-configured Android build and verify first launch, role-first signup, Google signup, email signup, and readiness routing on device | M | **DONE** |
+| APP-ID-017 | Select Next Lane After PR #147 Review: after APP-ID-016 is reviewed/merged or explicitly superseded, decide the next narrow frontend/backend integration lane from current product priorities; do not start new onboarding behavior before that review | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -425,22 +426,26 @@ was not listing a connected phone after APP-62.
     - signed file PUT and upload-complete were not reached
 20. Full real-device phone UI smoke is not done yet. Separate appointment-detail screen proof, a fresh professional completion action if suitable accepted-past data exists, successful verification upload after backend/storage upload-init is fixed, and cleanup/reset proof remain open under 53.2.
 
-## Manual test (last completed: APP-ID-015)
+## Manual test (last completed: APP-ID-016)
 
-APP-ID-015 recovered the role-first auth/onboarding UX from older unmerged
-APP-66 through APP-73 branches while preserving APP-ID backend
-catalog/readiness/profile/verification wiring.
+APP-ID-016 completed the recovered auth/onboarding phone-smoke checkpoint after
+APP-ID-015 restored the role-first gateway UX.
 
 1. `dart format ...` - passes.
 2. `flutter test test/features/onboarding/onboarding_gateway_test.dart test/features/authentication/sign_up_flow_test.dart test/features/authentication/finish_sign_up_test.dart test/features/onboarding/onboarding_readiness_route_resolver_test.dart -r expanded` - passes.
 3. `flutter analyze lib/core/constants/navigators/router.dart lib/features/Onboarding/presentation/pages/onboarding.dart lib/features/Authentication/presentation/pages/sign_up_arguments.dart lib/features/Authentication/presentation/pages/sign_up_email.dart lib/features/Authentication/presentation/pages/sign_up_phone.dart lib/features/Authentication/presentation/pages/sign_up_role_selection.dart test/features/onboarding/onboarding_gateway_test.dart test/features/authentication/sign_up_flow_test.dart` - no issues.
 4. `git diff --check` - no whitespace errors.
-5. APP-ID-016 checkpoint: staging APK rebuild passed, install to Android
-   device `6tkvkvindaqogurk` succeeded, app launched under `com.carenet.app`,
-   and UI dump confirmed the recovered first-launch gateway is visible with
-   `Browse verified care`, `Create account`, and `Already have an account? Sign
-   in`. Full role/signup/readiness manual smoke remains the active APP-ID-016
-   NEXT row.
+5. APP-ID-016 phone smoke: staging APK rebuild/install passed on Android device
+   `6tkvkvindaqogurk`, Google login succeeded after rebuilding with the corrected
+   Web OAuth client ID, and controlled onboarding selectors loaded after backend
+   staging was redeployed with `GET /catalogs/onboarding`.
+6. Staging readiness recovery: public gateway `GET /health/ready` initially
+   returned `503` because staging had one pending committed migration. After
+   applying `20260719090000_identity_catalog_alignment` with
+   `prisma migrate deploy`, `npx prisma migrate status` reported the database
+   schema is up to date and public gateway `/health/ready` returned `200`.
+7. Next work should start only after PR #147 is reviewed/merged or explicitly
+   superseded.
 
 ## Manual test (historical: task 53.1)
 

@@ -1,6 +1,7 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
@@ -269,6 +270,44 @@ void main() {
       },
     );
 
+    testWidgets('sign up role change clears stale Google error', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository();
+      await _pumpWithRoutes(
+        tester,
+        home: SignUpRoleSelectionPage(
+          authRepository: repository,
+          googleIdTokenProvider: const _FakeGoogleIdTokenProvider(
+            failure: AuthFailure(
+              type: AuthFailureType.unknown,
+              message: 'Google sign-in failed. Please try again.',
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Patient'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Google sign-in failed. Please try again.'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Change'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('How will you use CareNet?'), findsOneWidget);
+      expect(
+        find.text('Google sign-in failed. Please try again.'),
+        findsNothing,
+      );
+      expect(repository.googleSignInCalls, 0);
+    });
+
     testWidgets('sign up Google remains disabled without provider config', (
       tester,
     ) async {
@@ -343,14 +382,23 @@ class _FakeOnboardingRepository implements OnboardingRepository {
 }
 
 class _FakeGoogleIdTokenProvider implements GoogleIdTokenProvider {
-  const _FakeGoogleIdTokenProvider({this.isConfigured = true, this.idToken});
+  const _FakeGoogleIdTokenProvider({
+    this.isConfigured = true,
+    this.idToken,
+    this.failure,
+  });
 
   @override
   final bool isConfigured;
   final String? idToken;
+  final AuthFailure? failure;
 
   @override
   Future<String> signInIdToken() async {
+    final failure = this.failure;
+    if (failure != null) {
+      throw failure;
+    }
     return idToken ?? 'google-id-token';
   }
 }

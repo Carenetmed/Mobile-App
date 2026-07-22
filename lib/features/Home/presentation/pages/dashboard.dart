@@ -33,6 +33,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   late final Future<AuthSessionModel?> _sessionFuture;
   int _index = 0;
+  final Set<int> _builtIndices = <int>{0};
 
   SessionStore get _sessionStore => widget.sessionStore ?? sl<SessionStore>();
 
@@ -64,69 +65,95 @@ class _DashboardState extends State<Dashboard> {
         }
         final selected = destinations[_index];
 
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: AppColors.kWhite,
-            elevation: 0,
-            automaticallyImplyLeading: false,
-            title: Text(
-              selected.label,
-              style: TextStyle(
+        return PopScope(
+          canPop: _index == 0,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop && _index != 0) {
+              _selectIndex(0);
+            }
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              backgroundColor: AppColors.kWhite,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              title: Text(
+                selected.label,
+                style: TextStyle(
+                  fontFamily: AppFonts.montserrat,
+                  fontSize: FontSizes.body2,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.kBlack,
+                ),
+              ),
+              actions: [
+                IconButton(
+                  tooltip: 'Notifications',
+                  onPressed:
+                      () =>
+                          Navigator.pushNamed(context, RouteName.notification),
+                  icon: const Icon(Icons.notifications_outlined),
+                ),
+                IconButton(
+                  tooltip: 'Account',
+                  onPressed:
+                      () => Navigator.pushNamed(context, RouteName.account),
+                  icon: const Icon(Icons.account_circle_outlined),
+                ),
+                const SizedBox(width: 4),
+              ],
+            ),
+            body: IndexedStack(
+              index: _index,
+              children: destinations.indexed
+                  .map(
+                    (entry) =>
+                        _builtIndices.contains(entry.$1)
+                            ? entry.$2.builder()
+                            : const SizedBox.shrink(),
+                  )
+                  .toList(growable: false),
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: AppColors.kWhite,
+              selectedItemColor: AppColors.primaryBlue11,
+              unselectedItemColor: AppColors.kBlack,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              selectedLabelStyle: TextStyle(
+                fontSize: FontSizes.footer1,
+                fontWeight: FontWeight.w600,
                 fontFamily: AppFonts.montserrat,
-                fontSize: FontSizes.body2,
-                fontWeight: FontWeight.w700,
-                color: AppColors.kBlack,
               ),
-            ),
-            actions: [
-              IconButton(
-                tooltip: 'Notifications',
-                onPressed:
-                    () => Navigator.pushNamed(context, RouteName.notification),
-                icon: const Icon(Icons.notifications_outlined),
+              unselectedLabelStyle: TextStyle(
+                fontSize: FontSizes.footer1,
+                fontWeight: FontWeight.w500,
+                fontFamily: AppFonts.montserrat,
               ),
-              IconButton(
-                tooltip: 'Account',
-                onPressed:
-                    () => Navigator.pushNamed(context, RouteName.account),
-                icon: const Icon(Icons.account_circle_outlined),
-              ),
-              const SizedBox(width: 4),
-            ],
-          ),
-          body: selected.builder(),
-          bottomNavigationBar: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: AppColors.kWhite,
-            selectedItemColor: AppColors.primaryBlue11,
-            unselectedItemColor: AppColors.kBlack,
-            showSelectedLabels: true,
-            showUnselectedLabels: true,
-            selectedLabelStyle: TextStyle(
-              fontSize: FontSizes.footer1,
-              fontWeight: FontWeight.w600,
-              fontFamily: AppFonts.montserrat,
+              currentIndex: _index,
+              onTap: _selectIndex,
+              items: destinations
+                  .map(
+                    (destination) => BottomNavigationBarItem(
+                      label: destination.label,
+                      icon: Icon(destination.icon),
+                      activeIcon: Icon(destination.activeIcon),
+                    ),
+                  )
+                  .toList(growable: false),
             ),
-            unselectedLabelStyle: TextStyle(
-              fontSize: FontSizes.footer1,
-              fontWeight: FontWeight.w500,
-              fontFamily: AppFonts.montserrat,
-            ),
-            currentIndex: _index,
-            onTap: (index) => setState(() => _index = index),
-            items: destinations
-                .map(
-                  (destination) => BottomNavigationBarItem(
-                    label: destination.label,
-                    icon: Icon(destination.icon),
-                    activeIcon: Icon(destination.activeIcon),
-                  ),
-                )
-                .toList(growable: false),
           ),
         );
       },
     );
+  }
+
+  void _selectIndex(int index) {
+    setState(() {
+      _index = index;
+      _builtIndices.add(index);
+    });
   }
 
   _DashboardRole? _resolvedRole(AuthSessionModel? session) {
@@ -154,8 +181,8 @@ class _DashboardState extends State<Dashboard> {
         builder:
             () => Home(
               isProfessional: professional,
-              onPrimaryAction: () => setState(() => _index = 1),
-              onAppointments: () => setState(() => _index = 2),
+              onPrimaryAction: () => _selectIndex(1),
+              onAppointments: () => _selectIndex(2),
             ),
       ),
       _DashboardDestination(

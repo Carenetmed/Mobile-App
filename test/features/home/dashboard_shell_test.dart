@@ -134,6 +134,54 @@ void main() {
     expect(find.text('Payment'), findsNothing);
   });
 
+  testWidgets('switching tabs preserves Find Care state', (tester) async {
+    await _pumpDashboard(tester, role: 'PATIENT');
+
+    await tester.tap(find.text('Find Care'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'cardiology');
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomNavigationBar),
+        matching: find.text('Appointments'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Find Care'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('cardiology'), findsOneWidget);
+  });
+
+  testWidgets('system back returns a secondary tab to Home', (tester) async {
+    await _pumpDashboard(tester, role: 'PATIENT');
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomNavigationBar),
+        matching: find.text('Appointments'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
+          .currentIndex,
+      2,
+    );
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
+          .currentIndex,
+      0,
+    );
+    expect(find.text('Find care'), findsOneWidget);
+  });
+
   testWidgets('unknown session role fails closed', (tester) async {
     await _pumpDashboard(tester, role: 'ADMIN');
 

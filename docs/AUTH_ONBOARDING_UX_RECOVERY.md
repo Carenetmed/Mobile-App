@@ -49,14 +49,30 @@ would risk deleting or rolling back newer contract integration.
 
 ## Next
 
-APP-ID-016 should rebuild and install the staging Android APK, then manually
-verify first launch, Create account, role-first signup, Google signup, email
-signup, and readiness routing on the connected phone.
+APP-ID-017 should follow up on staging readiness health and any remaining
+auth/onboarding smoke gaps without adding new onboarding product behavior.
 
 ## Device checkpoint
 
-APP-ID-016 has started. The staging debug APK rebuilt with the public staging
-gateway and local Google client ID, installed on Android device
-`6tkvkvindaqogurk`, launched under `com.carenet.app`, and UI dump confirmed the
-recovered first-launch gateway is visible. Full role/signup/readiness manual
-smoke remains open.
+APP-ID-016 completed the recovered onboarding phone smoke checkpoint:
+
+- The staging debug APK rebuilt with the public staging gateway and the corrected
+  Google Web OAuth client ID from `C:\Users\asd\Desktop\New Text Document (5).txt`.
+- The APK installed on Android device `6tkvkvindaqogurk` and launched under
+  `com.carenet.app`.
+- UI dump confirmed the recovered first-launch gateway is visible.
+- User-device smoke confirmed Google account selection and backend login reached
+  the app.
+- Backend staging initially returned `404` for `GET /catalogs/onboarding`; the
+  backend staging service was redeployed to Cloud Run revision
+  `carenet-backend-staging-00017-hvv` with image tag
+  `app-id-003-catalog-readiness`.
+- `GET /catalogs/onboarding` through the public staging gateway now returns the
+  Nigeria onboarding catalog, unblocking controlled country/state/profession
+  selectors without local dummy fallback.
+- `GET /health/ready` still returns `503` through the public staging gateway and
+  remains a backend staging readiness follow-up, not a mobile UX fallback.
+
+APP-ID-016 also keeps one small UX hardening fix: changing role or going back
+from role selection clears stale Google/backend error text so the next selected
+role starts cleanly.

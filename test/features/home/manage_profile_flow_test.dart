@@ -22,7 +22,6 @@ import 'package:app_t/features/Home/presentation/pages/manage_profile_shell.dart
 import 'package:app_t/features/Home/presentation/pages/professional_verification_documents_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/set_address_shell.dart';
-import 'package:app_t/features/Messaging/presentation/pages/Messages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -69,7 +68,6 @@ Future<void> _pumpManageProfile(
                         profileRepository ?? _FakeProfileRepository(),
                   ),
               RouteName.setAddress: (_) => const SetAddressShellPage(),
-              RouteName.messages: (_) => const MessagesPage(),
               RouteName.professionalVerificationDocuments:
                   (_) => ProfessionalVerificationDocumentsShellPage(
                     verificationRepository:
@@ -450,11 +448,8 @@ void main() {
     expect(find.text('Lagbaja Eye Clinic & Consulting firm'), findsNothing);
     expect(find.text('Business'), findsOneWidget);
 
-    await tester.drag(find.byType(ListView), const Offset(0, -650));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Articles'), findsOneWidget);
-    expect(find.text('Migrating to Linear 101'), findsOneWidget);
+    expect(find.text('Articles'), findsNothing);
+    expect(find.text('Migrating to Linear 101'), findsNothing);
   });
 
   testWidgets('manage profile reads professional self profile', (tester) async {
@@ -1380,39 +1375,31 @@ void main() {
     expect(find.text('Description saved'), findsNothing);
   });
 
-  testWidgets('message action uses existing honest route', (tester) async {
-    await _pumpManageProfile(tester);
-
-    await tester.tap(find.text('Edit'));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Message'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Messages'), findsWidgets);
-    expect(find.text('Dr. Lagbaja has replied your message.'), findsOneWidget);
-  });
-
-  testWidgets('backend dependent management actions are disabled', (
+  testWidgets('profile management hides deferred product actions', (
     tester,
   ) async {
     await _pumpManageProfile(tester);
 
-    for (final label in <String>['Events', 'Boost', 'Podcast', 'Share']) {
-      final chip = tester.widget<ActionChip>(
-        find.widgetWithText(ActionChip, label),
-      );
-      expect(chip.onPressed, isNull);
+    for (final label in <String>[
+      'Message',
+      'Events',
+      'Boost',
+      'Podcast',
+      'Share',
+    ]) {
+      expect(find.text(label), findsNothing);
     }
+  });
+
+  testWidgets('business section omits community management actions', (
+    tester,
+  ) async {
+    await _pumpManageProfile(tester);
 
     await tester.drag(find.byType(ListView), const Offset(0, -450));
     await tester.pumpAndSettle();
 
-    expect(find.text('Add members'), findsOneWidget);
-    expect(find.text('Edit group details'), findsOneWidget);
-    expect(find.byIcon(Icons.lock_outline), findsWidgets);
+    expect(find.text('Add members'), findsNothing);
+    expect(find.text('Edit group details'), findsNothing);
   });
 }

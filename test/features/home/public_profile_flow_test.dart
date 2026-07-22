@@ -50,14 +50,15 @@ void main() {
     },
   );
 
-  testWidgets('message action opens messages route', (tester) async {
+  testWidgets('message action opens honest consultation inbox', (tester) async {
     await _pumpPublicProfile(tester);
 
     await tester.tap(find.text('Message'));
     await tester.pumpAndSettle();
 
     expect(find.text('Messages'), findsWidgets);
-    expect(find.text('Dr. Lagbaja has replied your message.'), findsOneWidget);
+    expect(find.text('No appointment conversations yet'), findsOneWidget);
+    expect(find.text('Dr. Lagbaja has replied your message.'), findsNothing);
   });
 
   testWidgets('schedule action opens booking route', (tester) async {

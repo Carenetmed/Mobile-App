@@ -1,6 +1,5 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
-import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
@@ -21,11 +20,13 @@ class AppointmentsShellPage extends StatefulWidget {
     this.schedulingRepository,
     this.sessionStore,
     this.now,
+    this.embedded = false,
   });
 
   final SchedulingRepository? schedulingRepository;
   final SessionStore? sessionStore;
   final DateTime? now;
+  final bool embedded;
 
   @override
   State<AppointmentsShellPage> createState() => _AppointmentsShellPageState();
@@ -53,24 +54,27 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.kWhite,
-      appBar: AppBar(
-        backgroundColor: AppColors.kWhite,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-        ),
-        centerTitle: true,
-        title: Text(
-          'Appointments',
-          style: TextStyle(
-            fontSize: FontSizes.footer2,
-            fontFamily: AppFonts.montserrat,
-            fontWeight: FontWeight.w600,
-            color: AppColors.primaryBlue5,
-          ),
-        ),
-      ),
+      appBar:
+          widget.embedded
+              ? null
+              : AppBar(
+                backgroundColor: AppColors.kWhite,
+                elevation: 0,
+                leading: IconButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.arrow_back, color: Colors.black),
+                ),
+                centerTitle: true,
+                title: Text(
+                  'Appointments',
+                  style: TextStyle(
+                    fontSize: FontSizes.footer2,
+                    fontFamily: AppFonts.montserrat,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryBlue5,
+                  ),
+                ),
+              ),
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -96,16 +100,6 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
                   fontWeight: FontWeight.w400,
                   color: AppColors.primaryBlue11,
                   height: 1.4,
-                ),
-              ),
-              SizedBox(height: 24.h),
-              SizedBox(
-                width: double.infinity,
-                child: CarenetButton(
-                  label: 'Book appointment',
-                  onPressed: () {
-                    Navigator.pushNamed(context, RouteName.bookAppointment);
-                  },
                 ),
               ),
               SizedBox(height: 24.h),

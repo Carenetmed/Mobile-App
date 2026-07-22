@@ -3,6 +3,8 @@ import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
+import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
+import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
@@ -26,16 +28,38 @@ Future<void> _pumpDashboard(WidgetTester tester) async {
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
+  final sessionStore = InMemorySessionStore();
+  await sessionStore.save(
+    const AuthSessionModel(
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      tokenType: 'Bearer',
+      expiresIn: 900,
+      user: AuthUser(
+        id: 'patient-1',
+        email: 'patient@carenet.app',
+        role: 'PATIENT',
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
+    ),
+  );
+
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder:
-          (_, __) => const MaterialApp(
-            home: Dashboard(),
+          (_, __) => MaterialApp(
+            home: Dashboard(sessionStore: sessionStore),
             onGenerateRoute: generateRoute,
           ),
     ),
   );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _openAccount(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('Account'));
   await tester.pumpAndSettle();
 }
 
@@ -125,14 +149,10 @@ Future<void> _pumpSettingsProfile(
 }
 
 void main() {
-  testWidgets('drawer profile opens the account page', (tester) async {
+  testWidgets('header avatar opens the account page', (tester) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     expect(find.text('Account'), findsOneWidget);
     expect(find.text('Delete account'), findsWidgets);
@@ -460,10 +480,7 @@ void main() {
   testWidgets('delete account validates required fields', (tester) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     await tester.tap(find.text('Delete account').first);
     await tester.pumpAndSettle();
@@ -480,10 +497,7 @@ void main() {
   ) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     await tester.tap(find.text('Delete account').first);
     await tester.pumpAndSettle();
@@ -499,10 +513,7 @@ void main() {
   ) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     await tester.tap(find.text('Settings & Profile'));
     await tester.pumpAndSettle();
@@ -690,10 +701,7 @@ void main() {
   ) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     await tester.tap(find.text('Authentication'));
     await tester.pumpAndSettle();
@@ -803,10 +811,7 @@ void main() {
   ) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     await tester.tap(find.text('Phone number'));
     await tester.pumpAndSettle();
@@ -896,10 +901,7 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     expect(find.text('+234 801 234 5678'), findsOneWidget);
   });
@@ -909,10 +911,7 @@ void main() {
   ) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     await tester.tap(find.text('Email address'));
     await tester.pumpAndSettle();
@@ -954,10 +953,7 @@ void main() {
   ) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     await tester.tap(find.text('Email address'));
     await tester.pumpAndSettle();
@@ -1016,10 +1012,7 @@ void main() {
   ) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     await tester.tap(find.text('Email address'));
     await tester.pumpAndSettle();
@@ -1206,10 +1199,7 @@ void main() {
   ) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     await tester.tap(find.text('Email address'));
     await tester.pumpAndSettle();
@@ -1260,10 +1250,7 @@ void main() {
   testWidgets('password row opens locked password route', (tester) async {
     await _pumpDashboard(tester);
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Profile'));
-    await tester.pumpAndSettle();
+    await _openAccount(tester);
 
     await tester.tap(find.text('Password'));
     await tester.pumpAndSettle();

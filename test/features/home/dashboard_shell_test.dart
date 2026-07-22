@@ -1,35 +1,58 @@
-import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
-import 'package:app_t/features/Home/presentation/pages/appointments_shell.dart';
-import 'package:app_t/features/Home/presentation/pages/find_mentor_shell.dart';
-import 'package:app_t/features/Home/presentation/pages/reminder_shell.dart';
-import 'package:app_t/features/Home/presentation/pages/schedules_shell.dart';
-import 'package:app_t/features/Home/presentation/pages/specialist_details_shell.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
+import 'package:app_t/features/Authentication/data/storage/session_store.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
+import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
+import 'package:app_t/features/Home/domain/entities/availability_window.dart';
+import 'package:app_t/features/Home/domain/entities/public_professional.dart';
+import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
+import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const Size _phoneSize = Size(430, 1200);
+const Size _phoneSize = Size(430, 932);
 
-Future<void> _pumpDashboard(WidgetTester tester) async {
+Future<void> _pumpDashboard(WidgetTester tester, {required String role}) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
+
+  final sessionStore = InMemorySessionStore();
+  await sessionStore.save(
+    AuthSessionModel(
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      tokenType: 'Bearer',
+      expiresIn: 900,
+      user: AuthUser(
+        id: 'user-1',
+        email: 'user@carenet.app',
+        role: role,
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
+    ),
+  );
 
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
-            home: const Dashboard(),
-            routes: {
-              RouteName.reminder: (_) => const ReminderShellPage(),
-              RouteName.schedules: (_) => const SchedulesShellPage(),
-              RouteName.findMentor: (_) => const FindMentorShellPage(),
-              RouteName.specialistDetails:
-                  (_) => const SpecialistDetailsShellPage(),
-              RouteName.bookAppointment:
-                  (_) => const BookAppointmentShellPage(),
+            home: Dashboard(
+              sessionStore: sessionStore,
+              profileRepository: _FakeProfileRepository(),
+              schedulingRepository: _FakeSchedulingRepository(),
+            ),
+            routes: <String, WidgetBuilder>{
+              RouteName.notification:
+                  (_) => const Scaffold(body: Text('notification-route')),
+              RouteName.account:
+                  (_) => const Scaffold(body: Text('account-route')),
             },
           ),
     ),
@@ -37,90 +60,157 @@ Future<void> _pumpDashboard(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+List<String?> _bottomLabels(WidgetTester tester) {
+  final navigation = tester.widget<BottomNavigationBar>(
+    find.byType(BottomNavigationBar),
+  );
+  return navigation.items.map((item) => item.label).toList(growable: false);
+}
+
 void main() {
-  testWidgets('dashboard bottom navigation switches to real shell pages', (
-    tester,
-  ) async {
-    await _pumpDashboard(tester);
+  testWidgets('patient sees the approved four destinations', (tester) async {
+    await _pumpDashboard(tester, role: 'PATIENT');
 
-    await tester.tap(find.text('Search'));
+    expect(_bottomLabels(tester), <String?>[
+      'Home',
+      'Find Care',
+      'Appointments',
+      'Messages',
+    ]);
+    expect(find.text('Post'), findsNothing);
+    expect(find.text('Circles'), findsNothing);
+    expect(find.text('Notifications'), findsNothing);
+    expect(find.text('Profile'), findsNothing);
+    expect(find.byType(Drawer), findsNothing);
+
+    await tester.tap(find.text('Find Care'));
     await tester.pumpAndSettle();
+    expect(find.byType(SearchShellPage), findsOneWidget);
     expect(find.text('Search specialists'), findsOneWidget);
-    expect(find.text('Available specialists'), findsOneWidget);
-
-    await tester.tap(find.text('Post'));
-    await tester.pumpAndSettle();
-    expect(find.text('Q&A feed'), findsOneWidget);
-
-    await tester.tap(find.text('Circles'));
-    await tester.pumpAndSettle();
-    expect(find.text('My communities'), findsOneWidget);
-
-    await tester.tap(find.text('Notifications'));
-    await tester.pumpAndSettle();
-    expect(find.byType(AppBar), findsOneWidget);
-    expect(find.text('Your appointment is booked'), findsOneWidget);
   });
 
-  testWidgets('drawer schedule opens the task reminder route', (tester) async {
-    await _pumpDashboard(tester);
+  testWidgets('professional sees the approved four destinations', (
+    tester,
+  ) async {
+    await _pumpDashboard(tester, role: 'PROFESSIONAL');
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
-    await tester.pumpAndSettle();
+    expect(_bottomLabels(tester), <String?>[
+      'Home',
+      'Schedule',
+      'Appointments',
+      'Messages',
+    ]);
+
     await tester.tap(find.text('Schedule'));
     await tester.pumpAndSettle();
-
-    expect(find.text('Task Reminder'), findsOneWidget);
-    expect(find.text('Doctors Without Border Event'), findsOneWidget);
-    expect(find.text('Active'), findsOneWidget);
-    expect(find.text('Frequency'), findsOneWidget);
-    expect(find.text('Once'), findsOneWidget);
-    expect(find.text('Add reminder'), findsOneWidget);
-
-    await tester.tap(find.text('Doctors Without Border Event'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Frequency'), findsNothing);
-
-    final calendar = tester.widget<CalendarDatePicker>(
-      find.byType(CalendarDatePicker),
-    );
-    calendar.onDateChanged(calendar.initialDate!.add(const Duration(days: 1)));
-    await tester.pumpAndSettle();
-
-    expect(find.text('No local schedule for this date'), findsOneWidget);
-    expect(find.text('Doctors Without Border Event'), findsNothing);
+    expect(find.byType(SelectedDatesShellPage), findsOneWidget);
+    expect(find.text('Availability saved from backend.'), findsNothing);
   });
 
-  testWidgets('drawer providers opens mentor finder and booking handoff', (
+  testWidgets('header bell and avatar use retained routes', (tester) async {
+    await _pumpDashboard(tester, role: 'PATIENT');
+
+    await tester.tap(find.byTooltip('Notifications'));
+    await tester.pumpAndSettle();
+    expect(find.text('notification-route'), findsOneWidget);
+
+    Navigator.of(tester.element(find.text('notification-route'))).pop();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Account'));
+    await tester.pumpAndSettle();
+    expect(find.text('account-route'), findsOneWidget);
+  });
+
+  testWidgets('messages never expose seeded social conversations', (
     tester,
   ) async {
-    await _pumpDashboard(tester);
+    await _pumpDashboard(tester, role: 'PATIENT');
 
-    await tester.dragFrom(const Offset(0, 200), const Offset(300, 0));
+    await tester.tap(find.text('Messages'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Providers'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Find a Mentor'), findsOneWidget);
-    expect(find.text('Dr. Uzo Blessing'), findsOneWidget);
-    expect(find.text('Book Appointment'), findsWidgets);
-
-    await tester.tap(find.text('View details').first);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Specialist Details'), findsOneWidget);
-    expect(find.text('Available Time'), findsOneWidget);
-    expect(find.text('CHOOSE DAY'), findsOneWidget);
-    expect(find.text('CHOOSE TIME'), findsOneWidget);
-
-    await tester.tap(find.text('11:30am'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Selected slot'), findsOneWidget);
-
-    await tester.tap(find.text('Book appointment'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Clinician'), findsOneWidget);
+    expect(find.text('No appointment conversations yet'), findsOneWidget);
+    expect(find.textContaining('Dr. Lagbaja'), findsNothing);
+    expect(find.text('Events'), findsNothing);
+    expect(find.text('Payment'), findsNothing);
   });
+
+  testWidgets('switching tabs preserves Find Care state', (tester) async {
+    await _pumpDashboard(tester, role: 'PATIENT');
+
+    await tester.tap(find.text('Find Care'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, 'cardiology');
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomNavigationBar),
+        matching: find.text('Appointments'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Find Care'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('cardiology'), findsOneWidget);
+  });
+
+  testWidgets('system back returns a secondary tab to Home', (tester) async {
+    await _pumpDashboard(tester, role: 'PATIENT');
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomNavigationBar),
+        matching: find.text('Appointments'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
+          .currentIndex,
+      2,
+    );
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
+          .currentIndex,
+      0,
+    );
+    expect(find.text('Find care'), findsOneWidget);
+  });
+
+  testWidgets('unknown session role fails closed', (tester) async {
+    await _pumpDashboard(tester, role: 'ADMIN');
+
+    expect(find.text('Your account role is unavailable.'), findsOneWidget);
+    expect(find.byType(BottomNavigationBar), findsNothing);
+  });
+}
+
+class _FakeProfileRepository implements ProfileRepository {
+  @override
+  Future<List<PublicProfessional>> publicProfessionals() async {
+    return const <PublicProfessional>[];
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeSchedulingRepository implements SchedulingRepository {
+  @override
+  Future<List<AvailabilityWindow>> ownAvailability() async {
+    return const <AvailabilityWindow>[];
+  }
+
+  @override
+  Future<List<AppointmentSummary>> ownAppointments() async {
+    return const <AppointmentSummary>[];
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

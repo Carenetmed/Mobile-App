@@ -57,8 +57,8 @@
 | Phase 22 | **In progress** |
 | Product direction | **Phase 1 consultation marketplace** - broad social/content/readings/emergency/creator modules leave the active mainline in ordered slices |
 | Archive checkpoint | **APP-P1-001A complete** - branch `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` resolve to `3e04d6e` |
-| NEXT task | **APP-P1-002** - role-aware navigation shell and active route pruning |
-| Last completed | **APP-P1-001A** - safely preserved the committed broad UI baseline without including dirty local changes |
+| NEXT task | **APP-P1-003** - role-aware marketplace Home using existing backend-supported summaries only |
+| Last completed | **APP-P1-002** - role-aware four-tab shell, header account/notification actions, active deferred-entry pruning, honest communication states, and corrected patient readiness handoff |
 | Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, patient-device proof through real Search/public availability/appointment request plus own-list rendering, and professional-device proof through role-aware appointment accept/decline/reschedule plus terminal-row behavior; Android backup is disabled, own-list parses the backend `appointments` envelope, secure session writes are ordered, and professional Account now exposes Manage Profile/Verification documents. Verification upload route access is proven, but upload-init returns staging HTTP 500; separate appointment-detail, optional fresh completion, successful upload after backend fix, and cleanup phone smoke remain open |
 | Product interruption | **APP-63** - Google first-time signup now runs through explicit patient/professional role selection with a real Google ID token before backend account creation. Email/password signup remains aligned to the staging contract. Facebook/Apple signup, Google unlink, iOS/release OAuth proof, production OAuth consent/app verification, phone/OTP, MFA, and broader profile trust rules remain deferred |
 | Registered routes | Baseline has **74 router cases** plus the reserved unused `login` constant; Phase 1 classifications are in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
@@ -106,6 +106,8 @@ Do not use old chat history. Do not start the next task without my approval.
 ---
 
 ## Audit log
+
+| 2026-07-22 | APP-P1-002 DONE - replaced broad dashboard navigation with backend-session-owned patient/professional four-tab shells, moved Notifications and Account/Profile to the header, removed the active drawer and retained-screen deferred entry points, replaced seeded message/notification data with honest empty states, and routed patient setup through backend readiness; DOC_SYNC NEXT -> APP-P1-003 |
 
 | Date | Fixes |
 |------|--------|

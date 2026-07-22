@@ -39,14 +39,16 @@ Join Consultation -> Appointment Detail only; external RTC handles media transpo
 
 Approved primary navigation:
 
-- Patient: Home, Find Care, Appointments, Messages, Profile.
-- Professional: Home, Schedule, Appointments, Messages, Profile.
+- Patient bottom navigation: Home, Find Care, Appointments, Messages.
+- Professional bottom navigation: Home, Schedule, Appointments, Messages.
 - Notifications: header bell, never a primary bottom-navigation item.
+- Profile/Account: header avatar, never a primary bottom-navigation item.
 
-The patient setup route currently exits into `communityAgreement`; that is a
-known obsolete broad-app handoff and must be corrected in `APP-P1-002`. The
-legacy `communityAgreement -> notificationAgreement -> medicalAgreement ->
-medicalEdit` chain is not part of the active Phase 1 flow.
+Patient setup now refreshes backend account readiness and enters its resolved
+Phase 1 destination. It no longer exits into `communityAgreement`. The legacy
+`communityAgreement -> notificationAgreement -> medicalAgreement -> medicalEdit`
+chain remains registered for conservative cleanup but is not part of the active
+Phase 1 flow.
 
 ---
 

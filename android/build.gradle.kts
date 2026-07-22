@@ -1,9 +1,7 @@
 allprojects {
     repositories {
-        // Google Maven mirror (workaround for SSL download issues against dl.google.com).
-        maven(url = "https://maven.aliyun.com/repository/google")
-        // Maven Central mirror (workaround for SSL "Tag mismatch" errors on repo.maven.apache.org).
-        maven(url = "https://maven.aliyun.com/repository/central")
+        google()
+        mavenCentral()
     }
 }
 

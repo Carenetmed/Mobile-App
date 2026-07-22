@@ -109,6 +109,7 @@ does not silently reinterpret established boundaries.
 | D173 | 2026-07-19 | Onboarding progress panels must remain backend-owned | Patient/professional setup and professional verification documents may display required profile fields and evidence guidance from `account/readiness` and onboarding catalogs, but upload success remains pending review and Flutter must not claim approval, resolve duplicate identity, or invent application state | APP-ID-012 |
 | D174 | 2026-07-19 | Onboarding hardening needs a proof gate before expansion | Before more onboarding feature expansion or broad UI redesign, run a focused regression and staging Android phone-smoke gate that proves email/password signup, Google first-time signup, backend readiness routing, patient/professional setup, verification evidence guidance, safe failure states, and blocker recording | APP-ID-013 |
 | D175 | 2026-07-19 | Recover auth onboarding gateway without rolling back backend readiness | Restore the first-launch gateway and role-first signup method UX from older unmerged APP-66 through APP-73 work, but do not merge those branches wholesale or roll back APP-ID backend catalog/readiness/profile/verification wiring | APP-ID-015 |
+| D176 | 2026-07-22 | Narrow Phase 1 to a healthcare consultation marketplace | Keep role-specific auth/onboarding, verification, professional discovery, availability, appointments, role profiles, appointment messaging/consultation/payment/support only when approved; remove broad social/content/readings/emergency/creator modules from active navigation first and from source later after archive and retained-flow proof | APP-P1-001 |
 
 ## How to add a row
 
@@ -1917,3 +1918,50 @@ account creation, or fake professional approval was introduced.
 
 Next: run APP-ID-016 real-device smoke on the recovered auth onboarding path
 before claiming the UX recovery works on phone.
+
+## D176 - Narrow Phase 1 to a healthcare consultation marketplace
+
+Task: APP-P1-001
+
+Decision: The active Phase 1 product is a role-aware healthcare consultation
+marketplace. Patient navigation is Home, Find Care, Appointments, Messages, and
+Profile. Professional navigation is Home, Schedule, Appointments, Messages, and
+Profile. Notifications open from a header bell. Existing social/content,
+community, readings/device, emergency, creator, generic schedule/reminder, and
+promotion modules leave active navigation and routing, then their exclusive code
+is removed after retained-flow regression.
+
+Reason: The broad app contains many local/static speculative modules that do not
+prove the consultation value/revenue loop and increase reasoning, testing,
+security, and maintenance cost. The working backend already supports the safer
+core of auth/onboarding, profile/verification, public professional discovery,
+availability, and appointment lifecycle.
+
+Preservation: Proposed archive branch
+`archive/pre-phase1-broad-ui-2026-07-22` and annotated tag
+`pre-phase1-broad-ui-2026-07-22` must both point exactly to committed baseline
+`3e04d6e`. They do not include or claim to preserve unrelated dirty files.
+
+Consequences: Figma and old screens remain references, not product authority.
+The newer backend catalog/readiness onboarding stays. The obsolete
+`communityAgreement -> notificationAgreement -> medicalAgreement -> medicalEdit`
+chain is removed from the active journey later. No local fallback may represent
+real booking, professional data, messages, notifications, account persistence,
+verification approval, payment, calls, refunds, payouts, or support outcomes.
+
+Communication boundary: Appointment-linked text messaging and video/audio
+consultation are approved Phase 1 capabilities. A conversation belongs to an
+eligible appointment, its patient, and its assigned professional, and appears in
+Messages plus Appointment Detail. Join Consultation appears only in Appointment
+Detail. CareNet owns appointment authorization, participant eligibility,
+consultation timing, session state, and audit boundaries; an external RTC
+provider owns media transport. APP-P1-001 does not implement either capability.
+
+Unresolved: Payment, dual-role accounts, external RTC vendor/session details,
+appointment messaging transport/retention details, notification delivery,
+support, refunds/follow-up, and payout rules require separate decisions. Do not
+invent them.
+
+Next: after project-lead approval, create and verify the archive refs. The only
+recommended next runtime slice is `APP-P1-002`, role-aware navigation and active
+route pruning.

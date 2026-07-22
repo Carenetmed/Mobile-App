@@ -1,6 +1,6 @@
 # Documentation sync index
 
-**Last audited:** 2026-05-27
+**Last audited:** 2026-07-22
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 ---
@@ -10,6 +10,10 @@
 | Topic | Authoritative doc |
 |-------|-------------------|
 | What to do **right now** | `AI_HANDOFF.md` (task marked **NEXT**) |
+| Phase 1 product scope and approved navigation | `PHASE_1_MARKETPLACE_BOUNDARY.md` |
+| Route/screen KEEP-ADAPT-DEFER-DELETE status | `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
+| Deferred/shared dependency ownership | `PHASE_1_DEPENDENCY_IMPACT_MAP.md` |
+| Phase 1 slice order, gates, and stop conditions | `PHASE_1_IMPLEMENTATION_PLAN.md` |
 | Strict completion rules | `WORKING_AGREEMENT.md` + `DEFINITION_OF_DONE.md` |
 | Navigation between screens | `FLOW_MAP.md` |
 | Route name to Dart file | `ROUTES.md` + `lib/.../router.dart` |
@@ -51,11 +55,13 @@
 | Phase 20 | **Complete** |
 | Phase 21 | **Complete** |
 | Phase 22 | **In progress** |
-| NEXT task | **APP-ID-017** - select next lane after PR #147 review/merge |
-| Last completed | **APP-ID-016** - completed recovered auth onboarding phone smoke checkpoint, selector/backend catalog fix, and staging readiness recovery |
+| Product direction | **Phase 1 consultation marketplace** - broad social/content/readings/emergency/creator modules leave the active mainline in ordered slices |
+| Archive checkpoint | **APP-P1-001A complete** - branch `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` resolve to `3e04d6e` |
+| NEXT task | **APP-P1-002** - role-aware navigation shell and active route pruning |
+| Last completed | **APP-P1-001A** - safely preserved the committed broad UI baseline without including dirty local changes |
 | Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, patient-device proof through real Search/public availability/appointment request plus own-list rendering, and professional-device proof through role-aware appointment accept/decline/reschedule plus terminal-row behavior; Android backup is disabled, own-list parses the backend `appointments` envelope, secure session writes are ordered, and professional Account now exposes Manage Profile/Verification documents. Verification upload route access is proven, but upload-init returns staging HTTP 500; separate appointment-detail, optional fresh completion, successful upload after backend fix, and cleanup phone smoke remain open |
 | Product interruption | **APP-63** - Google first-time signup now runs through explicit patient/professional role selection with a real Google ID token before backend account creation. Email/password signup remains aligned to the staging contract. Facebook/Apple signup, Google unlink, iOS/release OAuth proof, production OAuth consent/app verification, phone/OTP, MFA, and broader profile trust rules remain deferred |
-| Registered routes | **73 wired routes** plus the reserved unused `login` constant (see `ROUTES.md`) |
+| Registered routes | Baseline has **74 router cases** plus the reserved unused `login` constant; Phase 1 classifications are in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
 ---
@@ -103,6 +109,8 @@ Do not use old chat history. Do not start the next task without my approval.
 
 | Date | Fixes |
 |------|--------|
+| 2026-07-22 | APP-P1-001A DONE - pushed the archive branch and annotated tag at exact baseline `3e04d6e`; archive refs exclude the later Phase 1 docs commit and all dirty local changes; DOC_SYNC NEXT -> APP-P1-002 |
+| 2026-07-22 | APP-P1-001 DONE - locked the Phase 1 consultation marketplace boundary, approved role navigation, complete route/screen classification, dependency and preservation maps, A-J slice plan, unresolved product decisions, and archive checkpoint; DOC_SYNC NEXT -> APP-P1-001A; exactly one next runtime recommendation -> APP-P1-002 |
 | 2026-07-15 | Task 52.75 DONE - accepted the professional verification upload/list boundary with Manage Profile entry, owner list/status plus controlled upload flow, private-document rules, and repository-boundary next; DOC_SYNC NEXT -> 52.76 |
 | 2026-07-15 | Task 52.76 DONE - added the professional verification repository/API boundary for owner document list, upload-init, internal signed upload PUT, upload-complete, safe metadata, bearer auth, and focused tests; DOC_SYNC NEXT -> 52.77 |
 | 2026-07-15 | Task 52.77 DONE - Manage Profile now opens a backend-backed professional verification documents shell with safe owner list/status, empty/error states, private-data non-exposure, and upload deferred pending file-picker boundary; DOC_SYNC NEXT -> 52.78 |

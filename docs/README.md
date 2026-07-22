@@ -44,10 +44,18 @@ Do not use old chat history. Do not start the next task without my approval.
 | 20 | **GOOGLE_SIGN_IN_SETUP_PREREQUISITES.md** | Google OAuth client prerequisites and fingerprints |
 | 21 | **ROLE_BASED_ONBOARDING_AUTH_BOUNDARY.md** | PRD-backed patient/professional onboarding and Google sign-up boundary |
 | 22 | **ROLE_REGISTRATION_BACKEND_CONTRACT.md** | Exact frontend/backend contract for patient/professional registration and Google sign-up role handling |
+| 23 | **PHASE_1_MARKETPLACE_BOUNDARY.md** | Current product scope, approved role navigation, Git/archive safety, unresolved blockers |
+| 24 | **PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md** | Complete route/screen KEEP-ADAPT-DEFER-DELETE inventory |
+| 25 | **PHASE_1_DEPENDENCY_IMPACT_MAP.md** | Shared versus deferred files, state, models, services, assets, packages, and tests |
+| 26 | **PHASE_1_IMPLEMENTATION_PLAN.md** | Ordered A-J slice plan, verification, risks, stop conditions, and non-goals |
 
 Current implementation policy:
-- Build frontend-complete, backend-ready slices.
-- Use mock/local state only when needed, and keep it behind a clean boundary.
+- Build only the approved Phase 1 consultation marketplace surface.
+- Preserve and extend real auth/onboarding, profile/verification, discovery,
+  availability, and appointment repository boundaries.
+- Do not expose local/mock fallback as real retained Phase 1 behavior.
+- Treat broad Figma/social/content/readings/emergency/creator screens as archive
+  references, not active product scope.
 - Avoid dummy widget logic that would force screen rewrites later.
 
 ---

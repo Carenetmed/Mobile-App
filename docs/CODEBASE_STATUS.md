@@ -1,17 +1,28 @@
 # Codebase status
 
-**Last updated:** 2026-07-22 Auth onboarding phone smoke completion.
+**Last updated:** 2026-07-22 Phase 1 consultation marketplace scope audit.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
 For a consolidated list of local/mock seams and skipped backend work, see `DEFERRED_WORK.md`.
 
+For the approved Phase 1 product boundary and route/dependency disposition, see
+`PHASE_1_MARKETPLACE_BOUNDARY.md`, `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md`, and
+`PHASE_1_DEPENDENCY_IMPACT_MAP.md`.
+
 ---
 
 ## Maturity level
 
-**~15-20% of blueprint product scope.**
-**Phase 0:** done (spine). **Phase 1:** done (tokens + shared input/button + adoption on onboarding/sign-up phone/email). **Phase 2:** done. **Phase 3:** done. Most screens are still UI sketches.
+The broad Figma product is no longer the Phase 1 target. The active target is a
+focused patient/professional consultation marketplace. Auth/onboarding,
+profile/verification, public professional discovery, availability, and the
+appointment lifecycle have real backend boundaries. The current runtime shell,
+many routes, messaging, notifications, local account state, and several retained
+screens still require the ordered Phase 1 narrowing plan before release claims.
+
+Historical numbered phases remain useful implementation records, but they do
+not override the `APP-P1` product boundary.
 
 ---
 
@@ -22,7 +33,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | App entry | `lib/main.dart` -> `CarenetApp` in `lib/app.dart` |
 | Start screen | `RouteName.splash` (not notifications) |
 | Splash -> session guard | 800ms then `AuthRepository.restore()` routes usable stored sessions to `dashboard`; missing, invalid, or failed restore falls back to `onboarding` |
-| Named routes | **73 wired routes** in `router.dart` plus the reserved unused `login` constant (see `ROUTES.md`) |
+| Named routes | Baseline has **74 router cases** plus the reserved unused `login` constant; final Phase 1 disposition is in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
 | Onboarding UI | First launch shows a care gateway with `Browse verified care`, `Create account`, and `Already have an account? Sign in`. Create account opens role-first signup instead of direct phone signup |
 | Role-based onboarding boundary | `ROLE_BASED_ONBOARDING_AUTH_BOUNDARY.md` records the PRD-backed product decision that CareNet sign-up must branch into patient and professional onboarding before Google sign-up or broader auth expansion. Professional accounts must proceed through profile, credential upload, and manual verification before public listing |
 | Role-registration backend contract | `ROLE_REGISTRATION_BACKEND_CONTRACT.md` records the exact frontend/backend boundary: email/password and Google-created accounts must use explicit `PATIENT`/`PROFESSIONAL` role selection before account creation is treated as complete. Existing linked Google sign-in and authenticated Google linking remain valid, but first-time Google sign-up stays disabled until role-selection onboarding exists |
@@ -452,7 +463,7 @@ For a consolidated list of local/mock seams and skipped backend work, see `DEFER
 | `finishSignUp` still uses legacy `BorderedTextInput` and wrapper button | `lib/features/Authentication/presentation/pages/sign_up_con.dart` |
 | Legacy blue (`AppColors`) in theme / non-button UI | `app_colors.dart`, `theme.dart`, messaging - later phases |
 | Messaging screens use iOS `#007AFF`, not app tokens | `Messages.dart`, `Notification.dart`, `Chat.dart` |
-| `get_it` not registering services | `injection.dart` empty |
+| Feature state remains mostly page-local/static | DI now registers auth, account, profile, onboarding, scheduling, and verification services; only theme uses BLoC, while legacy feature state still relies on page state and local stores |
 | Feature BLoC only for theme | No auth/home blocs |
 | `RouteName.login` unused | No screen |
 

@@ -1,6 +1,8 @@
 # CareNet — user flows
 
-Implementation order: **A → B → C → D → E+**
+Current implementation authority: `PHASE_1_MARKETPLACE_BOUNDARY.md` and
+`PHASE_1_IMPLEMENTATION_PLAN.md`. The older lettered/numbered flows below remain
+historical records and must not re-expand the approved Phase 1 product.
 
 **When is a screen done?** Every control in the documented scope must have a
 real outcome or an explicit disabled/deferred state. Navigation changes must
@@ -9,7 +11,46 @@ agree with `ROUTES.md`, and backend-dependent gaps must be recorded in
 
 ---
 
-## Flow A — First launch (sign up) — Phase 2 target
+## Active Phase 1 consultation marketplace flow
+
+```text
+splash/session restore
+-> auth or backend readiness destination
+-> patient/professional role-specific setup
+-> professional verification/readiness where applicable
+-> role-aware marketplace Home
+
+Patient:
+Home -> Find Care -> professional detail -> real availability -> request
+-> Appointments -> appointment detail -> Messages / Join Consultation
+-> supported lifecycle actions
+
+Professional:
+Home -> Schedule/availability -> appointment requests -> Appointments
+-> appointment detail -> Messages / Join Consultation
+-> supported lifecycle actions -> completion
+
+Shared:
+header bell -> Notifications
+Profile -> role profile/account/privacy/security/support
+Messages -> appointment-linked conversations only after implementation contract approval
+Join Consultation -> Appointment Detail only; external RTC handles media transport
+```
+
+Approved primary navigation:
+
+- Patient: Home, Find Care, Appointments, Messages, Profile.
+- Professional: Home, Schedule, Appointments, Messages, Profile.
+- Notifications: header bell, never a primary bottom-navigation item.
+
+The patient setup route currently exits into `communityAgreement`; that is a
+known obsolete broad-app handoff and must be corrected in `APP-P1-002`. The
+legacy `communityAgreement -> notificationAgreement -> medicalAgreement ->
+medicalEdit` chain is not part of the active Phase 1 flow.
+
+---
+
+## Historical Flow A — First launch baseline (not Phase 1 authority)
 
 ```
 splash

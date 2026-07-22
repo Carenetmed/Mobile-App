@@ -96,6 +96,11 @@ class _FakeProfileRepository implements ProfileRepository {
     required String name,
     int? age,
     String? location,
+    DateTime? dateOfBirth,
+    String? city,
+    String? state,
+    String? country,
+    String? healthInterests,
   }) {
     throw UnimplementedError();
   }
@@ -104,8 +109,18 @@ class _FakeProfileRepository implements ProfileRepository {
   Future<ProfessionalProfile> updateProfessionalMe({
     required String displayName,
     required String category,
+    String? legalName,
     String? specialty,
     String? bio,
+    String? licenseNumber,
+    String? licensingCouncil,
+    String? qualifications,
+    int? yearsOfExperience,
+    String? practiceName,
+    String? practiceAddress,
+    String? practiceCity,
+    String? practiceState,
+    String? practiceCountry,
   }) {
     throw UnimplementedError();
   }

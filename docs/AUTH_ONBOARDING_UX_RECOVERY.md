@@ -49,8 +49,9 @@ would risk deleting or rolling back newer contract integration.
 
 ## Next
 
-APP-ID-017 should follow up on staging readiness health and any remaining
-auth/onboarding smoke gaps without adding new onboarding product behavior.
+APP-ID-017 should be selected after project-lead review of PR #147. Do not add
+new onboarding product behavior until the recovered phone-smoke PR is merged or
+explicitly superseded.
 
 ## Device checkpoint
 
@@ -70,8 +71,11 @@ APP-ID-016 completed the recovered onboarding phone smoke checkpoint:
 - `GET /catalogs/onboarding` through the public staging gateway now returns the
   Nigeria onboarding catalog, unblocking controlled country/state/profession
   selectors without local dummy fallback.
-- `GET /health/ready` still returns `503` through the public staging gateway and
-  remains a backend staging readiness follow-up, not a mobile UX fallback.
+- `GET /health/ready` initially returned `503` because one committed Prisma
+  migration was pending in staging. After applying committed migration
+  `20260719090000_identity_catalog_alignment` with `prisma migrate deploy`,
+  public staging readiness returned `200` with database, migrations, email,
+  Google auth, and verification storage all `ok`.
 
 APP-ID-016 also keeps one small UX hardening fix: changing role or going back
 from role selection clears stale Google/backend error text so the next selected

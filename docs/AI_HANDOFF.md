@@ -256,7 +256,7 @@
 | APP-ID-014 | Onboarding Phone Smoke Execution: run the APP-ID-013 checklist against a staging-configured Android build, record pass/fail evidence and blockers, and do not add new onboarding features | M | **DONE - CHECKPOINT** |
 | APP-ID-015 | Recover Auth Onboarding UX From APP-66-73: selectively restore the gateway and role-first signup UX without rolling back APP-ID backend catalog/readiness/profile/verification wiring; add regression proof | M | **DONE** |
 | APP-ID-016 | Rebuild And Phone Smoke Recovered Auth Onboarding UX: install a staging-configured Android build and verify first launch, role-first signup, Google signup, email signup, and readiness routing on device | M | **DONE** |
-| APP-ID-017 | Follow Up Staging Readiness Health And Remaining Auth/Onboarding Smoke Gaps: inspect why public staging `GET /health/ready` returns `503`, verify no mobile dummy fallback was added, and record any remaining real-device auth/onboarding blockers before new feature work | S | **NEXT** |
+| APP-ID-017 | Select Next Lane After PR #147 Review: after APP-ID-016 is reviewed/merged or explicitly superseded, decide the next narrow frontend/backend integration lane from current product priorities; do not start new onboarding behavior before that review | S | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -439,9 +439,13 @@ APP-ID-015 restored the role-first gateway UX.
    `6tkvkvindaqogurk`, Google login succeeded after rebuilding with the corrected
    Web OAuth client ID, and controlled onboarding selectors loaded after backend
    staging was redeployed with `GET /catalogs/onboarding`.
-6. Remaining follow-up: public staging `GET /health/ready` still returns `503`;
-   APP-ID-017 should inspect that staging readiness issue without adding mobile
-   dummy fallback or new onboarding product behavior.
+6. Staging readiness recovery: public gateway `GET /health/ready` initially
+   returned `503` because staging had one pending committed migration. After
+   applying `20260719090000_identity_catalog_alignment` with
+   `prisma migrate deploy`, `npx prisma migrate status` reported the database
+   schema is up to date and public gateway `/health/ready` returned `200`.
+7. Next work should start only after PR #147 is reviewed/merged or explicitly
+   superseded.
 
 ## Manual test (historical: task 53.1)
 

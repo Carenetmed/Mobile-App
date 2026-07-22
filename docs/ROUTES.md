@@ -1,5 +1,11 @@
 # CareNet — canonical routes
 
+> Phase 1 note: this table records the committed broad-UI baseline. The approved
+> patient/professional navigation contract and final KEEP/ADAPT/DEFER/DELETE
+> disposition are authoritative in `PHASE_1_MARKETPLACE_BOUNDARY.md` and
+> `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md`. `APP-P1-001` does not change runtime
+> route registration.
+
 All navigation uses **`RouteName`** constants and **`generateRoute`** in `lib/core/constants/navigators/router.dart`.
 
 Do not invent route strings in screens. Add new routes here and in `RouteName` before use.

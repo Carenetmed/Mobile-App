@@ -8,6 +8,28 @@ look complete.
 
 ---
 
+## Phase 1 product deferrals
+
+`APP-P1-001` narrows the active product to a healthcare consultation
+marketplace. General Feed/Post, Circles/communities, articles/case studies,
+podcasts, social Q&A, events/live sessions, professional-development and creator
+marketplaces, health readings/devices, emergency/ambulance, generic social
+messaging, creator portfolios, birthday activity, promotional subscriptions,
+ads/boosts, and generic reminders/schedules are not active Phase 1 modules.
+
+Their routes are removed from active navigation first. Exclusive source, local
+stores, assets, packages, and tests are removed only after retained marketplace
+flows pass regression. Recovery uses Git history plus the proposed archive refs
+at committed baseline `3e04d6e`; deferred code is not kept indefinitely behind
+feature flags.
+
+The complete ownership/removal map is
+`PHASE_1_DEPENDENCY_IMPACT_MAP.md`. Payment, appointment messaging,
+consultation calls, notification delivery, support/refunds, payouts, and
+dual-role behavior remain decision-blocked and must not be invented.
+
+---
+
 ## Backend replacement seams
 
 | Area | Current honest behavior | Deferred / backend needed later | Main files | Decision |

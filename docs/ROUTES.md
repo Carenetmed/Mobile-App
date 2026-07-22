@@ -3,8 +3,13 @@
 > Phase 1 note: this table records the committed broad-UI baseline. The approved
 > patient/professional navigation contract and final KEEP/ADAPT/DEFER/DELETE
 > disposition are authoritative in `PHASE_1_MARKETPLACE_BOUNDARY.md` and
-> `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md`. `APP-P1-001` does not change runtime
-> route registration.
+> `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md`. APP-P1-002 keeps route registration
+> conservative while removing deferred routes from normal visible reachability.
+> `dashboard` resolves the authenticated backend session role into patient
+> Home/Find Care/Appointments/Messages or professional
+> Home/Schedule/Appointments/Messages. `notification` opens from the header bell,
+> `account` opens from the header avatar, and no drawer is active. Patient setup
+> follows backend readiness instead of entering `communityAgreement`.
 
 All navigation uses **`RouteName`** constants and **`generateRoute`** in `lib/core/constants/navigators/router.dart`.
 

@@ -59,14 +59,17 @@ Status: completed; branch and annotated tag were pushed at exact commit
 
 ### APP-P1-002 - Role-Aware Phase 1 Navigation Shell And Active Route Pruning
 
+Status: implemented on the dedicated APP-P1-002 slice branch; awaiting PR review.
+
 - **Purpose:** Replace the broad dashboard navigation with the approved patient
-  and professional five-destination contracts and a header notification bell.
+  and professional four-destination contracts plus header notification/account actions.
 - **Likely files:** `dashboard.dart`, `drawer.dart`, `routeName.dart`, `router.dart`,
   `onboarding_readiness_route_resolver.dart`, `ROUTES.md`, `FLOW_MAP.md`, dashboard tests.
-- **Expected behavior:** Patient tabs are Home/Find Care/Appointments/Messages/Profile;
-  professional tabs are Home/Schedule/Appointments/Messages/Profile; the bell opens
+- **Expected behavior:** Patient tabs are Home/Find Care/Appointments/Messages;
+  professional tabs are Home/Schedule/Appointments/Messages; the bell opens
   Notifications; Feed/Post/Circles/content/health/emergency/generic schedule routes
-  are not reachable from active navigation. Patient setup exits to its approved
+  are not reachable from active navigation; the header avatar opens Account/Profile.
+  Patient setup exits to its approved
   readiness destination instead of `communityAgreement`.
 - **Tests:** Patient/professional shell widget tests, tab order/destination tests,
   bell test, session/readiness route tests, legacy onboarding-chain absence test,
@@ -302,9 +305,9 @@ are not automatically inserted into this plan and are not silently treated as do
 
 ## Exactly one next runtime slice
 
-After `APP-P1-001A` archive refs are approved and verified, start only:
+After APP-P1-002 is reviewed and merged, start only:
 
-`APP-P1-002 - Role-Aware Phase 1 Navigation Shell And Active Route Pruning`
+`APP-P1-003 - Role-Aware Marketplace Home`
 
-Do not start Home, Find Care, booking, profile, cleanup, or phone regression in
-the same slice.
+Do not start Find Care consolidation, booking cleanup, profile cleanup, deferred
+code deletion, or phone regression in the same slice.

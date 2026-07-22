@@ -29,6 +29,8 @@ Future<void> _pumpSetup(
       builder:
           (_, __) => MaterialApp(
             routes: <String, WidgetBuilder>{
+              RouteName.dashboard:
+                  (_) => const Scaffold(body: Text('patient-dashboard')),
               RouteName.communityAgreement:
                   (_) => const Scaffold(body: Text('community-agreement')),
               RouteName.professionalVerificationDocuments:
@@ -45,7 +47,22 @@ void main() {
   group('Patient and professional onboarding setup', () {
     testWidgets('patient setup saves backend profile fields', (tester) async {
       final repository = _FakeProfileRepository();
-      final onboardingRepository = _FakeOnboardingRepository();
+      final onboardingRepository = _FakeOnboardingRepository(
+        readiness: const AccountReadiness(
+          account: ReadinessAccount(
+            role: 'PATIENT',
+            status: 'ACTIVE',
+            emailVerified: true,
+          ),
+          patient: PatientReadiness(
+            profileStatus: 'COMPLETE',
+            requiredFields: <String>[],
+          ),
+          professional: null,
+          nextAction: 'PATIENT_BOOKING_GATE',
+          requiredActions: <String>[],
+        ),
+      );
       await _pumpSetup(
         tester,
         repository: repository,
@@ -65,14 +82,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(onboardingRepository.catalogCalls, 1);
-      expect(onboardingRepository.readinessCalls, 1);
+      expect(onboardingRepository.readinessCalls, 2);
       expect(repository.updatePatientCalls, 1);
       expect(repository.lastPatientName, 'Ada Patient');
       expect(repository.lastPatientCity, 'Ikeja');
       expect(repository.lastPatientState, 'LA');
       expect(repository.lastPatientCountry, 'NG');
       expect(repository.lastPatientHealthInterests, 'PRIMARY_CARE');
-      expect(find.text('community-agreement'), findsOneWidget);
+      expect(find.text('patient-dashboard'), findsOneWidget);
+      expect(find.text('community-agreement'), findsNothing);
     });
 
     testWidgets('patient setup shows backend required profile fields', (

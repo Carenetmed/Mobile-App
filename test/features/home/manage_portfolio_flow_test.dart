@@ -123,18 +123,17 @@ void main() {
     expect(find.text('Messages'), findsWidgets);
   });
 
-  testWidgets('manage profile articles action opens manage portfolio', (
+  testWidgets('manage profile does not expose creator portfolio entry', (
     tester,
   ) async {
     await _pumpManageProfile(tester);
 
     await tester.drag(find.byType(ListView), const Offset(0, -700));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Manage'));
-    await tester.pumpAndSettle();
 
-    expect(find.text('Manage Portfolio'), findsOneWidget);
-    expect(find.text('Upload new podcast'), findsOneWidget);
+    expect(find.text('Articles'), findsNothing);
+    expect(find.text('Manage Portfolio'), findsNothing);
+    expect(find.text('Upload new podcast'), findsNothing);
   });
 
   testWidgets('published articles opens local list and detail surface', (

@@ -44,6 +44,20 @@ Future<void> _pumpAppointments(
   await tester.pumpAndSettle();
 }
 
+Future<void> _pumpPreservedBookingShell(WidgetTester tester) async {
+  tester.view.physicalSize = _phoneSize;
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(
+    const ScreenUtilInit(
+      designSize: _phoneSize,
+      child: MaterialApp(home: BookAppointmentShellPage()),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
 class _FakeSchedulingRepository implements SchedulingRepository {
   _FakeSchedulingRepository({
     this.appointments = const <AppointmentSummary>[],
@@ -1163,23 +1177,19 @@ void main() {
     expect(find.text('Private consult with Dr. Lagbaja'), findsNothing);
   });
 
-  testWidgets('book appointment CTA opens booking route', (tester) async {
+  testWidgets('appointments screen does not expose local draft booking', (
+    tester,
+  ) async {
     await _pumpAppointments(tester);
 
-    await tester.tap(find.text('Book appointment'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Book Appointment'), findsOneWidget);
-    expect(find.text('Booking starts here.'), findsOneWidget);
+    expect(find.text('Book appointment'), findsNothing);
+    expect(find.text('Booking starts here.'), findsNothing);
   });
 
   testWidgets('booking form validates and prepares backend-required details', (
     tester,
   ) async {
-    await _pumpAppointments(tester);
-
-    await tester.tap(find.text('Book appointment'));
-    await tester.pumpAndSettle();
+    await _pumpPreservedBookingShell(tester);
 
     await tester.tap(find.text('Review request details'));
     await tester.pumpAndSettle();
@@ -1215,10 +1225,7 @@ void main() {
   testWidgets('prepared booking details can be cleared but not confirmed', (
     tester,
   ) async {
-    await _pumpAppointments(tester);
-
-    await tester.tap(find.text('Book appointment'));
-    await tester.pumpAndSettle();
+    await _pumpPreservedBookingShell(tester);
 
     await tester.enterText(find.byType(TextFormField).at(0), 'Dr. Bello');
     await tester.tap(find.text('Video visit'));

@@ -137,8 +137,6 @@ class _ManageProfileShellPageState extends State<ManageProfileShellPage> {
             _ManageActions(
               onEditBasic:
                   () => Navigator.pushNamed(context, RouteName.editYourName),
-              onMessagePreview:
-                  () => Navigator.pushNamed(context, RouteName.messages),
               onVerification:
                   () => Navigator.pushNamed(
                     context,
@@ -168,12 +166,6 @@ class _ManageProfileShellPageState extends State<ManageProfileShellPage> {
             ),
             SizedBox(height: 16.h),
             const _BusinessSection(),
-            SizedBox(height: 16.h),
-            _ArticlesSection(
-              profile: profile,
-              onManage:
-                  () => Navigator.pushNamed(context, RouteName.managePortfolio),
-            ),
           ],
         ),
       ),
@@ -305,12 +297,10 @@ class _ProfileReadStateBanner extends StatelessWidget {
 class _ManageActions extends StatelessWidget {
   const _ManageActions({
     required this.onEditBasic,
-    required this.onMessagePreview,
     required this.onVerification,
   });
 
   final VoidCallback onEditBasic;
-  final VoidCallback onMessagePreview;
   final VoidCallback onVerification;
 
   @override
@@ -325,34 +315,9 @@ class _ManageActions extends StatelessWidget {
           onTap: onEditBasic,
         ),
         _ActionChipButton(
-          icon: Icons.mail_outline,
-          label: 'Message',
-          onTap: onMessagePreview,
-        ),
-        _ActionChipButton(
           icon: Icons.verified_user_outlined,
           label: 'Verification',
           onTap: onVerification,
-        ),
-        const _ActionChipButton(
-          icon: Icons.event_outlined,
-          label: 'Events',
-          disabledReason: 'Event management needs scheduling APIs.',
-        ),
-        const _ActionChipButton(
-          icon: Icons.trending_up,
-          label: 'Boost',
-          disabledReason: 'Boosting needs payment and ad-review rules.',
-        ),
-        const _ActionChipButton(
-          icon: Icons.podcasts_outlined,
-          label: 'Podcast',
-          disabledReason: 'Podcast management needs media APIs.',
-        ),
-        const _ActionChipButton(
-          icon: Icons.ios_share,
-          label: 'Share',
-          disabledReason: 'Product-approved sharing is deferred.',
         ),
       ],
     );
@@ -569,38 +534,7 @@ class _BusinessSection extends StatelessWidget {
           ..._days.map(
             (day) => _InfoRow(label: day, value: 'Available 24 hours'),
           ),
-          SizedBox(height: 8.h),
-          const _LockedRow(
-            label: 'Add members',
-            reason: 'Member management needs backend roles and invites.',
-          ),
-          const _LockedRow(
-            label: 'Edit group details',
-            reason: 'Business profile editing needs profile APIs.',
-          ),
         ],
-      ),
-    );
-  }
-}
-
-class _ArticlesSection extends StatelessWidget {
-  const _ArticlesSection({required this.profile, required this.onManage});
-
-  final PublicProfileContent profile;
-  final VoidCallback onManage;
-
-  @override
-  Widget build(BuildContext context) {
-    return _Section(
-      title: 'Articles',
-      actionLabel: 'Manage',
-      onAction: onManage,
-      child: Column(
-        children:
-            profile.articles
-                .map((article) => _ArticlePreview(article: article))
-                .toList(),
       ),
     );
   }
@@ -681,156 +615,31 @@ class _InlineActionRow extends StatelessWidget {
   }
 }
 
-class _LockedRow extends StatelessWidget {
-  const _LockedRow({required this.label, required this.reason});
-
-  final String label;
-  final String reason;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: reason,
-      child: Container(
-        margin: REdgeInsets.only(top: 8.h),
-        padding: REdgeInsets.all(12.r),
-        decoration: BoxDecoration(
-          color: AppColors.blue02,
-          borderRadius: BorderRadius.circular(8.r),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.lock_outline, size: 18),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: FontSizes.footer3,
-                  fontFamily: AppFonts.montserrat,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.kBlack,
-                ),
-              ),
-            ),
-            SizedBox(width: 10.w),
-            Expanded(
-              child: Text(
-                reason,
-                textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontSize: FontSizes.footer4,
-                  fontFamily: AppFonts.montserrat,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.primaryBlue11,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ArticlePreview extends StatelessWidget {
-  const _ArticlePreview({required this.article});
-
-  final PublicProfileArticle article;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: REdgeInsets.only(bottom: 10.h),
-      padding: REdgeInsets.all(12.r),
-      decoration: BoxDecoration(
-        color: AppColors.blue02,
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            article.category,
-            style: TextStyle(
-              fontSize: FontSizes.footer4,
-              fontFamily: AppFonts.montserrat,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryBlue5,
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            article.title,
-            style: TextStyle(
-              fontSize: FontSizes.footer3,
-              fontFamily: AppFonts.montserrat,
-              fontWeight: FontWeight.w700,
-              color: AppColors.kBlack,
-            ),
-          ),
-          SizedBox(height: 6.h),
-          Text(
-            article.summary,
-            style: TextStyle(
-              fontSize: FontSizes.footer4,
-              fontFamily: AppFonts.montserrat,
-              fontWeight: FontWeight.w400,
-              color: AppColors.primaryBlue11,
-              height: 1.4,
-            ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            '${article.author} - ${article.date} - ${article.readTime}',
-            style: TextStyle(
-              fontSize: FontSizes.footer4,
-              fontFamily: AppFonts.montserrat,
-              fontWeight: FontWeight.w500,
-              color: AppColors.primaryBlue5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _ActionChipButton extends StatelessWidget {
   const _ActionChipButton({
     required this.icon,
     required this.label,
-    this.onTap,
-    this.disabledReason,
+    required this.onTap,
   });
 
   final IconData icon;
   final String label;
-  final VoidCallback? onTap;
-  final String? disabledReason;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final isDisabled = onTap == null;
-    final child = ActionChip(
+    return ActionChip(
       avatar: Icon(icon, size: 18, color: AppColors.primaryBlue5),
       label: Text(label),
       onPressed: onTap,
-      backgroundColor: isDisabled ? AppColors.blue02 : AppColors.kWhite,
+      backgroundColor: AppColors.kWhite,
       labelStyle: TextStyle(
         fontSize: FontSizes.footer4,
         fontFamily: AppFonts.montserrat,
         fontWeight: FontWeight.w600,
-        color: isDisabled ? AppColors.primaryBlue11 : AppColors.primaryBlue5,
+        color: AppColors.primaryBlue5,
       ),
       side: BorderSide(color: AppColors.white04),
     );
-
-    if (!isDisabled || disabledReason == null) {
-      return child;
-    }
-
-    return Tooltip(message: disabledReason!, child: child);
   }
 }

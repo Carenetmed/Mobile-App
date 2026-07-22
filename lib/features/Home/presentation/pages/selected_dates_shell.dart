@@ -13,10 +13,12 @@ class SelectedDatesShellPage extends StatefulWidget {
     super.key,
     this.schedulingRepository,
     this.initialDate,
+    this.embedded = false,
   });
 
   final SchedulingRepository? schedulingRepository;
   final DateTime? initialDate;
+  final bool embedded;
 
   @override
   State<SelectedDatesShellPage> createState() => _SelectedDatesShellPageState();
@@ -213,25 +215,31 @@ class _SelectedDatesShellPageState extends State<SelectedDatesShellPage> {
 
     return Scaffold(
       backgroundColor: CarenetColors.white,
-      appBar: AppBar(
-        backgroundColor: CarenetColors.white,
-        elevation: 0,
-        leading: IconButton(
-          tooltip: 'Back',
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const Icon(Icons.arrow_back, color: CarenetColors.black),
-        ),
-        centerTitle: true,
-        title: Text(
-          'Edit business hours',
-          style: TextStyle(
-            fontFamily: AppFonts.montserrat,
-            fontSize: 17.sp,
-            fontWeight: FontWeight.w600,
-            color: CarenetColors.brand,
-          ),
-        ),
-      ),
+      appBar:
+          widget.embedded
+              ? null
+              : AppBar(
+                backgroundColor: CarenetColors.white,
+                elevation: 0,
+                leading: IconButton(
+                  tooltip: 'Back',
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: CarenetColors.black,
+                  ),
+                ),
+                centerTitle: true,
+                title: Text(
+                  'Edit business hours',
+                  style: TextStyle(
+                    fontFamily: AppFonts.montserrat,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w600,
+                    color: CarenetColors.brand,
+                  ),
+                ),
+              ),
       body: SafeArea(
         top: false,
         child: ListView(

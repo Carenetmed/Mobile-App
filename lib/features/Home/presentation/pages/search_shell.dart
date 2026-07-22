@@ -146,7 +146,7 @@ class _SearchShellPageState extends State<SearchShellPage> {
             ],
             CarenetTextField(
               controller: _searchController,
-              hintText: 'Search by specialist or condition',
+              hintText: 'Search by name, category, or specialty',
               prefixIcon: const Icon(Icons.search),
               suffixIcon:
                   _searchController.text.isEmpty

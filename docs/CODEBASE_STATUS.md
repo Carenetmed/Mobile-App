@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-22 Phase 1 consultation marketplace scope audit.
+**Last updated:** 2026-07-22 APP-P1-002 role-aware navigation implementation.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -17,9 +17,11 @@ For the approved Phase 1 product boundary and route/dependency disposition, see
 The broad Figma product is no longer the Phase 1 target. The active target is a
 focused patient/professional consultation marketplace. Auth/onboarding,
 profile/verification, public professional discovery, availability, and the
-appointment lifecycle have real backend boundaries. The current runtime shell,
-many routes, messaging, notifications, local account state, and several retained
-screens still require the ordered Phase 1 narrowing plan before release claims.
+appointment lifecycle have real backend boundaries. APP-P1-002 replaces the broad
+dashboard with backend-session-owned patient/professional navigation, header bell
+and account access, honest messaging/notification empty states, and no active drawer.
+Many retained routes and local account/profile seams still require the ordered
+Phase 1 narrowing plan before release claims.
 
 Historical numbered phases remain useful implementation records, but they do
 not override the `APP-P1` product boundary.
@@ -60,11 +62,11 @@ not override the `APP-P1` product boundary.
 | Password recovery | `Forgot Password?` routes to `enterEmail`; valid email requests reset through `AuthRepository.requestPasswordReset`; `resetPasswordConfirm` can complete password reset only when opened with a transient reset token, sends `{ token, newPassword }`, clears local session, and returns to email sign-in. Production app-link setup remains deferred |
 | Finish sign-up | Validates required fields, date picker birthday, 15-character password policy, and confirm password match before calling backend registration and routing into the selected role's next setup step |
 | Social auth rows on sign-up | Google signup is enabled only when the Google provider is configured and runs through explicit patient/professional role selection before backend account creation. Facebook and Apple remain disabled. Sign-in Google remains separate for existing/linked accounts |
-| Dashboard shell | Bottom nav tabs all render real screens; Home tab keeps drawer; Notifications now opens the dedicated notifications feature screen directly |
+| Dashboard shell | Backend session role resolves a four-tab shell. Patient: Home/Find Care/Appointments/Messages. Professional: Home/Schedule/Appointments/Messages. Notifications and Account/Profile open from header actions; unknown roles fail closed; no drawer is active |
 | Search slice | The dashboard Search tab and `search` route now show real local consultant discovery with keyword filtering, category chips, specialist cards, local profile sheet, and local request state. The search lane intentionally stops here before live availability, appointment time/type selection, payment, real booking, and provider-profile APIs |
 | Home inner tabs | `Feed`, `Messages`, and `Articles` all render real content; Messages preview hands off to the dedicated `messages` route |
-| Messaging flow | Dedicated `messages` list now routes into the canonical seeded `chat` screen |
-| Notifications screen | Dedicated page no longer embeds a fake secondary app-level bottom navigation row |
+| Messaging flow | Primary Messages destination shows an honest appointment-conversation empty state; seeded social conversations and arbitrary new-chat behavior are not presented as production data |
+| Notifications screen | Header bell opens an honest empty notification surface; seeded local/social notifications and deferred route promotions are removed |
 | Notification card routing | `Complete your profile` -> `medicalEdit`, `Dr. Lagbaja has replied your message.` -> `messages`, `You are missing updates` -> `dashboard`, `Your appointment is booked` -> `appointments`, `Update your reading...` -> `readings`, `Dr. Tamedu has published a new article` -> `articles`, `Your emergency request is approved.` -> `emergency`, and `Dr. Lakasegbe has published a new podcast` -> `podcast` |
 | Notification categories | `All`, `Events`, `Appointment`, and `Messages` now filter the list honestly; `Payment` is explicitly disabled until that feature surface exists |
 | Legacy messaging cleanup | `Chat_2.dart` and `Message.dart` removed; `RouteName.message` now reuses the shared chat page as a compatibility alias with an unavailable-notice variant |

@@ -1,4 +1,6 @@
 import 'package:app_t/app.dart';
+import 'package:app_t/features/Onboarding/presentation/pages/onboarding.dart';
+import 'package:app_t/features/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -28,11 +30,13 @@ void main() {
   testWidgets('Splash navigates to onboarding after delay', (WidgetTester tester) async {
     await _pumpCarenetApp(tester);
 
-    expect(find.text('CARENET'), findsOneWidget);
+    expect(find.byType(SplashScreen), findsOneWidget);
+    expect(find.byType(OnboardingView), findsNothing);
 
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
 
-    expect(find.text('Where Knowledge Meets Collaboration'), findsOneWidget);
+    expect(find.byType(SplashScreen), findsNothing);
+    expect(find.byType(OnboardingView), findsOneWidget);
   });
 }

@@ -8,6 +8,7 @@ import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
 import 'package:app_t/features/Home/domain/entities/onboarding_catalog.dart';
 import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
+import 'package:app_t/features/Home/presentation/services/booking_resume_navigator.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
@@ -266,9 +267,10 @@ class _PatientOnboardingSetupPageState
         readiness: readiness,
         fallbackRole: 'PATIENT',
       );
-      Navigator.of(
+      await BookingResumeNavigator.afterAuthentication(
         context,
-      ).pushNamedAndRemoveUntil(destination, (route) => false);
+        fallbackRoute: destination,
+      );
     } on AuthFailure catch (failure) {
       if (mounted) {
         setState(() => _message = failure.message);

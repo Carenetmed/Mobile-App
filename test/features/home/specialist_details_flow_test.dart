@@ -1,11 +1,14 @@
-import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
+import 'package:app_t/features/Authentication/data/storage/session_store.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
+import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
-import 'package:app_t/features/Home/domain/entities/availability_window.dart';
-import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
-import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
+import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:app_t/features/Home/presentation/pages/specialist_details_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,15 +16,17 @@ import 'package:flutter_test/flutter_test.dart';
 
 const Size _phoneSize = Size(430, 1200);
 
-Future<void> _pumpSpecialistDetails(
+Future<void> _pumpDetails(
   WidgetTester tester, {
-  String? specialistId = 'pro_1',
-  ProfileRepository? profileRepository,
-  SchedulingRepository? schedulingRepository,
-  DateTime? now,
+  String? professionalId = 'pro-1',
+  _FakeProfileRepository? profileRepository,
+  _FakeSchedulingRepository? schedulingRepository,
+  SessionStore? sessionStore,
+  BookingIntentStore? bookingIntentStore,
+  OnboardingRepository? onboardingRepository,
 }) async {
   tester.view.physicalSize = _phoneSize;
-  tester.view.devicePixelRatio = 1.0;
+  tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 
   await tester.pumpWidget(
@@ -29,12 +34,26 @@ Future<void> _pumpSpecialistDetails(
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
+            routes: <String, WidgetBuilder>{
+              RouteName.search:
+                  (_) => const Scaffold(body: Text('canonical-find-care')),
+              RouteName.signInEmail:
+                  (_) => const Scaffold(body: Text('booking-sign-in')),
+              RouteName.patientOnboardingSetup:
+                  (_) => const Scaffold(body: Text('patient-setup')),
+              RouteName.dashboard:
+                  (_) => const Scaffold(body: Text('appointments-dashboard')),
+            },
             home: SpecialistDetailsShellPage(
-              specialistId: specialistId,
+              specialistId: professionalId,
               profileRepository: profileRepository ?? _FakeProfileRepository(),
               schedulingRepository:
                   schedulingRepository ?? _FakeSchedulingRepository(),
-              now: now ?? DateTime(2026, 7, 14, 8),
+              sessionStore: sessionStore ?? _patientSessionStore(),
+              bookingIntentStore:
+                  bookingIntentStore ?? InMemoryBookingIntentStore(),
+              onboardingRepository:
+                  onboardingRepository ?? _FakeOnboardingRepository(),
             ),
           ),
     ),
@@ -42,94 +61,227 @@ Future<void> _pumpSpecialistDetails(
   await tester.pumpAndSettle();
 }
 
-class _FakeProfileRepository implements ProfileRepository {
-  _FakeProfileRepository({this.publicListing});
+void main() {
+  testWidgets('loads canonical detail by exact ID without directory fallback', (
+    tester,
+  ) async {
+    final profiles = _FakeProfileRepository();
+    await _pumpDetails(tester, profileRepository: profiles);
 
-  final List<PublicProfessional>? publicListing;
+    expect(profiles.detailIds, <String>['pro-1']);
+    expect(profiles.directoryCalls, 0);
+    expect(find.text('Dr Ada Care'), findsOneWidget);
+    expect(find.text('Doctor · Cardiology'), findsOneWidget);
+    expect(find.text('Evidence-based heart care.'), findsOneWidget);
+    expect(find.text('Verified'), findsOneWidget);
+    expect(find.textContaining('No public profile summary'), findsNothing);
+    expect(find.textContaining('Meeting Location'), findsNothing);
+    expect(find.textContaining('rating'), findsNothing);
+    expect(find.textContaining('reviews'), findsNothing);
+    expect(find.textContaining('experience'), findsNothing);
+  });
+
+  testWidgets('missing ID fails closed without seeded professional data', (
+    tester,
+  ) async {
+    await _pumpDetails(tester, professionalId: null);
+
+    expect(find.text('Professional unavailable'), findsOneWidget);
+    expect(find.text('Dr. Uzo Blessing'), findsNothing);
+    expect(find.text('10:00am'), findsNothing);
+  });
+
+  testWidgets('unknown professional fails closed and offers Find Care', (
+    tester,
+  ) async {
+    await _pumpDetails(
+      tester,
+      professionalId: 'unknown',
+      profileRepository: _FakeProfileRepository(detail: null),
+    );
+
+    expect(find.text('Professional unavailable'), findsOneWidget);
+    await tester.tap(find.text('Back to Find Care'));
+    await tester.pumpAndSettle();
+    expect(find.text('canonical-find-care'), findsOneWidget);
+  });
+
+  testWidgets('times failure preserves a successfully loaded profile', (
+    tester,
+  ) async {
+    await _pumpDetails(
+      tester,
+      schedulingRepository: _FakeSchedulingRepository(
+        timesFailure: StateError('private failure'),
+      ),
+    );
+
+    expect(find.text('Dr Ada Care'), findsOneWidget);
+    expect(
+      find.text('Could not load appointment times. Please try again.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('private failure'), findsNothing);
+  });
+
+  testWidgets('renders only backend requestable UTC times at fixed duration', (
+    tester,
+  ) async {
+    final scheduling = _FakeSchedulingRepository();
+    await _pumpDetails(tester, schedulingRepository: scheduling);
+
+    expect(scheduling.requestableIds, <String>['pro-1']);
+    expect(find.text('Professional timezone: Africa/Lagos'), findsOneWidget);
+    expect(
+      find.textContaining('9:00 AM Africa/Lagos - 30 min'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Day 2:'), findsNothing);
+    expect(find.textContaining('45 min'), findsNothing);
+  });
+
+  testWidgets('unauthenticated request saves intent before entering auth', (
+    tester,
+  ) async {
+    final intentStore = InMemoryBookingIntentStore();
+    await _pumpDetails(
+      tester,
+      sessionStore: InMemorySessionStore(),
+      bookingIntentStore: intentStore,
+    );
+
+    await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+    await tester.pump();
+    await tester.tap(find.text('Request selected time'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('booking-sign-in'), findsOneWidget);
+    final intent = await intentStore.read();
+    expect(intent?.professionalProfileId, 'pro-1');
+    expect(intent?.durationMinutes, 30);
+    expect(intent?.idempotencyKey, hasLength(36));
+  });
+
+  testWidgets('professional account cannot submit a patient appointment', (
+    tester,
+  ) async {
+    final scheduling = _FakeSchedulingRepository();
+    await _pumpDetails(
+      tester,
+      schedulingRepository: scheduling,
+      sessionStore: _professionalSessionStore(),
+    );
+
+    await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+    await tester.pump();
+    await tester.tap(find.text('Request selected time'));
+    await tester.pumpAndSettle();
+
+    expect(scheduling.requestCalls, 0);
+    expect(
+      find.textContaining('cannot request patient appointments'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('sign in again'), findsNothing);
+  });
+
+  testWidgets('ready patient sends exact ID, UTC time, duration and key', (
+    tester,
+  ) async {
+    final scheduling = _FakeSchedulingRepository();
+    await _pumpDetails(tester, schedulingRepository: scheduling);
+
+    await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+    await tester.pump();
+    await tester.tap(find.text('Request selected time'));
+    await tester.pumpAndSettle();
+    expect(find.text('Request this appointment?'), findsOneWidget);
+
+    await tester.tap(find.text('Send request'));
+    await tester.pumpAndSettle();
+
+    expect(scheduling.requestCalls, 1);
+    expect(scheduling.requestedProfessionalId, 'pro-1');
+    expect(
+      scheduling.requestedStartAt,
+      DateTime.parse('2026-07-25T08:00:00.000Z'),
+    );
+    expect(scheduling.requestedDuration, 30);
+    expect(scheduling.idempotencyKey, hasLength(36));
+    expect(find.text('Appointment request sent'), findsOneWidget);
+    expect(find.textContaining('not confirmed yet'), findsOneWidget);
+  });
+}
+
+class _FakeProfileRepository implements ProfileRepository {
+  _FakeProfileRepository({
+    this.detail = const PublicProfessional(
+      id: 'pro-1',
+      displayName: 'Dr Ada Care',
+      category: 'Doctor',
+      specialty: 'Cardiology',
+      bio: 'Evidence-based heart care.',
+      verified: true,
+    ),
+  });
+
+  final PublicProfessional? detail;
+  final List<String> detailIds = <String>[];
+  int directoryCalls = 0;
+
+  @override
+  Future<PublicProfessional?> publicProfessionalById({
+    required String professionalProfileId,
+  }) async {
+    detailIds.add(professionalProfileId);
+    return detail;
+  }
 
   @override
   Future<List<PublicProfessional>> publicProfessionals() async {
-    return publicListing ??
-        const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Details',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend detail summary from the public listing.',
-            verified: true,
-          ),
-        ];
+    directoryCalls += 1;
+    throw StateError('Directory must not be loaded by detail.');
   }
 
   @override
-  Future<PatientProfile?> patientMe() => throw UnimplementedError();
-
-  @override
-  Future<ProfessionalProfile?> professionalMe() => throw UnimplementedError();
-
-  @override
-  Future<PatientProfile> updatePatientMe({
-    required String name,
-    int? age,
-    String? location,
-    DateTime? dateOfBirth,
-    String? city,
-    String? state,
-    String? country,
-    String? healthInterests,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<ProfessionalProfile> updateProfessionalMe({
-    required String displayName,
-    required String category,
-    String? legalName,
-    String? specialty,
-    String? bio,
-    String? licenseNumber,
-    String? licensingCouncil,
-    String? qualifications,
-    int? yearsOfExperience,
-    String? practiceName,
-    String? practiceAddress,
-    String? practiceCity,
-    String? practiceState,
-    String? practiceCountry,
-  }) {
-    throw UnimplementedError();
-  }
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _FakeSchedulingRepository implements SchedulingRepository {
-  _FakeSchedulingRepository({this.failure, this.requestFailure});
+  _FakeSchedulingRepository({this.timesFailure});
 
-  final Object? failure;
-  final Object? requestFailure;
-  String? requestedProfessionalProfileId;
+  final Object? timesFailure;
+  final List<String> requestableIds = <String>[];
+  int requestCalls = 0;
+  String? requestedProfessionalId;
   DateTime? requestedStartAt;
-  int? requestedDurationMinutes;
+  int? requestedDuration;
+  String? idempotencyKey;
+
+  RequestableTimes get response => RequestableTimes(
+    professionalProfileId: 'pro-1',
+    timezone: 'Africa/Lagos',
+    durationMinutes: 30,
+    cadenceMinutes: 30,
+    leadTimeMinutes: 120,
+    bookingHorizonDays: 60,
+    times: <RequestableTime>[
+      RequestableTime(
+        startAt: DateTime.parse('2026-07-25T08:00:00.000Z'),
+        endAt: DateTime.parse('2026-07-25T08:30:00.000Z'),
+      ),
+    ],
+  );
 
   @override
-  Future<List<AvailabilityWindow>> publicAvailability({
+  Future<RequestableTimes> publicRequestableTimes({
     required String professionalProfileId,
   }) async {
-    final error = failure;
-    if (error != null) {
-      throw error;
+    requestableIds.add(professionalProfileId);
+    if (timesFailure != null) {
+      throw timesFailure!;
     }
-    return const <AvailabilityWindow>[
-      AvailabilityWindow(
-        id: 'availability-1',
-        weekday: DateTime.tuesday,
-        startMinute: 9 * 60,
-        endMinute: 10 * 60,
-        timezone: 'Africa/Lagos',
-        active: true,
-      ),
-    ];
+    return response;
   }
 
   @override
@@ -137,14 +289,13 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     required String professionalProfileId,
     required DateTime requestedStartAt,
     required int durationMinutes,
+    required String idempotencyKey,
   }) async {
-    final error = requestFailure;
-    if (error != null) {
-      throw error;
-    }
-    requestedProfessionalProfileId = professionalProfileId;
+    requestCalls += 1;
+    requestedProfessionalId = professionalProfileId;
     this.requestedStartAt = requestedStartAt;
-    requestedDurationMinutes = durationMinutes;
+    requestedDuration = durationMinutes;
+    this.idempotencyKey = idempotencyKey;
     return AppointmentSummary(
       id: 'appointment-1',
       patientProfileId: 'patient-1',
@@ -156,182 +307,52 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   }
 
   @override
-  Future<AppointmentSummary> acceptAppointment({
-    required String appointmentId,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AppointmentSummary> cancelAppointment({
-    required String appointmentId,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AppointmentSummary> completeAppointment({
-    required String appointmentId,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AppointmentSummary> declineAppointment({
-    required String appointmentId,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<AppointmentSummary>> ownAppointments() {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<AvailabilityWindow>> ownAvailability() {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<AvailabilityWindow>> replaceOwnAvailability({
-    required List<AvailabilityWindowDraft> windows,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AppointmentSummary> rescheduleAppointment({
-    required String appointmentId,
-    required DateTime requestedStartAt,
-    required int durationMinutes,
-  }) {
-    throw UnimplementedError();
-  }
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-void main() {
-  testWidgets(
-    'specialist details reads backend professional and availability',
-    (tester) async {
-      await _pumpSpecialistDetails(tester);
+class _FakeOnboardingRepository implements OnboardingRepository {
+  const _FakeOnboardingRepository();
 
-      expect(find.text('Specialist Details'), findsOneWidget);
-      expect(find.text('Dr Backend Details'), findsOneWidget);
-      expect(find.text('Cardiology - Heart health'), findsOneWidget);
-      expect(
-        find.text('Backend detail summary from the public listing.'),
-        findsOneWidget,
-      );
-      expect(find.text('Public availability'), findsOneWidget);
-      expect(find.text('Day 2: 09:00 - 10:00 (Africa/Lagos)'), findsOneWidget);
-      expect(find.text('Request appointment'), findsOneWidget);
-      expect(find.text('07/14 09:00-09:30 (30 min)'), findsOneWidget);
-      expect(find.text('Saturday'), findsNothing);
-      expect(find.text('10:00am'), findsNothing);
-      expect(find.text('Review'), findsNothing);
-      expect(find.text('Payment'), findsNothing);
-      expect(find.text('Calendar'), findsNothing);
-      expect(find.text('Admin'), findsNothing);
+  @override
+  Future<AccountReadiness> accountReadiness() async {
+    return const AccountReadiness(
+      account: ReadinessAccount(
+        role: 'PATIENT',
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
+      patient: PatientReadiness(
+        profileStatus: 'COMPLETE',
+        requiredFields: <String>[],
+      ),
+      nextAction: 'PATIENT_BOOKING_GATE',
+      requiredActions: <String>[],
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+SessionStore _patientSessionStore() {
+  return InMemorySessionStore()..save(_session(role: 'PATIENT'));
+}
+
+SessionStore _professionalSessionStore() {
+  return InMemorySessionStore()..save(_session(role: 'PROFESSIONAL'));
+}
+
+AuthSessionModel _session({required String role}) {
+  return AuthSessionModel.fromJson(<String, dynamic>{
+    'accessToken': 'access-token',
+    'refreshToken': 'refresh-token',
+    'expiresIn': 900,
+    'user': <String, dynamic>{
+      'id': 'user-1',
+      'email': 'care@example.com',
+      'role': role,
+      'status': 'ACTIVE',
+      'emailVerified': true,
     },
-  );
-
-  testWidgets('specialist details sends selected backend appointment request', (
-    tester,
-  ) async {
-    final schedulingRepository = _FakeSchedulingRepository();
-
-    await _pumpSpecialistDetails(
-      tester,
-      schedulingRepository: schedulingRepository,
-    );
-
-    await tester.tap(find.text('07/14 09:00-09:45 (45 min)'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Request selected time'));
-    await tester.pumpAndSettle();
-
-    expect(schedulingRepository.requestedProfessionalProfileId, 'pro_1');
-    expect(schedulingRepository.requestedStartAt, DateTime(2026, 7, 14, 9));
-    expect(schedulingRepository.requestedDurationMinutes, 45);
-    expect(
-      find.text('Request sent. Backend status: REQUESTED.'),
-      findsOneWidget,
-    );
-    expect(find.textContaining('Confirmed locally'), findsNothing);
-  });
-
-  testWidgets('specialist details shows safe availability failure', (
-    tester,
-  ) async {
-    await _pumpSpecialistDetails(
-      tester,
-      schedulingRepository: _FakeSchedulingRepository(
-        failure: const AuthFailure(
-          type: AuthFailureType.server,
-          message: 'raw scheduling failure',
-        ),
-      ),
-    );
-
-    expect(
-      find.text('Service is unavailable. Please try again.'),
-      findsOneWidget,
-    );
-    expect(find.text('raw scheduling failure'), findsNothing);
-    expect(find.text('Saturday'), findsNothing);
-    expect(find.text('10:00am'), findsNothing);
-  });
-
-  testWidgets('specialist details shows request failure without fake success', (
-    tester,
-  ) async {
-    await _pumpSpecialistDetails(
-      tester,
-      schedulingRepository: _FakeSchedulingRepository(
-        requestFailure: const AuthFailure(
-          type: AuthFailureType.validation,
-          message: 'raw unavailable slot',
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('Request selected time'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('Please choose an available time and try again.'),
-      findsOneWidget,
-    );
-    expect(find.text('raw unavailable slot'), findsNothing);
-    expect(find.textContaining('Request sent.'), findsNothing);
-    expect(find.textContaining('Confirmed locally'), findsNothing);
-  });
-
-  testWidgets('specialist details handles unresolved backend professional id', (
-    tester,
-  ) async {
-    await _pumpSpecialistDetails(
-      tester,
-      specialistId: 'missing',
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Details',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            verified: true,
-          ),
-        ],
-      ),
-    );
-
-    expect(
-      find.text('Backend professional could not be found.'),
-      findsOneWidget,
-    );
-    expect(find.text('Dr. Uzo Blessing'), findsNothing);
-    expect(find.text('Saturday'), findsNothing);
   });
 }

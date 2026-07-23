@@ -14,6 +14,8 @@ import '../../features/Home/data/services/onboarding_api_client.dart';
 import '../../features/Home/data/services/profile_api_client.dart';
 import '../../features/Home/data/services/scheduling_api_client.dart';
 import '../../features/Home/data/services/verification_api_client.dart';
+import '../../features/Home/data/storage/booking_intent_store.dart';
+import '../../features/Home/domain/services/booking_resume_service.dart';
 
 /// Global service locator. Register dependencies here as features are built.
 final GetIt sl = GetIt.instance;
@@ -42,6 +44,9 @@ Future<void> configureDependencies() async {
   }
   if (!sl.isRegistered<SessionStore>()) {
     sl.registerLazySingleton<SessionStore>(SecureSessionStore.new);
+  }
+  if (!sl.isRegistered<BookingIntentStore>()) {
+    sl.registerLazySingleton<BookingIntentStore>(SecureBookingIntentStore.new);
   }
   if (!sl.isRegistered<ProfileApiClient>()) {
     sl.registerLazySingleton<ProfileApiClient>(
@@ -92,6 +97,15 @@ Future<void> configureDependencies() async {
       () => OnboardingRepository(
         apiClient: sl<OnboardingApiClient>(),
         sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<BookingResumeService>()) {
+    sl.registerLazySingleton<BookingResumeService>(
+      () => BookingResumeService(
+        bookingIntentStore: sl<BookingIntentStore>(),
+        sessionStore: sl<SessionStore>(),
+        onboardingRepository: sl<OnboardingRepository>(),
       ),
     );
   }

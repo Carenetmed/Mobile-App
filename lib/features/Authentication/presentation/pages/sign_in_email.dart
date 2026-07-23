@@ -9,6 +9,7 @@ import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/presentation/services/booking_resume_navigator.dart';
 import 'package:app_t/shared/widgets/auth_widget.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
@@ -107,7 +108,10 @@ class _SignInEmailState extends State<SignInEmail> {
       if (!mounted) {
         return;
       }
-      Navigator.pushNamed(context, RouteName.dashboard);
+      await BookingResumeNavigator.afterAuthentication(
+        context,
+        fallbackRoute: RouteName.dashboard,
+      );
     } on AuthFailure catch (failure) {
       if (!mounted) {
         return;
@@ -143,7 +147,10 @@ class _SignInEmailState extends State<SignInEmail> {
       if (!mounted) {
         return;
       }
-      Navigator.pushNamed(context, RouteName.dashboard);
+      await BookingResumeNavigator.afterAuthentication(
+        context,
+        fallbackRoute: RouteName.dashboard,
+      );
     } on AuthFailure catch (failure) {
       if (!mounted) {
         return;

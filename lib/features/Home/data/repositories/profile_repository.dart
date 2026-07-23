@@ -91,6 +91,14 @@ class ProfileRepository {
     return _apiClient.publicProfessionals();
   }
 
+  Future<PublicProfessional?> publicProfessionalById({
+    required String professionalProfileId,
+  }) {
+    return _apiClient.publicProfessionalById(
+      professionalProfileId: professionalProfileId,
+    );
+  }
+
   Future<AuthSessionModel> _requireSession() async {
     final current = await _sessionStore.read();
     if (current == null) {

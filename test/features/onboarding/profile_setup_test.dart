@@ -525,4 +525,11 @@ class _FakeProfileRepository implements ProfileRepository {
   Future<List<PublicProfessional>> publicProfessionals() async {
     return const <PublicProfessional>[];
   }
+
+  @override
+  Future<PublicProfessional?> publicProfessionalById({
+    required String professionalProfileId,
+  }) async {
+    return null;
+  }
 }

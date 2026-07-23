@@ -9,6 +9,7 @@ import 'package:app_t/features/Authentication/data/services/google_sign_in_provi
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/presentation/state/account_local_store.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
@@ -22,11 +23,13 @@ class AccountShellPage extends StatefulWidget {
     this.authRepository,
     this.accountRepository,
     this.googleIdTokenProvider,
+    this.bookingIntentStore,
   });
 
   final AuthRepository? authRepository;
   final AccountRepository? accountRepository;
   final GoogleIdTokenProvider? googleIdTokenProvider;
+  final BookingIntentStore? bookingIntentStore;
 
   @override
   State<AccountShellPage> createState() => _AccountShellPageState();
@@ -54,6 +57,15 @@ class _AccountShellPageState extends State<AccountShellPage> {
       return null;
     }
     return sl<GoogleIdTokenProvider>();
+  }
+
+  BookingIntentStore? get _bookingIntentStore {
+    if (widget.bookingIntentStore != null) {
+      return widget.bookingIntentStore;
+    }
+    return sl.isRegistered<BookingIntentStore>()
+        ? sl<BookingIntentStore>()
+        : null;
   }
 
   @override
@@ -101,6 +113,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
     });
 
     try {
+      await _bookingIntentStore?.clear();
       await _authRepository.logout();
       if (!mounted) return;
       Navigator.of(

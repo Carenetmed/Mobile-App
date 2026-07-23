@@ -96,6 +96,19 @@ class _FakeProfileRepository implements ProfileRepository {
   }
 
   @override
+  Future<PublicProfessional?> publicProfessionalById({
+    required String professionalProfileId,
+  }) async {
+    final items = await publicProfessionals();
+    for (final item in items) {
+      if (item.id == professionalProfileId) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  @override
   Future<PatientProfile?> patientMe() => throw UnimplementedError();
 
   @override

@@ -17,6 +17,10 @@
 > `search` is the canonical Find Care route. Patient Home and the persistent
 > Find Care tab enter the same `SearchShellPage`; legacy `findMentor` is a
 > compatibility alias to that screen and no longer opens a separate marketplace.
+> `specialistDetails` requires a valid backend `ProfessionalProfile.id` and is the
+> only active public detail/request path. Legacy `bookAppointment` and
+> `publicProfile` constants resolve to canonical Find Care and no longer expose
+> local booking behavior.
 
 All navigation uses **`RouteName`** constants and **`generateRoute`** in `lib/core/constants/navigators/router.dart`.
 
@@ -45,9 +49,9 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `dashboard` | `dashboard` | `Dashboard` | `lib/features/Home/presentation/pages/dashboard.dart` |
 | `search` | `search` | `SearchShellPage` | `lib/features/Home/presentation/pages/search_shell.dart` |
 | `findMentor` | `findMentor` | `SearchShellPage` (legacy compatibility alias) | `lib/features/Home/presentation/pages/search_shell.dart` |
-| `specialistDetails` | `specialistDetails` | `SpecialistDetailsShellPage` | `lib/features/Home/presentation/pages/specialist_details_shell.dart` |
+| `specialistDetails` | `specialistDetails` | `SpecialistDetailsShellPage` (canonical backend detail and requestable-time booking) | `lib/features/Home/presentation/pages/specialist_details_shell.dart` |
 | `appointments` | `appointments` | `AppointmentsShellPage` | `lib/features/Home/presentation/pages/appointments_shell.dart` |
-| `bookAppointment` | `bookAppointment` | `BookAppointmentShellPage` | `lib/features/Home/presentation/pages/appointments_shell.dart` |
+| `bookAppointment` | `bookAppointment` | `SearchShellPage` (legacy compatibility alias; local booking source disconnected) | `lib/features/Home/presentation/pages/search_shell.dart` |
 | `readings` | `readings` | `VitalsReading` | `lib/features/Home/presentation/pages/readings.dart` |
 | `healthRecord` | `healthRecord` | `HealthRecordShellPage` | `lib/features/Home/presentation/pages/health_record_shell.dart` |
 | `manageReadings` | `manageReadings` | `ManageReadings` | `lib/features/Home/presentation/pages/manage_readings.dart` |
@@ -81,7 +85,7 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `changeEmail` | `changeEmail` | `ChangeEmailShellPage` | `lib/features/Home/presentation/pages/change_email_shell.dart` |
 | `enterPasswordToSave` | `enterPasswordToSave` | `EnterPasswordToSaveShellPage` | `lib/features/Home/presentation/pages/enter_password_to_save_shell.dart` |
 | `password` | `password` | `PasswordShellPage` | `lib/features/Home/presentation/pages/password_shell.dart` |
-| `publicProfile` | `publicProfile` | `PublicProfileShellPage` | `lib/features/Home/presentation/pages/public_profile_shell.dart` |
+| `publicProfile` | `publicProfile` | `SearchShellPage` (legacy compatibility alias; seeded profile booking disconnected) | `lib/features/Home/presentation/pages/search_shell.dart` |
 | `manageProfile` | `manageProfile` | `ManageProfileShellPage` | `lib/features/Home/presentation/pages/manage_profile_shell.dart` |
 | `managePortfolio` | `managePortfolio` | `ManagePortfolioShellPage` | `lib/features/Home/presentation/pages/manage_portfolio_shell.dart` |
 | `professionalVerificationDocuments` | `professionalVerificationDocuments` | `ProfessionalVerificationDocumentsShellPage` | `lib/features/Home/presentation/pages/professional_verification_documents_shell.dart` |

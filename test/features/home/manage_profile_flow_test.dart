@@ -11,6 +11,7 @@ import 'package:app_t/features/Home/domain/entities/onboarding_catalog.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
+import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:app_t/features/Home/domain/entities/verification_document.dart';
 import 'package:app_t/features/Home/domain/entities/verification_upload_request.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
@@ -120,6 +121,13 @@ class _FakeProfileRepository implements ProfileRepository {
 
   @override
   Future<List<PublicProfessional>> publicProfessionals() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<PublicProfessional?> publicProfessionalById({
+    required String professionalProfileId,
+  }) {
     throw UnimplementedError();
   }
 
@@ -260,10 +268,18 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   }
 
   @override
+  Future<RequestableTimes> publicRequestableTimes({
+    required String professionalProfileId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<AppointmentSummary> requestAppointment({
     required String professionalProfileId,
     required DateTime requestedStartAt,
     required int durationMinutes,
+    required String idempotencyKey,
   }) {
     throw UnimplementedError();
   }

@@ -5,6 +5,7 @@ import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart'
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/availability_window.dart';
+import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:app_t/features/Home/presentation/pages/appointments_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -170,6 +171,13 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   }
 
   @override
+  Future<RequestableTimes> publicRequestableTimes({
+    required String professionalProfileId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<List<AvailabilityWindow>> replaceOwnAvailability({
     required List<AvailabilityWindowDraft> windows,
   }) {
@@ -181,6 +189,7 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     required String professionalProfileId,
     required DateTime requestedStartAt,
     required int durationMinutes,
+    required String idempotencyKey,
   }) {
     throw UnimplementedError();
   }

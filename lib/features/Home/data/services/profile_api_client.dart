@@ -18,6 +18,10 @@ class ProfileApiClient {
   static const String professionalMePath = '/professionals/me';
   static const String publicProfessionalsPath = '/professionals';
 
+  static String publicProfessionalPath(String professionalProfileId) {
+    return '/professionals/${Uri.encodeComponent(professionalProfileId)}';
+  }
+
   Future<PatientProfileModel?> patientMe({required String accessToken}) async {
     final data = await _get(
       patientMePath,
@@ -123,6 +127,25 @@ class ProfileApiClient {
         .whereType<Map<String, dynamic>>()
         .map(PublicProfessionalModel.fromJson)
         .toList(growable: false);
+  }
+
+  Future<PublicProfessionalModel?> publicProfessionalById({
+    required String professionalProfileId,
+  }) async {
+    final id = professionalProfileId.trim();
+    if (id.isEmpty || id == 'me') {
+      return null;
+    }
+    final response = await _request(
+      () => _dio.get<dynamic>(
+        _url(publicProfessionalPath(id)),
+        options: Options(headers: const <String, String>{}),
+      ),
+      allowNotFound: true,
+    );
+    return response is Map<String, dynamic>
+        ? PublicProfessionalModel.fromJson(response)
+        : null;
   }
 
   Future<Map<String, dynamic>?> _get(

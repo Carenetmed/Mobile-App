@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import '../../domain/entities/availability_window.dart';
 import '../models/appointment_summary_model.dart';
 import '../models/availability_window_model.dart';
+import '../models/requestable_times_model.dart';
 
 class SchedulingApiClient {
   SchedulingApiClient({required CareNetApiConfig config, Dio? dio})
@@ -21,6 +22,10 @@ class SchedulingApiClient {
     return '/professionals/${Uri.encodeComponent(professionalProfileId)}/availability';
   }
 
+  static String publicRequestableTimesPath(String professionalProfileId) {
+    return '/professionals/${Uri.encodeComponent(professionalProfileId)}/requestable-times';
+  }
+
   static String appointmentActionPath(String appointmentId, String action) {
     return '/appointments/${Uri.encodeComponent(appointmentId)}/$action';
   }
@@ -35,6 +40,18 @@ class SchedulingApiClient {
       ),
     );
     return _availabilityItems(response);
+  }
+
+  Future<RequestableTimesModel> publicRequestableTimes({
+    required String professionalProfileId,
+  }) async {
+    final response = await _request(
+      () => _dio.get<dynamic>(
+        _url(publicRequestableTimesPath(professionalProfileId)),
+        options: Options(headers: const <String, String>{}),
+      ),
+    );
+    return RequestableTimesModel.fromJson(_object(response));
   }
 
   Future<List<AvailabilityWindowModel>> ownAvailability({
@@ -70,6 +87,7 @@ class SchedulingApiClient {
     required String professionalProfileId,
     required DateTime requestedStartAt,
     required int durationMinutes,
+    required String idempotencyKey,
   }) async {
     final response = await _request(
       () => _dio.post<dynamic>(
@@ -79,7 +97,12 @@ class SchedulingApiClient {
           'requestedStartAt': requestedStartAt.toUtc().toIso8601String(),
           'durationMinutes': durationMinutes,
         },
-        options: Options(headers: _bearerHeaders(accessToken)),
+        options: Options(
+          headers: <String, String>{
+            ..._bearerHeaders(accessToken),
+            'Idempotency-Key': idempotencyKey,
+          },
+        ),
       ),
     );
     return AppointmentSummaryModel.fromJson(_object(response));
@@ -250,6 +273,13 @@ class SchedulingApiClient {
         type: AuthFailureType.unauthorized,
         message: 'Please sign in again.',
         statusCode: statusCode,
+      );
+    }
+    if (statusCode == 404) {
+      return const AuthFailure(
+        type: AuthFailureType.validation,
+        message: 'The professional is no longer available.',
+        statusCode: 404,
       );
     }
     if (statusCode != null && statusCode >= 500) {

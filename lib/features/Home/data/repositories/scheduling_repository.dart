@@ -4,6 +4,7 @@ import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart'
 
 import '../../domain/entities/appointment_summary.dart';
 import '../../domain/entities/availability_window.dart';
+import '../../domain/entities/requestable_times.dart';
 import '../services/scheduling_api_client.dart';
 
 class SchedulingRepository {
@@ -20,6 +21,14 @@ class SchedulingRepository {
     required String professionalProfileId,
   }) {
     return _apiClient.publicAvailability(
+      professionalProfileId: professionalProfileId,
+    );
+  }
+
+  Future<RequestableTimes> publicRequestableTimes({
+    required String professionalProfileId,
+  }) {
+    return _apiClient.publicRequestableTimes(
       professionalProfileId: professionalProfileId,
     );
   }
@@ -43,6 +52,7 @@ class SchedulingRepository {
     required String professionalProfileId,
     required DateTime requestedStartAt,
     required int durationMinutes,
+    required String idempotencyKey,
   }) async {
     final current = await _requireSession();
     return _apiClient.requestAppointment(
@@ -50,6 +60,7 @@ class SchedulingRepository {
       professionalProfileId: professionalProfileId,
       requestedStartAt: requestedStartAt,
       durationMinutes: durationMinutes,
+      idempotencyKey: idempotencyKey,
     );
   }
 

@@ -8,6 +8,7 @@ import 'package:app_t/features/Authentication/data/services/google_sign_in_provi
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
+import 'package:app_t/features/Home/presentation/services/booking_resume_navigator.dart';
 import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
@@ -40,6 +41,8 @@ class SignUpRoleSelectionPage extends StatefulWidget {
 class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
   SignUpRole? _selectedRole;
   bool _isSubmitting = false;
+  bool _checkingBookingIntent = true;
+  bool _bookingPatientOnly = false;
   String? _error;
 
   AuthRepository get _authRepository =>
@@ -52,6 +55,23 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
       widget.onboardingRepository ?? sl<OnboardingRepository>();
 
   static const _routeResolver = OnboardingReadinessRouteResolver();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBookingBoundary();
+  }
+
+  Future<void> _loadBookingBoundary() async {
+    final pending = await BookingResumeNavigator.hasPendingIntent();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _bookingPatientOnly = pending;
+      _checkingBookingIntent = false;
+    });
+  }
 
   bool get _passwordSignUpFlow =>
       widget.passwordSignUp ||
@@ -109,7 +129,10 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
       if (!mounted) {
         return;
       }
-      Navigator.pushNamed(context, routeName);
+      await BookingResumeNavigator.afterAuthentication(
+        context,
+        fallbackRoute: routeName,
+      );
     } on AuthFailure catch (failure) {
       if (!mounted) {
         return;
@@ -177,7 +200,15 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
               ),
               SizedBox(height: 16.h),
-              if (selectedRole == null)
+              if (_checkingBookingIntent)
+                const Center(child: CircularProgressIndicator())
+              else if (_bookingPatientOnly && selectedRole == null)
+                _PatientBookingRoleStep(
+                  isSubmitting: _isSubmitting,
+                  error: _error,
+                  onContinue: () => _selectRole(SignUpRole.patient),
+                )
+              else if (selectedRole == null)
                 _RoleStep(
                   isSubmitting: _isSubmitting,
                   error: _error,
@@ -202,6 +233,49 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PatientBookingRoleStep extends StatelessWidget {
+  const _PatientBookingRoleStep({
+    required this.isSubmitting,
+    required this.error,
+    required this.onContinue,
+  });
+
+  final bool isSubmitting;
+  final String? error;
+  final VoidCallback onContinue;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SmallLabel(label: 'Appointment request'),
+        SizedBox(height: 10.h),
+        Text('Create a patient account', style: _titleStyle()),
+        SizedBox(height: 10.h),
+        Text(
+          'Appointment requests require a patient account. Your selected '
+          'professional and time will remain saved while you finish setup.',
+          style: _bodyStyle(),
+        ),
+        SizedBox(height: 24.h),
+        if (error != null) ...[
+          _InlineError(message: error!),
+          SizedBox(height: 14.h),
+        ],
+        _RoleCard(
+          icon: Icons.favorite_border_rounded,
+          title: 'Patient',
+          subtitle:
+              'Continue with the patient account required for this appointment request.',
+          badge: 'Required',
+          onTap: isSubmitting ? null : onContinue,
+        ),
+      ],
     );
   }
 }

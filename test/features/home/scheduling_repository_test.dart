@@ -10,6 +10,7 @@ import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart
 import 'package:app_t/features/Home/data/services/scheduling_api_client.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/availability_window.dart';
+import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -162,11 +163,16 @@ void main() {
         professionalProfileId: 'professional-1',
         requestedStartAt: DateTime.parse('2026-07-14T10:30:00+01:00'),
         durationMinutes: 30,
+        idempotencyKey: 'booking-request-key',
       );
 
       expect(appointment.status, AppointmentStatus.requested);
       expect(adapter.lastOptions?.method, 'POST');
       expect(adapter.lastOptions?.uri.toString(), endsWith('/appointments'));
+      expect(
+        adapter.lastOptions?.headers['Idempotency-Key'],
+        'booking-request-key',
+      );
       expect(adapter.lastOptions?.data, <String, dynamic>{
         'professionalProfileId': 'professional-1',
         'requestedStartAt': '2026-07-14T09:30:00.000Z',
@@ -178,6 +184,79 @@ void main() {
       expect(payload.containsKey('paymentState'), isFalse);
       expect(payload.containsKey('calendarState'), isFalse);
       expect(payload.containsKey('medicalNotes'), isFalse);
+    });
+
+    test('public requestable times parses backend-owned UTC policy', () async {
+      final adapter = _FakeAdapter(
+        responseJson: <String, dynamic>{
+          'professionalProfileId': 'professional-1',
+          'timezone': 'Africa/Lagos',
+          'durationMinutes': 30,
+          'cadenceMinutes': 30,
+          'leadTimeMinutes': 120,
+          'bookingHorizonDays': 60,
+          'times': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'startAt': '2026-07-25T08:00:00.000Z',
+              'endAt': '2026-07-25T08:30:00.000Z',
+            },
+          ],
+        },
+      );
+      final repository = _repository(adapter: adapter, withSession: false);
+
+      final RequestableTimes response = await repository.publicRequestableTimes(
+        professionalProfileId: 'professional-1',
+      );
+
+      expect(response.professionalProfileId, 'professional-1');
+      expect(response.timezone, 'Africa/Lagos');
+      expect(response.durationMinutes, 30);
+      expect(response.cadenceMinutes, 30);
+      expect(response.leadTimeMinutes, 120);
+      expect(response.bookingHorizonDays, 60);
+      expect(
+        response.times.single.startAt,
+        DateTime.parse('2026-07-25T08:00:00.000Z'),
+      );
+      expect(
+        adapter.lastOptions?.uri.toString(),
+        endsWith('/professionals/professional-1/requestable-times'),
+      );
+      expect(
+        adapter.lastOptions?.headers.containsKey('Authorization'),
+        isFalse,
+      );
+    });
+
+    test('public requestable times drops malformed intervals', () async {
+      final adapter = _FakeAdapter(
+        responseJson: <String, dynamic>{
+          'professionalProfileId': 'professional-1',
+          'timezone': 'Africa/Lagos',
+          'durationMinutes': 30,
+          'cadenceMinutes': 30,
+          'leadTimeMinutes': 120,
+          'bookingHorizonDays': 60,
+          'times': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'startAt': 'not-an-instant',
+              'endAt': '2026-07-25T08:30:00.000Z',
+            },
+            <String, dynamic>{
+              'startAt': '2026-07-25T09:00:00.000Z',
+              'endAt': 'also-invalid',
+            },
+          ],
+        },
+      );
+      final repository = _repository(adapter: adapter, withSession: false);
+
+      final response = await repository.publicRequestableTimes(
+        professionalProfileId: 'professional-1',
+      );
+
+      expect(response.times, isEmpty);
     });
 
     test('own appointment list parses safe appointment statuses', () async {
@@ -295,6 +374,7 @@ void main() {
           professionalProfileId: 'professional-1',
           requestedStartAt: DateTime.parse('2026-07-14T10:30:00Z'),
           durationMinutes: 30,
+          idempotencyKey: 'booking-conflict-key',
         ),
         throwsA(
           isA<AuthFailure>()

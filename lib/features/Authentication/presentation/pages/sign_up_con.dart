@@ -8,6 +8,7 @@ import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart'
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/features/Authentication/presentation/widget/bordered_keyboard_input.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
+import 'package:app_t/features/Home/presentation/services/booking_resume_navigator.dart';
 import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
@@ -332,7 +333,10 @@ class _FinSignUpState extends State<FinSignUp> {
       if (!mounted) {
         return;
       }
-      Navigator.of(context).popAndPushNamed(routeName);
+      await BookingResumeNavigator.afterAuthentication(
+        context,
+        fallbackRoute: routeName,
+      );
     } on AuthFailure catch (failure) {
       if (!mounted) {
         return;

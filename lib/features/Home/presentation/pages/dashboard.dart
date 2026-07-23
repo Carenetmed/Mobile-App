@@ -24,12 +24,14 @@ class Dashboard extends StatefulWidget {
     this.profileRepository,
     this.onboardingRepository,
     this.schedulingRepository,
+    this.initialIndex = 0,
   });
 
   final SessionStore? sessionStore;
   final ProfileRepository? profileRepository;
   final OnboardingRepository? onboardingRepository;
   final SchedulingRepository? schedulingRepository;
+  final int initialIndex;
 
   @override
   State<Dashboard> createState() => _DashboardState();
@@ -37,14 +39,16 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   late final Future<AuthSessionModel?> _sessionFuture;
-  int _index = 0;
-  final Set<int> _builtIndices = <int>{0};
+  late int _index;
+  late final Set<int> _builtIndices;
 
   SessionStore get _sessionStore => widget.sessionStore ?? sl<SessionStore>();
 
   @override
   void initState() {
     super.initState();
+    _index = widget.initialIndex.clamp(0, 3);
+    _builtIndices = <int>{_index};
     _sessionFuture = _sessionStore.read();
   }
 

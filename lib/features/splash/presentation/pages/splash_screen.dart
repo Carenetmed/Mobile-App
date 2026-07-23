@@ -5,14 +5,20 @@ import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
+import 'package:app_t/features/Home/domain/services/booking_resume_service.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key, this.authRepository});
+  const SplashScreen({
+    super.key,
+    this.authRepository,
+    this.bookingResumeService,
+  });
 
   final AuthRepository? authRepository;
+  final BookingResumeService? bookingResumeService;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -24,6 +30,15 @@ class _SplashScreenState extends State<SplashScreen> {
 
   AuthRepository get _authRepository =>
       widget.authRepository ?? sl<AuthRepository>();
+
+  BookingResumeService? get _bookingResumeService {
+    if (widget.bookingResumeService != null) {
+      return widget.bookingResumeService;
+    }
+    return sl.isRegistered<BookingResumeService>()
+        ? sl<BookingResumeService>()
+        : null;
+  }
 
   @override
   void initState() {
@@ -40,9 +55,40 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     if (!mounted) return;
-    final routeName =
-        _hasUsableSession(session) ? RouteName.dashboard : RouteName.onboarding;
-    Navigator.of(context).pushReplacementNamed(routeName);
+    if (!_hasUsableSession(session)) {
+      Navigator.of(context).pushReplacementNamed(RouteName.onboarding);
+      return;
+    }
+
+    final resumeService = _bookingResumeService;
+    if (resumeService != null) {
+      try {
+        final decision = await resumeService.resolveAfterAuthentication();
+        if (!mounted) return;
+        if (decision.target == BookingResumeTarget.professionalDetail &&
+            decision.intent != null) {
+          Navigator.of(context).pushReplacementNamed(
+            RouteName.specialistDetails,
+            arguments: decision.intent!.professionalProfileId,
+          );
+          return;
+        }
+        if (decision.target == BookingResumeTarget.patientOnboarding) {
+          Navigator.of(
+            context,
+          ).pushReplacementNamed(RouteName.patientOnboardingSetup);
+          return;
+        }
+        if (decision.target == BookingResumeTarget.authentication) {
+          Navigator.of(context).pushReplacementNamed(RouteName.signInEmail);
+          return;
+        }
+      } catch (_) {
+        // Session restoration remains usable when booking-intent recovery fails.
+      }
+    }
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed(RouteName.dashboard);
   }
 
   bool _hasUsableSession(AuthSession? session) {

@@ -204,6 +204,62 @@ void main() {
       expect(adapter.lastOptions?.headers.containsKey('Cookie'), isFalse);
     });
 
+    test('public professional detail loads one exact backend ID', () async {
+      final adapter = _FakeAdapter(
+        responseJson: <String, dynamic>{
+          'id': 'professional-1',
+          'displayName': 'Dr. Care',
+          'category': 'Cardiologist',
+          'specialty': 'Heart health',
+          'bio': 'Focused on prevention.',
+          'verified': true,
+          'email': 'private@example.com',
+          'verificationDocuments': <String>['hidden'],
+        },
+      );
+      final repository = _repository(adapter: adapter, withSession: false);
+
+      final professional = await repository.publicProfessionalById(
+        professionalProfileId: 'professional-1',
+      );
+
+      expect(professional?.id, 'professional-1');
+      expect(professional?.displayName, 'Dr. Care');
+      expect(professional?.verified, isTrue);
+      expect(adapter.lastOptions?.method, 'GET');
+      expect(
+        adapter.lastOptions?.uri.toString(),
+        endsWith('/professionals/professional-1'),
+      );
+      expect(
+        adapter.lastOptions?.headers.containsKey('Authorization'),
+        isFalse,
+      );
+    });
+
+    test(
+      'public professional detail treats 404 and invalid IDs as absent',
+      () async {
+        final adapter = _FakeAdapter(
+          statusCode: 404,
+          responseJson: <String, dynamic>{'message': 'Not found'},
+        );
+        final repository = _repository(adapter: adapter, withSession: false);
+
+        expect(
+          await repository.publicProfessionalById(
+            professionalProfileId: 'unknown',
+          ),
+          isNull,
+        );
+        expect(
+          await repository.publicProfessionalById(professionalProfileId: 'me'),
+          isNull,
+        );
+        expect(adapter.requestCount, 1);
+      },
+    );
+
     test('protected profile calls require a stored session', () async {
       final repository = _repository(
         adapter: _FakeAdapter(responseJson: <String, dynamic>{}),
@@ -284,6 +340,7 @@ class _FakeAdapter implements HttpClientAdapter {
   final Map<String, dynamic> responseJson;
   final int statusCode;
   RequestOptions? lastOptions;
+  int requestCount = 0;
 
   @override
   void close({bool force = false}) {}
@@ -294,6 +351,7 @@ class _FakeAdapter implements HttpClientAdapter {
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
   ) async {
+    requestCount += 1;
     lastOptions = options;
     final body = jsonEncode(responseJson);
     return ResponseBody.fromString(

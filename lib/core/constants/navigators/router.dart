@@ -43,7 +43,6 @@ import 'package:app_t/features/Home/presentation/pages/password_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/podcast_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/professional_verification_documents_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/published_articles_shell.dart';
-import 'package:app_t/features/Home/presentation/pages/public_profile_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/qa_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/readings.dart';
 import 'package:app_t/features/Home/presentation/pages/reminder_shell.dart';
@@ -153,7 +152,11 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.medicalEdit:
       return _page(settings, UserEdit());
     case RouteName.dashboard:
-      return _page(settings, const Dashboard());
+      final initialIndex = settings.arguments;
+      return _page(
+        settings,
+        Dashboard(initialIndex: initialIndex is int ? initialIndex : 0),
+      );
     case RouteName.search:
       return _page(settings, const SearchShellPage());
     case RouteName.findMentor:
@@ -167,7 +170,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.appointments:
       return _page(settings, const AppointmentsShellPage());
     case RouteName.bookAppointment:
-      return _page(settings, const BookAppointmentShellPage());
+      return _page(settings, const SearchShellPage());
     case RouteName.readings:
       return _page(settings, VitalsReading());
     case RouteName.healthRecord:
@@ -231,7 +234,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.password:
       return _page(settings, const PasswordShellPage());
     case RouteName.publicProfile:
-      return _page(settings, const PublicProfileShellPage());
+      return _page(settings, const SearchShellPage());
     case RouteName.manageProfile:
       return _page(settings, const ManageProfileShellPage());
     case RouteName.managePortfolio:

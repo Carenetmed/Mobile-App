@@ -11,9 +11,11 @@ import 'package:app_t/features/Authentication/presentation/pages/email_verificat
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
 import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/availability_window.dart';
+import 'package:app_t/features/Home/domain/entities/booking_intent.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
@@ -80,6 +82,7 @@ Future<void> _pumpAccount(
   required _FakeAuthRepository repository,
   _FakeAccountRepository? accountRepository,
   GoogleIdTokenProvider? googleIdTokenProvider,
+  BookingIntentStore? bookingIntentStore,
 }) async {
   AccountLocalStore.reset();
   tester.view.physicalSize = _phoneSize;
@@ -95,6 +98,7 @@ Future<void> _pumpAccount(
               authRepository: repository,
               accountRepository: accountRepository,
               googleIdTokenProvider: googleIdTokenProvider,
+              bookingIntentStore: bookingIntentStore,
             ),
             routes: <String, WidgetBuilder>{
               RouteName.onboarding:
@@ -174,12 +178,30 @@ void main() {
     tester,
   ) async {
     final repository = _FakeAuthRepository();
-    await _pumpAccount(tester, repository: repository);
+    final bookingIntentStore = InMemoryBookingIntentStore();
+    await bookingIntentStore.save(
+      BookingIntent(
+        professionalProfileId: 'professional-1',
+        startAt: DateTime.utc(2026, 7, 24, 9),
+        endAt: DateTime.utc(2026, 7, 24, 9, 30),
+        durationMinutes: 30,
+        idempotencyKey: 'booking-key',
+        resumeRoute: RouteName.specialistDetails,
+        createdAt: DateTime.utc(2026, 7, 23),
+        expiresAt: DateTime.utc(2027, 7, 23),
+      ),
+    );
+    await _pumpAccount(
+      tester,
+      repository: repository,
+      bookingIntentStore: bookingIntentStore,
+    );
 
     await tester.tap(find.text('Log out'));
     await tester.pumpAndSettle();
 
     expect(repository.logoutCalls, 1);
+    expect(await bookingIntentStore.read(), isNull);
     expect(find.text('onboarding'), findsOneWidget);
     expect(find.text('Account'), findsNothing);
   });
@@ -1460,6 +1482,13 @@ class _FakeProfileRepository implements ProfileRepository {
   @override
   Future<List<PublicProfessional>> publicProfessionals() async {
     return const <PublicProfessional>[];
+  }
+
+  @override
+  Future<PublicProfessional?> publicProfessionalById({
+    required String professionalProfileId,
+  }) async {
+    return null;
   }
 }
 

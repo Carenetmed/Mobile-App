@@ -21,7 +21,8 @@ splash/session restore
 -> role-aware marketplace Home
 
 Patient:
-Home -> Find Care -> professional detail -> real availability -> request
+Home -> Find Care -> backend professional detail -> backend requestable time
+-> auth/patient setup when required -> explicit request
 -> Appointments -> appointment detail -> Messages / Join Consultation
 -> supported lifecycle actions
 
@@ -49,6 +50,11 @@ Phase 1 destination. It no longer exits into `communityAgreement`. The legacy
 `communityAgreement -> notificationAgreement -> medicalAgreement -> medicalEdit`
 chain remains registered for conservative cleanup but is not part of the active
 Phase 1 flow.
+
+Booking intent carries only the selected professional/time and idempotency
+context. It expires after 24 hours, binds to the authenticated account, never
+grants patient authority, and requires explicit confirmation after auth/onboarding
+before `POST /appointments`.
 
 ---
 

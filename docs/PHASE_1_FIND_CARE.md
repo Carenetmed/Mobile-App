@@ -95,23 +95,23 @@ Selecting a card pushes `RouteName.specialistDetails` with the exact backend
 professional id. Find Care does not load availability, build request times, submit
 appointments, or open a duplicate booking sheet.
 
-## APP-P1-005 boundary
+## APP-P1-005 handoff
 
-`SpecialistDetailsShellPage` remains unchanged in APP-P1-004. Known limitations for
-the next slice are:
+APP-P1-005 completed the canonical detail and request boundary. Specialist Details:
 
-- the backend has no `GET /professionals/:id`;
-- detail reloads the public list and scans by id;
-- missing repository or missing id can still activate legacy local behavior;
-- public availability and appointment-request behavior still need one canonical,
-  fail-closed handoff;
-- legacy local draft booking remains reachable through old non-Find-Care surfaces.
+- calls `GET /professionals/:professionalProfileId` directly;
+- loads backend-generated requestable times without client recurrence generation;
+- preserves the exact backend professional ID;
+- fails closed without local or seeded fallback;
+- resumes an account-bound booking intent through authentication and patient setup;
+- submits with `Idempotency-Key` and preserves backend `REQUESTED` semantics.
 
-APP-P1-005 should repair only this detail/availability/request boundary. Payments,
-calls, messaging, ratings/reviews, and backend expansion remain separate work.
+The full contract is in `PHASE_1_PROFESSIONAL_DETAIL_BOOKING.md`. Payments, calls,
+messaging, ratings/reviews, and broader appointment presentation remain separate.
 
 ## Cleanup boundary
 
-`FindMentorShellPage`, `SearchLocalStore`, and legacy local detail/booking sources
-remain recoverable in APP-P1-004. They may be deleted only after APP-P1-005 proves
-that no retained Phase 1 path depends on them.
+`FindMentorShellPage`, `SearchLocalStore`, `BookAppointmentShellPage`, and legacy
+local profile sources remain recoverable, but their route constants resolve to
+canonical Find Care or fail closed. Delete source only in the later cleanup
+milestone after retained Phase 1 regression proof.

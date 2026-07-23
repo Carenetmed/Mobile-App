@@ -132,23 +132,22 @@ Implementation contract: `PHASE_1_FIND_CARE.md`.
 
 ## E. Real backend booking path
 
-### APP-P1-005 - Canonical Professional Detail And Appointment Request Handoff
+### APP-P1-005 - Canonical Professional Detail And Real Booking - DONE
 
 - **Purpose:** Make `specialistDetails` the canonical backend-owned professional detail,
-  public availability, and appointment-request handoff after Find Care.
-- **Likely files:** `specialist_details_shell.dart`, its focused tests, route-argument
-  validation, `appointment_request_time_options.dart` only if a proven defect exists,
-  booking-route reachability/docs.
-- **Expected behavior:** Exact backend id resolves a real listed professional; missing
-  repository/id and backend failure never activate local identity/availability; public
-  availability produces real selectable request options; request success remains
-  `REQUESTED`, and local draft booking is disconnected from retained paths.
-- **Tests:** Direct/deep-link detail, valid/missing/unknown id, listing failure,
-  availability empty/failure/success, duplicate submit, request failure/success,
-  no seeded profile/slot/draft fallback.
-- **Risks:** Backend lacks `GET /professionals/:id`, so list-and-scan is the current
-  honest detail boundary; stale availability and timezone semantics need regression proof.
-- **Stop:** Correct detail needs a new backend endpoint or request semantics change.
+  requestable-time, auth-resume, and idempotent appointment-request handoff.
+- **Implemented behavior:** Exact backend ID uses single-detail and requestable-times
+  endpoints; IANA timezone rendering is backend-instant based; missing IDs and failures
+  never activate local identity or slots; a secure 24-hour account-bound intent survives
+  auth and patient setup; patient-only requests send one persistent idempotency key;
+  success remains `REQUESTED`; legacy booking routes resolve to Find Care.
+- **Tests:** API contracts, ID propagation, missing/unknown detail, truthful fields,
+  independent load failures, IANA/DST rendering, intent expiry/account binding,
+  auth/onboarding resume, role denial, stale-time invalidation, duplicate submission,
+  network retry key reuse, and no seeded fallback.
+- **Risks carried forward:** Appointment list/detail presentation, messaging, calls,
+  payments, cancellation policy copy, advanced schedule exceptions, and source deletion.
+- **Contract:** `PHASE_1_PROFESSIONAL_DETAIL_BOOKING.md`.
 - **Non-goals:** Payment, calls, messaging, ratings/reviews, calendar sync,
   notification sending, refund/cancellation redesign, backend changes.
 
@@ -315,9 +314,9 @@ are not automatically inserted into this plan and are not silently treated as do
 
 ## Exactly one next runtime slice
 
-After APP-P1-004 is reviewed and merged, start only:
+After APP-P1-005 is reviewed and merged, start only:
 
-`APP-P1-005 - Canonical Professional Detail And Appointment Request Handoff`
+`APP-P1-006 - Professional Schedule From Backend Availability`
 
-Do not start professional Schedule changes, appointment lifecycle redesign, profile
-cleanup, deferred code deletion, or phone regression in the same slice.
+Do not start appointment lifecycle redesign, profile cleanup, deferred code deletion,
+messaging, calls, payments, or phone regression in the same slice.

@@ -36,7 +36,6 @@ import 'package:app_t/features/Home/presentation/pages/edit_your_website_shell.d
 import 'package:app_t/features/Home/presentation/pages/emergency_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/enter_password_to_save_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/health_record_shell.dart';
-import 'package:app_t/features/Home/presentation/pages/find_mentor_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/manage_profile_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/manage_portfolio_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/manage_readings.dart';
@@ -158,7 +157,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.search:
       return _page(settings, const SearchShellPage());
     case RouteName.findMentor:
-      return _page(settings, const FindMentorShellPage());
+      return _page(settings, const SearchShellPage());
     case RouteName.specialistDetails:
       final args = settings.arguments;
       return _page(

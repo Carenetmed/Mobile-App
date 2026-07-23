@@ -14,6 +14,9 @@
 > readiness actions use the existing onboarding readiness route resolver.
 > `account` opens from the header avatar, and no drawer is active. Patient setup
 > follows backend readiness instead of entering `communityAgreement`.
+> `search` is the canonical Find Care route. Patient Home and the persistent
+> Find Care tab enter the same `SearchShellPage`; legacy `findMentor` is a
+> compatibility alias to that screen and no longer opens a separate marketplace.
 
 All navigation uses **`RouteName`** constants and **`generateRoute`** in `lib/core/constants/navigators/router.dart`.
 
@@ -41,7 +44,7 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `emailVerificationConfirm` | `emailVerificationConfirm` | `EmailVerificationConfirmPage` | `lib/features/Authentication/presentation/pages/email_verification_confirm_page.dart` |
 | `dashboard` | `dashboard` | `Dashboard` | `lib/features/Home/presentation/pages/dashboard.dart` |
 | `search` | `search` | `SearchShellPage` | `lib/features/Home/presentation/pages/search_shell.dart` |
-| `findMentor` | `findMentor` | `FindMentorShellPage` | `lib/features/Home/presentation/pages/find_mentor_shell.dart` |
+| `findMentor` | `findMentor` | `SearchShellPage` (legacy compatibility alias) | `lib/features/Home/presentation/pages/search_shell.dart` |
 | `specialistDetails` | `specialistDetails` | `SpecialistDetailsShellPage` | `lib/features/Home/presentation/pages/specialist_details_shell.dart` |
 | `appointments` | `appointments` | `AppointmentsShellPage` | `lib/features/Home/presentation/pages/appointments_shell.dart` |
 | `bookAppointment` | `bookAppointment` | `BookAppointmentShellPage` | `lib/features/Home/presentation/pages/appointments_shell.dart` |

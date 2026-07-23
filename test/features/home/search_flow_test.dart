@@ -1,8 +1,8 @@
+import 'dart:async';
+
+import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
-import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
-import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
-import 'package:app_t/features/Home/domain/entities/availability_window.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
@@ -13,14 +13,35 @@ import 'package:flutter_test/flutter_test.dart';
 
 const Size _phoneSize = Size(430, 1200);
 
+const List<PublicProfessional> _professionals = <PublicProfessional>[
+  PublicProfessional(
+    id: 'pro_heart',
+    displayName: 'Dr Ada Heart',
+    category: 'Doctor',
+    specialty: 'Cardiology',
+    bio: 'Supports long-term heart health.',
+    verified: true,
+  ),
+  PublicProfessional(
+    id: 'pro_mind',
+    displayName: 'Dr Nneka Mind',
+    category: 'Psychologist',
+    specialty: 'Mental wellness',
+    verified: true,
+  ),
+];
+
+typedef _ListingLoad = Future<List<PublicProfessional>> Function();
+
 Future<void> _pumpSearch(
   WidgetTester tester, {
-  ProfileRepository? profileRepository,
-  SchedulingRepository? schedulingRepository,
-  DateTime? now,
+  required ProfileRepository profileRepository,
+  Key? pageKey,
+  List<RouteSettings>? pushedRoutes,
+  bool settle = true,
 }) async {
   tester.view.physicalSize = _phoneSize;
-  tester.view.devicePixelRatio = 1.0;
+  tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 
   await tester.pumpWidget(
@@ -29,134 +50,49 @@ Future<void> _pumpSearch(
       builder:
           (_, __) => MaterialApp(
             home: SearchShellPage(
-              profileRepository:
-                  profileRepository ?? _FakeProfileRepository(failure: null),
-              schedulingRepository:
-                  schedulingRepository ?? _FakeSchedulingRepository(),
-              now: now,
+              key: pageKey,
+              profileRepository: profileRepository,
             ),
+            onGenerateRoute: (settings) {
+              pushedRoutes?.add(settings);
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder:
+                    (_) => Scaffold(
+                      body: Text(
+                        'route:${settings.name}:${settings.arguments}',
+                      ),
+                    ),
+              );
+            },
           ),
     ),
   );
-  await tester.pumpAndSettle();
-}
-
-class _FakeSchedulingRepository implements SchedulingRepository {
-  _FakeSchedulingRepository({
-    this.publicWindows,
-    this.failure,
-    this.requestFailure,
-  });
-
-  final List<AvailabilityWindow>? publicWindows;
-  final Object? failure;
-  final Object? requestFailure;
-  String? requestedProfessionalProfileId;
-  DateTime? requestedStartAt;
-  int? requestedDurationMinutes;
-
-  @override
-  Future<List<AvailabilityWindow>> publicAvailability({
-    required String professionalProfileId,
-  }) async {
-    final error = failure;
-    if (error != null) {
-      throw error;
-    }
-    return publicWindows ?? const <AvailabilityWindow>[];
-  }
-
-  @override
-  Future<AppointmentSummary> acceptAppointment({
-    required String appointmentId,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AppointmentSummary> cancelAppointment({
-    required String appointmentId,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AppointmentSummary> completeAppointment({
-    required String appointmentId,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AppointmentSummary> declineAppointment({
-    required String appointmentId,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<AppointmentSummary>> ownAppointments() {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<AvailabilityWindow>> ownAvailability() {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<AvailabilityWindow>> replaceOwnAvailability({
-    required List<AvailabilityWindowDraft> windows,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<AppointmentSummary> requestAppointment({
-    required String professionalProfileId,
-    required DateTime requestedStartAt,
-    required int durationMinutes,
-  }) async {
-    final error = requestFailure;
-    if (error != null) {
-      throw error;
-    }
-    requestedProfessionalProfileId = professionalProfileId;
-    this.requestedStartAt = requestedStartAt;
-    requestedDurationMinutes = durationMinutes;
-    return AppointmentSummary(
-      id: 'appointment-1',
-      patientProfileId: 'patient-1',
-      professionalProfileId: professionalProfileId,
-      requestedStartAt: requestedStartAt,
-      durationMinutes: durationMinutes,
-      status: AppointmentStatus.requested,
-    );
-  }
-
-  @override
-  Future<AppointmentSummary> rescheduleAppointment({
-    required String appointmentId,
-    required DateTime requestedStartAt,
-    required int durationMinutes,
-  }) {
-    throw UnimplementedError();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
   }
 }
 
 class _FakeProfileRepository implements ProfileRepository {
-  _FakeProfileRepository({this.publicListing, this.failure});
+  _FakeProfileRepository(this.loads);
 
-  final List<PublicProfessional>? publicListing;
-  final Object? failure;
+  factory _FakeProfileRepository.results(
+    List<PublicProfessional> professionals,
+  ) {
+    return _FakeProfileRepository(<_ListingLoad>[() async => professionals]);
+  }
+
+  final List<_ListingLoad> loads;
+  int publicListingCalls = 0;
 
   @override
-  Future<List<PublicProfessional>> publicProfessionals() async {
-    final error = failure;
-    if (error != null) {
-      throw error;
-    }
-    return publicListing ?? const <PublicProfessional>[];
+  Future<List<PublicProfessional>> publicProfessionals() {
+    final index = publicListingCalls;
+    publicListingCalls += 1;
+    final safeIndex = index < loads.length ? index : loads.length - 1;
+    return loads[safeIndex]();
   }
 
   @override
@@ -201,391 +137,360 @@ class _FakeProfileRepository implements ProfileRepository {
 }
 
 void main() {
-  testWidgets('search tab shows backend error without fallback content', (
+  testWidgets('initial load is honest and calls the listing once', (
     tester,
   ) async {
-    await _pumpSearch(
-      tester,
-      profileRepository: _FakeProfileRepository(
-        failure: const AuthFailure(
-          type: AuthFailureType.missingConfiguration,
-          message: 'raw config message',
-        ),
-      ),
-    );
+    final pending = Completer<List<PublicProfessional>>();
+    final repository = _FakeProfileRepository(<_ListingLoad>[
+      () => pending.future,
+    ]);
 
-    expect(find.text('Search specialists'), findsOneWidget);
-    expect(find.text('Available specialists'), findsOneWidget);
-    expect(find.text('Backend is not configured yet.'), findsOneWidget);
-    expect(find.text('0 found'), findsOneWidget);
+    await _pumpSearch(tester, profileRepository: repository, settle: false);
+
+    expect(find.text('Loading verified professionals'), findsOneWidget);
+    expect(repository.publicListingCalls, 1);
     expect(find.text('Dr. Uzo Blessing'), findsNothing);
-    expect(find.text('Dr. Chris Amaka'), findsNothing);
+
+    pending.complete(_professionals);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dr Ada Heart'), findsOneWidget);
+    expect(repository.publicListingCalls, 1);
   });
 
-  testWidgets('search tab reads public verified professionals', (tester) async {
+  testWidgets('cards show only supported backend identity fields', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository.results(<PublicProfessional>[
+      ..._professionals,
+      const PublicProfessional(
+        id: 'unverified',
+        displayName: 'Unverified Person',
+        category: 'Doctor',
+        bio: 'Must not be shown.',
+        verified: false,
+      ),
+      const PublicProfessional(
+        id: '',
+        displayName: 'Malformed Person',
+        category: 'Doctor',
+        verified: true,
+      ),
+    ]);
+
+    await _pumpSearch(tester, profileRepository: repository);
+
+    expect(find.text('Dr Ada Heart'), findsOneWidget);
+    expect(find.text('Doctor - Cardiology'), findsOneWidget);
+    expect(find.text('Supports long-term heart health.'), findsOneWidget);
+    expect(find.text('Dr Nneka Mind'), findsOneWidget);
+    expect(find.text('Verified professional profile.'), findsNothing);
+    expect(find.text('Unverified Person'), findsNothing);
+    expect(find.text('Malformed Person'), findsNothing);
+    expect(find.text('Verified'), findsNWidgets(2));
+    expect(find.textContaining('rating'), findsNothing);
+    expect(find.textContaining('reviews'), findsNothing);
+    expect(find.textContaining('fee'), findsNothing);
+    expect(find.textContaining('location'), findsNothing);
+    expect(find.textContaining('experience'), findsNothing);
+  });
+
+  testWidgets('name search is trimmed and case insensitive without reloading', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository.results(_professionals);
+    await _pumpSearch(tester, profileRepository: repository);
+
+    await tester.enterText(find.byType(TextFormField), '  ADA HEART  ');
+    await tester.pump();
+
+    expect(find.text('Dr Ada Heart'), findsOneWidget);
+    expect(find.text('Dr Nneka Mind'), findsNothing);
+    expect(repository.publicListingCalls, 1);
+
+    await tester.tap(find.byTooltip('Clear search'));
+    await tester.pump();
+
+    expect(find.text('Dr Ada Heart'), findsOneWidget);
+    expect(find.text('Dr Nneka Mind'), findsOneWidget);
+    expect(repository.publicListingCalls, 1);
+  });
+
+  testWidgets('category and specialty are supported search fields', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository.results(_professionals);
+    await _pumpSearch(tester, profileRepository: repository);
+
+    await tester.enterText(find.byType(TextFormField), 'psychologist');
+    await tester.pump();
+    expect(find.text('Dr Nneka Mind'), findsOneWidget);
+    expect(find.text('Dr Ada Heart'), findsNothing);
+
+    await tester.enterText(find.byType(TextFormField), 'cardiology');
+    await tester.pump();
+    expect(find.text('Dr Ada Heart'), findsOneWidget);
+    expect(find.text('Dr Nneka Mind'), findsNothing);
+    expect(repository.publicListingCalls, 1);
+  });
+
+  testWidgets('bio text does not participate in search', (tester) async {
     await _pumpSearch(
       tester,
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Public',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend public bio for verified care.',
-            verified: true,
-          ),
-        ],
-      ),
+      profileRepository: _FakeProfileRepository.results(_professionals),
     );
 
-    expect(find.text('Dr Backend Public'), findsOneWidget);
-    expect(find.text('Cardiology - Heart health'), findsOneWidget);
-    expect(find.text('Verified'), findsOneWidget);
-    expect(find.text('Dr. Uzo Blessing'), findsNothing);
+    await tester.enterText(find.byType(TextFormField), 'long-term heart');
+    await tester.pump();
+
+    expect(find.text('No matching professionals'), findsOneWidget);
+    expect(find.text('Dr Ada Heart'), findsNothing);
   });
 
-  testWidgets('search filters public professionals by specialty', (
+  testWidgets('category chips filter loaded results without another request', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository.results(_professionals);
+    await _pumpSearch(tester, profileRepository: repository);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Cardiology'));
+    await tester.pump();
+
+    expect(find.text('Dr Ada Heart'), findsOneWidget);
+    expect(find.text('Dr Nneka Mind'), findsNothing);
+    expect(repository.publicListingCalls, 1);
+  });
+
+  testWidgets('backend-empty listing has a dedicated honest state', (
     tester,
   ) async {
     await _pumpSearch(
       tester,
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Heart',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend public bio for cardiology.',
-            verified: true,
-          ),
-          PublicProfessional(
-            id: 'pro_2',
-            displayName: 'Dr Mind',
-            category: 'Psychology',
-            specialty: 'Mental wellness',
-            bio: 'Backend public bio for psychology.',
-            verified: true,
-          ),
-        ],
+      profileRepository: _FakeProfileRepository.results(
+        const <PublicProfessional>[],
       ),
     );
-
-    await tester.enterText(find.byType(TextFormField), 'mental');
-    await tester.pumpAndSettle();
-
-    expect(find.text('Dr Mind'), findsOneWidget);
-    expect(find.text('Dr Heart'), findsNothing);
-  });
-
-  testWidgets('search field filters public professional results', (
-    tester,
-  ) async {
-    await _pumpSearch(
-      tester,
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Heart',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend public bio for cardiology.',
-            verified: true,
-          ),
-          PublicProfessional(
-            id: 'pro_2',
-            displayName: 'Dr Backend Mind',
-            category: 'Psychology',
-            specialty: 'Mental wellness',
-            bio: 'Backend public bio for psychology.',
-            verified: true,
-          ),
-        ],
-      ),
-    );
-
-    await tester.enterText(find.byType(TextFormField), 'psychology');
-    await tester.pumpAndSettle();
-
-    expect(find.text('Dr Backend Mind'), findsOneWidget);
-    expect(find.text('Dr Backend Heart'), findsNothing);
-  });
-
-  testWidgets('category chip filters public professional results', (
-    tester,
-  ) async {
-    await _pumpSearch(
-      tester,
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Heart',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend public bio for cardiology.',
-            verified: true,
-          ),
-          PublicProfessional(
-            id: 'pro_2',
-            displayName: 'Dr Backend Mind',
-            category: 'Psychology',
-            specialty: 'Mental wellness',
-            bio: 'Backend public bio for psychology.',
-            verified: true,
-          ),
-        ],
-      ),
-    );
-
-    await tester.tap(find.text('Cardiology'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Dr Backend Heart'), findsOneWidget);
-    expect(find.text('Dr Backend Mind'), findsNothing);
-  });
-
-  testWidgets('booking action remains disabled for public listing', (
-    tester,
-  ) async {
-    await _pumpSearch(
-      tester,
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Public',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend public bio for verified care.',
-            verified: true,
-          ),
-        ],
-      ),
-    );
-
-    final button = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, 'Booking deferred'),
-    );
-    expect(button.onPressed, isNull);
-  });
-
-  testWidgets('profile action opens public listing profile sheet', (
-    tester,
-  ) async {
-    await _pumpSearch(
-      tester,
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Public',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend public bio for verified care.',
-            verified: true,
-          ),
-        ],
-      ),
-    );
-
-    await tester.tap(find.text('View profile').first);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Backend public bio for verified care.'), findsOneWidget);
-    expect(
-      find.text('No public availability is available yet.'),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('profile sheet reads public availability without local slots', (
-    tester,
-  ) async {
-    await _pumpSearch(
-      tester,
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Public',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend public bio for verified care.',
-            verified: true,
-          ),
-        ],
-      ),
-      schedulingRepository: _FakeSchedulingRepository(
-        publicWindows: const <AvailabilityWindow>[
-          AvailabilityWindow(
-            id: 'availability-1',
-            weekday: DateTime.tuesday,
-            startMinute: 540,
-            endMinute: 1020,
-            timezone: 'Africa/Lagos',
-            active: true,
-          ),
-        ],
-      ),
-      now: DateTime(2026, 7, 14, 8),
-    );
-
-    await tester.tap(find.text('View profile').first);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Public availability'), findsOneWidget);
-    expect(find.text('Day 2: 09:00 - 17:00 (Africa/Lagos)'), findsOneWidget);
-    expect(find.text('Request appointment'), findsOneWidget);
-    expect(find.text('07/14 09:00-09:30 (30 min)'), findsOneWidget);
-    expect(find.text('Saturday'), findsNothing);
-    expect(find.text('10:00am'), findsNothing);
-    expect(find.text('Payment'), findsNothing);
-    expect(find.text('Notification'), findsNothing);
-    expect(find.text('Calendar'), findsNothing);
-    expect(find.text('Review'), findsNothing);
-    expect(find.text('Notes'), findsNothing);
-    expect(find.text('Prescription'), findsNothing);
-    expect(find.text('Call'), findsNothing);
-    expect(find.text('Admin'), findsNothing);
-  });
-
-  testWidgets('profile sheet sends selected generated appointment request', (
-    tester,
-  ) async {
-    final schedulingRepository = _FakeSchedulingRepository(
-      publicWindows: const <AvailabilityWindow>[
-        AvailabilityWindow(
-          id: 'availability-1',
-          weekday: DateTime.tuesday,
-          startMinute: 9 * 60,
-          endMinute: 10 * 60,
-          timezone: 'Africa/Lagos',
-          active: true,
-        ),
-      ],
-    );
-
-    await _pumpSearch(
-      tester,
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Public',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend public bio for verified care.',
-            verified: true,
-          ),
-        ],
-      ),
-      schedulingRepository: schedulingRepository,
-      now: DateTime(2026, 7, 14, 8),
-    );
-
-    await tester.tap(find.text('View profile').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('07/14 09:00-09:45 (45 min)'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Request selected time'));
-    await tester.pumpAndSettle();
-
-    expect(schedulingRepository.requestedProfessionalProfileId, 'pro_1');
-    expect(schedulingRepository.requestedStartAt, DateTime(2026, 7, 14, 9));
-    expect(schedulingRepository.requestedDurationMinutes, 45);
-    expect(
-      find.text('Request sent. Backend status: REQUESTED.'),
-      findsOneWidget,
-    );
-    expect(find.textContaining('Confirmed locally'), findsNothing);
-  });
-
-  testWidgets('profile sheet shows request error without fake success', (
-    tester,
-  ) async {
-    await _pumpSearch(
-      tester,
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Public',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend public bio for verified care.',
-            verified: true,
-          ),
-        ],
-      ),
-      schedulingRepository: _FakeSchedulingRepository(
-        publicWindows: const <AvailabilityWindow>[
-          AvailabilityWindow(
-            id: 'availability-1',
-            weekday: DateTime.tuesday,
-            startMinute: 9 * 60,
-            endMinute: 10 * 60,
-            timezone: 'Africa/Lagos',
-            active: true,
-          ),
-        ],
-        requestFailure: const AuthFailure(
-          type: AuthFailureType.validation,
-          message: 'raw unavailable slot',
-        ),
-      ),
-      now: DateTime(2026, 7, 14, 8),
-    );
-
-    await tester.tap(find.text('View profile').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Request selected time'));
-    await tester.pumpAndSettle();
 
     expect(
-      find.text('Please choose an available time and try again.'),
+      find.text('No verified professionals are listed yet'),
       findsOneWidget,
     );
-    expect(find.text('raw unavailable slot'), findsNothing);
-    expect(find.textContaining('Request sent.'), findsNothing);
+    expect(find.text('No matching professionals'), findsNothing);
+    expect(find.byType(TextFormField), findsNothing);
   });
 
-  testWidgets('profile sheet shows availability error without fallback slots', (
+  testWidgets('filtered no-results is distinct from backend-empty', (
     tester,
   ) async {
     await _pumpSearch(
       tester,
-      profileRepository: _FakeProfileRepository(
-        publicListing: const <PublicProfessional>[
-          PublicProfessional(
-            id: 'pro_1',
-            displayName: 'Dr Backend Public',
-            category: 'Cardiology',
-            specialty: 'Heart health',
-            bio: 'Backend public bio for verified care.',
-            verified: true,
-          ),
-        ],
-      ),
-      schedulingRepository: _FakeSchedulingRepository(
-        failure: const AuthFailure(
+      profileRepository: _FakeProfileRepository.results(_professionals),
+    );
+
+    await tester.enterText(find.byType(TextFormField), 'no such specialist');
+    await tester.pump();
+
+    expect(find.text('No matching professionals'), findsOneWidget);
+    expect(find.text('No verified professionals are listed yet'), findsNothing);
+  });
+
+  testWidgets('initial failure shows safe error and retry can recover', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository(<_ListingLoad>[
+      () => Future<List<PublicProfessional>>.error(
+        const AuthFailure(
           type: AuthFailureType.server,
-          message: 'raw backend error',
+          message: 'raw private failure',
         ),
       ),
-    );
+      () async => _professionals,
+    ]);
 
-    await tester.tap(find.text('View profile').first);
-    await tester.pumpAndSettle();
+    await _pumpSearch(tester, profileRepository: repository);
 
+    expect(find.text('Find Care is unavailable'), findsOneWidget);
     expect(
       find.text('Service is unavailable. Please try again.'),
       findsOneWidget,
     );
-    expect(find.text('raw backend error'), findsNothing);
-    expect(find.text('Saturday'), findsNothing);
-    expect(find.text('10:00am'), findsNothing);
+    expect(find.text('raw private failure'), findsNothing);
+    expect(find.text('Dr Ada Heart'), findsNothing);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Retry'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dr Ada Heart'), findsOneWidget);
+    expect(repository.publicListingCalls, 2);
+  });
+
+  testWidgets('refresh failure retains prior data and offers retry', (
+    tester,
+  ) async {
+    final repository = _FakeProfileRepository(<_ListingLoad>[
+      () async => _professionals,
+      () => Future<List<PublicProfessional>>.error(
+        const AuthFailure(
+          type: AuthFailureType.network,
+          message: 'raw refresh failure',
+        ),
+      ),
+      () async => _professionals,
+    ]);
+    await _pumpSearch(tester, profileRepository: repository);
+    await tester.enterText(find.byType(TextFormField), 'ada');
+    await tester.pump();
+
+    await tester.tap(find.byTooltip('Refresh Find Care'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dr Ada Heart'), findsOneWidget);
+    expect(find.text('Could not refresh Find Care'), findsOneWidget);
+    expect(find.textContaining('Previous results are still shown.'), findsOne);
+    expect(find.text('raw refresh failure'), findsNothing);
+    expect(find.text('ada'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Retry Find Care refresh'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Could not refresh Find Care'), findsNothing);
+    expect(find.text('Dr Ada Heart'), findsOneWidget);
+    expect(repository.publicListingCalls, 3);
+  });
+
+  testWidgets('repeated refresh requests share one repository load', (
+    tester,
+  ) async {
+    final refresh = Completer<List<PublicProfessional>>();
+    final repository = _FakeProfileRepository(<_ListingLoad>[
+      () async => _professionals,
+      () => refresh.future,
+    ]);
+    await _pumpSearch(tester, profileRepository: repository);
+
+    final onRefresh =
+        tester
+            .widget<RefreshIndicator>(find.byType(RefreshIndicator))
+            .onRefresh;
+    unawaited(onRefresh());
+    unawaited(onRefresh());
+    await tester.pump();
+
+    expect(repository.publicListingCalls, 2);
+
+    refresh.complete(_professionals);
+    await tester.pumpAndSettle();
+    expect(repository.publicListingCalls, 2);
+  });
+
+  testWidgets('stale older completion cannot replace a newer accepted load', (
+    tester,
+  ) async {
+    final stale = Completer<List<PublicProfessional>>();
+    final oldRepository = _FakeProfileRepository(<_ListingLoad>[
+      () => stale.future,
+    ]);
+    final newRepository =
+        _FakeProfileRepository.results(const <PublicProfessional>[
+          PublicProfessional(
+            id: 'current',
+            displayName: 'Dr Current Result',
+            category: 'Doctor',
+            verified: true,
+          ),
+        ]);
+    const pageKey = ValueKey<String>('canonical-find-care');
+
+    await _pumpSearch(
+      tester,
+      profileRepository: oldRepository,
+      pageKey: pageKey,
+      settle: false,
+    );
+    await _pumpSearch(
+      tester,
+      profileRepository: newRepository,
+      pageKey: pageKey,
+    );
+
+    expect(find.text('Dr Current Result'), findsOneWidget);
+
+    stale.complete(const <PublicProfessional>[
+      PublicProfessional(
+        id: 'stale',
+        displayName: 'Dr Stale Result',
+        category: 'Doctor',
+        verified: true,
+      ),
+    ]);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dr Current Result'), findsOneWidget);
+    expect(find.text('Dr Stale Result'), findsNothing);
+  });
+
+  testWidgets('pending load completion after disposal does not update state', (
+    tester,
+  ) async {
+    final pending = Completer<List<PublicProfessional>>();
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository(<_ListingLoad>[
+        () => pending.future,
+      ]),
+      settle: false,
+    );
+
+    await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
+    pending.complete(_professionals);
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('selection opens specialist details with exact backend id', (
+    tester,
+  ) async {
+    final routes = <RouteSettings>[];
+    await _pumpSearch(
+      tester,
+      profileRepository:
+          _FakeProfileRepository.results(const <PublicProfessional>[
+            PublicProfessional(
+              id: 'backend-professional-id',
+              displayName: 'Dr Exact Id',
+              category: 'Doctor',
+              verified: true,
+            ),
+          ]),
+      pushedRoutes: routes,
+    );
+
+    await tester.tap(find.text('View profile'));
+    await tester.pumpAndSettle();
+
+    expect(routes.single.name, RouteName.specialistDetails);
+    expect(routes.single.arguments, 'backend-professional-id');
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(find.text('Request appointment'), findsNothing);
+  });
+
+  testWidgets('unsupported discovery capabilities are not advertised', (
+    tester,
+  ) async {
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository.results(_professionals),
+    );
+
+    expect(
+      find.text('Search by professional name, category, or specialty'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('symptom'), findsNothing);
+    expect(find.textContaining('condition'), findsNothing);
+    expect(find.textContaining('disease'), findsNothing);
+    expect(find.textContaining('available now'), findsNothing);
+    expect(find.textContaining('consultation mode'), findsNothing);
   });
 }

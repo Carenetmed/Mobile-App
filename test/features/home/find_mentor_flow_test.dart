@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/constants/navigators/router.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/presentation/pages/find_mentor_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -127,6 +129,30 @@ class _FakeProfileRepository implements ProfileRepository {
 }
 
 void main() {
+  testWidgets('legacy find mentor route resolves canonical Find Care', (
+    tester,
+  ) async {
+    tester.view.physicalSize = _phoneSize;
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: _phoneSize,
+        builder:
+            (_, __) => MaterialApp(
+              initialRoute: RouteName.findMentor,
+              onGenerateRoute: generateRoute,
+            ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SearchShellPage), findsOneWidget);
+    expect(find.byType(FindMentorShellPage), findsNothing);
+    expect(find.text('Find Care'), findsOneWidget);
+  });
+
   testWidgets('find mentor reads backend public professionals', (tester) async {
     await _pumpFindMentor(tester, profileRepository: _FakeProfileRepository());
 

@@ -85,7 +85,7 @@ Status: merged through PR #151.
 
 ### APP-P1-003 - Role-Aware Marketplace Home
 
-Status: implemented on the dedicated APP-P1-003 slice branch; awaiting PR review.
+Status: merged through PR #153.
 
 - **Purpose:** Replace Feed/Messages/Articles Home tabs with useful patient and
   professional marketplace summaries using already available backend data.
@@ -108,43 +108,49 @@ Implementation contract: `PHASE_1_MARKETPLACE_HOME.md`.
 
 ## D. Find Care consolidation
 
-### APP-P1-004 - Canonical Find Care And Professional Detail
+### APP-P1-004 - Canonical Find Care Discovery
 
-- **Purpose:** Make `search` the sole discovery entry and `specialistDetails` the
-  sole professional detail, with no local professionals or duplicate mentor lane.
-- **Likely files:** `search_shell.dart`, `specialist_details_shell.dart`,
-  `find_mentor_shell.dart` callers only, `search_local_store.dart` callers,
-  search/detail tests, routes/docs.
-- **Expected behavior:** Backend verified professionals drive list and detail;
-  selected professional id drives real public availability; backend failure yields
-  safe error/empty state, never local fallback; `findMentor` is no longer active.
-- **Tests:** Real repository list/detail/availability success, empty, failure, retry,
-  invalid/missing id, no local fallback, canonical navigation.
-- **Risks:** Backend currently lacks a dedicated detail endpoint; list-derived detail
-  fields may be incomplete. Do not fabricate ratings, price, reviews, or credentials.
-- **Stop:** A required public field is not in the backend contract or identity cannot
-  be resolved safely.
-- **Non-goals:** Reviews, ranking/recommendation engine, location search, payment,
-  creator profiles, data schema changes.
+Status: implemented on the dedicated APP-P1-004 slice branch; awaiting PR review.
+
+- **Purpose:** Make `search` the sole patient discovery entry, remove Search-local
+  and mentor-route competition, and keep detail/availability/request ownership separate.
+- **Files:** `search_shell.dart`, router alias, Search/Find Mentor route tests, canonical docs.
+- **Expected behavior:** One backend verified-professional listing drives cards and
+  client-side name/category/specialty filtering. Empty, failure, retry, refresh and
+  refresh failure are honest; result selection passes the exact backend id directly
+  to `specialistDetails`; `findMentor` aliases Find Care.
+- **Tests:** Initial/refresh loading, serialization, stale completion, disposal, empty
+  versus filtered-empty, supported filtering, truthful fields, verification fail-closed,
+  exact-id handoff, no local fallback, canonical legacy alias.
+- **Risks:** Treating client filters as server features, showing malformed/unverified
+  results, or letting stale requests replace newer state.
+- **Stop:** Discovery requires a repository contract change or Specialist Details edits.
+- **Non-goals:** Professional detail repair, availability, booking, symptom mapping,
+  server-side filters/pagination, reviews, ratings, payment, backend changes.
+
+Implementation contract: `PHASE_1_FIND_CARE.md`.
 
 ## E. Real backend booking path
 
-### APP-P1-005 - Remove Draft Booking And Enforce Real Slot Request
+### APP-P1-005 - Canonical Professional Detail And Appointment Request Handoff
 
-- **Purpose:** Eliminate the local `BookAppointmentShellPage` path and make every
-  request originate from a backend professional and generated available time option.
-- **Likely files:** `appointments_shell.dart`, `search_shell.dart`,
-  `specialist_details_shell.dart`, `appointment_request_time_options.dart`,
-  router/route names, scheduling tests/docs.
-- **Expected behavior:** A patient selects a real slot, confirms the request, receives
-  the backend appointment result, and can open it in Appointments. Failure cannot
-  create local success. Duplicate submit is guarded in the UI and backend remains authority.
-- **Tests:** Success, unavailable/conflict, unauthorized, wrong role, duplicate tap,
-  network/server failure, no `Backend request not sent`, appointment list refresh.
-- **Risks:** Confusing REQUESTED with paid/confirmed; stale availability; client timezone.
-- **Stop:** Product copy requires payment/confirmation guarantees not present in the
-  current backend, or request needs new fields/endpoints.
-- **Non-goals:** Payment, calendar sync, notification sending, refund/cancellation redesign.
+- **Purpose:** Make `specialistDetails` the canonical backend-owned professional detail,
+  public availability, and appointment-request handoff after Find Care.
+- **Likely files:** `specialist_details_shell.dart`, its focused tests, route-argument
+  validation, `appointment_request_time_options.dart` only if a proven defect exists,
+  booking-route reachability/docs.
+- **Expected behavior:** Exact backend id resolves a real listed professional; missing
+  repository/id and backend failure never activate local identity/availability; public
+  availability produces real selectable request options; request success remains
+  `REQUESTED`, and local draft booking is disconnected from retained paths.
+- **Tests:** Direct/deep-link detail, valid/missing/unknown id, listing failure,
+  availability empty/failure/success, duplicate submit, request failure/success,
+  no seeded profile/slot/draft fallback.
+- **Risks:** Backend lacks `GET /professionals/:id`, so list-and-scan is the current
+  honest detail boundary; stale availability and timezone semantics need regression proof.
+- **Stop:** Correct detail needs a new backend endpoint or request semantics change.
+- **Non-goals:** Payment, calls, messaging, ratings/reviews, calendar sync,
+  notification sending, refund/cancellation redesign, backend changes.
 
 ## F. Real professional availability management
 
@@ -309,9 +315,9 @@ are not automatically inserted into this plan and are not silently treated as do
 
 ## Exactly one next runtime slice
 
-After APP-P1-002 is reviewed and merged, start only:
+After APP-P1-004 is reviewed and merged, start only:
 
-`APP-P1-003 - Role-Aware Marketplace Home`
+`APP-P1-005 - Canonical Professional Detail And Appointment Request Handoff`
 
-Do not start Find Care consolidation, booking cleanup, profile cleanup, deferred
-code deletion, or phone regression in the same slice.
+Do not start professional Schedule changes, appointment lifecycle redesign, profile
+cleanup, deferred code deletion, or phone regression in the same slice.

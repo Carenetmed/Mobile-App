@@ -5,12 +5,15 @@ import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
 import 'package:app_t/features/Home/presentation/pages/appointments_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/home.dart';
 import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart';
+import 'package:app_t/features/Home/presentation/state/marketplace_home_state.dart';
+import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
 import 'package:app_t/features/Messaging/presentation/pages/Messages.dart';
 import 'package:flutter/material.dart';
 
@@ -19,11 +22,13 @@ class Dashboard extends StatefulWidget {
     super.key,
     this.sessionStore,
     this.profileRepository,
+    this.onboardingRepository,
     this.schedulingRepository,
   });
 
   final SessionStore? sessionStore;
   final ProfileRepository? profileRepository;
+  final OnboardingRepository? onboardingRepository;
   final SchedulingRepository? schedulingRepository;
 
   @override
@@ -180,9 +185,23 @@ class _DashboardState extends State<Dashboard> {
         activeIcon: Icons.home,
         builder:
             () => Home(
-              isProfessional: professional,
+              role:
+                  professional
+                      ? MarketplaceHomeRole.professional
+                      : MarketplaceHomeRole.patient,
               onPrimaryAction: () => _selectIndex(1),
               onAppointments: () => _selectIndex(2),
+              onReadinessAction:
+                  (readiness) => Navigator.pushNamed(
+                    context,
+                    const OnboardingReadinessRouteResolver().resolve(
+                      readiness: readiness,
+                      fallbackRole: professional ? 'PROFESSIONAL' : 'PATIENT',
+                    ),
+                  ),
+              profileRepository: widget.profileRepository,
+              onboardingRepository: widget.onboardingRepository,
+              schedulingRepository: widget.schedulingRepository,
             ),
       ),
       _DashboardDestination(

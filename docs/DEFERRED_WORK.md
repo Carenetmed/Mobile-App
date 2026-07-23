@@ -35,6 +35,12 @@ The complete ownership/removal map is
 consultation calls, notification delivery, support/refunds, payouts, and
 dual-role behavior remain decision-blocked and must not be invented.
 
+APP-P1-003 uses existing profile, readiness, own-appointment, and professional
+availability repositories for Home. Appointment participant names, consultation
+type, payment state, message eligibility, call eligibility, recommendations,
+earnings, and demand statistics are not present in the Home contract and remain
+absent rather than locally fabricated. See `PHASE_1_MARKETPLACE_HOME.md`.
+
 ---
 
 ## Backend replacement seams

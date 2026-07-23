@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-22 APP-P1-002 role-aware navigation implementation.
+**Last updated:** 2026-07-23 APP-P1-003 role-aware marketplace Home.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -20,6 +20,10 @@ profile/verification, public professional discovery, availability, and the
 appointment lifecycle have real backend boundaries. APP-P1-002 replaces the broad
 dashboard with backend-session-owned patient/professional navigation, header bell
 and account access, honest messaging/notification empty states, and no active drawer.
+APP-P1-003 replaces the static Home wireframe with backend-composed patient and
+professional identity, readiness, appointment, and professional availability
+states. Home selection is deterministic, section failures remain retryable, and
+no payment, messaging, call, recommendation, earnings, or demand state is invented.
 Many retained routes and local account/profile seams still require the ordered
 Phase 1 narrowing plan before release claims.
 

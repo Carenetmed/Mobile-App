@@ -59,7 +59,7 @@ Status: completed; branch and annotated tag were pushed at exact commit
 
 ### APP-P1-002 - Role-Aware Phase 1 Navigation Shell And Active Route Pruning
 
-Status: implemented on the dedicated APP-P1-002 slice branch; awaiting PR review.
+Status: merged through PR #151.
 
 - **Purpose:** Replace the broad dashboard navigation with the approved patient
   and professional four-destination contracts plus header notification/account actions.
@@ -85,6 +85,8 @@ Status: implemented on the dedicated APP-P1-002 slice branch; awaiting PR review
 
 ### APP-P1-003 - Role-Aware Marketplace Home
 
+Status: implemented on the dedicated APP-P1-003 slice branch; awaiting PR review.
+
 - **Purpose:** Replace Feed/Messages/Articles Home tabs with useful patient and
   professional marketplace summaries using already available backend data.
 - **Likely files:** `home.dart`, new small role Home widgets if justified,
@@ -101,6 +103,8 @@ Status: implemented on the dedicated APP-P1-002 slice branch; awaiting PR review
   aggregate backend work; show a smaller honest Home instead and record the gap.
 - **Non-goals:** Social/content widgets, analytics dashboard, earnings, new backend endpoint,
   broad visual redesign.
+
+Implementation contract: `PHASE_1_MARKETPLACE_HOME.md`.
 
 ## D. Find Care consolidation
 

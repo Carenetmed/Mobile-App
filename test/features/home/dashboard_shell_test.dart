@@ -91,7 +91,7 @@ void main() {
     await tester.tap(find.text('Find Care'));
     await tester.pumpAndSettle();
     expect(find.byType(SearchShellPage), findsOneWidget);
-    expect(find.text('Search specialists'), findsOneWidget);
+    expect(find.text('Find Care'), findsWidgets);
   });
 
   testWidgets('professional sees the approved four destinations', (
@@ -144,7 +144,7 @@ void main() {
 
     await tester.tap(find.text('Find Care'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).first, 'cardiology');
+    await tester.enterText(find.byType(TextFormField).first, 'cardiology');
     await tester.tap(
       find.descendant(
         of: find.byType(BottomNavigationBar),
@@ -212,7 +212,15 @@ class _FakeProfileRepository implements ProfileRepository {
 
   @override
   Future<List<PublicProfessional>> publicProfessionals() async {
-    return const <PublicProfessional>[];
+    return const <PublicProfessional>[
+      PublicProfessional(
+        id: 'professional-1',
+        displayName: 'Dr Care',
+        category: 'Doctor',
+        specialty: 'Cardiology',
+        verified: true,
+      ),
+    ];
   }
 
   @override

@@ -6,11 +6,7 @@ import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
-import 'package:app_t/features/Home/domain/entities/appointment_request_time_option.dart';
-import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
-import 'package:app_t/features/Home/domain/entities/availability_window.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
-import 'package:app_t/features/Home/domain/services/appointment_request_time_options.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -24,6 +20,9 @@ class SearchShellPage extends StatefulWidget {
   });
 
   final ProfileRepository? profileRepository;
+
+  // Kept for caller compatibility while availability and booking remain owned
+  // by the existing professional-detail surface.
   final SchedulingRepository? schedulingRepository;
   final DateTime? now;
 
@@ -35,26 +34,37 @@ class _SearchShellPageState extends State<SearchShellPage> {
   static const String _allCategory = 'All';
 
   final TextEditingController _searchController = TextEditingController();
+  List<PublicProfessional> _professionals = const <PublicProfessional>[];
   String _selectedCategory = _allCategory;
-  List<PublicProfessional> _publicProfessionals = const <PublicProfessional>[];
-  String? _publicListingMessage;
-  bool _isLoadingPublicProfessionals = true;
+  bool _hasLoaded = false;
+  bool _initialLoading = true;
+  bool _refreshing = false;
+  String? _initialError;
+  String? _refreshError;
+  Future<void>? _activeLoad;
+  int _loadGeneration = 0;
 
   ProfileRepository get _profileRepository =>
       widget.profileRepository ?? sl<ProfileRepository>();
-
-  SchedulingRepository get _schedulingRepository =>
-      widget.schedulingRepository ?? sl<SchedulingRepository>();
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_handleSearchChanged);
-    _loadPublicProfessionals();
+    _requestLoad();
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchShellPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.profileRepository != widget.profileRepository) {
+      _requestLoad(supersede: true);
+    }
   }
 
   @override
   void dispose() {
+    _loadGeneration += 1;
     _searchController.removeListener(_handleSearchChanged);
     _searchController.dispose();
     super.dispose();
@@ -64,200 +74,213 @@ class _SearchShellPageState extends State<SearchShellPage> {
     setState(() {});
   }
 
-  Future<void> _loadPublicProfessionals() async {
+  Future<void> _requestLoad({bool supersede = false}) {
+    final current = _activeLoad;
+    if (current != null && !supersede) {
+      return current;
+    }
+
+    final generation = ++_loadGeneration;
+    final operation = _performLoad(generation);
+    _activeLoad = operation;
+    return operation;
+  }
+
+  Future<void> _performLoad(int generation) async {
     setState(() {
-      _isLoadingPublicProfessionals = true;
-      _publicListingMessage = 'Loading verified professionals...';
+      if (_hasLoaded) {
+        _refreshing = true;
+        _refreshError = null;
+      } else {
+        _initialLoading = true;
+        _initialError = null;
+      }
     });
 
     try {
       final professionals = await _profileRepository.publicProfessionals();
-      if (!mounted) {
-        return;
-      }
+      if (!mounted || generation != _loadGeneration) return;
+
+      final accepted = professionals
+          .where(_isUsableProfessional)
+          .toList(growable: false);
       setState(() {
-        _publicProfessionals = professionals;
-        _isLoadingPublicProfessionals = false;
-        _publicListingMessage =
-            professionals.isEmpty
-                ? 'No verified professionals are available yet.'
-                : null;
+        _professionals = accepted;
+        _hasLoaded = true;
+        _initialLoading = false;
+        _refreshing = false;
+        _initialError = null;
+        _refreshError = null;
+        if (!_availableCategories(accepted).contains(_selectedCategory)) {
+          _selectedCategory = _allCategory;
+        }
       });
-    } on AuthFailure catch (failure) {
-      if (!mounted) {
-        return;
-      }
+    } catch (error) {
+      if (!mounted || generation != _loadGeneration) return;
+
+      final message = _safeListingError(error);
       setState(() {
-        _publicProfessionals = const <PublicProfessional>[];
-        _isLoadingPublicProfessionals = false;
-        _publicListingMessage = _safePublicListingError(failure);
+        _initialLoading = false;
+        _refreshing = false;
+        if (_hasLoaded) {
+          _refreshError = message;
+        } else {
+          _initialError = message;
+        }
       });
-    } catch (_) {
-      if (!mounted) {
-        return;
+    } finally {
+      if (generation == _loadGeneration) {
+        _activeLoad = null;
       }
-      setState(() {
-        _publicProfessionals = const <PublicProfessional>[];
-        _isLoadingPublicProfessionals = false;
-        _publicListingMessage = 'Something went wrong. Please try again.';
-      });
     }
   }
 
-  String _safePublicListingError(AuthFailure failure) {
-    return switch (failure.type) {
-      AuthFailureType.missingConfiguration => 'Backend is not configured yet.',
-      AuthFailureType.unauthorized => 'Please sign in again.',
-      AuthFailureType.validation => 'Please check the details and try again.',
-      AuthFailureType.server ||
-      AuthFailureType.network => 'Service is unavailable. Please try again.',
-      AuthFailureType.invalidCredentials ||
-      AuthFailureType.unknown => 'Something went wrong. Please try again.',
-    };
+  bool _isUsableProfessional(PublicProfessional professional) {
+    return professional.verified &&
+        professional.id.trim().isNotEmpty &&
+        professional.displayName.trim().isNotEmpty &&
+        professional.category.trim().isNotEmpty;
+  }
+
+  String _safeListingError(Object error) {
+    if (error is AuthFailure) {
+      return switch (error.type) {
+        AuthFailureType.missingConfiguration =>
+          'Backend is not configured yet.',
+        AuthFailureType.unauthorized => 'Please sign in again.',
+        AuthFailureType.validation => 'Please check the details and try again.',
+        AuthFailureType.server ||
+        AuthFailureType.network => 'Service is unavailable. Please try again.',
+        AuthFailureType.invalidCredentials ||
+        AuthFailureType.unknown => 'Something went wrong. Please try again.',
+      };
+    }
+    return 'Something went wrong. Please try again.';
   }
 
   @override
   Widget build(BuildContext context) {
-    final professionals = _resolveProfessionals(
-      query: _searchController.text,
-      category: _selectedCategory,
-    );
-    final categories = _resolveCategories();
+    final results = _filteredProfessionals();
+    final categories = _availableCategories(_professionals);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
-        child: ListView(
-          padding: REdgeInsets.fromLTRB(16.w, 20.h, 16.w, 24.h),
-          children: [
-            Text(
-              'Search specialists',
-              style: TextStyle(
-                fontSize: FontSizes.heading3,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w700,
-                color: AppColors.kBlack,
+        child: RefreshIndicator(
+          onRefresh: _requestLoad,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: REdgeInsets.fromLTRB(16.w, 20.h, 16.w, 24.h),
+            children: [
+              _FindCareHeading(
+                refreshing: _refreshing,
+                onRefresh: _activeLoad == null ? _requestLoad : null,
               ),
-            ),
-            SizedBox(height: 14.h),
-            if (_publicListingMessage != null) ...[
-              _PublicListingStateCard(message: _publicListingMessage!),
               SizedBox(height: 14.h),
-            ],
-            CarenetTextField(
-              controller: _searchController,
-              hintText: 'Search by name, category, or specialty',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon:
-                  _searchController.text.isEmpty
-                      ? null
-                      : IconButton(
-                        tooltip: 'Clear search',
-                        icon: const Icon(Icons.close),
-                        onPressed: _searchController.clear,
+              if (_initialLoading && !_hasLoaded)
+                const _FindCareStatePanel.loading()
+              else if (_initialError != null && !_hasLoaded)
+                _FindCareStatePanel.failure(
+                  message: _initialError!,
+                  onRetry: _requestLoad,
+                )
+              else ...[
+                if (_refreshError != null) ...[
+                  _RefreshFailureBanner(
+                    message: _refreshError!,
+                    onRetry: _activeLoad == null ? _requestLoad : null,
+                  ),
+                  SizedBox(height: 14.h),
+                ],
+                if (_refreshing) ...[
+                  const LinearProgressIndicator(),
+                  SizedBox(height: 14.h),
+                ],
+                if (_professionals.isEmpty)
+                  _FindCareStatePanel.empty(onRefresh: _requestLoad)
+                else ...[
+                  CarenetTextField(
+                    controller: _searchController,
+                    hintText:
+                        'Search by professional name, category, or specialty',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchController.text.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: 'Clear search',
+                            icon: const Icon(Icons.close),
+                            onPressed: _searchController.clear,
+                          ),
+                  ),
+                  SizedBox(height: 14.h),
+                  _CategorySelector(
+                    categories: categories,
+                    selected: _selectedCategory,
+                    onSelected: (category) =>
+                        setState(() => _selectedCategory = category),
+                  ),
+                  SizedBox(height: 20.h),
+                  _ResultSummary(count: results.length),
+                  SizedBox(height: 12.h),
+                  if (results.isEmpty)
+                    _FilteredEmptyState(onReset: _resetFilters)
+                  else
+                    ...results.map(
+                      (professional) => Padding(
+                        padding: REdgeInsets.only(bottom: 12.h),
+                        child: _ProfessionalResultCard(
+                          professional: professional,
+                          onSelected: () => Navigator.pushNamed(
+                            context,
+                            RouteName.specialistDetails,
+                            arguments: professional.id,
+                          ),
+                        ),
                       ),
-            ),
-            SizedBox(height: 14.h),
-            SizedBox(
-              height: 38.h,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                separatorBuilder: (_, __) => SizedBox(width: 8.w),
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  final selected = category == _selectedCategory;
-                  return ChoiceChip(
-                    label: Text(category),
-                    selected: selected,
-                    onSelected:
-                        (_) => setState(() => _selectedCategory = category),
-                    selectedColor: AppColors.primaryBlue5,
-                    backgroundColor: AppColors.kWhite,
-                    labelStyle: TextStyle(
-                      fontFamily: AppFonts.montserrat,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                      color: selected ? AppColors.kWhite : AppColors.kBlack,
-                      fontSize: FontSizes.footer3,
                     ),
-                    side: BorderSide(
-                      color:
-                          selected ? AppColors.primaryBlue5 : AppColors.white04,
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 20.h),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Available specialists',
-                    style: TextStyle(
-                      fontSize: FontSizes.body3,
-                      fontFamily: AppFonts.montserrat,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.kBlack,
-                    ),
-                  ),
-                ),
-                Text(
-                  '${professionals.length} found',
-                  style: TextStyle(
-                    fontSize: FontSizes.footer3,
-                    fontFamily: AppFonts.montserrat,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.primaryBlue11,
-                  ),
-                ),
+                ],
               ],
-            ),
-            SizedBox(height: 12.h),
-            if (_isLoadingPublicProfessionals)
-              const SizedBox.shrink()
-            else if (professionals.isEmpty)
-              _SearchEmptyState(
-                onReset:
-                    () => setState(() {
-                      _selectedCategory = _allCategory;
-                      _searchController.clear();
-                    }),
-              )
-            else
-              ...professionals.map(
-                (professional) => Padding(
-                  padding: REdgeInsets.only(bottom: 12.h),
-                  child: _SpecialistCard(
-                    professional: professional,
-                    onViewProfile:
-                        () => _showSpecialistProfile(context, professional),
-                  ),
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  List<_SearchProfessionalView> _resolveProfessionals({
-    required String query,
-    required String category,
-  }) {
-    return _publicProfessionals
-        .map(_SearchProfessionalView.fromPublic)
-        .where((professional) => professional.matches(query, category))
+  void _resetFilters() {
+    setState(() {
+      _selectedCategory = _allCategory;
+      _searchController.clear();
+    });
+  }
+
+  List<PublicProfessional> _filteredProfessionals() {
+    final query = _searchController.text.trim().toLowerCase();
+    return _professionals
+        .where((professional) {
+          final category = professional.category.trim();
+          final specialty = professional.specialty?.trim() ?? '';
+          final categoryMatches =
+              _selectedCategory == _allCategory ||
+              category.toLowerCase() == _selectedCategory.toLowerCase() ||
+              specialty.toLowerCase() == _selectedCategory.toLowerCase();
+          if (!categoryMatches) return false;
+          if (query.isEmpty) return true;
+
+          return professional.displayName.trim().toLowerCase().contains(
+                query,
+              ) ||
+              category.toLowerCase().contains(query) ||
+              specialty.toLowerCase().contains(query);
+        })
         .toList(growable: false);
   }
 
-  List<String> _resolveCategories() {
+  List<String> _availableCategories(List<PublicProfessional> professionals) {
     final categories = <String>{_allCategory};
-    for (final professional in _publicProfessionals) {
+    for (final professional in professionals) {
       final category = professional.category.trim();
-      if (category.isNotEmpty) {
-        categories.add(category);
-      }
+      if (category.isNotEmpty) categories.add(category);
       final specialty = professional.specialty?.trim();
       if (specialty != null && specialty.isNotEmpty) {
         categories.add(specialty);
@@ -265,411 +288,170 @@ class _SearchShellPageState extends State<SearchShellPage> {
     }
     return categories.toList(growable: false);
   }
-
-  void _showSpecialistProfile(
-    BuildContext context,
-    _SearchProfessionalView specialist,
-  ) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder:
-          (context) => Padding(
-            padding: REdgeInsets.fromLTRB(20.w, 8.h, 20.w, 24.h),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    specialist.name,
-                    style: TextStyle(
-                      fontSize: FontSizes.body2,
-                      fontFamily: AppFonts.montserrat,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.kBlack,
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    specialist.role,
-                    style: TextStyle(
-                      fontSize: FontSizes.footer2,
-                      fontFamily: AppFonts.montserrat,
-                      color: AppColors.primaryBlue11,
-                    ),
-                  ),
-                  SizedBox(height: 12.h),
-                  Text(
-                    specialist.summary,
-                    style: TextStyle(
-                      fontSize: FontSizes.footer2,
-                      fontFamily: AppFonts.montserrat,
-                      color: AppColors.kBlack,
-                      height: 1.4,
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-                  _PublicAvailabilitySection(
-                    professionalProfileId: specialist.id,
-                    schedulingRepository: _schedulingRepository,
-                    now: widget.now ?? DateTime.now(),
-                  ),
-                  SizedBox(height: 16.h),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () {
-                        final navigator = Navigator.of(context);
-                        navigator.pop();
-                        navigator.pushNamed(
-                          RouteName.specialistDetails,
-                          arguments: specialist.id,
-                        );
-                      },
-                      child: const Text('Open details'),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Done'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-    );
-  }
 }
 
-class _PublicAvailabilitySection extends StatefulWidget {
-  const _PublicAvailabilitySection({
-    required this.professionalProfileId,
-    required this.schedulingRepository,
-    required this.now,
-  });
+class _FindCareHeading extends StatelessWidget {
+  const _FindCareHeading({required this.refreshing, required this.onRefresh});
 
-  final String professionalProfileId;
-  final SchedulingRepository schedulingRepository;
-  final DateTime now;
-
-  @override
-  State<_PublicAvailabilitySection> createState() =>
-      _PublicAvailabilitySectionState();
-}
-
-class _PublicAvailabilitySectionState
-    extends State<_PublicAvailabilitySection> {
-  static const AppointmentRequestTimeOptions _timeOptions =
-      AppointmentRequestTimeOptions();
-
-  late final Future<List<AvailabilityWindow>> _availabilityFuture;
-  AppointmentRequestTimeOption? _selectedOption;
-  bool _isRequestingAppointment = false;
-  String? _requestMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    _availabilityFuture = widget.schedulingRepository.publicAvailability(
-      professionalProfileId: widget.professionalProfileId,
-    );
-  }
+  final bool refreshing;
+  final VoidCallback? onRefresh;
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<AvailabilityWindow>>(
-      future: _availabilityFuture,
-      builder: (context, snapshot) {
-        final state = snapshot.connectionState;
-        if (state == ConnectionState.waiting ||
-            state == ConnectionState.active) {
-          return const _AvailabilityStateCard(
-            message: 'Loading public availability...',
-          );
-        }
-
-        if (snapshot.hasError) {
-          return _AvailabilityStateCard(
-            message: _safeAvailabilityError(snapshot.error),
-          );
-        }
-
-        final windows = snapshot.data ?? const <AvailabilityWindow>[];
-        if (windows.isEmpty) {
-          return const _AvailabilityStateCard(
-            message: 'No public availability is available yet.',
-          );
-        }
-
-        final requestOptions = _timeOptions.generate(
-          windows: windows,
-          now: widget.now,
-        );
-        _selectedOption ??=
-            requestOptions.isEmpty ? null : requestOptions.first;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Public availability',
-              style: TextStyle(
-                fontSize: FontSizes.footer3,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w700,
-                color: AppColors.kBlack,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            ...windows.map(
-              (window) => Padding(
-                padding: REdgeInsets.only(bottom: 6.h),
-                child: _AvailabilityWindowRow(window: window),
-              ),
-            ),
-            SizedBox(height: 12.h),
-            if (requestOptions.isEmpty)
-              const _AvailabilityStateCard(
-                message: 'No requestable times in the next seven days.',
-              )
-            else ...[
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                'Request appointment',
+                'Find Care',
                 style: TextStyle(
-                  fontSize: FontSizes.footer3,
+                  fontSize: FontSizes.heading3,
                   fontFamily: AppFonts.montserrat,
                   fontWeight: FontWeight.w700,
                   color: AppColors.kBlack,
                 ),
               ),
-              SizedBox(height: 8.h),
-              Wrap(
-                spacing: 8.w,
-                runSpacing: 8.h,
-                children:
-                    requestOptions
-                        .map(
-                          (option) => ChoiceChip(
-                            label: Text(_optionLabel(option)),
-                            selected: option == _selectedOption,
-                            onSelected:
-                                _isRequestingAppointment
-                                    ? null
-                                    : (_) => setState(() {
-                                      _selectedOption = option;
-                                      _requestMessage = null;
-                                    }),
-                          ),
-                        )
-                        .toList(),
-              ),
-              SizedBox(height: 10.h),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed:
-                      _isRequestingAppointment || _selectedOption == null
-                          ? null
-                          : _requestAppointment,
-                  child: Text(
-                    _isRequestingAppointment
-                        ? 'Sending request...'
-                        : 'Request selected time',
-                  ),
+              SizedBox(height: 4.h),
+              Text(
+                'Browse verified healthcare professionals.',
+                style: TextStyle(
+                  fontSize: FontSizes.footer2,
+                  fontFamily: AppFonts.montserrat,
+                  color: AppColors.primaryBlue11,
                 ),
               ),
             ],
-            if (_requestMessage != null) ...[
-              SizedBox(height: 8.h),
-              _AvailabilityStateCard(message: _requestMessage!),
-            ],
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _requestAppointment() async {
-    final option = _selectedOption;
-    if (option == null) {
-      return;
-    }
-
-    setState(() {
-      _isRequestingAppointment = true;
-      _requestMessage = null;
-    });
-
-    try {
-      final appointment = await widget.schedulingRepository.requestAppointment(
-        professionalProfileId: widget.professionalProfileId,
-        requestedStartAt: option.requestedStartAt,
-        durationMinutes: option.durationMinutes,
-      );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isRequestingAppointment = false;
-        _requestMessage =
-            'Request sent. Backend status: ${appointment.status.wireName}.';
-      });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isRequestingAppointment = false;
-        _requestMessage = _safeAppointmentRequestError(error);
-      });
-    }
-  }
-
-  static String _optionLabel(AppointmentRequestTimeOption option) {
-    final date = option.requestedStartAt;
-    final dateLabel =
-        '${date.month.toString().padLeft(2, '0')}/'
-        '${date.day.toString().padLeft(2, '0')}';
-    return '$dateLabel ${option.timeRangeLabel} '
-        '(${option.durationMinutes} min)';
-  }
-
-  static String _safeAvailabilityError(Object? error) {
-    if (error is AuthFailure) {
-      return switch (error.type) {
-        AuthFailureType.missingConfiguration =>
-          'Backend is not configured yet.',
-        AuthFailureType.unauthorized => 'Please sign in again.',
-        AuthFailureType.validation =>
-          'Please choose an available time and try again.',
-        AuthFailureType.server ||
-        AuthFailureType.network => 'Service is unavailable. Please try again.',
-        AuthFailureType.invalidCredentials ||
-        AuthFailureType.unknown => 'Something went wrong. Please try again.',
-      };
-    }
-    return 'Something went wrong. Please try again.';
-  }
-
-  static String _safeAppointmentRequestError(Object? error) {
-    if (error is AuthFailure) {
-      return switch (error.type) {
-        AuthFailureType.missingConfiguration =>
-          'Backend is not configured yet.',
-        AuthFailureType.unauthorized => 'Please sign in again.',
-        AuthFailureType.validation =>
-          'Please choose an available time and try again.',
-        AuthFailureType.server ||
-        AuthFailureType.network => 'Service is unavailable. Please try again.',
-        AuthFailureType.invalidCredentials ||
-        AuthFailureType.unknown => 'Something went wrong. Please try again.',
-      };
-    }
-    return 'Something went wrong. Please try again.';
-  }
-}
-
-class _AvailabilityWindowRow extends StatelessWidget {
-  const _AvailabilityWindowRow({required this.window});
-
-  final AvailabilityWindow window;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: REdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: AppColors.blue02,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: AppColors.white04),
-      ),
-      child: Text(
-        'Day ${window.weekday}: ${_timeLabel(window.startMinute)} - ${_timeLabel(window.endMinute)} (${window.timezone})',
-        style: TextStyle(
-          fontSize: FontSizes.footer4,
-          fontFamily: AppFonts.montserrat,
-          fontWeight: FontWeight.w600,
-          color: AppColors.kBlack,
-          height: 1.35,
+          ),
         ),
-      ),
-    );
-  }
-
-  String _timeLabel(int minuteOfDay) {
-    final hours = minuteOfDay ~/ 60;
-    final minutes = minuteOfDay % 60;
-    return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-  }
-}
-
-class _AvailabilityStateCard extends StatelessWidget {
-  const _AvailabilityStateCard({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: REdgeInsets.all(12.r),
-      decoration: BoxDecoration(
-        color: AppColors.blue02,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: AppColors.white04),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(
-          fontSize: FontSizes.footer4,
-          fontFamily: AppFonts.montserrat,
-          fontWeight: FontWeight.w600,
-          color: AppColors.primaryBlue11,
-          height: 1.35,
+        IconButton(
+          tooltip: refreshing ? 'Refreshing Find Care' : 'Refresh Find Care',
+          onPressed: onRefresh,
+          icon: refreshing
+              ? SizedBox.square(
+                  dimension: 20.r,
+                  child: const CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.refresh),
         ),
-      ),
+      ],
     );
   }
 }
 
-class _SpecialistCard extends StatelessWidget {
-  const _SpecialistCard({
-    required this.professional,
-    required this.onViewProfile,
+class _CategorySelector extends StatelessWidget {
+  const _CategorySelector({
+    required this.categories,
+    required this.selected,
+    required this.onSelected,
   });
 
-  final _SearchProfessionalView professional;
-  final VoidCallback onViewProfile;
+  final List<String> categories;
+  final String selected;
+  final ValueChanged<String> onSelected;
 
   @override
   Widget build(BuildContext context) {
+    return SizedBox(
+      height: 38.h,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          final isSelected = category == selected;
+          return ChoiceChip(
+            label: Text(category),
+            selected: isSelected,
+            onSelected: (_) => onSelected(category),
+            selectedColor: AppColors.primaryBlue5,
+            backgroundColor: AppColors.kWhite,
+            labelStyle: TextStyle(
+              fontFamily: AppFonts.montserrat,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? AppColors.kWhite : AppColors.kBlack,
+              fontSize: FontSizes.footer3,
+            ),
+            side: BorderSide(
+              color: isSelected ? AppColors.primaryBlue5 : AppColors.white04,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ResultSummary extends StatelessWidget {
+  const _ResultSummary({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            'Verified professionals',
+            style: TextStyle(
+              fontSize: FontSizes.body3,
+              fontFamily: AppFonts.montserrat,
+              fontWeight: FontWeight.w700,
+              color: AppColors.kBlack,
+            ),
+          ),
+        ),
+        Text(
+          '$count found',
+          style: TextStyle(
+            fontSize: FontSizes.footer3,
+            fontFamily: AppFonts.montserrat,
+            fontWeight: FontWeight.w500,
+            color: AppColors.primaryBlue11,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfessionalResultCard extends StatelessWidget {
+  const _ProfessionalResultCard({
+    required this.professional,
+    required this.onSelected,
+  });
+
+  final PublicProfessional professional;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final specialty = professional.specialty?.trim();
+    final bio = professional.bio?.trim();
     return Container(
       padding: REdgeInsets.all(14.r),
       decoration: BoxDecoration(
         color: AppColors.kWhite,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: AppColors.white04),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10.r),
-            child: Container(
-              width: 72.r,
-              height: 72.r,
+          Container(
+            width: 64.r,
+            height: 64.r,
+            decoration: BoxDecoration(
               color: AppColors.blue02,
-              child: Icon(
-                Icons.verified_user_outlined,
-                color: AppColors.primaryBlue5,
-                size: 30.r,
-              ),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(
+              Icons.medical_services_outlined,
+              color: AppColors.primaryBlue5,
+              size: 28.r,
             ),
           ),
           SizedBox(width: 12.w),
@@ -678,7 +460,7 @@ class _SpecialistCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  professional.name,
+                  professional.displayName.trim(),
                   style: TextStyle(
                     fontSize: FontSizes.footer2,
                     fontFamily: AppFonts.montserrat,
@@ -688,9 +470,9 @@ class _SpecialistCard extends StatelessWidget {
                 ),
                 SizedBox(height: 3.h),
                 Text(
-                  professional.role,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  specialty == null || specialty.isEmpty
+                      ? professional.category.trim()
+                      : '${professional.category.trim()} - $specialty',
                   style: TextStyle(
                     fontSize: FontSizes.footer4,
                     fontFamily: AppFonts.montserrat,
@@ -698,35 +480,45 @@ class _SpecialistCard extends StatelessWidget {
                     height: 1.3,
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Wrap(
-                  spacing: 10.w,
-                  runSpacing: 4.h,
-                  children:
-                      professional.metaLabels
-                          .map(
-                            (label) => _MetaLabel(
-                              icon: label.icon,
-                              label: label.label,
-                            ),
-                          )
-                          .toList(),
-                ),
-                SizedBox(height: 10.h),
-                Wrap(
-                  spacing: 8.w,
-                  runSpacing: 6.h,
+                SizedBox(height: 7.h),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    OutlinedButton(
-                      onPressed: onViewProfile,
-                      child: const Text('View profile'),
+                    Icon(
+                      Icons.verified_outlined,
+                      size: 15.r,
+                      color: AppColors.primaryBlue5,
                     ),
-                    FilledButton.icon(
-                      onPressed: null,
-                      icon: Icon(Icons.calendar_today_outlined, size: 18.r),
-                      label: const Text('Booking deferred'),
+                    SizedBox(width: 4.w),
+                    Text(
+                      'Verified',
+                      style: TextStyle(
+                        fontSize: FontSizes.footer4,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryBlue5,
+                      ),
                     ),
                   ],
+                ),
+                if (bio != null && bio.isNotEmpty) ...[
+                  SizedBox(height: 8.h),
+                  Text(
+                    bio,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: FontSizes.footer4,
+                      fontFamily: AppFonts.montserrat,
+                      color: AppColors.kBlack,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+                SizedBox(height: 10.h),
+                OutlinedButton(
+                  onPressed: onSelected,
+                  child: const Text('View profile'),
                 ),
               ],
             ),
@@ -737,135 +529,104 @@ class _SpecialistCard extends StatelessWidget {
   }
 }
 
-class _SearchProfessionalView {
-  const _SearchProfessionalView({
-    required this.id,
-    required this.name,
-    required this.role,
-    required this.categories,
-    required this.summary,
-    required this.metaLabels,
+class _FindCareStatePanel extends StatelessWidget {
+  const _FindCareStatePanel._({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.loading = false,
+    this.actionLabel,
+    this.onAction,
   });
 
-  factory _SearchProfessionalView.fromPublic(PublicProfessional professional) {
-    final category = professional.category.trim();
-    final specialty = professional.specialty?.trim();
-    final categories = <String>[
-      if (category.isNotEmpty) category,
-      if (specialty != null && specialty.isNotEmpty) specialty,
-    ];
-    return _SearchProfessionalView(
-      id: professional.id,
-      name: professional.displayName,
-      role:
-          specialty == null || specialty.isEmpty
-              ? category
-              : '$category - $specialty',
-      categories: categories,
-      summary:
-          professional.bio?.trim().isNotEmpty == true
-              ? professional.bio!.trim()
-              : 'Verified professional profile.',
-      metaLabels: const <_ProfessionalMetaLabel>[
-        _ProfessionalMetaLabel(
-          icon: Icons.verified_outlined,
-          label: 'Verified',
-        ),
-      ],
+  const _FindCareStatePanel.loading()
+    : this._(
+        icon: Icons.manage_search_outlined,
+        title: 'Loading verified professionals',
+        message: 'CareNet is checking the current public care directory.',
+        loading: true,
+      );
+
+  factory _FindCareStatePanel.failure({
+    required String message,
+    required VoidCallback onRetry,
+  }) {
+    return _FindCareStatePanel._(
+      icon: Icons.cloud_off_outlined,
+      title: 'Find Care is unavailable',
+      message: message,
+      actionLabel: 'Retry',
+      onAction: onRetry,
     );
   }
 
-  final String id;
-  final String name;
-  final String role;
-  final List<String> categories;
-  final String summary;
-  final List<_ProfessionalMetaLabel> metaLabels;
-
-  bool matches(String query, String category) {
-    final normalizedQuery = query.trim().toLowerCase();
-    final categoryMatches =
-        category == _SearchShellPageState._allCategory ||
-        categories.any((item) => item.toLowerCase() == category.toLowerCase());
-
-    if (!categoryMatches) {
-      return false;
-    }
-    if (normalizedQuery.isEmpty) {
-      return true;
-    }
-
-    return name.toLowerCase().contains(normalizedQuery) ||
-        role.toLowerCase().contains(normalizedQuery) ||
-        summary.toLowerCase().contains(normalizedQuery) ||
-        categories.any((item) => item.toLowerCase().contains(normalizedQuery));
+  factory _FindCareStatePanel.empty({required VoidCallback onRefresh}) {
+    return _FindCareStatePanel._(
+      icon: Icons.medical_services_outlined,
+      title: 'No verified professionals are listed yet',
+      message: 'The public care directory is currently empty.',
+      actionLabel: 'Refresh',
+      onAction: onRefresh,
+    );
   }
-}
-
-class _ProfessionalMetaLabel {
-  const _ProfessionalMetaLabel({required this.icon, required this.label});
 
   final IconData icon;
-  final String label;
-}
-
-class _PublicListingStateCard extends StatelessWidget {
-  const _PublicListingStateCard({required this.message});
-
+  final String title;
   final String message;
+  final bool loading;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: REdgeInsets.all(12.r),
+      padding: REdgeInsets.all(20.r),
       decoration: BoxDecoration(
         color: AppColors.kWhite,
         borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: AppColors.white04),
       ),
-      child: Text(
-        message,
-        style: TextStyle(
-          fontSize: FontSizes.footer4,
-          fontFamily: AppFonts.montserrat,
-          fontWeight: FontWeight.w600,
-          color: AppColors.primaryBlue5,
-          height: 1.35,
-        ),
+      child: Column(
+        children: [
+          if (loading)
+            const CircularProgressIndicator()
+          else
+            Icon(icon, color: AppColors.primaryBlue5, size: 36.r),
+          SizedBox(height: 12.h),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: FontSizes.footer2,
+              fontFamily: AppFonts.montserrat,
+              fontWeight: FontWeight.w700,
+              color: AppColors.kBlack,
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: FontSizes.footer3,
+              fontFamily: AppFonts.montserrat,
+              color: AppColors.primaryBlue11,
+              height: 1.4,
+            ),
+          ),
+          if (actionLabel != null && onAction != null) ...[
+            SizedBox(height: 12.h),
+            FilledButton(onPressed: onAction, child: Text(actionLabel!)),
+          ],
+        ],
       ),
     );
   }
 }
 
-class _MetaLabel extends StatelessWidget {
-  const _MetaLabel({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14.r, color: AppColors.primaryBlue5),
-        SizedBox(width: 3.w),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: FontSizes.footer4,
-            fontFamily: AppFonts.montserrat,
-            color: AppColors.kBlack,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SearchEmptyState extends StatelessWidget {
-  const _SearchEmptyState({required this.onReset});
+class _FilteredEmptyState extends StatelessWidget {
+  const _FilteredEmptyState({required this.onReset});
 
   final VoidCallback onReset;
 
@@ -876,7 +637,7 @@ class _SearchEmptyState extends StatelessWidget {
       padding: REdgeInsets.all(20.r),
       decoration: BoxDecoration(
         color: AppColors.kWhite,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: AppColors.white04),
       ),
       child: Column(
@@ -884,7 +645,7 @@ class _SearchEmptyState extends StatelessWidget {
           Icon(Icons.search_off, color: AppColors.primaryBlue5, size: 36.r),
           SizedBox(height: 10.h),
           Text(
-            'No specialists found',
+            'No matching professionals',
             style: TextStyle(
               fontSize: FontSizes.footer2,
               fontFamily: AppFonts.montserrat,
@@ -894,7 +655,7 @@ class _SearchEmptyState extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            'Try another specialist, condition, or category.',
+            'Try another professional name, category, or specialty.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: FontSizes.footer3,
@@ -903,88 +664,35 @@ class _SearchEmptyState extends StatelessWidget {
             ),
           ),
           SizedBox(height: 12.h),
-          TextButton(onPressed: onReset, child: const Text('Reset search')),
+          OutlinedButton(
+            onPressed: onReset,
+            child: const Text('Clear filters'),
+          ),
         ],
       ),
     );
   }
 }
 
-class DashboardShellScaffold extends StatelessWidget {
-  const DashboardShellScaffold({
-    super.key,
-    required this.title,
-    required this.headline,
-    required this.body,
-    required this.icon,
-  });
+class _RefreshFailureBanner extends StatelessWidget {
+  const _RefreshFailureBanner({required this.message, required this.onRetry});
 
-  final String title;
-  final String headline;
-  final String body;
-  final IconData icon;
+  final String message;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: REdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: FontSizes.heading3,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w700,
-                color: AppColors.kBlack,
-              ),
-            ),
-            SizedBox(height: 24.h),
-            Expanded(
-              child: Center(
-                child: Container(
-                  width: double.infinity,
-                  padding: REdgeInsets.all(24.r),
-                  decoration: BoxDecoration(
-                    color: AppColors.kWhite,
-                    borderRadius: BorderRadius.circular(16.r),
-                    border: Border.all(color: AppColors.white04),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(icon, size: 40.r, color: AppColors.primaryBlue5),
-                      SizedBox(height: 16.h),
-                      Text(
-                        headline,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: FontSizes.body2,
-                          fontFamily: AppFonts.montserrat,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.kBlack,
-                        ),
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        body,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: FontSizes.footer2,
-                          fontFamily: AppFonts.montserrat,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.primaryBlue11,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+    return Material(
+      color: AppColors.kLightYellow,
+      borderRadius: BorderRadius.circular(8.r),
+      child: ListTile(
+        leading: const Icon(Icons.sync_problem_outlined),
+        title: const Text('Could not refresh Find Care'),
+        subtitle: Text('$message Previous results are still shown.'),
+        trailing: IconButton(
+          tooltip: 'Retry Find Care refresh',
+          onPressed: onRetry,
+          icon: const Icon(Icons.refresh),
         ),
       ),
     );

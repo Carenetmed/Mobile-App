@@ -155,7 +155,8 @@ class MarketplaceHomeCoordinator {
   final OnboardingRepository onboardingRepository;
   final SchedulingRepository schedulingRepository;
 
-  Future<MarketplaceHomeState> load() async {
+  Future<MarketplaceHomeState> load({MarketplaceHomeState? previous}) async {
+    final retained = previous?.role == role ? previous : null;
     PatientProfile? patientProfile;
     ProfessionalProfile? professionalProfile;
     AccountReadiness? readiness;
@@ -173,6 +174,8 @@ class MarketplaceHomeCoordinator {
           }
         } catch (_) {
           failed.add(HomeDataSection.profile);
+          patientProfile = retained?.patientProfile;
+          professionalProfile = retained?.professionalProfile;
         }
       }(),
       () async {
@@ -180,6 +183,7 @@ class MarketplaceHomeCoordinator {
           readiness = await onboardingRepository.accountReadiness();
         } catch (_) {
           failed.add(HomeDataSection.readiness);
+          readiness = retained?.readiness;
         }
       }(),
       () async {
@@ -187,6 +191,7 @@ class MarketplaceHomeCoordinator {
           appointments = await schedulingRepository.ownAppointments();
         } catch (_) {
           failed.add(HomeDataSection.appointments);
+          appointments = retained?.appointments ?? const <AppointmentSummary>[];
         }
       }(),
       if (role == MarketplaceHomeRole.professional)
@@ -195,6 +200,8 @@ class MarketplaceHomeCoordinator {
             availability = await schedulingRepository.ownAvailability();
           } catch (_) {
             failed.add(HomeDataSection.availability);
+            availability =
+                retained?.availability ?? const <AvailabilityWindow>[];
           }
         }(),
     ]);

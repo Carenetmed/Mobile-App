@@ -40,6 +40,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   MarketplaceHomeState? _state;
   bool _loading = true;
+  bool _loadInProgress = false;
 
   ProfileRepository get _profileRepository =>
       widget.profileRepository ?? sl<ProfileRepository>();
@@ -55,19 +56,24 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _load() async {
+    if (_loadInProgress) return;
+    _loadInProgress = true;
     setState(() => _loading = true);
-    final state =
-        await MarketplaceHomeCoordinator(
-          role: widget.role,
-          profileRepository: _profileRepository,
-          onboardingRepository: _onboardingRepository,
-          schedulingRepository: _schedulingRepository,
-        ).load();
-    if (!mounted) return;
-    setState(() {
-      _state = state;
-      _loading = false;
-    });
+    try {
+      final state = await MarketplaceHomeCoordinator(
+        role: widget.role,
+        profileRepository: _profileRepository,
+        onboardingRepository: _onboardingRepository,
+        schedulingRepository: _schedulingRepository,
+      ).load(previous: _state);
+      if (!mounted) return;
+      setState(() {
+        _state = state;
+        _loading = false;
+      });
+    } finally {
+      _loadInProgress = false;
+    }
   }
 
   @override

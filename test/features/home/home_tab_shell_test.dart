@@ -131,6 +131,40 @@ void main() {
       );
       expect(ready.requiredAction(_now), HomeRequiredAction.respondToRequest);
     });
+
+    test('failed refresh retains previously loaded backend sections', () async {
+      final previous = MarketplaceHomeState(
+        role: MarketplaceHomeRole.patient,
+        patientProfile: const PatientProfile(name: 'Amina Yusuf'),
+        appointments: <AppointmentSummary>[
+          _appointment(
+            id: 'accepted',
+            status: AppointmentStatus.accepted,
+            start: _now.add(const Duration(days: 1)),
+          ),
+        ],
+      );
+      final state = await MarketplaceHomeCoordinator(
+        role: MarketplaceHomeRole.patient,
+        profileRepository: _FakeProfileRepository(failPatient: true),
+        onboardingRepository: _FakeOnboardingRepository(
+          readiness: _readiness(role: MarketplaceHomeRole.patient),
+        ),
+        schedulingRepository: _FakeSchedulingRepository(
+          failAppointmentsAlways: true,
+        ),
+      ).load(previous: previous);
+
+      expect(state.patientProfile?.name, 'Amina Yusuf');
+      expect(state.appointments.single.id, 'accepted');
+      expect(
+        state.failedSections,
+        containsAll(<HomeDataSection>[
+          HomeDataSection.profile,
+          HomeDataSection.appointments,
+        ]),
+      );
+    });
   });
 
   group('patient Home', () {
@@ -150,6 +184,7 @@ void main() {
       expect(find.text('Amina Yusuf'), findsOneWidget);
       expect(find.text('Find care'), findsWidgets);
       expect(find.text('No appointments scheduled'), findsOneWidget);
+      expect(find.text('Complete your profile'), findsNothing);
       expect(find.text('Feed'), findsNothing);
       expect(find.textContaining('payment', findRichText: true), findsNothing);
       expect(find.textContaining('Join consultation'), findsNothing);
@@ -309,6 +344,31 @@ void main() {
     },
   );
 
+  testWidgets('repeated retry does not start concurrent repository loads', (
+    tester,
+  ) async {
+    final retryCompleter = Completer<List<AppointmentSummary>>();
+    final scheduling = _FakeSchedulingRepository(
+      failAppointmentsOnce: true,
+      retryCompleter: retryCompleter,
+    );
+    await _pumpHome(
+      tester,
+      role: MarketplaceHomeRole.patient,
+      schedulingRepository: scheduling,
+    );
+
+    await tester.tap(find.byTooltip('Refresh Home'));
+    await tester.pump();
+    await tester.tap(find.byTooltip('Refresh Home'));
+    await tester.pump();
+    expect(scheduling.appointmentCalls, 2);
+
+    retryCompleter.complete(const <AppointmentSummary>[]);
+    await tester.pumpAndSettle();
+    expect(find.text('Some information is unavailable'), findsNothing);
+  });
+
   testWidgets('initial loading is honest while repositories are pending', (
     tester,
   ) async {
@@ -347,14 +407,21 @@ void main() {
 }
 
 class _FakeProfileRepository implements ProfileRepository {
-  _FakeProfileRepository({this.patient, this.professional});
+  _FakeProfileRepository({
+    this.patient,
+    this.professional,
+    this.failPatient = false,
+  });
 
   final PatientProfile? patient;
   final ProfessionalProfile? professional;
+  final bool failPatient;
 
   @override
-  Future<PatientProfile?> patientMe() async =>
-      patient ?? const PatientProfile(name: 'Patient');
+  Future<PatientProfile?> patientMe() async {
+    if (failPatient) throw StateError('profile unavailable');
+    return patient ?? const PatientProfile(name: 'Patient');
+  }
 
   @override
   Future<ProfessionalProfile?> professionalMe() async =>
@@ -386,20 +453,30 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     this.appointments = const <AppointmentSummary>[],
     this.availability = const <AvailabilityWindow>[],
     this.failAppointmentsOnce = false,
+    this.failAppointmentsAlways = false,
     this.appointmentCompleter,
+    this.retryCompleter,
   });
 
   final List<AppointmentSummary> appointments;
   final List<AvailabilityWindow> availability;
   final bool failAppointmentsOnce;
+  final bool failAppointmentsAlways;
   final Completer<List<AppointmentSummary>>? appointmentCompleter;
+  final Completer<List<AppointmentSummary>>? retryCompleter;
   int appointmentCalls = 0;
 
   @override
   Future<List<AppointmentSummary>> ownAppointments() async {
     appointmentCalls += 1;
+    if (failAppointmentsAlways) {
+      throw StateError('temporary failure');
+    }
     if (failAppointmentsOnce && appointmentCalls == 1) {
       throw StateError('temporary failure');
+    }
+    if (appointmentCalls > 1 && retryCompleter != null) {
+      return retryCompleter!.future;
     }
     return appointmentCompleter?.future ?? appointments;
   }

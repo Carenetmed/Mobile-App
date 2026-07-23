@@ -8,6 +8,10 @@
 > `dashboard` resolves the authenticated backend session role into patient
 > Home/Find Care/Appointments/Messages or professional
 > Home/Schedule/Appointments/Messages. `notification` opens from the header bell,
+> and the Home destination composes owner profile, account readiness, own
+> appointments, and professional availability through existing repositories.
+> Home actions switch to the retained Find Care, Schedule, or Appointments tabs;
+> readiness actions use the existing onboarding readiness route resolver.
 > `account` opens from the header avatar, and no drawer is active. Patient setup
 > follows backend readiness instead of entering `communityAgreement`.
 

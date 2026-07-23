@@ -3,9 +3,13 @@ import 'package:app_t/features/Authentication/data/models/auth_session_model.dar
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/availability_window.dart';
+import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
+import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
 import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
@@ -46,6 +50,7 @@ Future<void> _pumpDashboard(WidgetTester tester, {required String role}) async {
             home: Dashboard(
               sessionStore: sessionStore,
               profileRepository: _FakeProfileRepository(),
+              onboardingRepository: _FakeOnboardingRepository(role: role),
               schedulingRepository: _FakeSchedulingRepository(),
             ),
             routes: <String, WidgetBuilder>{
@@ -179,7 +184,7 @@ void main() {
           .currentIndex,
       0,
     );
-    expect(find.text('Find care'), findsOneWidget);
+    expect(find.text('Find care'), findsWidgets);
   });
 
   testWidgets('unknown session role fails closed', (tester) async {
@@ -192,8 +197,62 @@ void main() {
 
 class _FakeProfileRepository implements ProfileRepository {
   @override
+  Future<PatientProfile?> patientMe() async {
+    return const PatientProfile(name: 'Amina Yusuf');
+  }
+
+  @override
+  Future<ProfessionalProfile?> professionalMe() async {
+    return const ProfessionalProfile(
+      displayName: 'Dr Ada Okafor',
+      category: 'Doctor',
+      verificationStatus: 'VERIFIED',
+    );
+  }
+
+  @override
   Future<List<PublicProfessional>> publicProfessionals() async {
     return const <PublicProfessional>[];
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeOnboardingRepository implements OnboardingRepository {
+  const _FakeOnboardingRepository({required this.role});
+
+  final String role;
+
+  @override
+  Future<AccountReadiness> accountReadiness() async {
+    final professional = role == 'PROFESSIONAL';
+    return AccountReadiness(
+      account: ReadinessAccount(
+        role: role,
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
+      patient:
+          professional
+              ? null
+              : const PatientReadiness(
+                profileStatus: 'COMPLETE',
+                requiredFields: <String>[],
+              ),
+      professional:
+          professional
+              ? const ProfessionalReadiness(
+                applicationStatus: 'APPROVED',
+                verificationStatus: 'VERIFIED',
+                requiredProfileFields: <String>[],
+                requiredEvidence: <String>[],
+                missingEvidence: <String>[],
+              )
+              : null,
+      nextAction: 'DASHBOARD',
+      requiredActions: const <String>[],
+    );
   }
 
   @override

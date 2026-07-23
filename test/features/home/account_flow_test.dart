@@ -9,6 +9,11 @@ import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart'
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
+import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
+import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
+import 'package:app_t/features/Home/domain/entities/availability_window.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
@@ -50,7 +55,14 @@ Future<void> _pumpDashboard(WidgetTester tester) async {
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
-            home: Dashboard(sessionStore: sessionStore),
+            home: Dashboard(
+              sessionStore: sessionStore,
+              profileRepository: _FakeProfileRepository(
+                patientProfile: const PatientProfile(name: 'Patient'),
+              ),
+              onboardingRepository: const _DashboardOnboardingRepository(),
+              schedulingRepository: const _DashboardSchedulingRepository(),
+            ),
             onGenerateRoute: generateRoute,
           ),
     ),
@@ -1449,4 +1461,45 @@ class _FakeProfileRepository implements ProfileRepository {
   Future<List<PublicProfessional>> publicProfessionals() async {
     return const <PublicProfessional>[];
   }
+}
+
+class _DashboardOnboardingRepository implements OnboardingRepository {
+  const _DashboardOnboardingRepository();
+
+  @override
+  Future<AccountReadiness> accountReadiness() async {
+    return const AccountReadiness(
+      account: ReadinessAccount(
+        role: 'PATIENT',
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
+      patient: PatientReadiness(
+        profileStatus: 'COMPLETE',
+        requiredFields: <String>[],
+      ),
+      nextAction: 'DASHBOARD',
+      requiredActions: <String>[],
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _DashboardSchedulingRepository implements SchedulingRepository {
+  const _DashboardSchedulingRepository();
+
+  @override
+  Future<List<AppointmentSummary>> ownAppointments() async {
+    return const <AppointmentSummary>[];
+  }
+
+  @override
+  Future<List<AvailabilityWindow>> ownAvailability() async {
+    return const <AvailabilityWindow>[];
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

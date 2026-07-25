@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-23 APP-P1-005 canonical professional detail and booking.
+**Last updated:** 2026-07-26 APP-P1-006 appointment experience and professional Schedule.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -80,6 +80,8 @@ not override the `APP-P1` product boundary.
 | Find Care discovery | Patient Home and the persistent Find Care tab use `RouteName.search` / `SearchShellPage`. One `ProfileRepository.publicProfessionals()` call loads the backend verified directory; local filtering supports display name, category, and specialty only. Loading, backend-empty, filtered-empty, initial failure, retry, refresh, and refresh-failure-with-preserved-data are distinct. Cards show only supported backend identity fields, and selection passes the exact backend id to `specialistDetails`. No seeded/local professional fallback or duplicate availability/request sheet remains in Search |
 | Canonical professional detail | `specialistDetails` requires the exact backend `ProfessionalProfile.id` and calls `GET /professionals/:id`. It renders only approved public fields, omits missing biography, and fails closed for missing/malformed/unavailable IDs without directory scans, `SearchLocalStore`, or seeded identity data |
 | Real appointment request handoff | Detail calls the public requestable-times endpoint and renders backend UTC intervals in the professional IANA timezone. A structured 24-hour secure booking intent survives authentication and patient setup, binds to account identity, reuses one idempotency key for safe retry, revalidates the selected time, and sends `POST /appointments` as a patient. Success remains backend `REQUESTED`, not confirmed |
+| Role-aware appointment experience | `appointments` loads only the authenticated account's backend-owned list, groups it deterministically, and opens `appointmentDetail` by exact appointment ID. Patient and professional action visibility is centralized by role/status/time, every mutation waits for backend confirmation and reloads authority, 409 and uncertain outcomes never apply a false local status, and reschedule uses backend requestable times at the fixed 30-minute Phase 1 duration |
+| Professional Schedule | The professional Schedule reads and atomically replaces `/availability/me` using backend `availabilityWindows`/`isActive` fields, weekday `0..6`, and valid IANA timezones. Add/edit/remove operations are serialized and reconciled with a backend reload. Patients fail closed, and recurring windows are never presented as guaranteed requestable slots |
 | Home inner tabs | `Feed`, `Messages`, and `Articles` all render real content; Messages preview hands off to the dedicated `messages` route |
 | Messaging flow | Primary Messages destination shows an honest appointment-conversation empty state; seeded social conversations and arbitrary new-chat behavior are not presented as production data |
 | Notifications screen | Header bell opens an honest empty notification surface; seeded local/social notifications and deferred route promotions are removed |

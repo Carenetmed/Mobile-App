@@ -25,6 +25,7 @@ Future<void> _pumpHome(
   _FakeSchedulingRepository? schedulingRepository,
   VoidCallback? onPrimary,
   VoidCallback? onAppointments,
+  ValueChanged<String>? onAppointment,
   ValueChanged<AccountReadiness?>? onReadiness,
 }) async {
   tester.view.physicalSize = _phoneSize;
@@ -50,6 +51,7 @@ Future<void> _pumpHome(
                     schedulingRepository ?? _FakeSchedulingRepository(),
                 onPrimaryAction: onPrimary ?? () {},
                 onAppointments: onAppointments ?? () {},
+                onAppointment: onAppointment,
                 onReadinessAction: onReadiness ?? (_) {},
                 now: _now,
               ),
@@ -218,9 +220,11 @@ void main() {
     testWidgets('surfaces pending and nearest upcoming backend appointments', (
       tester,
     ) async {
+      String? openedAppointmentId;
       await _pumpHome(
         tester,
         role: MarketplaceHomeRole.patient,
+        onAppointment: (appointmentId) => openedAppointmentId = appointmentId,
         schedulingRepository: _FakeSchedulingRepository(
           appointments: <AppointmentSummary>[
             _appointment(
@@ -245,6 +249,9 @@ void main() {
       expect(find.text('Waiting for professional response'), findsWidgets);
       expect(find.text('Accepted appointment'), findsOneWidget);
       expect(find.textContaining('Jul 24'), findsOneWidget);
+
+      await tester.tap(find.text('Accepted appointment'));
+      expect(openedAppointmentId, 'next');
     });
   });
 

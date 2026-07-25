@@ -74,7 +74,9 @@ class SchedulingApiClient {
       () => _dio.put<dynamic>(
         _url(ownAvailabilityPath),
         data: <String, dynamic>{
-          'windows': windows.map((window) => window.toJson()).toList(),
+          'availabilityWindows': windows
+              .map((window) => window.toJson())
+              .toList(),
         },
         options: Options(headers: _bearerHeaders(accessToken)),
       ),
@@ -236,7 +238,7 @@ class SchedulingApiClient {
         : response is Map<String, dynamic> && response['items'] is List
         ? response['items'] as List<dynamic>
         : response is Map<String, dynamic> &&
-            response['availabilityWindows'] is List
+              response['availabilityWindows'] is List
         ? response['availabilityWindows'] as List<dynamic>
         : response is Map<String, dynamic> && response['appointments'] is List
         ? response['appointments'] as List<dynamic>
@@ -261,25 +263,39 @@ class SchedulingApiClient {
 
   AuthFailure _mapDioFailure(DioException error) {
     final statusCode = error.response?.statusCode;
-    if (statusCode == 400 || statusCode == 409 || statusCode == 422) {
+    if (statusCode == 400 || statusCode == 422) {
       return AuthFailure(
         type: AuthFailureType.validation,
-        message: 'Please choose an available time and try again.',
+        message: 'Please check the details and try again.',
         statusCode: statusCode,
       );
     }
-    if (statusCode == 401 || statusCode == 403) {
+    if (statusCode == 401) {
       return AuthFailure(
         type: AuthFailureType.unauthorized,
         message: 'Please sign in again.',
         statusCode: statusCode,
       );
     }
+    if (statusCode == 403) {
+      return const AuthFailure(
+        type: AuthFailureType.validation,
+        message: 'This account is not allowed to perform that action.',
+        statusCode: 403,
+      );
+    }
     if (statusCode == 404) {
       return const AuthFailure(
         type: AuthFailureType.validation,
-        message: 'The professional is no longer available.',
+        message: 'The requested resource is no longer available.',
         statusCode: 404,
+      );
+    }
+    if (statusCode == 409) {
+      return const AuthFailure(
+        type: AuthFailureType.validation,
+        message: 'The appointment changed. Refresh and try again.',
+        statusCode: 409,
       );
     }
     if (statusCode != null && statusCode >= 500) {

@@ -74,11 +74,14 @@ void main() {
       },
     );
 
-    test('explicit inactive availability remains inactive', () async {
+    test('backend isActive false remains inactive', () async {
       final adapter = _FakeAdapter(
         responseJson: <String, dynamic>{
-          'items': <Map<String, dynamic>>[
-            _availabilityJson(id: 'availability-1', active: false),
+          'availabilityWindows': <Map<String, dynamic>>[
+            <String, dynamic>{
+              ..._availabilityJson(id: 'availability-1'),
+              'isActive': false,
+            },
           ],
         },
       );
@@ -137,13 +140,13 @@ void main() {
       expect(adapter.lastOptions?.method, 'PUT');
       expect(adapter.lastOptions?.uri.toString(), endsWith('/availability/me'));
       expect(adapter.lastOptions?.data, <String, dynamic>{
-        'windows': <Map<String, dynamic>>[
+        'availabilityWindows': <Map<String, dynamic>>[
           <String, dynamic>{
             'weekday': 1,
             'startMinute': 540,
             'endMinute': 1020,
             'timezone': 'Africa/Lagos',
-            'active': true,
+            'isActive': true,
           },
         ],
       });
@@ -386,7 +389,7 @@ void main() {
               .having(
                 (failure) => failure.message,
                 'message',
-                'Please choose an available time and try again.',
+                'The appointment changed. Refresh and try again.',
               ),
         ),
       );

@@ -36,16 +36,16 @@ void main() {
 
     test('expires and clears after 24 hours', () async {
       final store = InMemoryBookingIntentStore();
-      await store.save(_intent());
+      final intent = _intent(createdAt: DateTime.parse('2026-07-24T00:00:00Z'));
+      await store.save(intent);
 
       expect(
-        await store.read(now: DateTime.parse('2026-07-24T23:59:59Z')),
+        await store.read(
+          now: intent.expiresAt.subtract(const Duration(seconds: 1)),
+        ),
         isNotNull,
       );
-      expect(
-        await store.read(now: DateTime.parse('2026-07-25T00:00:00Z')),
-        isNull,
-      );
+      expect(await store.read(now: intent.expiresAt), isNull);
       expect(await store.read(), isNull);
     });
 
@@ -330,7 +330,8 @@ void main() {
   });
 }
 
-BookingIntent _intent({String? accountUserId}) {
+BookingIntent _intent({String? accountUserId, DateTime? createdAt}) {
+  final created = (createdAt ?? DateTime.now()).toUtc();
   return BookingIntent(
     professionalProfileId: 'pro-1',
     startAt: DateTime.parse('2026-07-25T08:00:00Z'),
@@ -338,8 +339,8 @@ BookingIntent _intent({String? accountUserId}) {
     durationMinutes: 30,
     idempotencyKey: 'booking-key-12345678',
     resumeRoute: RouteName.specialistDetails,
-    createdAt: DateTime.parse('2026-07-24T00:00:00Z'),
-    expiresAt: DateTime.parse('2026-07-25T00:00:00Z'),
+    createdAt: created,
+    expiresAt: created.add(const Duration(hours: 24)),
     accountUserId: accountUserId,
   );
 }
@@ -367,7 +368,7 @@ ProfessionalBookingController _controller({
     bookingIntentStore: store ?? InMemoryBookingIntentStore(),
     sessionStore: _sessionStore(role: 'PATIENT'),
     onboardingRepository: const _FakeOnboardingRepository(),
-    clock: () => DateTime.parse('2026-07-24T00:00:00Z'),
+    clock: () => DateTime.now().toUtc(),
   );
 }
 

@@ -8,7 +8,7 @@ import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
-import 'package:app_t/features/Home/presentation/pages/appointments_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/appointment_experience_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/home.dart';
 import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart';
@@ -41,6 +41,7 @@ class _DashboardState extends State<Dashboard> {
   late final Future<AuthSessionModel?> _sessionFuture;
   late int _index;
   late final Set<int> _builtIndices;
+  int _appointmentsRefreshVersion = 0;
 
   SessionStore get _sessionStore => widget.sessionStore ?? sl<SessionStore>();
 
@@ -195,6 +196,23 @@ class _DashboardState extends State<Dashboard> {
                       : MarketplaceHomeRole.patient,
               onPrimaryAction: () => _selectIndex(1),
               onAppointments: () => _selectIndex(2),
+              onAppointment:
+                  (appointmentId) {
+                    Navigator.pushNamed(
+                      context,
+                      RouteName.appointmentDetail,
+                      arguments: appointmentId,
+                    ).then((_) {
+                      if (!mounted) {
+                        return;
+                      }
+                      setState(() {
+                        _appointmentsRefreshVersion += 1;
+                        _index = 2;
+                        _builtIndices.add(2);
+                      });
+                    });
+                  },
               onReadinessAction:
                   (readiness) => Navigator.pushNamed(
                     context,
@@ -220,6 +238,7 @@ class _DashboardState extends State<Dashboard> {
                 professional
                     ? SelectedDatesShellPage(
                       schedulingRepository: widget.schedulingRepository,
+                      sessionStore: _sessionStore,
                       embedded: true,
                     )
                     : SearchShellPage(
@@ -233,6 +252,7 @@ class _DashboardState extends State<Dashboard> {
         activeIcon: Icons.event_note,
         builder:
             () => AppointmentsShellPage(
+              key: ValueKey<int>(_appointmentsRefreshVersion),
               schedulingRepository: widget.schedulingRepository,
               sessionStore: _sessionStore,
               embedded: true,

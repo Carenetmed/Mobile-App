@@ -18,6 +18,7 @@ class Home extends StatefulWidget {
     required this.onPrimaryAction,
     required this.onAppointments,
     required this.onReadinessAction,
+    this.onAppointment,
     this.profileRepository,
     this.onboardingRepository,
     this.schedulingRepository,
@@ -27,6 +28,7 @@ class Home extends StatefulWidget {
   final MarketplaceHomeRole role;
   final VoidCallback onPrimaryAction;
   final VoidCallback onAppointments;
+  final ValueChanged<String>? onAppointment;
   final ValueChanged<AccountReadiness?> onReadinessAction;
   final ProfileRepository? profileRepository;
   final OnboardingRepository? onboardingRepository;
@@ -151,7 +153,7 @@ class _HomeState extends State<Home> {
                         : 'Waiting for professional response',
                 appointment: pending,
                 icon: Icons.pending_actions_outlined,
-                onTap: widget.onAppointments,
+                onTap: () => _openAppointment(pending.id),
               ),
             if (pending != null && upcoming != null) SizedBox(height: 10.h),
             if (upcoming != null)
@@ -160,12 +162,21 @@ class _HomeState extends State<Home> {
                 title: 'Accepted appointment',
                 appointment: upcoming,
                 icon: Icons.event_available_outlined,
-                onTap: widget.onAppointments,
+                onTap: () => _openAppointment(upcoming.id),
               ),
           ],
         ],
       ),
     );
+  }
+
+  void _openAppointment(String appointmentId) {
+    final callback = widget.onAppointment;
+    if (callback != null) {
+      callback(appointmentId);
+      return;
+    }
+    widget.onAppointments();
   }
 }
 

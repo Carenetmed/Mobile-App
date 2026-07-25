@@ -1,5 +1,8 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
+import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
 import 'package:app_t/features/Home/data/repositories/verification_repository.dart';
@@ -83,6 +86,7 @@ Future<void> _pumpManageProfile(
                   (_) => SelectedDatesShellPage(
                     schedulingRepository:
                         schedulingRepository ?? _FakeSchedulingRepository(),
+                    sessionStore: _professionalSessionStore(),
                     initialDate: DateTime(2026, 7, 14),
                   ),
             },
@@ -90,6 +94,24 @@ Future<void> _pumpManageProfile(
     ),
   );
   await tester.pumpAndSettle();
+}
+
+InMemorySessionStore _professionalSessionStore() {
+  return InMemorySessionStore()..save(
+    const AuthSessionModel(
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      tokenType: 'Bearer',
+      expiresIn: 900,
+      user: AuthUser(
+        id: 'professional-user',
+        email: 'professional@carenet.app',
+        role: 'PROFESSIONAL',
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
+    ),
+  );
 }
 
 class _FakeProfileRepository implements ProfileRepository {
@@ -838,12 +860,10 @@ void main() {
     await tester.tap(find.text('Edit hours'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Edit business hours'), findsOneWidget);
-    expect(find.byType(CalendarDatePicker), findsOneWidget);
-    expect(find.text('All day'), findsOneWidget);
+    expect(find.text('Schedule'), findsOneWidget);
     expect(find.text('Weekly availability'), findsOneWidget);
     expect(find.text('Monday'), findsOneWidget);
-    expect(find.text('09:00 - 17:00'), findsOneWidget);
+    expect(find.textContaining('09:00 - 17:00'), findsOneWidget);
     expect(find.text('Payment'), findsNothing);
     expect(find.text('Notification'), findsNothing);
     expect(find.text('Calendar sync'), findsNothing);
@@ -852,18 +872,20 @@ void main() {
     expect(find.text('Call'), findsNothing);
     expect(find.text('Admin'), findsNothing);
 
-    await tester.tap(find.text('Save availability'));
+    await tester.tap(find.byTooltip('Edit availability'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
     expect(schedulingRepository.lastReplacement, isNotNull);
-    expect(schedulingRepository.lastReplacement, hasLength(2));
+    expect(schedulingRepository.lastReplacement, hasLength(1));
     expect(
       schedulingRepository.lastReplacement!.map((window) => window.weekday),
-      <int>[DateTime.monday, DateTime.tuesday],
+      <int>[DateTime.monday],
     );
-    expect(schedulingRepository.lastReplacement!.last.startMinute, 0);
-    expect(schedulingRepository.lastReplacement!.last.endMinute, 24 * 60);
-    expect(find.text('Availability saved from backend.'), findsOneWidget);
+    expect(schedulingRepository.lastReplacement!.last.startMinute, 9 * 60);
+    expect(schedulingRepository.lastReplacement!.last.endMinute, 17 * 60);
+    expect(find.text('Availability updated.'), findsOneWidget);
     expect(find.text('No profile schedule has been saved.'), findsNothing);
   });
 
@@ -905,7 +927,7 @@ void main() {
     await tester.tap(find.text('Edit hours'));
     await tester.pumpAndSettle();
 
-    expect(find.text('No backend availability is saved yet.'), findsOneWidget);
+    expect(find.text('No recurring availability'), findsOneWidget);
     expect(find.text('Closed'), findsNothing);
     expect(find.text('Available 24 hours'), findsNothing);
   });
@@ -927,12 +949,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Edit hours'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Save availability'));
+    await tester.tap(find.text('Add availability window'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
     expect(
       find.text('Please check the availability and try again.'),
-      findsOneWidget,
+      findsWidgets,
     );
     expect(find.text('raw invalid availability'), findsNothing);
     expect(find.text('Availability saved from backend.'), findsNothing);

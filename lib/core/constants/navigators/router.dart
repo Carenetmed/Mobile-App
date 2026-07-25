@@ -16,7 +16,7 @@ import 'package:app_t/features/Home/presentation/pages/add_description_shell.dar
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_email_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_phone_number_shell.dart';
-import 'package:app_t/features/Home/presentation/pages/appointments_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/appointment_experience_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/articles_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/blood_sug_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/case_studies_shell.dart';
@@ -169,6 +169,12 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
     case RouteName.appointments:
       return _page(settings, const AppointmentsShellPage());
+    case RouteName.appointmentDetail:
+      final args = settings.arguments;
+      return _page(
+        settings,
+        AppointmentDetailShellPage(appointmentId: args is String ? args : null),
+      );
     case RouteName.bookAppointment:
       return _page(settings, const SearchShellPage());
     case RouteName.readings:

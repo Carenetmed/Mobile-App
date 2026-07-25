@@ -20,7 +20,10 @@
 > `specialistDetails` requires a valid backend `ProfessionalProfile.id` and is the
 > only active public detail/request path. Legacy `bookAppointment` and
 > `publicProfile` constants resolve to canonical Find Care and no longer expose
-> local booking behavior.
+> local booking behavior. `appointments` is the role-aware authenticated list;
+> `appointmentDetail` requires an exact appointment ID and resolves it only from
+> the backend-owned list for the current account. Professional `selectedDates`
+> manages recurring `/availability/me` rules and never generates patient slots.
 
 All navigation uses **`RouteName`** constants and **`generateRoute`** in `lib/core/constants/navigators/router.dart`.
 
@@ -50,7 +53,8 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `search` | `search` | `SearchShellPage` | `lib/features/Home/presentation/pages/search_shell.dart` |
 | `findMentor` | `findMentor` | `SearchShellPage` (legacy compatibility alias) | `lib/features/Home/presentation/pages/search_shell.dart` |
 | `specialistDetails` | `specialistDetails` | `SpecialistDetailsShellPage` (canonical backend detail and requestable-time booking) | `lib/features/Home/presentation/pages/specialist_details_shell.dart` |
-| `appointments` | `appointments` | `AppointmentsShellPage` | `lib/features/Home/presentation/pages/appointments_shell.dart` |
+| `appointments` | `appointments` | `AppointmentsShellPage` (role-aware backend list) | `lib/features/Home/presentation/pages/appointment_experience_shell.dart` |
+| `appointmentDetail` | `appointmentDetail` | `AppointmentDetailShellPage` (exact ID from authenticated own-list) | `lib/features/Home/presentation/pages/appointment_experience_shell.dart` |
 | `bookAppointment` | `bookAppointment` | `SearchShellPage` (legacy compatibility alias; local booking source disconnected) | `lib/features/Home/presentation/pages/search_shell.dart` |
 | `readings` | `readings` | `VitalsReading` | `lib/features/Home/presentation/pages/readings.dart` |
 | `healthRecord` | `healthRecord` | `HealthRecordShellPage` | `lib/features/Home/presentation/pages/health_record_shell.dart` |
@@ -101,7 +105,7 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `notification` | `notification` | `NotificationsPage` | `lib/features/Messaging/presentation/pages/Notification.dart` |
 | `reminder` | `reminder` | `ReminderShellPage` | `lib/features/Home/presentation/pages/reminder_shell.dart` |
 | `schedules` | `schedules` | `SchedulesShellPage` | `lib/features/Home/presentation/pages/schedules_shell.dart` |
-| `selectedDates` | `selectedDates` | `SelectedDatesShellPage` | `lib/features/Home/presentation/pages/selected_dates_shell.dart` |
+| `selectedDates` | `selectedDates` | `SelectedDatesShellPage` (professional recurring availability) | `lib/features/Home/presentation/pages/selected_dates_shell.dart` |
 
 ## Not registered yet
 

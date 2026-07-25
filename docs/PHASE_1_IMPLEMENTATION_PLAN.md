@@ -153,55 +153,40 @@ Implementation contract: `PHASE_1_FIND_CARE.md`.
 
 ## F. Real professional availability management
 
-### APP-P1-006 - Professional Schedule From Backend Availability
+### APP-P1-006 - Complete Appointment Experience And Professional Schedule - DONE
 
-- **Purpose:** Turn `selectedDates` into the professional Schedule destination and
-  remove route-local prepared-hours behavior as authority.
-- **Likely files:** `selected_dates_shell.dart`, `manage_profile_shell.dart`,
-  dashboard shell mapping, scheduling repository tests and availability widget tests.
-- **Expected behavior:** Assigned professional reads and replaces own weekly availability,
-  with timezone/validation and safe conflict/error handling already supported by the
-  contract. Patient/public views reflect the backend result.
-- **Tests:** Read/empty/replace/error/unauthorized, invalid overlap/order, preserved
-  untouched weekdays, role guard, cross-screen refresh.
-- **Risks:** Accidental destructive replacement, timezone display mismatch, local state
-  diverging after failed save.
-- **Stop:** One-off overrides, blocked dates, external calendar sync, or unsupported
-  recurrence rules become necessary.
-- **Non-goals:** Google/Apple calendar, reminders, events, generic schedules, upgrades.
+- **Purpose:** Complete the role-aware appointment list/detail lifecycle and mature
+  `selectedDates` into the backend-owned professional Schedule in one coherent milestone.
+- **Implemented behavior:** The authenticated own-list is grouped deterministically;
+  exact IDs open canonical detail; patient/professional action visibility is centralized;
+  mutations serialize, wait for backend confirmation, and reload authority; reschedule
+  uses backend-generated requestable times at 30 minutes. Professional Schedule reads and
+  atomically replaces recurring `/availability/me` windows with weekday `0..6`, IANA
+  timezone, interval, overlap, role, refresh, and mutation safeguards.
+- **Tests:** Role/status/time action mapping; exact-ID detail; list ordering; unknown-role
+  closure; refresh retention; 409 conflict; backend-only reschedule; Home handoff;
+  Sunday mapping; availability validation/replacement/reconciliation; navigation,
+  booking, and prior lifecycle regressions.
+- **Risks carried forward:** No single appointment-detail endpoint or participant display
+  names; no reason/audit-history presentation; advanced availability exceptions remain
+  absent.
+- **Contract:** `PHASE_1_APPOINTMENT_EXPERIENCE.md`.
+- **Non-goals:** Messaging, calls, payment/refund/payout, notification delivery,
+  no-show/dispute, notes, prescriptions, blocked dates, calendar sync.
 
 ## G. Appointment lifecycle polish
 
-### APP-P1-007 - Role-Aware Appointment List And Detail
+### APP-P1-007 - Appointment-Linked Messaging Contract And Donor-Port Audit - NEXT
 
-- **Purpose:** Separate list/detail responsibilities and present backend appointment
-  status/actions clearly for each role without changing the state machine.
-- **Likely files:** `appointments_shell.dart`, optional focused appointment-detail
-  page/component, route arguments/router, appointment tests/docs.
-- **Expected behavior:** Patient and professional see only own appointments; each status
-  exposes only backend-valid actions; details show professional/patient, schedule,
-  status, and safe failure/retry state. Appointment Detail reserves the product
-  ownership points for appointment Messages and Join Consultation without
-  implementing either transport in this slice.
-- **Tests:** Both roles; requested/accepted/declined/cancelled/completed; wrong role/owner;
-  missing appointment; terminal-state action absence; list-to-detail navigation.
-- **Risks:** Leaking private party fields, enabling invalid actions, duplicating server state.
-- **Stop:** Detail requires medical notes, payment, messaging, call, or admin data that
-  is not in the contract.
-- **Non-goals:** New appointment status, notes, prescriptions, reviews, admin override.
-
-### APP-P1-008 - Appointment Lifecycle Interaction Regression
-
-- **Purpose:** Harden accept/decline/cancel/reschedule/complete interactions after the
-  presentation cleanup.
-- **Likely files:** Appointment UI and existing scheduling regression tests; no schema work.
-- **Expected behavior:** Buttons disable while submitting, backend result refreshes the
-  screen, terminal states remain terminal, and errors are safe and recoverable.
-- **Tests:** Every allowed and denied transition, duplicate taps, stale conflict,
-  premature completion, reschedule conflict, cancellation, session expiry.
-- **Risks:** Old widget tests passing while cross-screen state is stale.
-- **Stop:** Any fix requires a backend state-machine change; record a backend fix slice.
-- **Non-goals:** New lifecycle routes/states, payment/refund logic, notifications.
+- **Purpose:** Inspect the donor messaging implementation and define the smallest safe
+  appointment-linked messaging contract before any code is ported.
+- **Expected behavior:** Decision-only proof for appointment eligibility, participants,
+  conversation identity, persistence, authorization, realtime transport, unread state,
+  attachments, and Appointment Detail/Messages entry points.
+- **Stop:** Do not port generic social chat, local seeded conversations, or client-owned
+  appointment eligibility. Backend gaps become separate backend slices.
+- **Non-goals:** Runtime messaging, calls/RTC, payments, notification-provider delivery,
+  medical notes, or broad source cleanup.
 
 ## H. Patient and professional profile cleanup
 
@@ -314,9 +299,9 @@ are not automatically inserted into this plan and are not silently treated as do
 
 ## Exactly one next runtime slice
 
-After APP-P1-005 is reviewed and merged, start only:
+After APP-P1-006 is reviewed and merged, start only:
 
-`APP-P1-006 - Professional Schedule From Backend Availability`
+`APP-P1-007 - Appointment-Linked Messaging Contract And Donor-Port Audit`
 
-Do not start appointment lifecycle redesign, profile cleanup, deferred code deletion,
-messaging, calls, payments, or phone regression in the same slice.
+Do not begin a messaging implementation, calls, payments, profile cleanup, deferred
+code deletion, or phone regression until that contract/audit is reviewed.

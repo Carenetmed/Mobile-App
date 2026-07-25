@@ -19,7 +19,11 @@ class AvailabilityWindowModel extends AvailabilityWindow {
       startMinute: _asInt(json['startMinute']),
       endMinute: _asInt(json['endMinute']),
       timezone: (json['timezone'] as String?) ?? '',
-      active: json['active'] is bool ? json['active'] as bool : true,
+      active: json['isActive'] is bool
+          ? json['isActive'] as bool
+          : json['active'] is bool
+          ? json['active'] as bool
+          : true,
       createdAt: _asDateTime(json['createdAt']),
       updatedAt: _asDateTime(json['updatedAt']),
     );
@@ -49,7 +53,7 @@ extension AvailabilityWindowDraftPayload on AvailabilityWindowDraft {
       'startMinute': startMinute,
       'endMinute': endMinute,
       'timezone': timezone,
-      'active': active,
+      'isActive': active,
     };
   }
 }

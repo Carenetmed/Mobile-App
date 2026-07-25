@@ -42,6 +42,7 @@ class RouteName {
   static const String findMentor = 'findMentor';
   static const String specialistDetails = 'specialistDetails';
   static const String appointments = 'appointments';
+  static const String appointmentDetail = 'appointmentDetail';
   static const String bookAppointment = 'bookAppointment';
   static const String readings = 'readings';
   static const String healthRecord = 'healthRecord';

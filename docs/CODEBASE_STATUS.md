@@ -87,7 +87,7 @@ not override the `APP-P1` product boundary.
 | Notifications screen | Header bell opens an honest empty notification surface; seeded local/social notifications and deferred route promotions are removed |
 | Notification card routing | `Complete your profile` -> `medicalEdit`, `Dr. Lagbaja has replied your message.` -> `messages`, `You are missing updates` -> `dashboard`, `Your appointment is booked` -> `appointments`, `Update your reading...` -> `readings`, `Dr. Tamedu has published a new article` -> `articles`, `Your emergency request is approved.` -> `emergency`, and `Dr. Lakasegbe has published a new podcast` -> `podcast` |
 | Notification categories | `All`, `Events`, `Appointment`, and `Messages` now filter the list honestly; `Payment` is explicitly disabled until that feature surface exists |
-| Legacy messaging cleanup | `Chat_2.dart` and `Message.dart` removed; `RouteName.message` now reuses the shared chat page as a compatibility alias with an unavailable-notice variant |
+| Legacy messaging cleanup | `Chat_2.dart` and `Message.dart` are removed; `RouteName.message` is a fail-closed compatibility alias and cannot expose a seeded conversation |
 | Readings flow | `readings` now routes into `manageReadings` via the `Add new Readings` tile, and `Done` returns to `readings` |
 | Readings export state | `Download Readings` is intentionally deferred and labeled as such until add-reading/device onboarding exists |
 | Guided readings lane | Selecting `Blood Sugar` in `manageReadings` now continues into `addDevice`, then into the dedicated `bloodSug` destination shell |
@@ -477,13 +477,31 @@ not override the `APP-P1` product boundary.
 | Focused APP-ID-014 build/device check | Build passed: staging Android debug APK at `build/app/outputs/flutter-apk/app-debug.apk`; phone smoke blocked because `flutter devices` lists only Windows/Chrome/Edge and `adb devices` lists no Android serial |
 | Focused APP-P1-004 verification | Passed: 29 targeted Find Care/dashboard route tests, full `flutter test` with 308 tests, full `flutter analyze` with no issues, Android debug APK build, `git diff --check`, and unchanged `pubspec.lock`. No Specialist Details, Schedule, appointment lifecycle, dependency, asset, native, or backend source changed |
 
+## MSG-P1-007 appointment messaging
+
+- Backend authority is merged at
+  `4e3e49df6490798374b245d6061f849ca02e6b4f`.
+- The authenticated Messages destination loads backend conversation pages with
+  stable activity ordering, unread badges, exact counterpart identity, and
+  honest lifecycle state.
+- `RouteName.chat` requires typed conversation or appointment authority and
+  renders backend history through Flyer Chat. The legacy `message` alias fails
+  closed and no seeded conversation remains active.
+- WebSocket protocol-version-1 frames are hints only; reconnect, app resume,
+  and disconnected polling recover through HTTP.
+- Message bodies remain private in memory and are cleared with route disposal
+  or account change.
+- Verification passes with 41 focused messaging tests, 393 complete Flutter
+  tests, clean `flutter analyze`, a debug Android APK, and `git diff --check`.
+- Canonical contract: `PHASE_1_APPOINTMENT_MESSAGING.md`.
+
 ## Design debt (fix in Phase 2+)
 
 | Issue | Where |
 |-------|--------|
 | `finishSignUp` still uses legacy `BorderedTextInput` and wrapper button | `lib/features/Authentication/presentation/pages/sign_up_con.dart` |
 | Legacy blue (`AppColors`) in theme / non-button UI | `app_colors.dart`, `theme.dart`, messaging - later phases |
-| Messaging screens use iOS `#007AFF`, not app tokens | `Messages.dart`, `Notification.dart`, `Chat.dart` |
+| Notification visual cleanup remains | `Notification.dart` retains legacy styling while active Messages and Chat use the Phase 1 token direction |
 | Feature state remains mostly page-local/static | DI now registers auth, account, profile, onboarding, scheduling, and verification services; only theme uses BLoC, while legacy feature state still relies on page state and local stores |
 | Feature BLoC only for theme | No auth/home blocs |
 | `RouteName.login` unused | No screen |
@@ -501,7 +519,10 @@ lib/features/
   Messaging/       - messages, chat, notification (needs Phase 1/5 styling)
 ```
 
-No dedicated features yet for: creator tools, subscriptions/ads, backend-backed public profile/security flows.
+Appointment-linked Messaging now has typed backend models, an authenticated repository,
+Flyer Chat thread projection, body-free WebSocket recovery, and lifecycle-aware
+read-only behavior. No dedicated features yet for: creator tools, subscriptions/ads,
+or backend-backed public profile/security flows.
 
 ---
 

@@ -176,17 +176,16 @@ Implementation contract: `PHASE_1_FIND_CARE.md`.
 
 ## G. Appointment lifecycle polish
 
-### APP-P1-007 - Appointment-Linked Messaging Contract And Donor-Port Audit - NEXT
+### MSG-P1-007 - Mature Appointment-Linked Messaging - COMPLETE
 
-- **Purpose:** Inspect the donor messaging implementation and define the smallest safe
-  appointment-linked messaging contract before any code is ported.
-- **Expected behavior:** Decision-only proof for appointment eligibility, participants,
-  conversation identity, persistence, authorization, realtime transport, unread state,
-  attachments, and Appointment Detail/Messages entry points.
-- **Stop:** Do not port generic social chat, local seeded conversations, or client-owned
-  appointment eligibility. Backend gaps become separate backend slices.
-- **Non-goals:** Runtime messaging, calls/RTC, payments, notification-provider delivery,
-  medical notes, or broad source cleanup.
+- **Purpose:** Deliver backend-authoritative appointment conversations for both roles.
+- **Behavior:** Messages lists stable activity ordering and unread data; typed threads use
+  HTTP history plus body-free WebSocket hints; optimistic retries retain one client ID;
+  Seen/read state, lifecycle read-only behavior, app-resume recovery, and account-change
+  privacy are enforced.
+- **Contract:** `PHASE_1_APPOINTMENT_MESSAGING.md`.
+- **Non-goals retained:** Push, attachments, calls/RTC, payments, rich chat, retention
+  automation, medical-record classification, and broad source cleanup.
 
 ## H. Patient and professional profile cleanup
 
@@ -262,7 +261,7 @@ Implementation contract: `PHASE_1_FIND_CARE.md`.
   role, expected result, failure result, and privacy-safe evidence.
 - **Tests:** Docs validation and staging endpoint readiness checks if authorized.
 - **Risks:** Calling a partial current-core smoke a full Phase 1 revenue-loop proof.
-- **Stop:** Payment, messaging, consultation, support, refund, or notification contracts
+- **Stop:** Payment, consultation, support, refund, or notification contracts
   required by the claimed proof remain unresolved.
 - **Non-goals:** Create fake accounts/data without approval, staging deployment, runtime fixes.
 
@@ -282,26 +281,23 @@ Implementation contract: `PHASE_1_FIND_CARE.md`.
   treating seeded/static data as production behavior.
 - **Stop:** Any blocker appears; capture exact logs and create a focused fix slice. Do not
   patch multiple problems inside the smoke slice.
-- **Non-goals:** Production-readiness claim, Play Store release, unresolved payment/message/
+- **Non-goals:** Production-readiness claim, Play Store release, unresolved payment/
   call/support behavior, opportunistic UI redesign.
 
 ## Interlock before full Phase 1 completion
 
-The A-J plan can fully narrow and prove the existing backend-supported core. It
-cannot complete the stated revenue loop until separate project-lead decisions and
-backend/frontend slices implement payment, appointment-linked messaging,
-external-RTC consultation join, notification delivery, support/refund, and
-possibly dual-role accounts. Messaging and consultation are approved Phase 1
-scope; only their detailed implementation contracts remain unresolved.
+The A-J plan can fully narrow and prove the existing backend-supported core.
+Appointment-linked plain-text messaging is now implemented. The stated revenue
+loop still requires separate project-lead decisions and backend/frontend slices
+for payment, external-RTC consultation join, notification delivery,
+support/refund, and possibly dual-role accounts.
 
 Those lanes must be selected deliberately after the current-core narrowing. They
 are not automatically inserted into this plan and are not silently treated as done.
 
-## Exactly one next runtime slice
+## Next runtime selection
 
-After APP-P1-006 is reviewed and merged, start only:
-
-`APP-P1-007 - Appointment-Linked Messaging Contract And Donor-Port Audit`
-
-Do not begin a messaging implementation, calls, payments, profile cleanup, deferred
-code deletion, or phone regression until that contract/audit is reviewed.
+No later capability starts automatically after `MSG-P1-007`. The project lead must
+select and approve the next Phase 1 launch gate. Calls/RTC, payments, push delivery,
+profile cleanup, retention/privacy policy, and deferred-source cleanup remain separate
+milestones.

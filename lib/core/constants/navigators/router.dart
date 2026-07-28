@@ -58,6 +58,7 @@ import 'package:app_t/features/Messaging/presentation/pages/Chat.dart' as chat;
 import 'package:app_t/features/Messaging/presentation/pages/Messages.dart'
     as messages;
 import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
+import 'package:app_t/features/Messaging/presentation/state/messaging_controllers.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/commitment_screen.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
@@ -307,12 +308,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.messages:
       return _page(settings, const messages.MessagesPage());
     case RouteName.chat:
-      return _page(settings, const chat.ChatPage());
-    case RouteName.message:
+      final args = settings.arguments;
       return _page(
         settings,
-        const chat.ChatPage(variant: chat.ChatPageVariant.unavailableNotice),
+        chat.ChatPage(
+          arguments: args is AppointmentConversationRouteArgs ? args : null,
+        ),
       );
+    case RouteName.message:
+      return _page(settings, const chat.ChatPage());
     case RouteName.notification:
       return _page(settings, const NotificationsPage());
     case RouteName.reminder:

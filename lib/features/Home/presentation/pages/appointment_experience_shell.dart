@@ -8,6 +8,7 @@ import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:app_t/features/Home/domain/services/appointment_experience_policy.dart';
 import 'package:app_t/features/Home/domain/services/professional_time_formatter.dart';
 import 'package:app_t/features/Home/presentation/state/appointment_experience_controller.dart';
+import 'package:app_t/features/Messaging/presentation/state/messaging_controllers.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -393,6 +394,22 @@ class _AppointmentDetailShellPageState
           )
         else
           _ActionArea(controller: controller, confirm: _confirmAction),
+        if (appointment.status == AppointmentStatus.accepted ||
+            appointment.status == AppointmentStatus.completed) ...[
+          const SizedBox(height: 18),
+          CarenetButton(
+            key: const Key('appointment-open-messages'),
+            label: 'Open appointment messages',
+            type: CarenetButtonType.outline,
+            onPressed:
+                () => Navigator.of(context).pushNamed(
+                  RouteName.chat,
+                  arguments: AppointmentConversationRouteArgs(
+                    appointmentId: appointment.id,
+                  ),
+                ),
+          ),
+        ],
       ],
     );
   }

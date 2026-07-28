@@ -108,17 +108,18 @@ controllers do not notify widgets.
 - No dedicated audit-history read in mobile detail.
 - No cancellation reason, reschedule reason, no-show, dispute, or follow-up
   contract.
-- No appointment-linked messaging backend.
+- Appointment-linked plain-text messaging is implemented under
+  `PHASE_1_APPOINTMENT_MESSAGING.md`; push, attachments, retention policy, and
+  medical-record classification remain separate launch gates.
 - No consultation join or RTC behavior.
 - No payments, refunds, payouts, or notification delivery.
 - No blocked dates, holidays, breaks, buffers, variable durations, or calendar
   synchronization.
 
-## Next milestone
+## Messaging handoff
 
-Exactly one milestone is queued:
-
-`APP-P1-007 - Appointment-Linked Messaging Contract And Donor-Port Audit`
-
-It must inspect the donor implementation and current backend authority before
-any messaging code is ported. APP-P1-006 does not begin messaging.
+Accepted and completed appointments expose `Open appointment messages`.
+Flutter resolves the matching conversation through backend-owned appointment
+data and never creates one locally. Requested or declined appointments cannot
+fabricate a conversation; rescheduled history remains read-only until the
+backend restores writability.

@@ -99,9 +99,9 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `addDescription` | `addDescription` | `AddDescriptionShellPage` | `lib/features/Home/presentation/pages/add_description_shell.dart` |
 | `setAddress` | `setAddress` | `SetAddressShellPage` | `lib/features/Home/presentation/pages/set_address_shell.dart` |
 | `ownerCircleProfile` | `ownerCircleProfile` | `CommunityProfilePage` (`isOwner` variant) | `lib/features/Home/presentation/pages/community_profile_page.dart` |
-| `messages` | `messages` | `MessagesPage` | `lib/features/Messaging/presentation/pages/Messages.dart` |
-| `chat` | `chat` | `ChatPage` | `lib/features/Messaging/presentation/pages/Chat.dart` |
-| `message` | `message` | `ChatPage` (`unavailableNotice` variant compatibility alias) | `lib/features/Messaging/presentation/pages/Chat.dart` |
+| `messages` | `messages` | `MessagesPage` (authenticated appointment conversations) | `lib/features/Messaging/presentation/pages/Messages.dart` |
+| `chat` | `chat` | `ChatPage` (typed conversation/appointment arguments; backend authority required) | `lib/features/Messaging/presentation/pages/Chat.dart` |
+| `message` | `message` | `ChatPage` fail-closed compatibility alias; no seeded conversation | `lib/features/Messaging/presentation/pages/Chat.dart` |
 | `notification` | `notification` | `NotificationsPage` | `lib/features/Messaging/presentation/pages/Notification.dart` |
 | `reminder` | `reminder` | `ReminderShellPage` | `lib/features/Home/presentation/pages/reminder_shell.dart` |
 | `schedules` | `schedules` | `SchedulesShellPage` | `lib/features/Home/presentation/pages/schedules_shell.dart` |

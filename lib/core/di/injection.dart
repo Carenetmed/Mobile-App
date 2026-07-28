@@ -16,6 +16,8 @@ import '../../features/Home/data/services/scheduling_api_client.dart';
 import '../../features/Home/data/services/verification_api_client.dart';
 import '../../features/Home/data/storage/booking_intent_store.dart';
 import '../../features/Home/domain/services/booking_resume_service.dart';
+import '../../features/Messaging/data/repositories/messaging_repository.dart';
+import '../../features/Messaging/data/services/messaging_api_client.dart';
 
 /// Global service locator. Register dependencies here as features are built.
 final GetIt sl = GetIt.instance;
@@ -66,6 +68,11 @@ Future<void> configureDependencies() async {
   if (!sl.isRegistered<VerificationApiClient>()) {
     sl.registerLazySingleton<VerificationApiClient>(
       () => VerificationApiClient(config: sl<CareNetApiConfig>()),
+    );
+  }
+  if (!sl.isRegistered<MessagingApiClient>()) {
+    sl.registerLazySingleton<MessagingApiClient>(
+      () => MessagingApiClient(config: sl<CareNetApiConfig>()),
     );
   }
   if (!sl.isRegistered<AuthRepository>()) {
@@ -121,6 +128,14 @@ Future<void> configureDependencies() async {
     sl.registerLazySingleton<VerificationRepository>(
       () => VerificationRepository(
         apiClient: sl<VerificationApiClient>(),
+        sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<MessagingRepository>()) {
+    sl.registerLazySingleton<MessagingRepository>(
+      () => MessagingRepository(
+        apiClient: sl<MessagingApiClient>(),
         sessionStore: sl<SessionStore>(),
       ),
     );

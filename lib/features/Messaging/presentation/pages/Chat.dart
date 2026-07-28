@@ -1,168 +1,271 @@
 // ignore_for_file: file_names
 
+import 'package:app_t/core/config/carenet_api_config.dart';
+import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/features/Messaging/data/repositories/messaging_repository.dart';
+import 'package:app_t/features/Messaging/data/services/messaging_realtime_client.dart';
+import 'package:app_t/features/Messaging/domain/entities/messaging_models.dart';
+import 'package:app_t/features/Messaging/presentation/state/messaging_controllers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
-enum ChatPageVariant { seededConversation, unavailableNotice }
+import 'package:flutter_chat_core/flutter_chat_core.dart';
+import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({
-    super.key,
-    this.variant = ChatPageVariant.seededConversation,
-  });
+  const ChatPage({super.key, this.arguments, this.repository, this.realtime});
 
-  final ChatPageVariant variant;
+  final AppointmentConversationRouteArgs? arguments;
+  final MessagingRepository? repository;
+  final MessagingRealtimeConnection? realtime;
 
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
-  late final TextEditingController _messageController;
-
-  bool get _showsConversation =>
-      widget.variant == ChatPageVariant.seededConversation;
-
-  bool get _showsUnavailableNotice =>
-      widget.variant == ChatPageVariant.unavailableNotice;
+class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
+  AppointmentChatController? _controller;
 
   @override
   void initState() {
     super.initState();
-    _messageController = TextEditingController();
+    WidgetsBinding.instance.addObserver(this);
+    final args = widget.arguments;
+    if (args != null) {
+      _controller = AppointmentChatController(
+        repository: widget.repository ?? sl<MessagingRepository>(),
+        realtime:
+            widget.realtime ??
+            MessagingRealtimeClient(config: sl<CareNetApiConfig>()),
+        conversationId: args.conversationId,
+        appointmentId: args.appointmentId,
+      )..addListener(_onChanged);
+      _controller!.load();
+    }
+  }
+
+  void _onChanged() {
+    if (mounted) {
+      setState(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _controller?.markVisibleRead();
+        }
+      });
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _controller?.onAppResumed();
+    }
   }
 
   @override
   void dispose() {
-    _messageController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _controller
+      ?..removeListener(_onChanged)
+      ..dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    final counterpart = controller?.counterpart;
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: const Color(0xFFF7F9F8),
       appBar: AppBar(
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
         backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: const Color(0xFFD1D5DB),
-              child: const Icon(Icons.person, size: 18, color: Colors.white),
+        title:
+            counterpart == null
+                ? const Text('Appointment conversation')
+                : _ConversationTitle(
+                  participant: counterpart,
+                  connected: controller?.realtimeConnected == true,
+                ),
+        actions: [
+          if (controller?.summary?.appointmentId != null)
+            IconButton(
+              key: const Key('chat-open-appointment'),
+              tooltip: 'Open appointment',
+              onPressed:
+                  () => Navigator.of(context).pushNamed(
+                    RouteName.appointmentDetail,
+                    arguments: controller!.summary!.appointmentId,
+                  ),
+              icon: const Icon(Icons.event_note_outlined),
             ),
-            const SizedBox(width: 8),
-            const Text(
-              'Dr. Uzo',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.41,
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child:
-                _showsUnavailableNotice
-                    ? _buildUnavailableNotice()
-                    : _buildConversationBody(),
-          ),
-          _buildMessageInputBar(),
-          _buildHomeIndicator(),
         ],
       ),
+      body:
+          controller == null
+              ? _Unavailable(onBack: () => Navigator.of(context).maybePop())
+              : _body(controller),
     );
   }
 
-  Widget _buildConversationBody() {
-    if (!_showsConversation) {
-      return const SizedBox();
+  Widget _body(AppointmentChatController controller) {
+    if (controller.isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 14),
+            Text('Loading conversation'),
+          ],
+        ),
+      );
+    }
+    if (controller.detail == null || controller.currentUserId == null) {
+      return _Unavailable(
+        message:
+            controller.errorMessage ??
+            'This appointment conversation is unavailable.',
+        onRetry: controller.load,
+        onBack: () => Navigator.of(context).maybePop(),
+      );
     }
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    return Column(
       children: [
-        Align(
-          alignment: Alignment.centerLeft,
+        if (controller.isRefreshing)
+          const LinearProgressIndicator(minHeight: 2),
+        if (controller.errorMessage != null)
+          _Notice(message: controller.errorMessage!),
+        if (!controller.writable)
+          _Notice(
+            key: const Key('chat-read-only'),
+            message: controller.readOnlyReason,
+            icon: Icons.lock_outline,
+          ),
+        if (controller.hasMoreBefore)
+          TextButton.icon(
+            key: const Key('chat-load-older'),
+            onPressed: controller.isLoadingOlder ? null : controller.loadOlder,
+            icon: const Icon(Icons.expand_less),
+            label: Text(
+              controller.isLoadingOlder
+                  ? 'Loading earlier messages...'
+                  : 'Load earlier messages',
+            ),
+          ),
+        Expanded(
+          child: Chat(
+            currentUserId: controller.currentUserId!,
+            resolveUser:
+                (id) async => User(id: id, name: _nameFor(id, controller)),
+            chatController: controller.flyerController,
+            onMessageSend: controller.writable ? controller.send : null,
+            backgroundColor: const Color(0xFFF7F9F8),
+            builders: Builders(
+              composerBuilder:
+                  (_) =>
+                      controller.writable
+                          ? Composer(
+                            hintText: 'Message about this appointment',
+                            sendButtonVisibilityMode:
+                                SendButtonVisibilityMode.disabled,
+                            sendButtonDisabled: controller.isSending,
+                            attachmentIcon: const SizedBox.shrink(),
+                            gap: 0,
+                          )
+                          : _ReadOnlyComposer(
+                            reason: controller.readOnlyReason,
+                          ),
+              emptyChatListBuilder:
+                  (_) => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text(
+                        'No messages yet. Keep this conversation focused on the appointment.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              textMessageBuilder:
+                  (
+                    context,
+                    message,
+                    index, {
+                    required isSentByMe,
+                    groupStatus,
+                  }) => _TextBubble(
+                    message: message,
+                    sentByMe: isSentByMe,
+                    onRetry:
+                        message.status == MessageStatus.error
+                            ? () {
+                              final clientMessageId =
+                                  message.metadata?['clientMessageId'];
+                              if (clientMessageId is String) {
+                                controller.retry(clientMessageId);
+                              }
+                            }
+                            : null,
+                  ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _nameFor(String id, AppointmentChatController controller) {
+    if (id == controller.currentUserId) {
+      return 'You';
+    }
+    return controller.counterpart?.displayName ?? 'Appointment participant';
+  }
+}
+
+class _ConversationTitle extends StatelessWidget {
+  const _ConversationTitle({
+    required this.participant,
+    required this.connected,
+  });
+
+  final MessagingParticipant participant;
+  final bool connected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 17,
+          backgroundColor: const Color(0xFFE8F3EF),
+          child: Text(
+            participant.displayName.trim().isEmpty
+                ? '?'
+                : participant.displayName.trim()[0].toUpperCase(),
+            style: const TextStyle(
+              color: Color(0xFF176B55),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        const SizedBox(width: 9),
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Text(
-                  'Hello Dr. Uzo Amaka.\nHow are you doing today?',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.41,
-                  ),
+              Text(
+                participant.displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'Read 08:08PM',
-                style: TextStyle(
-                  color: Color(0xFF9CA3AF),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Align(
-          alignment: Alignment.centerRight,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3E8FF),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Text(
-                  'Hello Dr. Uzo Amaka,\nHow are you doing today?',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: -0.41,
-                  ),
-                  textAlign: TextAlign.right,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                '09:08PM Read',
-                style: TextStyle(
-                  color: Color(0xFF9CA3AF),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                ),
+              Text(
+                connected ? 'Live updates connected' : 'Recovering updates',
+                style: const TextStyle(fontSize: 11, color: Colors.black54),
               ),
             ],
           ),
@@ -170,172 +273,168 @@ class _ChatPageState extends State<ChatPage> {
       ],
     );
   }
+}
 
-  Widget _buildUnavailableNotice() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+class _ReadOnlyComposer extends StatelessWidget {
+  const _ReadOnlyComposer({required this.reason});
+
+  final String reason;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
       child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        color: Colors.white,
+        child: Row(
+          children: [
+            const Icon(Icons.lock_outline, size: 18),
+            const SizedBox(width: 9),
+            Expanded(child: Text(reason)),
           ],
-        ),
-        child: RichText(
-          text: const TextSpan(
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.5,
-              color: Colors.black,
-              fontFamily: 'SF Pro Text',
-              letterSpacing: -0.3,
-            ),
-            children: [
-              TextSpan(
-                text:
-                    'Dr. Uzo is currently not available. You may not receive replies to your messages on time your messages be left unattended to.\n',
-              ),
-              TextSpan(text: 'For quick replies, you may want to do '),
-              TextSpan(
-                text: 'express contact',
-                style: TextStyle(
-                  color: Color(0xFF007AFF),
-                  fontWeight: FontWeight.w600,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-              TextSpan(text: ' or check Dr. Uzo\'s\n'),
-              TextSpan(
-                text: 'schedule',
-                style: TextStyle(
-                  color: Color(0xFF007AFF),
-                  fontWeight: FontWeight.w600,
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-              TextSpan(text: ' for available Date'),
-            ],
-          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildMessageInputBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[300]!, width: 0.5)),
-      ),
-      child: Row(
-        children: [
-          _buildHoverableIconButton(
-            icon: Icons.emoji_emotions_outlined,
-            tooltip: 'Emoji unavailable until messaging is connected',
-          ),
-          const SizedBox(width: 12),
-          _buildHoverableIconButton(
-            icon: Icons.attach_file,
-            isRotated: true,
-            tooltip: 'Attachments unavailable until messaging is connected',
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              enabled: false,
-              decoration: InputDecoration(
-                hintText: 'Message',
-                hintStyle: const TextStyle(
-                  color: Color(0xFF9CA3AF),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  letterSpacing: -0.41,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                filled: true,
-                fillColor: const Color(0xFFF3F4F6),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(22),
-                  borderSide: BorderSide.none,
-                ),
-                isDense: true,
+class _TextBubble extends StatelessWidget {
+  const _TextBubble({
+    required this.message,
+    required this.sentByMe,
+    this.onRetry,
+  });
+
+  final TextMessage message;
+  final bool sentByMe;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final status = message.status;
+    final statusLabel = switch (status) {
+      MessageStatus.sending => 'Sending',
+      MessageStatus.error => 'Not sent',
+      MessageStatus.seen => 'Seen',
+      _ => null,
+    };
+    return Align(
+      alignment: sentByMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+        child: Column(
+          crossAxisAlignment:
+              sentByMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Container(
+              constraints: const BoxConstraints(maxWidth: 320),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color:
+                    sentByMe
+                        ? const Color(0xFF176B55)
+                        : const Color(0xFFFFFFFF),
+                borderRadius: BorderRadius.circular(8),
+                border:
+                    sentByMe
+                        ? null
+                        : Border.all(color: const Color(0xFFE1E7E4)),
               ),
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                letterSpacing: -0.41,
+              child: Text(
+                message.text,
+                style: TextStyle(
+                  color: sentByMe ? Colors.white : Colors.black,
+                  height: 1.35,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          _buildHoverableIconButton(
-            icon: Icons.camera_alt_outlined,
-            tooltip: 'Camera unavailable until messaging is connected',
-          ),
-          const SizedBox(width: 12),
-          _buildHoverableIconButton(
-            icon: Icons.mic_none,
-            tooltip: 'Voice messages unavailable until messaging is connected',
-          ),
+            if (statusLabel != null)
+              TextButton(
+                onPressed: onRetry,
+                style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: const EdgeInsets.only(top: 3),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(statusLabel, style: const TextStyle(fontSize: 11)),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Notice extends StatelessWidget {
+  const _Notice({
+    super.key,
+    required this.message,
+    this.icon = Icons.info_outline,
+  });
+
+  final String message;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      color: const Color(0xFFFFF7E5),
+      child: Row(
+        children: [
+          Icon(icon, size: 18),
+          const SizedBox(width: 9),
+          Expanded(child: Text(message)),
         ],
       ),
     );
   }
+}
 
-  Widget _buildHoverableIconButton({
-    required IconData icon,
-    required String tooltip,
-    VoidCallback? onPressed,
-    bool isRotated = false,
-  }) {
-    final iconColor = onPressed == null ? Colors.black26 : Colors.black;
-    return Tooltip(
-      message: tooltip,
-      child: MouseRegion(
-        cursor:
-            onPressed == null
-                ? SystemMouseCursors.basic
-                : SystemMouseCursors.click,
-        child: InkWell(
-          onTap: onPressed,
-          splashColor: Colors.transparent,
-          hoverColor: Colors.grey[200]?.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child:
-                isRotated
-                    ? Transform.rotate(
-                      angle: 0.785398,
-                      child: Icon(icon, color: iconColor, size: 26),
-                    )
-                    : Icon(icon, color: iconColor, size: 26),
-          ),
+class _Unavailable extends StatelessWidget {
+  const _Unavailable({
+    required this.onBack,
+    this.message = 'A valid appointment conversation is required.',
+    this.onRetry,
+  });
+
+  final String message;
+  final VoidCallback onBack;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.forum_outlined, size: 44),
+            const SizedBox(height: 14),
+            const Text(
+              'Conversation unavailable',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 7),
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              children: [
+                if (onRetry != null)
+                  FilledButton(onPressed: onRetry, child: const Text('Retry')),
+                OutlinedButton(
+                  onPressed: onBack,
+                  child: const Text('Back to messages'),
+                ),
+              ],
+            ),
+          ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHomeIndicator() {
-    return Container(
-      height: 5,
-      width: 134,
-      margin: const EdgeInsets.only(bottom: 8, top: 4),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(100),
       ),
     );
   }

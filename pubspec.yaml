@@ -55,6 +55,9 @@ dependencies:
   flutter_chat_ui: 2.11.1
   flutter_chat_core: 2.9.0
   web_socket_channel: 3.0.3
+  url_launcher: ^6.3.2
+  # 6.3.26+ requires AndroidX metadata newer than the repository's AGP 8.7.
+  url_launcher_android: 6.3.25
 
 dev_dependencies:
   flutter_test:

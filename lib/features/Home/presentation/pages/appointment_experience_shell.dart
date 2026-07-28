@@ -3,10 +3,15 @@ import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/data/repositories/financial_repository.dart';
+import 'package:app_t/features/Home/data/storage/payment_checkout_intent_store.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:app_t/features/Home/domain/services/appointment_experience_policy.dart';
+import 'package:app_t/features/Home/domain/services/hosted_checkout_launcher.dart';
+import 'package:app_t/features/Home/domain/services/money_formatter.dart';
 import 'package:app_t/features/Home/domain/services/professional_time_formatter.dart';
+import 'package:app_t/features/Home/presentation/state/appointment_payment_controller.dart';
 import 'package:app_t/features/Home/presentation/state/appointment_experience_controller.dart';
 import 'package:app_t/features/Messaging/presentation/state/messaging_controllers.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
@@ -243,25 +248,36 @@ class AppointmentDetailShellPage extends StatefulWidget {
     this.schedulingRepository,
     this.sessionStore,
     this.now,
+    this.financialRepository,
+    this.paymentCheckoutIntentStore,
+    this.checkoutLauncher,
+    this.paymentController,
   });
 
   final String? appointmentId;
   final SchedulingRepository? schedulingRepository;
   final SessionStore? sessionStore;
   final DateTime? now;
+  final FinancialRepository? financialRepository;
+  final PaymentCheckoutIntentStore? paymentCheckoutIntentStore;
+  final HostedCheckoutLauncher? checkoutLauncher;
+  final AppointmentPaymentController? paymentController;
 
   @override
   State<AppointmentDetailShellPage> createState() =>
       _AppointmentDetailShellPageState();
 }
 
-class _AppointmentDetailShellPageState
-    extends State<AppointmentDetailShellPage> {
+class _AppointmentDetailShellPageState extends State<AppointmentDetailShellPage>
+    with WidgetsBindingObserver {
   AppointmentDetailController? _controller;
+  AppointmentPaymentController? _paymentController;
+  late final bool _ownsPaymentController;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final id = widget.appointmentId?.trim() ?? '';
     if (id.isNotEmpty) {
       _controller = AppointmentDetailController(
@@ -272,6 +288,38 @@ class _AppointmentDetailShellPageState
         now: widget.now == null ? null : () => widget.now!,
       )..addListener(_onChanged);
       _controller!.load();
+      final canResolvePaymentDependencies =
+          widget.financialRepository != null ||
+          sl.isRegistered<FinancialRepository>();
+      final canResolveIntentStore =
+          widget.paymentCheckoutIntentStore != null ||
+          sl.isRegistered<PaymentCheckoutIntentStore>();
+      _ownsPaymentController =
+          widget.paymentController == null &&
+          canResolvePaymentDependencies &&
+          canResolveIntentStore;
+      _paymentController =
+          widget.paymentController ??
+          (canResolvePaymentDependencies && canResolveIntentStore
+              ? AppointmentPaymentController(
+                appointmentId: id,
+                financialRepository:
+                    widget.financialRepository ?? sl<FinancialRepository>(),
+                sessionStore: widget.sessionStore ?? sl<SessionStore>(),
+                intentStore:
+                    widget.paymentCheckoutIntentStore ??
+                    sl<PaymentCheckoutIntentStore>(),
+                launcher:
+                    widget.checkoutLauncher ??
+                    const SystemHostedCheckoutLauncher(),
+                now: widget.now == null ? null : () => widget.now!,
+              )
+              : null);
+      _paymentController
+        ?..addListener(_onChanged)
+        ..load();
+    } else {
+      _ownsPaymentController = false;
     }
   }
 
@@ -283,10 +331,23 @@ class _AppointmentDetailShellPageState
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _controller
       ?..removeListener(_onChanged)
       ..dispose();
+    _paymentController?.removeListener(_onChanged);
+    if (_ownsPaymentController) {
+      _paymentController?.dispose();
+    }
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) {
+      return;
+    }
+    _paymentController?.onAppResumed().then((_) => _controller?.load());
   }
 
   @override
@@ -377,6 +438,14 @@ class _AppointmentDetailShellPageState
             label: 'Requested',
             value: _appointmentDate(appointment.createdAt!),
           ),
+        if (_paymentController != null) ...[
+          const SizedBox(height: 6),
+          _AppointmentPaymentSection(
+            appointment: appointment,
+            role: controller.role,
+            controller: _paymentController!,
+          ),
+        ],
         if (controller.loadError != null)
           _InlineNotice(
             message:
@@ -678,6 +747,200 @@ class _AppointmentStatusHeader extends StatelessWidget {
   }
 }
 
+class _AppointmentPaymentSection extends StatelessWidget {
+  const _AppointmentPaymentSection({
+    required this.appointment,
+    required this.role,
+    required this.controller,
+  });
+
+  final AppointmentSummary appointment;
+  final AppointmentViewerRole role;
+  final AppointmentPaymentController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final pricing = controller.view?.pricing ?? appointment.pricing;
+    final payment = controller.view?.payment ?? appointment.payment;
+    if (pricing == null && payment == null && controller.isLoading) {
+      return const _StatePanel(
+        icon: Icons.payments_outlined,
+        title: 'Loading payment status',
+        body: 'Checking the authoritative consultation payment.',
+      );
+    }
+    if (pricing == null && payment == null) {
+      return _StatePanel(
+        icon: Icons.payments_outlined,
+        title: 'Payment not yet available',
+        body:
+            controller.errorMessage ??
+            'A payment contract has not been created for this appointment.',
+        actionLabel: controller.errorMessage == null ? null : 'Retry',
+        onAction: controller.errorMessage == null ? null : controller.load,
+      );
+    }
+
+    final professional = role == AppointmentViewerRole.professional;
+    return Container(
+      key: const Key('appointment-payment-section'),
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: CarenetColors.neutral100,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE1E8E7)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.payments_outlined, color: CarenetColors.brand),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Consultation payment',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Refresh payment status',
+                onPressed:
+                    controller.isLoading ||
+                            controller.isRefreshing ||
+                            controller.isInitializing
+                        ? null
+                        : () => controller.load(refreshProvider: true),
+                icon: const Icon(Icons.refresh),
+              ),
+            ],
+          ),
+          if (pricing != null) ...[
+            const SizedBox(height: 8),
+            _PaymentMetric(
+              label: professional ? 'Patient price' : 'Amount',
+              value: formatNgnMinor(pricing.grossAmountMinor),
+            ),
+            if (professional && pricing.professionalNetMinor != null)
+              _PaymentMetric(
+                label: 'Your net after commission',
+                value: formatNgnMinor(pricing.professionalNetMinor!),
+                strong: true,
+              ),
+          ],
+          if (payment != null) ...[
+            const SizedBox(height: 10),
+            _PaymentStatusBox(payment: payment, professional: professional),
+          ],
+          if (controller.actionMessage != null)
+            _InlineNotice(message: controller.actionMessage!, positive: true),
+          if (controller.errorMessage != null)
+            _InlineNotice(message: controller.errorMessage!),
+          if (!professional && controller.canPay) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                key: const Key('appointment-pay-now'),
+                onPressed:
+                    controller.isInitializing ? null : controller.beginCheckout,
+                icon:
+                    controller.isInitializing
+                        ? const SizedBox.square(
+                          dimension: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : const Icon(Icons.open_in_new),
+                label: Text(
+                  controller.isInitializing
+                      ? 'Opening secure payment...'
+                      : 'Pay now',
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Payment opens in Paystack. CareNet never handles card details.',
+              style: TextStyle(color: CarenetColors.neutral600, fontSize: 12),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PaymentMetric extends StatelessWidget {
+  const _PaymentMetric({
+    required this.label,
+    required this.value,
+    this.strong = false,
+  });
+
+  final String label;
+  final String value;
+  final bool strong;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(child: Text(label)),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PaymentStatusBox extends StatelessWidget {
+  const _PaymentStatusBox({required this.payment, required this.professional});
+
+  final AppointmentPayment payment;
+  final bool professional;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = _paymentStatusLabel(payment.status);
+    final explanation = _paymentStatusExplanation(
+      payment,
+      professional: professional,
+    );
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5F2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+          const SizedBox(height: 4),
+          Text(explanation),
+          if (payment.status == AppointmentPaymentStatus.awaitingPayment) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Pay by ${_appointmentDate(payment.dueAt)}',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class _DetailRow extends StatelessWidget {
   const _DetailRow({
     required this.icon,
@@ -831,6 +1094,53 @@ String _statusExplanation(AppointmentStatus status) {
     AppointmentStatus.completed => 'This appointment is complete.',
     AppointmentStatus.unknown =>
       'The current appointment status could not be interpreted safely.',
+  };
+}
+
+String _paymentStatusLabel(AppointmentPaymentStatus status) {
+  return switch (status) {
+    AppointmentPaymentStatus.awaitingPayment => 'PAYMENT DUE',
+    AppointmentPaymentStatus.processing => 'PAYMENT PROCESSING',
+    AppointmentPaymentStatus.succeeded => 'PAID',
+    AppointmentPaymentStatus.expired => 'PAYMENT WINDOW EXPIRED',
+    AppointmentPaymentStatus.refundPending => 'REFUND PENDING',
+    AppointmentPaymentStatus.refunded => 'REFUNDED',
+    AppointmentPaymentStatus.disputed => 'PAYMENT DISPUTED',
+    AppointmentPaymentStatus.reversed => 'PAYMENT REVERSED',
+    AppointmentPaymentStatus.reviewRequired => 'PAYMENT UNDER REVIEW',
+    AppointmentPaymentStatus.unknown => 'PAYMENT STATUS UNAVAILABLE',
+  };
+}
+
+String _paymentStatusExplanation(
+  AppointmentPayment payment, {
+  required bool professional,
+}) {
+  return switch (payment.status) {
+    AppointmentPaymentStatus.awaitingPayment =>
+      professional
+          ? 'Waiting for the patient to complete payment. This consultation is not financially confirmed.'
+          : 'The appointment was accepted, but it is not confirmed until payment succeeds.',
+    AppointmentPaymentStatus.processing =>
+      'Payment is being verified. Refresh before attempting another payment.',
+    AppointmentPaymentStatus.succeeded =>
+      payment.consultationConfirmed
+          ? 'Payment was verified and the consultation is confirmed.'
+          : 'Payment was received. Consultation eligibility is being reviewed.',
+    AppointmentPaymentStatus.expired =>
+      'The payment deadline passed. A new checkout cannot be started.',
+    AppointmentPaymentStatus.refundPending =>
+      'A full refund is being processed.',
+    AppointmentPaymentStatus.refunded =>
+      'The consultation payment was refunded.',
+    AppointmentPaymentStatus.disputed =>
+      'This payment is disputed. Related earnings remain held.',
+    AppointmentPaymentStatus.reversed =>
+      'The payment was reversed. It is not available as earnings.',
+    AppointmentPaymentStatus.reviewRequired =>
+      'Payment arrived after the eligible window and requires review. The consultation is not confirmed.',
+    AppointmentPaymentStatus.unknown =>
+      'The current payment state could not be interpreted safely.',
   };
 }
 

@@ -1,4 +1,5 @@
 import '../../domain/entities/public_professional.dart';
+import 'consultation_price_model.dart';
 
 class PublicProfessionalModel extends PublicProfessional {
   const PublicProfessionalModel({
@@ -8,6 +9,8 @@ class PublicProfessionalModel extends PublicProfessional {
     super.specialty,
     super.bio,
     required super.verified,
+    super.bookable,
+    super.consultationPrice,
   });
 
   factory PublicProfessionalModel.fromJson(Map<String, dynamic> json) {
@@ -18,6 +21,10 @@ class PublicProfessionalModel extends PublicProfessional {
       specialty: json['specialty'] as String?,
       bio: json['bio'] as String?,
       verified: json['verified'] == true,
+      bookable: json['bookable'] == true,
+      consultationPrice: ConsultationPriceModel.fromNullableJson(
+        json['consultationPrice'],
+      ),
     );
   }
 }

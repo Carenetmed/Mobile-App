@@ -42,6 +42,7 @@ import 'package:app_t/features/Home/presentation/pages/manage_readings.dart';
 import 'package:app_t/features/Home/presentation/pages/password_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/podcast_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/professional_verification_documents_shell.dart';
+import 'package:app_t/features/Home/presentation/pages/professional_finance_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/published_articles_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/qa_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/readings.dart';
@@ -251,6 +252,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         settings,
         const ProfessionalVerificationDocumentsShellPage(),
       );
+    case RouteName.professionalFinance:
+      return _page(settings, const ProfessionalFinanceShellPage());
     case RouteName.editYourName:
       return _page(settings, const EditYourNameShellPage());
     case RouteName.editProfessionalDetails:

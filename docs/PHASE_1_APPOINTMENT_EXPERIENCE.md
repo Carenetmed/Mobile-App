@@ -112,7 +112,11 @@ controllers do not notify widgets.
   `PHASE_1_APPOINTMENT_MESSAGING.md`; push, attachments, retention policy, and
   medical-record classification remain separate launch gates.
 - No consultation join or RTC behavior.
-- No payments, refunds, payouts, or notification delivery.
+- PAY-P1-008 now presents backend-owned payment/refund/reversal state in
+  Appointment Detail and professional finance state through Account. Financial
+  authority remains outside the appointment UI; see
+  `PHASE_1_FINANCIAL_EXPERIENCE.md`.
+- No notification-provider delivery.
 - No blocked dates, holidays, breaks, buffers, variable durations, or calendar
   synchronization.
 

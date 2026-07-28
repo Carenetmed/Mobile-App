@@ -7,6 +7,7 @@ import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart
 import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
 import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
+import 'package:app_t/features/Home/domain/entities/consultation_price.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:app_t/features/Home/presentation/pages/specialist_details_shell.dart';
@@ -124,6 +125,26 @@ void main() {
     expect(find.textContaining('private failure'), findsNothing);
   });
 
+  testWidgets('unpriced professional is visibly non-bookable', (tester) async {
+    final scheduling = _FakeSchedulingRepository();
+    await _pumpDetails(
+      tester,
+      schedulingRepository: scheduling,
+      profileRepository: _FakeProfileRepository(
+        detail: const PublicProfessional(
+          id: 'pro-1',
+          displayName: 'Dr Ada Care',
+          category: 'Doctor',
+          verified: true,
+        ),
+      ),
+    );
+
+    expect(find.text('Not available for booking'), findsOneWidget);
+    expect(find.text('Request selected time'), findsNothing);
+    expect(scheduling.requestableIds, isEmpty);
+  });
+
   testWidgets('renders only backend requestable UTC times at fixed duration', (
     tester,
   ) async {
@@ -222,6 +243,11 @@ class _FakeProfileRepository implements ProfileRepository {
       specialty: 'Cardiology',
       bio: 'Evidence-based heart care.',
       verified: true,
+      bookable: true,
+      consultationPrice: ConsultationPrice(
+        amountMinor: 1500000,
+        currency: 'NGN',
+      ),
     ),
   });
 

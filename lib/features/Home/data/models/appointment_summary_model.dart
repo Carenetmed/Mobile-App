@@ -10,6 +10,8 @@ class AppointmentSummaryModel extends AppointmentSummary {
     required super.status,
     super.createdAt,
     super.updatedAt,
+    super.pricing,
+    super.payment,
   });
 
   factory AppointmentSummaryModel.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,8 @@ class AppointmentSummaryModel extends AppointmentSummary {
       status: _statusFromWire(json['status']),
       createdAt: _asDateTime(json['createdAt']),
       updatedAt: _asDateTime(json['updatedAt']),
+      pricing: _pricingFromJson(json['pricing']),
+      payment: _paymentFromJson(json['payment']),
     );
   }
 
@@ -53,6 +57,63 @@ class AppointmentSummaryModel extends AppointmentSummary {
       'CANCELLED' => AppointmentStatus.cancelled,
       'COMPLETED' => AppointmentStatus.completed,
       _ => AppointmentStatus.unknown,
+    };
+  }
+
+  static AppointmentPricing? _pricingFromJson(Object? value) {
+    if (value is! Map<String, dynamic>) {
+      return null;
+    }
+    final currency = value['currency'] as String? ?? '';
+    final gross = _asInt(value['grossAmountMinor']);
+    if (currency.isEmpty || gross <= 0) {
+      return null;
+    }
+    return AppointmentPricing(
+      currency: currency,
+      grossAmountMinor: gross,
+      platformFeeMinor:
+          value['platformFeeMinor'] == null
+              ? null
+              : _asInt(value['platformFeeMinor']),
+      professionalNetMinor:
+          value['professionalNetMinor'] == null
+              ? null
+              : _asInt(value['professionalNetMinor']),
+      snapshottedAt: _asDateTime(value['snapshottedAt']),
+    );
+  }
+
+  static AppointmentPayment? _paymentFromJson(Object? value) {
+    if (value is! Map<String, dynamic>) {
+      return null;
+    }
+    final dueAt = _asDateTime(value['dueAt']);
+    if (dueAt == null) {
+      return null;
+    }
+    return AppointmentPayment(
+      id: value['id'] as String?,
+      status: _paymentStatusFromWire(value['status']),
+      dueAt: dueAt,
+      succeededAt: _asDateTime(value['succeededAt']),
+      refundReviewAt: _asDateTime(value['refundReviewAt']),
+      consultationConfirmed: value['consultationConfirmed'] == true,
+    );
+  }
+
+  static AppointmentPaymentStatus _paymentStatusFromWire(Object? value) {
+    return switch (value) {
+      'AWAITING_PAYMENT' => AppointmentPaymentStatus.awaitingPayment,
+      'PROCESSING' => AppointmentPaymentStatus.processing,
+      'SUCCEEDED' => AppointmentPaymentStatus.succeeded,
+      'EXPIRED' => AppointmentPaymentStatus.expired,
+      'REFUND_PENDING' => AppointmentPaymentStatus.refundPending,
+      'REFUNDED' => AppointmentPaymentStatus.refunded,
+      'DISPUTED' => AppointmentPaymentStatus.disputed,
+      'REVERSED' => AppointmentPaymentStatus.reversed,
+      'REVIEW_REQUIRED' => AppointmentPaymentStatus.reviewRequired,
+      _ => AppointmentPaymentStatus.unknown,
     };
   }
 }

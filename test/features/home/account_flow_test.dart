@@ -12,10 +12,12 @@ import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
 import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
+import 'package:app_t/features/Home/data/storage/payment_checkout_intent_store.dart';
 import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/availability_window.dart';
 import 'package:app_t/features/Home/domain/entities/booking_intent.dart';
+import 'package:app_t/features/Home/domain/entities/payment_checkout_intent.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
@@ -83,6 +85,7 @@ Future<void> _pumpAccount(
   _FakeAccountRepository? accountRepository,
   GoogleIdTokenProvider? googleIdTokenProvider,
   BookingIntentStore? bookingIntentStore,
+  PaymentCheckoutIntentStore? paymentCheckoutIntentStore,
 }) async {
   AccountLocalStore.reset();
   tester.view.physicalSize = _phoneSize;
@@ -99,6 +102,7 @@ Future<void> _pumpAccount(
               accountRepository: accountRepository,
               googleIdTokenProvider: googleIdTokenProvider,
               bookingIntentStore: bookingIntentStore,
+              paymentCheckoutIntentStore: paymentCheckoutIntentStore,
             ),
             routes: <String, WidgetBuilder>{
               RouteName.onboarding:
@@ -109,6 +113,9 @@ Future<void> _pumpAccount(
                   (_) => const Scaffold(
                     body: Text('verification-documents-route'),
                   ),
+              RouteName.professionalFinance:
+                  (_) =>
+                      const Scaffold(body: Text('professional-finance-route')),
             },
           ),
     ),
@@ -179,6 +186,7 @@ void main() {
   ) async {
     final repository = _FakeAuthRepository();
     final bookingIntentStore = InMemoryBookingIntentStore();
+    final paymentIntentStore = InMemoryPaymentCheckoutIntentStore();
     await bookingIntentStore.save(
       BookingIntent(
         professionalProfileId: 'professional-1',
@@ -191,10 +199,20 @@ void main() {
         expiresAt: DateTime.utc(2027, 7, 23),
       ),
     );
+    await paymentIntentStore.save(
+      PaymentCheckoutIntent(
+        appointmentId: 'appointment-1',
+        accountUserId: 'patient-1',
+        idempotencyKey: 'payment-key',
+        createdAt: DateTime.utc(2026, 7, 23),
+        expiresAt: DateTime.utc(2027, 7, 23),
+      ),
+    );
     await _pumpAccount(
       tester,
       repository: repository,
       bookingIntentStore: bookingIntentStore,
+      paymentCheckoutIntentStore: paymentIntentStore,
     );
 
     await tester.tap(find.text('Log out'));
@@ -202,6 +220,7 @@ void main() {
 
     expect(repository.logoutCalls, 1);
     expect(await bookingIntentStore.read(), isNull);
+    expect(paymentIntentStore.value, isNull);
     expect(find.text('onboarding'), findsOneWidget);
     expect(find.text('Account'), findsNothing);
   });
@@ -288,6 +307,30 @@ void main() {
     expect(find.text('verification-documents-route'), findsOneWidget);
   });
 
+  testWidgets('professional account opens payments and payouts route', (
+    tester,
+  ) async {
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(
+        user: const AuthUser(
+          id: 'professional-1',
+          email: 'professional@carenet.app',
+          role: 'PROFESSIONAL',
+          status: 'ACTIVE',
+          emailVerified: true,
+        ),
+      ),
+    );
+
+    expect(find.text('Payments & payouts'), findsOneWidget);
+    await tester.tap(find.text('Payments & payouts'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('professional-finance-route'), findsOneWidget);
+  });
+
   testWidgets('patient account does not expose professional manage profile', (
     tester,
   ) async {
@@ -308,6 +351,7 @@ void main() {
     expect(find.text('PATIENT account - active'), findsOneWidget);
     expect(find.text('Manage Profile'), findsNothing);
     expect(find.text('Verification documents'), findsNothing);
+    expect(find.text('Payments & payouts'), findsNothing);
     expect(find.text('Settings & Profile'), findsOneWidget);
   });
 

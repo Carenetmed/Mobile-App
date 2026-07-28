@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-26 APP-P1-006 appointment experience and professional Schedule.
+**Last updated:** 2026-07-29 PAY-P1-008 paid-consultation financial experience.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -34,6 +34,10 @@ boundary, renders backend-generated requestable times with IANA timezone rules,
 persists a 24-hour account-bound booking intent through auth/onboarding, and submits
 patient-only appointment requests with a durable idempotency key. Legacy local
 detail and booking routes no longer expose seeded booking behavior.
+PAY-P1-008 adds backend-authoritative consultation pricing, hosted Paystack
+checkout, payment-state refresh, and a professional finance surface for held
+earnings, balances, bank setup, payout cooling, ledger, and payout history.
+Flutter never confirms payment from browser return and never handles card data.
 Many retained routes and local account/profile seams still require the ordered
 Phase 1 narrowing plan before release claims.
 
@@ -82,6 +86,7 @@ not override the `APP-P1` product boundary.
 | Real appointment request handoff | Detail calls the public requestable-times endpoint and renders backend UTC intervals in the professional IANA timezone. A structured 24-hour secure booking intent survives authentication and patient setup, binds to account identity, reuses one idempotency key for safe retry, revalidates the selected time, and sends `POST /appointments` as a patient. Success remains backend `REQUESTED`, not confirmed |
 | Role-aware appointment experience | `appointments` loads only the authenticated account's backend-owned list, groups it deterministically, and opens `appointmentDetail` by exact appointment ID. Patient and professional action visibility is centralized by role/status/time, every mutation waits for backend confirmation and reloads authority, 409 and uncertain outcomes never apply a false local status, and reschedule uses backend requestable times at the fixed 30-minute Phase 1 duration |
 | Professional Schedule | The professional Schedule reads and atomically replaces `/availability/me` using backend `availabilityWindows`/`isActive` fields, weekday `0..6`, and valid IANA timezones. Add/edit/remove operations are serialized and reconciled with a backend reload. Patients fail closed, and recurring windows are never presented as guaranteed requestable slots |
+| Paid consultation experience | Public detail displays the exact backend NGN consultation price and fails closed when not bookable. Appointment Detail renders backend payment state, serializes hosted Paystack initialization with one persisted account/appointment idempotency key, opens only the exact HTTPS Paystack checkout host, and refreshes backend authority on app resume. Professional Account exposes price, held/eligible/available/processing/paid balances, masked payout profile, bank resolution/confirmation, ledger, and payout history. No card data, recipient code, or local payment success is stored or shown |
 | Home inner tabs | `Feed`, `Messages`, and `Articles` all render real content; Messages preview hands off to the dedicated `messages` route |
 | Messaging flow | Primary Messages destination shows an honest appointment-conversation empty state; seeded social conversations and arbitrary new-chat behavior are not presented as production data |
 | Notifications screen | Header bell opens an honest empty notification surface; seeded local/social notifications and deferred route promotions are removed |

@@ -10,6 +10,7 @@ import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:app_t/features/Home/domain/services/professional_time_formatter.dart';
+import 'package:app_t/features/Home/domain/services/money_formatter.dart';
 import 'package:app_t/features/Home/presentation/state/professional_booking_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -170,12 +171,23 @@ class _SpecialistDetailsShellPageState
         ],
         SizedBox(height: 18.h),
         _ProfileDetails(professional: controller.professional!),
+        SizedBox(height: 18.h),
+        _ConsultationPriceSection(professional: controller.professional!),
         SizedBox(height: 24.h),
-        _RequestableTimesSection(
-          controller: controller,
-          onRequest: () => _requestAppointment(controller),
-          onCancelIntent: controller.cancelIntent,
-        ),
+        if (controller.professional!.bookable &&
+            controller.professional!.consultationPrice?.isValidNgn == true)
+          _RequestableTimesSection(
+            controller: controller,
+            onRequest: () => _requestAppointment(controller),
+            onCancelIntent: controller.cancelIntent,
+          )
+        else
+          const _InlineNotice(
+            icon: Icons.event_busy_outlined,
+            message:
+                'This professional is not accepting paid appointment '
+                'requests until a consultation price is published.',
+          ),
       ],
     );
   }
@@ -530,6 +542,64 @@ class _RequestableTimesSection extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ConsultationPriceSection extends StatelessWidget {
+  const _ConsultationPriceSection({required this.professional});
+
+  final PublicProfessional professional;
+
+  @override
+  Widget build(BuildContext context) {
+    final price = professional.consultationPrice;
+    return Container(
+      width: double.infinity,
+      padding: REdgeInsets.all(16),
+      decoration: _surfaceDecoration(),
+      child: Row(
+        children: [
+          Container(
+            width: 42.r,
+            height: 42.r,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE5F4F1),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: const Icon(
+              Icons.payments_outlined,
+              color: Color(0xFF155E63),
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Consultation fee', style: _labelStyle()),
+                SizedBox(height: 4.h),
+                Text(
+                  price?.isValidNgn == true
+                      ? formatNgnMinor(price!.amountMinor)
+                      : 'Not available for booking',
+                  style: _valueStyle().copyWith(
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                SizedBox(height: 3.h),
+                Text(
+                  price?.isValidNgn == true
+                      ? 'Shown before you send an appointment request.'
+                      : 'No fee has been published.',
+                  style: _supportStyle(),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

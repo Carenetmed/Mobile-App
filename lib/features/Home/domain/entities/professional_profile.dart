@@ -1,3 +1,5 @@
+import 'consultation_price.dart';
+
 class ProfessionalProfile {
   const ProfessionalProfile({
     this.id,
@@ -16,6 +18,7 @@ class ProfessionalProfile {
     this.practiceCity,
     this.practiceState,
     this.practiceCountry,
+    this.consultationPrice,
   });
 
   final String? id;
@@ -34,4 +37,5 @@ class ProfessionalProfile {
   final String? practiceCity;
   final String? practiceState;
   final String? practiceCountry;
+  final ConsultationPrice? consultationPrice;
 }

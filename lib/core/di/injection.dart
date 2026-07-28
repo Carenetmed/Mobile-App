@@ -7,14 +7,17 @@ import '../../features/Authentication/data/services/auth_api_client.dart';
 import '../../features/Authentication/data/services/google_sign_in_provider.dart';
 import '../../features/Authentication/data/storage/session_store.dart';
 import '../../features/Home/data/repositories/profile_repository.dart';
+import '../../features/Home/data/repositories/financial_repository.dart';
 import '../../features/Home/data/repositories/onboarding_repository.dart';
 import '../../features/Home/data/repositories/scheduling_repository.dart';
 import '../../features/Home/data/repositories/verification_repository.dart';
 import '../../features/Home/data/services/onboarding_api_client.dart';
 import '../../features/Home/data/services/profile_api_client.dart';
+import '../../features/Home/data/services/financial_api_client.dart';
 import '../../features/Home/data/services/scheduling_api_client.dart';
 import '../../features/Home/data/services/verification_api_client.dart';
 import '../../features/Home/data/storage/booking_intent_store.dart';
+import '../../features/Home/data/storage/payment_checkout_intent_store.dart';
 import '../../features/Home/domain/services/booking_resume_service.dart';
 import '../../features/Messaging/data/repositories/messaging_repository.dart';
 import '../../features/Messaging/data/services/messaging_api_client.dart';
@@ -50,9 +53,19 @@ Future<void> configureDependencies() async {
   if (!sl.isRegistered<BookingIntentStore>()) {
     sl.registerLazySingleton<BookingIntentStore>(SecureBookingIntentStore.new);
   }
+  if (!sl.isRegistered<PaymentCheckoutIntentStore>()) {
+    sl.registerLazySingleton<PaymentCheckoutIntentStore>(
+      SecurePaymentCheckoutIntentStore.new,
+    );
+  }
   if (!sl.isRegistered<ProfileApiClient>()) {
     sl.registerLazySingleton<ProfileApiClient>(
       () => ProfileApiClient(config: sl<CareNetApiConfig>()),
+    );
+  }
+  if (!sl.isRegistered<FinancialApiClient>()) {
+    sl.registerLazySingleton<FinancialApiClient>(
+      () => FinancialApiClient(config: sl<CareNetApiConfig>()),
     );
   }
   if (!sl.isRegistered<OnboardingApiClient>()) {
@@ -95,6 +108,14 @@ Future<void> configureDependencies() async {
     sl.registerLazySingleton<ProfileRepository>(
       () => ProfileRepository(
         apiClient: sl<ProfileApiClient>(),
+        sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<FinancialRepository>()) {
+    sl.registerLazySingleton<FinancialRepository>(
+      () => FinancialRepository(
+        apiClient: sl<FinancialApiClient>(),
         sessionStore: sl<SessionStore>(),
       ),
     );

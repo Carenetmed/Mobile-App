@@ -83,7 +83,16 @@ class ProfessionalBookingController extends ChangeNotifier {
 
   Future<void> initialize() async {
     await _restoreIntent();
-    await Future.wait(<Future<void>>[loadProfile(), loadTimes()]);
+    await loadProfile();
+    if (professional?.bookable == true &&
+        professional?.consultationPrice?.isValidNgn == true) {
+      await loadTimes();
+    } else if (professional != null || profileNotFound) {
+      requestableTimes = null;
+      selectedTime = null;
+      bookingIntent = null;
+      await _bookingIntentStore.clear();
+    }
   }
 
   Future<void> refresh() async {
@@ -93,10 +102,16 @@ class ProfessionalBookingController extends ChangeNotifier {
     isRefreshing = true;
     _notify();
     try {
-      await Future.wait(<Future<void>>[
-        loadProfile(refresh: true),
-        loadTimes(refresh: true),
-      ]);
+      await loadProfile(refresh: true);
+      if (professional?.bookable == true &&
+          professional?.consultationPrice?.isValidNgn == true) {
+        await loadTimes(refresh: true);
+      } else if (professional != null || profileNotFound) {
+        requestableTimes = null;
+        selectedTime = null;
+        bookingIntent = null;
+        await _bookingIntentStore.clear();
+      }
     } finally {
       isRefreshing = false;
       _notify();
@@ -263,7 +278,14 @@ class ProfessionalBookingController extends ChangeNotifier {
 
   Future<BookingGateOutcome> prepareBooking() async {
     final time = selectedTime;
-    if (professional == null || time == null) {
+    if (professional?.bookable != true ||
+        professional?.consultationPrice?.isValidNgn != true) {
+      bookingError =
+          'This professional has not published a consultation price yet.';
+      _notify();
+      return BookingGateOutcome.unavailable;
+    }
+    if (time == null) {
       bookingError = 'Choose an available appointment time first.';
       _notify();
       return BookingGateOutcome.unavailable;

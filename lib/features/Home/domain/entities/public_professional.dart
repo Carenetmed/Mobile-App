@@ -1,3 +1,5 @@
+import 'consultation_price.dart';
+
 class PublicProfessional {
   const PublicProfessional({
     required this.id,
@@ -6,6 +8,8 @@ class PublicProfessional {
     this.specialty,
     this.bio,
     required this.verified,
+    this.bookable = false,
+    this.consultationPrice,
   });
 
   final String id;
@@ -14,4 +18,6 @@ class PublicProfessional {
   final String? specialty;
   final String? bio;
   final bool verified;
+  final bool bookable;
+  final ConsultationPrice? consultationPrice;
 }

@@ -128,7 +128,10 @@ files remain recoverable for the later deferred-feature cleanup milestone.
 - Appointment list/detail presentation still needs a dedicated role-aware
   experience pass.
 - Appointment-linked messaging and consultation calls remain unimplemented.
-- Payments, refunds, fees, payouts, and confirmation policy remain unimplemented.
+- PAY-P1-008 now exposes the backend-owned consultation price on detail and
+  implements payment/payout presentation after appointment acceptance. Detail
+  still does not calculate, collect, or confirm money locally; see
+  `PHASE_1_FINANCIAL_EXPERIENCE.md`.
 - Blocked dates, one-off exceptions, buffers, variable durations, and calendar
   synchronization remain backend/product follow-ups.
 - Full deferred-source deletion waits for the Phase 1 cleanup milestone.

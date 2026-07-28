@@ -10,6 +10,7 @@ import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart'
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
+import 'package:app_t/features/Home/data/storage/payment_checkout_intent_store.dart';
 import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/presentation/state/account_local_store.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
@@ -24,12 +25,14 @@ class AccountShellPage extends StatefulWidget {
     this.accountRepository,
     this.googleIdTokenProvider,
     this.bookingIntentStore,
+    this.paymentCheckoutIntentStore,
   });
 
   final AuthRepository? authRepository;
   final AccountRepository? accountRepository;
   final GoogleIdTokenProvider? googleIdTokenProvider;
   final BookingIntentStore? bookingIntentStore;
+  final PaymentCheckoutIntentStore? paymentCheckoutIntentStore;
 
   @override
   State<AccountShellPage> createState() => _AccountShellPageState();
@@ -65,6 +68,15 @@ class _AccountShellPageState extends State<AccountShellPage> {
     }
     return sl.isRegistered<BookingIntentStore>()
         ? sl<BookingIntentStore>()
+        : null;
+  }
+
+  PaymentCheckoutIntentStore? get _paymentCheckoutIntentStore {
+    if (widget.paymentCheckoutIntentStore != null) {
+      return widget.paymentCheckoutIntentStore;
+    }
+    return sl.isRegistered<PaymentCheckoutIntentStore>()
+        ? sl<PaymentCheckoutIntentStore>()
         : null;
   }
 
@@ -114,6 +126,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
 
     try {
       await _bookingIntentStore?.clear();
+      await _paymentCheckoutIntentStore?.clear();
       await _authRepository.logout();
       if (!mounted) return;
       Navigator.of(
@@ -349,6 +362,19 @@ class _AccountShellPageState extends State<AccountShellPage> {
                     subtitle: 'Professional profile and verification documents',
                     onTap: () {
                       Navigator.pushNamed(context, RouteName.manageProfile);
+                    },
+                  ),
+                if (isProfessionalAccount)
+                  _AccountTile(
+                    icon: Icons.account_balance_wallet_outlined,
+                    title: 'Payments & payouts',
+                    subtitle:
+                        'Consultation price, held earnings and payout account',
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        RouteName.professionalFinance,
+                      );
                     },
                   ),
                 if (isProfessionalAccount)

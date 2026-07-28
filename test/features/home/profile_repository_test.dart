@@ -182,6 +182,11 @@ void main() {
               'specialty': 'Heart health',
               'bio': 'Focused on prevention.',
               'verified': true,
+              'bookable': true,
+              'consultationPrice': <String, dynamic>{
+                'amountMinor': 1500000,
+                'currency': 'NGN',
+              },
               'email': 'private@example.com',
               'verificationDocuments': <String>['hidden'],
             },
@@ -195,6 +200,8 @@ void main() {
       expect(professionals, hasLength(1));
       expect(professionals.single.id, 'professional-1');
       expect(professionals.single.verified, isTrue);
+      expect(professionals.single.bookable, isTrue);
+      expect(professionals.single.consultationPrice?.amountMinor, 1500000);
       expect(adapter.lastOptions?.method, 'GET');
       expect(adapter.lastOptions?.uri.toString(), endsWith('/professionals'));
       expect(
@@ -213,6 +220,11 @@ void main() {
           'specialty': 'Heart health',
           'bio': 'Focused on prevention.',
           'verified': true,
+          'bookable': true,
+          'consultationPrice': <String, dynamic>{
+            'amountMinor': 1500000,
+            'currency': 'NGN',
+          },
           'email': 'private@example.com',
           'verificationDocuments': <String>['hidden'],
         },
@@ -226,6 +238,8 @@ void main() {
       expect(professional?.id, 'professional-1');
       expect(professional?.displayName, 'Dr. Care');
       expect(professional?.verified, isTrue);
+      expect(professional?.bookable, isTrue);
+      expect(professional?.consultationPrice?.currency, 'NGN');
       expect(adapter.lastOptions?.method, 'GET');
       expect(
         adapter.lastOptions?.uri.toString(),

@@ -1,4 +1,5 @@
 import '../../domain/entities/professional_profile.dart';
+import 'consultation_price_model.dart';
 
 class ProfessionalProfileModel extends ProfessionalProfile {
   const ProfessionalProfileModel({
@@ -18,6 +19,7 @@ class ProfessionalProfileModel extends ProfessionalProfile {
     super.practiceCity,
     super.practiceState,
     super.practiceCountry,
+    super.consultationPrice,
   });
 
   factory ProfessionalProfileModel.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,9 @@ class ProfessionalProfileModel extends ProfessionalProfile {
       practiceCity: json['practiceCity'] as String?,
       practiceState: json['practiceState'] as String?,
       practiceCountry: json['practiceCountry'] as String?,
+      consultationPrice: ConsultationPriceModel.fromNullableJson(
+        json['consultationPrice'],
+      ),
     );
   }
 }

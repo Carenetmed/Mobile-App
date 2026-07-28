@@ -93,6 +93,7 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `manageProfile` | `manageProfile` | `ManageProfileShellPage` | `lib/features/Home/presentation/pages/manage_profile_shell.dart` |
 | `managePortfolio` | `managePortfolio` | `ManagePortfolioShellPage` | `lib/features/Home/presentation/pages/manage_portfolio_shell.dart` |
 | `professionalVerificationDocuments` | `professionalVerificationDocuments` | `ProfessionalVerificationDocumentsShellPage` | `lib/features/Home/presentation/pages/professional_verification_documents_shell.dart` |
+| `professionalFinance` | `professionalFinance` | `ProfessionalFinanceShellPage` (professional price, bank, balances, ledger, payouts) | `lib/features/Home/presentation/pages/professional_finance_shell.dart` |
 | `editYourName` | `editYourName` | `EditYourNameShellPage` | `lib/features/Home/presentation/pages/edit_your_name_shell.dart` |
 | `editProfessionalDetails` | `editProfessionalDetails` | `EditProfessionalDetailsShellPage` | `lib/features/Home/presentation/pages/edit_professional_details_shell.dart` |
 | `editYourWebsite` | `editYourWebsite` | `EditYourWebsiteShellPage` | `lib/features/Home/presentation/pages/edit_your_website_shell.dart` |
@@ -166,6 +167,7 @@ Figma `routes.json` uses paths like `/splash-screen`, `/sign-up-with-phone`. App
 | `/manage-profile` | `manageProfile` |
 | `/manage-portfolio` | `managePortfolio` |
 | Professional verification owner documents | `professionalVerificationDocuments` |
+| Professional payments and payouts | `professionalFinance` |
 | `/edit-your-name` | `editYourName` |
 | Professional category/specialty details | `editProfessionalDetails` |
 | `/edit-your-website` | `editYourWebsite` |

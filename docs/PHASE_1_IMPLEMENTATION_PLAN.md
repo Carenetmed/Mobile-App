@@ -187,6 +187,21 @@ Implementation contract: `PHASE_1_FIND_CARE.md`.
 - **Non-goals retained:** Push, attachments, calls/RTC, payments, rich chat, retention
   automation, medical-record classification, and broad source cleanup.
 
+### PAY-P1-008 - Paid Consultation Financial Authority And Experience - COMPLETE
+
+- **Purpose:** Close the patient-payment-to-held-earning-to-payout loop without
+  moving money authority into Flutter.
+- **Behavior:** Backend owns immutable NGN pricing, 15 percent commission, Paystack
+  verification, refunds/reversals, ledger, 72-hour earning hold, bank cooling, and
+  payout execution/reconciliation. Flutter displays exact price/payment state,
+  opens strict hosted checkout with durable retry identity, refreshes backend
+  authority on resume, and gives professionals price, bank, balance, ledger, and
+  payout-history controls.
+- **Contract:** `PHASE_1_FINANCIAL_EXPERIENCE.md`.
+- **Non-goals retained:** Stored cards, instant withdrawal, split settlement,
+  partial or patient-initiated refunds, second live provider, calls/RTC,
+  notification delivery, and unrelated product cleanup.
+
 ## H. Patient and professional profile cleanup
 
 ### APP-P1-009 - Patient Profile And Account Authority Cleanup

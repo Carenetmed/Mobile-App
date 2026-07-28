@@ -11,6 +11,7 @@ import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
 import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/booking_intent.dart';
+import 'package:app_t/features/Home/domain/entities/consultation_price.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:app_t/features/Home/domain/services/booking_idempotency_key_factory.dart';
@@ -220,6 +221,56 @@ void main() {
     });
 
     test(
+      'temporary profile failure preserves a resumable booking intent',
+      () async {
+        final store = InMemoryBookingIntentStore();
+        await store.save(_intent(accountUserId: 'patient-user'));
+        final scheduling = _FakeSchedulingRepository();
+        final controller = _controller(
+          store: store,
+          scheduling: scheduling,
+          profileRepository: _FakeProfileRepository(
+            error: Exception('offline'),
+          ),
+        );
+        addTearDown(controller.dispose);
+
+        await controller.initialize();
+
+        expect(controller.profileError, isNotNull);
+        expect(controller.bookingIntent, isNotNull);
+        expect(await store.read(), isNotNull);
+        expect(scheduling.responseIndex, 0);
+      },
+    );
+
+    test(
+      'authoritative non-bookable profile clears persisted intent',
+      () async {
+        final store = InMemoryBookingIntentStore();
+        await store.save(_intent(accountUserId: 'patient-user'));
+        final controller = _controller(
+          store: store,
+          profileRepository: const _FakeProfileRepository(
+            detail: PublicProfessional(
+              id: 'pro-1',
+              displayName: 'Dr Care',
+              category: 'Doctor',
+              verified: true,
+            ),
+          ),
+        );
+        addTearDown(controller.dispose);
+
+        await controller.initialize();
+
+        expect(controller.bookingIntent, isNull);
+        expect(controller.selectedTime, isNull);
+        expect(await store.read(), isNull);
+      },
+    );
+
+    test(
       '401 preserves the booking intent for authentication resume',
       () async {
         final store = InMemoryBookingIntentStore();
@@ -360,10 +411,11 @@ BookingResumeService _resumeService({
 ProfessionalBookingController _controller({
   BookingIntentStore? store,
   _FakeSchedulingRepository? scheduling,
+  ProfileRepository? profileRepository,
 }) {
   return ProfessionalBookingController(
     professionalProfileId: 'pro-1',
-    profileRepository: _FakeProfileRepository(),
+    profileRepository: profileRepository ?? const _FakeProfileRepository(),
     schedulingRepository: scheduling ?? _FakeSchedulingRepository(),
     bookingIntentStore: store ?? InMemoryBookingIntentStore(),
     sessionStore: _sessionStore(role: 'PATIENT'),
@@ -373,16 +425,32 @@ ProfessionalBookingController _controller({
 }
 
 class _FakeProfileRepository implements ProfileRepository {
-  @override
-  Future<PublicProfessional?> publicProfessionalById({
-    required String professionalProfileId,
-  }) async {
-    return const PublicProfessional(
+  const _FakeProfileRepository({
+    this.detail = const PublicProfessional(
       id: 'pro-1',
       displayName: 'Dr Care',
       category: 'Doctor',
       verified: true,
-    );
+      bookable: true,
+      consultationPrice: ConsultationPrice(
+        amountMinor: 1500000,
+        currency: 'NGN',
+      ),
+    ),
+    this.error,
+  });
+
+  final PublicProfessional? detail;
+  final Object? error;
+
+  @override
+  Future<PublicProfessional?> publicProfessionalById({
+    required String professionalProfileId,
+  }) async {
+    if (error != null) {
+      throw error!;
+    }
+    return detail;
   }
 
   @override

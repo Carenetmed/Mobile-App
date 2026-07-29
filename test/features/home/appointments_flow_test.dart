@@ -190,6 +190,7 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     required DateTime requestedStartAt,
     required int durationMinutes,
     required String idempotencyKey,
+    ConsultationMode consultationMode = ConsultationMode.video,
   }) {
     throw UnimplementedError();
   }

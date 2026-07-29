@@ -2,6 +2,10 @@ import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
+import 'package:app_t/features/Consultation/data/repositories/consultation_repository.dart';
+import 'package:app_t/features/Consultation/domain/entities/consultation_entities.dart';
+import 'package:app_t/features/Consultation/presentation/pages/consultation_shell.dart';
+import 'package:app_t/features/Consultation/presentation/state/consultation_controller.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
 import 'package:app_t/features/Home/data/repositories/financial_repository.dart';
 import 'package:app_t/features/Home/data/storage/payment_checkout_intent_store.dart';
@@ -252,6 +256,7 @@ class AppointmentDetailShellPage extends StatefulWidget {
     this.paymentCheckoutIntentStore,
     this.checkoutLauncher,
     this.paymentController,
+    this.consultationRepository,
   });
 
   final String? appointmentId;
@@ -262,6 +267,7 @@ class AppointmentDetailShellPage extends StatefulWidget {
   final PaymentCheckoutIntentStore? paymentCheckoutIntentStore;
   final HostedCheckoutLauncher? checkoutLauncher;
   final AppointmentPaymentController? paymentController;
+  final ConsultationGateway? consultationRepository;
 
   @override
   State<AppointmentDetailShellPage> createState() =>
@@ -479,6 +485,15 @@ class _AppointmentDetailShellPageState extends State<AppointmentDetailShellPage>
                 ),
           ),
         ],
+        const SizedBox(height: 18),
+        _AppointmentConsultationSection(
+          appointment: appointment,
+          repository:
+              widget.consultationRepository ??
+              (sl.isRegistered<ConsultationRepository>()
+                  ? sl<ConsultationRepository>()
+                  : null),
+        ),
       ],
     );
   }
@@ -524,6 +539,209 @@ class _AppointmentDetailShellPageState extends State<AppointmentDetailShellPage>
         ) ??
         false;
   }
+}
+
+class _AppointmentConsultationSection extends StatefulWidget {
+  const _AppointmentConsultationSection({
+    required this.appointment,
+    required this.repository,
+  });
+
+  final AppointmentSummary appointment;
+  final ConsultationGateway? repository;
+
+  @override
+  State<_AppointmentConsultationSection> createState() =>
+      _AppointmentConsultationSectionState();
+}
+
+class _AppointmentConsultationSectionState
+    extends State<_AppointmentConsultationSection> {
+  ConsultationProjection? _projection;
+  String? _error;
+  bool _loading = false;
+  int _generation = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AppointmentConsultationSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.appointment.id != widget.appointment.id ||
+        oldWidget.repository != widget.repository) {
+      _projection = null;
+      _load();
+    }
+  }
+
+  Future<void> _load() async {
+    final repository = widget.repository;
+    if (repository == null || _loading) {
+      return;
+    }
+    final generation = ++_generation;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final loaded = await repository.projection(
+        appointmentId: widget.appointment.id,
+      );
+      if (mounted && generation == _generation) {
+        setState(() => _projection = loaded);
+      }
+    } catch (error) {
+      if (mounted && generation == _generation) {
+        setState(() {
+          _error = safeConsultationFailure(error);
+        });
+      }
+    } finally {
+      if (mounted && generation == _generation) {
+        setState(() => _loading = false);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _generation++;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final projection = _projection;
+    final mode = projection?.mode ?? widget.appointment.consultationMode;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F8F7),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFDDE8E5)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  mode == ConsultationMode.audio
+                      ? Icons.call_outlined
+                      : mode == ConsultationMode.video
+                      ? Icons.videocam_outlined
+                      : Icons.medical_services_outlined,
+                  color: CarenetColors.brand,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    mode == ConsultationMode.audio
+                        ? 'Audio consultation'
+                        : mode == ConsultationMode.video
+                        ? 'Video consultation'
+                        : 'Consultation',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                if (_loading)
+                  const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              projection == null
+                  ? _error ?? 'Checking secure consultation access...'
+                  : _consultationEntryCopy(context, projection),
+              style: const TextStyle(color: CarenetColors.neutral600),
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: _loading ? null : _load,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry access check'),
+              ),
+            ],
+            if (projection != null &&
+                (projection.canEnterWaitingRoom ||
+                    projection.canJoin ||
+                    projection.canRejoin ||
+                    projection.canAdmit ||
+                    projection.patientWaiting ||
+                    projection.reviewRequired)) ...[
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                key: const Key('appointment-join-consultation'),
+                onPressed:
+                    () => Navigator.of(context).pushNamed(
+                      RouteName.consultation,
+                      arguments: ConsultationRouteArgs(
+                        appointmentId: widget.appointment.id,
+                      ),
+                    ),
+                icon: Icon(
+                  mode == ConsultationMode.audio ? Icons.call : Icons.videocam,
+                ),
+                label: const Text('Open consultation'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _consultationEntryCopy(
+  BuildContext context,
+  ConsultationProjection projection,
+) {
+  if (projection.reviewRequired) {
+    return 'This consultation needs review. You can open it to report an issue.';
+  }
+  if (projection.isTerminal) {
+    return 'The live consultation window is closed.';
+  }
+  if (projection.patientWaiting && projection.canAdmit) {
+    return 'The patient is waiting. Open the consultation when you are ready to admit them.';
+  }
+  if (projection.canJoin || projection.canRejoin) {
+    return projection.canRejoin
+        ? 'The secure consultation can be rejoined.'
+        : 'The secure consultation is ready to join.';
+  }
+  if (projection.canEnterWaitingRoom) {
+    return 'The waiting room is open.';
+  }
+  final reason = projection.blockingReason;
+  if (reason == 'JOIN_WINDOW_NOT_OPEN') {
+    final opensAt = projection.joinOpensAt;
+    if (opensAt == null) {
+      return 'The waiting room opens 10 minutes before the appointment.';
+    }
+    final local = opensAt.toLocal();
+    final localizations = MaterialLocalizations.of(context);
+    final date = localizations.formatMediumDate(local);
+    final time = localizations.formatTimeOfDay(TimeOfDay.fromDateTime(local));
+    return 'The waiting room opens $date at $time (your time).';
+  }
+  if (reason == 'JOIN_WINDOW_CLOSED') {
+    return 'The consultation access window has closed.';
+  }
+  if (reason == 'PAYMENT_REQUIRED' || reason?.startsWith('PAYMENT_') == true) {
+    return 'Payment must be completed before consultation access opens.';
+  }
+  return 'Consultation access is controlled by the appointment status and schedule.';
 }
 
 class _ActionArea extends StatelessWidget {

@@ -347,6 +347,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-07-15 | Task 52.54 DONE - selected reschedule UX/product boundary decision before runtime reschedule wiring; DOC_SYNC NEXT -> 52.55 |
 | 2026-07-15 | Task 52.55 DONE - defined constrained appointment reschedule UX boundary; DOC_SYNC NEXT -> 52.56 |
 | 2026-07-29 | PAY-P1-008 DONE - connected backend-owned paid-consultation pricing, hosted checkout, payment state, professional bank setup, held earnings, ledger, and payouts; no later milestone selected |
+| 2026-07-30 | CALL-P1-009 Flutter implementation - added appointment mode selection, backend-owned consultation projection, prejoin, waiting/admission, official LiveKit VIDEO/AUDIO controls, reconnect/rejoin, incidents, native permissions, and privacy-safe cleanup; 14 focused and 431 complete Flutter tests, analyze, stable dependency resolution, and standard/staging APK builds pass; CI, merge, and live-provider proof remain before DONE |
 | 2026-05-19 | Task 4.2 DONE - Home inner tab content replaces placeholders; DOC_SYNC NEXT -> 4.3 |
 | 2026-05-19 | Task 4.1 DONE - dashboard bottom-nav shell screens; DOC_SYNC NEXT -> 4.2 |
 | 2026-05-19 | Task 3.2 DONE - password recovery flow + new auth routes; DOC_SYNC NEXT -> 4.1 |

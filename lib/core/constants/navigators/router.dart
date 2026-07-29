@@ -11,6 +11,7 @@ import 'package:app_t/features/Authentication/presentation/pages/enter_email.dar
 import 'package:app_t/features/Authentication/presentation/pages/enter_password.dart';
 import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/reset_password_confirm_page.dart';
+import 'package:app_t/features/Consultation/presentation/pages/consultation_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_device_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_description_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
@@ -176,6 +177,15 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _page(
         settings,
         AppointmentDetailShellPage(appointmentId: args is String ? args : null),
+      );
+    case RouteName.consultation:
+      final args = settings.arguments;
+      return _page(
+        settings,
+        ConsultationShellPage(
+          appointmentId:
+              args is ConsultationRouteArgs ? args.appointmentId : null,
+        ),
       );
     case RouteName.bookAppointment:
       return _page(settings, const SearchShellPage());

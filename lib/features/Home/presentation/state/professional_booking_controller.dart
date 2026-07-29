@@ -64,6 +64,7 @@ class ProfessionalBookingController extends ChangeNotifier {
   RequestableTimes? requestableTimes;
   RequestableTime? selectedTime;
   BookingIntent? bookingIntent;
+  ConsultationMode selectedMode = ConsultationMode.video;
   AppointmentSummary? requestedAppointment;
   String? profileError;
   String? timesError;
@@ -268,6 +269,23 @@ class ProfessionalBookingController extends ChangeNotifier {
     _notify();
   }
 
+  Future<void> selectMode(ConsultationMode mode) async {
+    if (selectedMode == mode || isSubmitting) {
+      return;
+    }
+    selectedMode = mode;
+    bookingError = null;
+    final time = selectedTime;
+    if (time != null && bookingIntent != null) {
+      bookingIntent = _newIntent(
+        time,
+        accountUserId: bookingIntent!.accountUserId,
+      );
+      await _bookingIntentStore.save(bookingIntent!);
+    }
+    _notify();
+  }
+
   Future<void> cancelIntent() async {
     selectedTime = null;
     bookingIntent = null;
@@ -299,6 +317,7 @@ class ProfessionalBookingController extends ChangeNotifier {
                   professionalProfileId: professionalProfileId,
                   startAt: time.startAt,
                   durationMinutes: 30,
+                  consultationMode: selectedMode,
                 )
             ? existing
             : _newIntent(time, accountUserId: session?.user.id);
@@ -415,6 +434,7 @@ class ProfessionalBookingController extends ChangeNotifier {
         requestedStartAt: persisted.startAt,
         durationMinutes: 30,
         idempotencyKey: persisted.idempotencyKey,
+        consultationMode: persisted.consultationMode,
       );
       if (requestedAppointment!.status != AppointmentStatus.requested) {
         throw const FormatException('Unexpected appointment status.');
@@ -477,6 +497,7 @@ class ProfessionalBookingController extends ChangeNotifier {
       resumeRoute: RouteName.specialistDetails,
       createdAt: now,
       expiresAt: now.add(const Duration(hours: 24)),
+      consultationMode: selectedMode,
       accountUserId:
           accountUserId?.trim().isEmpty == true ? null : accountUserId,
     );
@@ -503,6 +524,7 @@ class ProfessionalBookingController extends ChangeNotifier {
       }
     }
     bookingIntent = intent;
+    selectedMode = intent.consultationMode;
   }
 
   bool _containsTime(RequestableTimes? response, DateTime startAt) {

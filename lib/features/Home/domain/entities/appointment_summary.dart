@@ -6,6 +6,7 @@ class AppointmentSummary {
     required this.requestedStartAt,
     required this.durationMinutes,
     required this.status,
+    this.consultationMode,
     this.createdAt,
     this.updatedAt,
     this.pricing,
@@ -18,10 +19,30 @@ class AppointmentSummary {
   final DateTime requestedStartAt;
   final int durationMinutes;
   final AppointmentStatus status;
+  final ConsultationMode? consultationMode;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final AppointmentPricing? pricing;
   final AppointmentPayment? payment;
+}
+
+enum ConsultationMode { video, audio }
+
+extension ConsultationModeWire on ConsultationMode {
+  String get wireName {
+    return switch (this) {
+      ConsultationMode.video => 'VIDEO',
+      ConsultationMode.audio => 'AUDIO',
+    };
+  }
+
+  static ConsultationMode? tryParse(Object? value) {
+    return switch (value) {
+      'VIDEO' => ConsultationMode.video,
+      'AUDIO' => ConsultationMode.audio,
+      _ => null,
+    };
+  }
 }
 
 class AppointmentPricing {

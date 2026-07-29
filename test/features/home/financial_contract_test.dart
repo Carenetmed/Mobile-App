@@ -229,6 +229,7 @@ void main() {
       final stored = await intentStore.read(
         appointmentId: 'appointment-1',
         accountUserId: 'patient-user-1',
+        now: DateTime.parse('2026-07-29T10:00:00Z'),
       );
       expect(stored?.idempotencyKey, repository.lastIdempotencyKey);
       expect(controller.awaitingBrowserReturn, isTrue);

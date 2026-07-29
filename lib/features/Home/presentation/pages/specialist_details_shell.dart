@@ -7,6 +7,7 @@ import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
 import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:app_t/features/Home/domain/services/professional_time_formatter.dart';
@@ -224,7 +225,11 @@ class _SpecialistDetailsShellPageState
       builder:
           (dialogContext) => AlertDialog(
             title: const Text('Request this appointment?'),
-            content: _ConfirmationContent(time: time, timezone: timezone),
+            content: _ConfirmationContent(
+              time: time,
+              timezone: timezone,
+              mode: controller.selectedMode,
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -428,6 +433,36 @@ class _RequestableTimesSection extends StatelessWidget {
           Text(
             'Times are generated and rechecked by CareNet. '
             'Appointments are 30 minutes.',
+            style: _supportStyle(),
+          ),
+          SizedBox(height: 14.h),
+          Text('Consultation type', style: _labelStyle()),
+          SizedBox(height: 8.h),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<ConsultationMode>(
+              segments: const <ButtonSegment<ConsultationMode>>[
+                ButtonSegment<ConsultationMode>(
+                  value: ConsultationMode.video,
+                  icon: Icon(Icons.videocam_outlined),
+                  label: Text('Video'),
+                ),
+                ButtonSegment<ConsultationMode>(
+                  value: ConsultationMode.audio,
+                  icon: Icon(Icons.call_outlined),
+                  label: Text('Audio'),
+                ),
+              ],
+              selected: <ConsultationMode>{controller.selectedMode},
+              onSelectionChanged:
+                  controller.isSubmitting
+                      ? null
+                      : (selection) => controller.selectMode(selection.first),
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'Video and audio use the same consultation fee.',
             style: _supportStyle(),
           ),
           SizedBox(height: 14.h),
@@ -694,10 +729,15 @@ class _TimeOption extends StatelessWidget {
 }
 
 class _ConfirmationContent extends StatelessWidget {
-  const _ConfirmationContent({required this.time, required this.timezone});
+  const _ConfirmationContent({
+    required this.time,
+    required this.timezone,
+    required this.mode,
+  });
 
   final RequestableTime time;
   final String timezone;
+  final ConsultationMode mode;
 
   @override
   Widget build(BuildContext context) {
@@ -712,6 +752,12 @@ class _ConfirmationContent extends StatelessWidget {
         Text(labels.professionalDate),
         const SizedBox(height: 4),
         Text('${labels.professionalTime} $timezone - 30 minutes'),
+        const SizedBox(height: 4),
+        Text(
+          mode == ConsultationMode.video
+              ? 'Video consultation'
+              : 'Audio consultation',
+        ),
         if (labels.patientLocalTime != null) ...[
           const SizedBox(height: 4),
           Text(labels.patientLocalTime!),

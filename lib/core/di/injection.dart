@@ -6,6 +6,9 @@ import '../../features/Authentication/data/repositories/auth_repository.dart';
 import '../../features/Authentication/data/services/auth_api_client.dart';
 import '../../features/Authentication/data/services/google_sign_in_provider.dart';
 import '../../features/Authentication/data/storage/session_store.dart';
+import '../../features/Consultation/data/repositories/consultation_repository.dart';
+import '../../features/Consultation/data/services/consultation_api_client.dart';
+import '../../features/Consultation/domain/services/consultation_permission_service.dart';
 import '../../features/Home/data/repositories/profile_repository.dart';
 import '../../features/Home/data/repositories/financial_repository.dart';
 import '../../features/Home/data/repositories/onboarding_repository.dart';
@@ -78,6 +81,11 @@ Future<void> configureDependencies() async {
       () => SchedulingApiClient(config: sl<CareNetApiConfig>()),
     );
   }
+  if (!sl.isRegistered<ConsultationApiClient>()) {
+    sl.registerLazySingleton<ConsultationApiClient>(
+      () => ConsultationApiClient(config: sl<CareNetApiConfig>()),
+    );
+  }
   if (!sl.isRegistered<VerificationApiClient>()) {
     sl.registerLazySingleton<VerificationApiClient>(
       () => VerificationApiClient(config: sl<CareNetApiConfig>()),
@@ -143,6 +151,19 @@ Future<void> configureDependencies() async {
         apiClient: sl<SchedulingApiClient>(),
         sessionStore: sl<SessionStore>(),
       ),
+    );
+  }
+  if (!sl.isRegistered<ConsultationRepository>()) {
+    sl.registerLazySingleton<ConsultationRepository>(
+      () => ConsultationRepository(
+        apiClient: sl<ConsultationApiClient>(),
+        sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<ConsultationPermissionService>()) {
+    sl.registerLazySingleton<ConsultationPermissionService>(
+      DeviceConsultationPermissionService.new,
     );
   }
   if (!sl.isRegistered<VerificationRepository>()) {

@@ -500,6 +500,23 @@ not override the `APP-P1` product boundary.
   tests, clean `flutter analyze`, a debug Android APK, and `git diff --check`.
 - Canonical contract: `PHASE_1_APPOINTMENT_MESSAGING.md`.
 
+## CALL-P1-009 appointment consultations
+
+- Backend consultation authority is merged at
+  `42c595b5a34c8e203f411180fb76ef4ce25f4036`.
+- Appointment Detail now consumes backend-owned consultation projection and
+  opens one appointment-linked VIDEO/AUDIO consultation route.
+- Flutter uses the official LiveKit SDK behind `RtcRoomAdapter`; CareNet
+  retains waiting, admission, timing, participant, payment, incident,
+  attendance, and completion authority.
+- Prejoin, permission recovery, patient waiting, professional admission,
+  active media controls, reconnect/rejoin, leave/end, incident reporting, and
+  disposal/account-change cleanup are implemented without a Calls tab.
+- Local verification passes with 14 focused consultation tests, 431 complete
+  Flutter tests, clean `flutter analyze`, standard and staging-configured debug
+  Android APK builds, stable dependency resolution, and `git diff --check`.
+- Canonical contract: `PHASE_1_APPOINTMENT_CONSULTATIONS.md`.
+
 ## Design debt (fix in Phase 2+)
 
 | Issue | Where |

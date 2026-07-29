@@ -175,3 +175,14 @@ Figma `routes.json` uses paths like `/splash-screen`, `/sign-up-with-phone`. App
 | `/set-address` | `setAddress` |
 | `/owner-circle-profile` | `ownerCircleProfile` |
 | `/podcast` | `podcast` |
+## Phase 1 appointment consultation
+
+| Route | Screen | Authority |
+| --- | --- | --- |
+| `RouteName.consultation` | `ConsultationShellPage` | Typed appointment ID plus authenticated backend consultation projection; malformed/missing IDs and unsupported roles fail closed |
+
+The route is reachable from canonical Appointment Detail only when the backend
+projection exposes a legitimate waiting, admission, join, rejoin, review, or
+active-session state. It is not a primary navigation destination and never
+accepts a room name, token, participant identity, role, or payment authority
+from route arguments.

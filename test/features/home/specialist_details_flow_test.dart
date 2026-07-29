@@ -232,6 +232,29 @@ void main() {
     expect(find.text('Appointment request sent'), findsOneWidget);
     expect(find.textContaining('not confirmed yet'), findsOneWidget);
   });
+
+  testWidgets('audio selection preserves the shared price and reaches backend', (
+    tester,
+  ) async {
+    final scheduling = _FakeSchedulingRepository();
+    await _pumpDetails(tester, schedulingRepository: scheduling);
+
+    await tester.tap(find.text('Audio'));
+    await tester.pump();
+    expect(find.text('NGN 15,000.00'), findsOneWidget);
+    expect(
+      find.text('Video and audio use the same consultation fee.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+    await tester.pump();
+    await tester.tap(find.text('Request selected time'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Send request'));
+    await tester.pumpAndSettle();
+
+    expect(scheduling.requestedConsultationMode, ConsultationMode.audio);
+  });
 }
 
 class _FakeProfileRepository implements ProfileRepository {
@@ -283,6 +306,7 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   DateTime? requestedStartAt;
   int? requestedDuration;
   String? idempotencyKey;
+  ConsultationMode? requestedConsultationMode;
 
   RequestableTimes get response => RequestableTimes(
     professionalProfileId: 'pro-1',
@@ -316,12 +340,14 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     required DateTime requestedStartAt,
     required int durationMinutes,
     required String idempotencyKey,
+    ConsultationMode consultationMode = ConsultationMode.video,
   }) async {
     requestCalls += 1;
     requestedProfessionalId = professionalProfileId;
     this.requestedStartAt = requestedStartAt;
     requestedDuration = durationMinutes;
     this.idempotencyKey = idempotencyKey;
+    requestedConsultationMode = consultationMode;
     return AppointmentSummary(
       id: 'appointment-1',
       patientProfileId: 'patient-1',

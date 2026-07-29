@@ -48,6 +48,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 24 | **PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md** | Complete route/screen KEEP-ADAPT-DEFER-DELETE inventory |
 | 25 | **PHASE_1_DEPENDENCY_IMPACT_MAP.md** | Shared versus deferred files, state, models, services, assets, packages, and tests |
 | 26 | **PHASE_1_IMPLEMENTATION_PLAN.md** | Ordered A-J slice plan, verification, risks, stop conditions, and non-goals |
+| 27 | **PHASE_1_APPOINTMENT_CONSULTATIONS.md** | Paid appointment-linked VIDEO/AUDIO authority, LiveKit boundary, Flutter lifecycle, privacy, operations, and deferred scope |
 
 Current implementation policy:
 - Build only the approved Phase 1 consultation marketplace surface.

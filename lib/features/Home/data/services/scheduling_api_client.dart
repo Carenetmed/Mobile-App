@@ -1,5 +1,6 @@
 import 'package:app_t/core/config/carenet_api_config.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:dio/dio.dart';
 
 import '../../domain/entities/availability_window.dart';
@@ -74,9 +75,8 @@ class SchedulingApiClient {
       () => _dio.put<dynamic>(
         _url(ownAvailabilityPath),
         data: <String, dynamic>{
-          'availabilityWindows': windows
-              .map((window) => window.toJson())
-              .toList(),
+          'availabilityWindows':
+              windows.map((window) => window.toJson()).toList(),
         },
         options: Options(headers: _bearerHeaders(accessToken)),
       ),
@@ -90,6 +90,7 @@ class SchedulingApiClient {
     required DateTime requestedStartAt,
     required int durationMinutes,
     required String idempotencyKey,
+    ConsultationMode consultationMode = ConsultationMode.video,
   }) async {
     final response = await _request(
       () => _dio.post<dynamic>(
@@ -98,6 +99,7 @@ class SchedulingApiClient {
           'professionalProfileId': professionalProfileId,
           'requestedStartAt': requestedStartAt.toUtc().toIso8601String(),
           'durationMinutes': durationMinutes,
+          'consultationMode': consultationMode.wireName,
         },
         options: Options(
           headers: <String, String>{
@@ -238,7 +240,7 @@ class SchedulingApiClient {
         : response is Map<String, dynamic> && response['items'] is List
         ? response['items'] as List<dynamic>
         : response is Map<String, dynamic> &&
-              response['availabilityWindows'] is List
+            response['availabilityWindows'] is List
         ? response['availabilityWindows'] as List<dynamic>
         : response is Map<String, dynamic> && response['appointments'] is List
         ? response['appointments'] as List<dynamic>

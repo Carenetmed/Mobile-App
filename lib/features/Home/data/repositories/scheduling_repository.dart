@@ -53,6 +53,7 @@ class SchedulingRepository {
     required DateTime requestedStartAt,
     required int durationMinutes,
     required String idempotencyKey,
+    ConsultationMode consultationMode = ConsultationMode.video,
   }) async {
     final current = await _requireSession();
     return _apiClient.requestAppointment(
@@ -61,6 +62,7 @@ class SchedulingRepository {
       requestedStartAt: requestedStartAt,
       durationMinutes: durationMinutes,
       idempotencyKey: idempotencyKey,
+      consultationMode: consultationMode,
     );
   }
 

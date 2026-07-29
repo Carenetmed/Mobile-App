@@ -124,7 +124,8 @@ The following remain outside PAY-P1-008:
   tax invoices, partial refunds, and patient-initiated refunds;
 - instant professional withdrawal, immediate split settlement, multi-currency,
   or another live provider;
-- calls/RTC and notification-provider delivery;
+- notification-provider delivery and live-provider certification where
+  non-production credentials are unavailable;
 - broad appointment, messaging, or navigation redesign.
 
 No later capability starts automatically after this milestone. External Fibery

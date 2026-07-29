@@ -180,6 +180,7 @@ void main() {
         'professionalProfileId': 'professional-1',
         'requestedStartAt': '2026-07-14T09:30:00.000Z',
         'durationMinutes': 30,
+        'consultationMode': 'VIDEO',
       });
       final payload = adapter.lastOptions?.data as Map<String, dynamic>;
       expect(payload.containsKey('patientProfileId'), isFalse);

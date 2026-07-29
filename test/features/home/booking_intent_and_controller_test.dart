@@ -29,6 +29,7 @@ void main() {
       expect(restored.professionalProfileId, 'pro-1');
       expect(restored.startAt, DateTime.parse('2026-07-25T08:00:00Z'));
       expect(restored.durationMinutes, 30);
+      expect(restored.consultationMode, ConsultationMode.video);
       expect(restored.idempotencyKey, 'booking-key-12345678');
       expect(restored.resumeRoute, RouteName.specialistDetails);
       expect(restored.toJson().containsKey('accessToken'), isFalse);
@@ -492,6 +493,7 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     required DateTime requestedStartAt,
     required int durationMinutes,
     required String idempotencyKey,
+    ConsultationMode consultationMode = ConsultationMode.video,
   }) async {
     final index = requestCalls;
     requestCalls += 1;

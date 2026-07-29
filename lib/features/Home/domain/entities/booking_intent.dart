@@ -1,3 +1,5 @@
+import 'appointment_summary.dart';
+
 class BookingIntent {
   const BookingIntent({
     required this.professionalProfileId,
@@ -8,6 +10,7 @@ class BookingIntent {
     required this.resumeRoute,
     required this.createdAt,
     required this.expiresAt,
+    this.consultationMode = ConsultationMode.video,
     this.accountUserId,
   });
 
@@ -19,6 +22,7 @@ class BookingIntent {
   final String resumeRoute;
   final DateTime createdAt;
   final DateTime expiresAt;
+  final ConsultationMode consultationMode;
   final String? accountUserId;
 
   bool isExpired(DateTime now) => !expiresAt.isAfter(now.toUtc());
@@ -27,10 +31,12 @@ class BookingIntent {
     required String professionalProfileId,
     required DateTime startAt,
     required int durationMinutes,
+    ConsultationMode? consultationMode,
   }) {
     return this.professionalProfileId == professionalProfileId &&
         this.startAt.toUtc() == startAt.toUtc() &&
-        this.durationMinutes == durationMinutes;
+        this.durationMinutes == durationMinutes &&
+        (consultationMode == null || this.consultationMode == consultationMode);
   }
 
   BookingIntent copyWith({String? accountUserId}) {
@@ -43,6 +49,7 @@ class BookingIntent {
       resumeRoute: resumeRoute,
       createdAt: createdAt,
       expiresAt: expiresAt,
+      consultationMode: consultationMode,
       accountUserId: accountUserId ?? this.accountUserId,
     );
   }
@@ -57,6 +64,7 @@ class BookingIntent {
       'resumeRoute': resumeRoute,
       'createdAt': createdAt.toUtc().toIso8601String(),
       'expiresAt': expiresAt.toUtc().toIso8601String(),
+      'consultationMode': consultationMode.wireName,
       if (accountUserId != null) 'accountUserId': accountUserId,
     };
   }
@@ -87,6 +95,9 @@ class BookingIntent {
       resumeRoute: resumeRoute,
       createdAt: createdAt,
       expiresAt: expiresAt,
+      consultationMode:
+          ConsultationModeWire.tryParse(json['consultationMode']) ??
+          ConsultationMode.video,
       accountUserId: json['accountUserId'] as String?,
     );
   }

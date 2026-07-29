@@ -302,17 +302,33 @@ Implementation contract: `PHASE_1_FIND_CARE.md`.
 ## Interlock before full Phase 1 completion
 
 The A-J plan can fully narrow and prove the existing backend-supported core.
-Appointment-linked plain-text messaging is now implemented. The stated revenue
-loop still requires separate project-lead decisions and backend/frontend slices
-for payment, external-RTC consultation join, notification delivery,
-support/refund, and possibly dual-role accounts.
+Appointment-linked plain-text messaging and paid-consultation financial
+authority are implemented. `CALL-P1-009` implements the approved external-RTC
+consultation boundary. Notification delivery, broader support operations,
+dual-role accounts, and profile/deferred-source cleanup remain separate.
 
 Those lanes must be selected deliberately after the current-core narrowing. They
 are not automatically inserted into this plan and are not silently treated as done.
 
 ## Next runtime selection
 
-No later capability starts automatically after `MSG-P1-007`. The project lead must
-select and approve the next Phase 1 launch gate. Calls/RTC, payments, push delivery,
-profile cleanup, retention/privacy policy, and deferred-source cleanup remain separate
+No later capability starts automatically after `CALL-P1-009`. The project lead
+must select and approve the next Phase 1 launch gate. Push delivery, profile
+cleanup, retention/privacy policy, and deferred-source cleanup remain separate
 milestones.
+
+## CALL-P1-009 - Appointment-linked consultations
+
+Status: implementation and local verification complete pending CI, provider
+staging proof, and merge.
+
+The backend owns paid appointment eligibility, waiting/admission, timing,
+one-device policy, room authority, attendance, incidents, reconciliation, and
+completion evidence. Flutter owns an appointment-linked prejoin, waiting, and
+active VIDEO/AUDIO experience through the official LiveKit SDK. No Calls tab,
+custom WebRTC transport, recording, transcription, automatic refund, or
+automatic completion was added.
+
+Canonical contract: `PHASE_1_APPOINTMENT_CONSULTATIONS.md`.
+
+No later capability is selected automatically after this milestone.

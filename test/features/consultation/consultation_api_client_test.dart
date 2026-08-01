@@ -207,6 +207,34 @@ void main() {
     );
   });
 
+  test(
+    'projection accepts a requested appointment before a session exists',
+    () async {
+      final response =
+          _projectionJson()
+            ..['sessionStatus'] = null
+            ..['joinOpensAt'] = null
+            ..['lateJoinDeadlineAt'] = null
+            ..['scheduledEndsAt'] = null
+            ..['closesAt'] = null
+            ..['canEnterWaitingRoom'] = false
+            ..['blockingReason'] = 'APPOINTMENT_REQUESTED';
+      final client = ConsultationApiClient(
+        config: const CareNetApiConfig(baseUrl: 'https://api.example.test'),
+        dio: Dio()..httpClientAdapter = _QueueAdapter(<Object>[response]),
+      );
+
+      final projection = await client.projection(
+        accessToken: 'access-token',
+        appointmentId: 'appointment-1',
+      );
+
+      expect(projection.sessionStatus, isNull);
+      expect(projection.blockingReason, 'APPOINTMENT_REQUESTED');
+      expect(projection.canJoin, isFalse);
+    },
+  );
+
   test('incident receipt rejects missing audit identity or timestamp', () {
     expect(
       () => ConsultationIncidentReceiptModel.fromJson(<String, dynamic>{

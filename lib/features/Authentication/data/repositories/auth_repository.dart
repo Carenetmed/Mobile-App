@@ -5,7 +5,7 @@ import '../services/auth_api_client.dart';
 import '../storage/session_store.dart';
 
 class AuthRepository {
-  const AuthRepository({
+  AuthRepository({
     required AuthApiClient apiClient,
     required SessionStore sessionStore,
   }) : _apiClient = apiClient,
@@ -13,6 +13,7 @@ class AuthRepository {
 
   final AuthApiClient _apiClient;
   final SessionStore _sessionStore;
+  Future<AuthSession>? _refreshing;
 
   Future<AuthSession> register({
     required String email,
@@ -43,7 +44,21 @@ class AuthRepository {
     return _sessionStore.read();
   }
 
-  Future<AuthSession> refresh() async {
+  Future<AuthSession> refresh() {
+    final active = _refreshing;
+    if (active != null) {
+      return active;
+    }
+    final future = _refresh();
+    _refreshing = future;
+    return future.whenComplete(() {
+      if (identical(_refreshing, future)) {
+        _refreshing = null;
+      }
+    });
+  }
+
+  Future<AuthSession> _refresh() async {
     final current = await _sessionStore.read();
     if (current == null) {
       throw const AuthFailure(

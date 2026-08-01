@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 import 'package:app_t/core/config/carenet_api_config.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
+import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/data/services/auth_api_client.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
@@ -156,6 +158,75 @@ void main() {
       },
     );
 
+    test(
+      'account readiness refreshes once after an expired access token',
+      () async {
+        final store = InMemorySessionStore();
+        await store.save(_session());
+        final readinessAdapter = _FakeAdapter(
+          responseJson: <String, dynamic>{
+            'account': <String, dynamic>{
+              'role': 'PATIENT',
+              'status': 'ACTIVE',
+              'emailVerified': true,
+            },
+            'patient': <String, dynamic>{
+              'profileStatus': 'COMPLETE',
+              'requiredFields': <String>[],
+            },
+            'nextAction': 'DASHBOARD',
+            'requiredActions': <String>[],
+          },
+          statusCodes: <int>[401, 200],
+        );
+        final refreshAdapter = _FakeAdapter(
+          responseJson: <String, dynamic>{
+            'accessToken': 'fresh-access-token',
+            'refreshToken': 'fresh-refresh-token',
+            'tokenType': 'Bearer',
+            'expiresIn': 900,
+            'user': <String, dynamic>{
+              'id': 'user-1',
+              'email': 'doctor@example.com',
+              'role': 'PROFESSIONAL',
+              'status': 'ACTIVE',
+              'emailVerified': true,
+            },
+          },
+        );
+        final authRepository = AuthRepository(
+          apiClient: AuthApiClient(
+            config: const CareNetApiConfig(baseUrl: 'http://127.0.0.1:8080'),
+            dio: Dio()..httpClientAdapter = refreshAdapter,
+          ),
+          sessionStore: store,
+        );
+        final repository = OnboardingRepository(
+          apiClient: OnboardingApiClient(
+            config: const CareNetApiConfig(baseUrl: 'http://127.0.0.1:8080'),
+            dio: Dio()..httpClientAdapter = readinessAdapter,
+          ),
+          sessionStore: store,
+          authRepository: authRepository,
+        );
+
+        final readiness = await repository.accountReadiness();
+
+        expect(readiness.nextAction, 'DASHBOARD');
+        expect(readinessAdapter.options, hasLength(2));
+        expect(
+          readinessAdapter.options.first.headers['Authorization'],
+          'Bearer access-token',
+        );
+        expect(
+          readinessAdapter.options.last.headers['Authorization'],
+          'Bearer fresh-access-token',
+        );
+        expect(refreshAdapter.options, hasLength(1));
+        expect(refreshAdapter.options.single.uri.path, '/auth/refresh');
+      },
+    );
+
     test('account readiness requires a stored session', () async {
       final repository = _repository(
         adapter: _FakeAdapter(responseJson: <String, dynamic>{}),
@@ -231,10 +302,12 @@ AuthSessionModel _session() {
 }
 
 class _FakeAdapter implements HttpClientAdapter {
-  _FakeAdapter({required this.responseJson});
+  _FakeAdapter({required this.responseJson, this.statusCodes = const <int>[]});
 
   final Map<String, dynamic> responseJson;
+  final List<int> statusCodes;
   RequestOptions? lastOptions;
+  final List<RequestOptions> options = <RequestOptions>[];
 
   @override
   void close({bool force = false}) {}
@@ -246,10 +319,14 @@ class _FakeAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     lastOptions = options;
+    this.options.add(options);
     final body = jsonEncode(responseJson);
+    final responseIndex = this.options.length - 1;
+    final statusCode =
+        responseIndex < statusCodes.length ? statusCodes[responseIndex] : 200;
     return ResponseBody.fromString(
       body,
-      200,
+      statusCode,
       headers: <String, List<String>>{
         Headers.contentTypeHeader: <String>[Headers.jsonContentType],
       },

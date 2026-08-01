@@ -133,6 +133,7 @@ Future<void> configureDependencies() async {
       () => OnboardingRepository(
         apiClient: sl<OnboardingApiClient>(),
         sessionStore: sl<SessionStore>(),
+        authRepository: sl<AuthRepository>(),
       ),
     );
   }

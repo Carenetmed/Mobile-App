@@ -24,12 +24,14 @@ class ConsultationProjectionModel extends ConsultationProjection {
 
   factory ConsultationProjectionModel.fromJson(Map<String, dynamic> json) {
     final appointmentId = json['appointmentId'] as String? ?? '';
-    final mode = ConsultationModeWire.tryParse(json['mode']);
-    final status = _sessionStatus(json['sessionStatus']);
+    final rawMode = json['mode'];
+    final mode = ConsultationModeWire.tryParse(rawMode);
+    final rawStatus = json['sessionStatus'];
+    final status = _sessionStatus(rawStatus);
     if (appointmentId.isEmpty ||
-        mode == null ||
-        status == null ||
-        status == ConsultationSessionStatus.unknown) {
+        (rawMode != null && mode == null) ||
+        (rawStatus != null &&
+            (status == null || status == ConsultationSessionStatus.unknown))) {
       throw const FormatException('Invalid consultation projection.');
     }
     return ConsultationProjectionModel(

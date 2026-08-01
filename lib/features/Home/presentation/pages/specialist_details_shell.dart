@@ -403,7 +403,7 @@ class _ProfileDetails extends StatelessWidget {
   }
 }
 
-class _RequestableTimesSection extends StatelessWidget {
+class _RequestableTimesSection extends StatefulWidget {
   const _RequestableTimesSection({
     required this.controller,
     required this.onRequest,
@@ -415,9 +415,105 @@ class _RequestableTimesSection extends StatelessWidget {
   final VoidCallback onCancelIntent;
 
   @override
+  State<_RequestableTimesSection> createState() =>
+      _RequestableTimesSectionState();
+}
+
+class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
+  RequestableTimes? _groupedResponse;
+  String? _groupedTimezone;
+  List<_RequestableDay> _days = const <_RequestableDay>[];
+  String? _selectedDay;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncDays();
+  }
+
+  @override
+  void didUpdateWidget(covariant _RequestableTimesSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncDays();
+  }
+
+  void _syncDays() {
+    final response = widget.controller.requestableTimes;
+    final timezone = response?.timezone?.trim();
+    if (identical(response, _groupedResponse) && timezone == _groupedTimezone) {
+      return;
+    }
+    _groupedResponse = response;
+    _groupedTimezone = timezone;
+
+    if (response == null ||
+        response.times.isEmpty ||
+        timezone == null ||
+        timezone.isEmpty) {
+      _days = const <_RequestableDay>[];
+      _selectedDay = null;
+      return;
+    }
+
+    final formatter = ProfessionalTimeFormatter();
+    final grouped = <String, List<RequestableTime>>{};
+    for (final time in response.times) {
+      try {
+        final day =
+            formatter
+                .format(
+                  utcStartAt: time.startAt,
+                  professionalTimezone: timezone,
+                )
+                .professionalDate;
+        grouped.putIfAbsent(day, () => <RequestableTime>[]).add(time);
+      } catch (_) {
+        // The controller rejects invalid timezone contracts. Ignore any
+        // individually malformed time that cannot be presented safely.
+      }
+    }
+    _days = <_RequestableDay>[
+      for (final entry in grouped.entries)
+        _RequestableDay(label: entry.key, times: entry.value),
+    ];
+
+    String? selectedDay;
+    final selectedTime = widget.controller.selectedTime;
+    if (selectedTime != null) {
+      try {
+        selectedDay =
+            formatter
+                .format(
+                  utcStartAt: selectedTime.startAt,
+                  professionalTimezone: timezone,
+                )
+                .professionalDate;
+      } catch (_) {
+        selectedDay = null;
+      }
+    }
+    final previousStillExists = _days.any((day) => day.label == _selectedDay);
+    _selectedDay =
+        selectedDay ??
+        (previousStillExists ? _selectedDay : null) ??
+        (_days.isEmpty ? null : _days.first.label);
+  }
+
+  _RequestableDay? get _visibleDay {
+    for (final day in _days) {
+      if (day.label == _selectedDay) {
+        return day;
+      }
+    }
+    return null;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = widget.controller;
     final response = controller.requestableTimes;
     final timezone = response?.timezone;
+    final visibleDay = _visibleDay;
     return Container(
       width: double.infinity,
       padding: REdgeInsets.all(16),
@@ -511,7 +607,38 @@ class _RequestableTimesSection extends StatelessWidget {
               ],
             ),
             SizedBox(height: 12.h),
-            ...response.times.map(
+            if (visibleDay == null)
+              const _InlineNotice(
+                icon: Icons.schedule_outlined,
+                message: 'Appointment times cannot be displayed safely.',
+              )
+            else ...[
+              Text('Choose a date', style: _labelStyle()),
+              SizedBox(height: 8.h),
+              SizedBox(
+                height: 42.h,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _days.length,
+                  separatorBuilder: (_, __) => SizedBox(width: 8.w),
+                  itemBuilder: (context, index) {
+                    final day = _days[index];
+                    return ChoiceChip(
+                      label: Text(day.label),
+                      selected: day.label == _selectedDay,
+                      onSelected:
+                          controller.isSubmitting
+                              ? null
+                              : (_) => setState(() {
+                                _selectedDay = day.label;
+                              }),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: 12.h),
+            ],
+            ...?visibleDay?.times.map(
               (time) => Padding(
                 padding: EdgeInsets.only(bottom: 9.h),
                 child: _TimeOption(
@@ -533,7 +660,7 @@ class _RequestableTimesSection extends StatelessWidget {
                     'Your selected time was saved. Review it before sending '
                     'the appointment request.',
                 actionLabel: 'Cancel',
-                onAction: onCancelIntent,
+                onAction: widget.onCancelIntent,
               ),
             ],
             if (controller.bookingError != null) ...[
@@ -559,7 +686,7 @@ class _RequestableTimesSection extends StatelessWidget {
                 onPressed:
                     controller.selectedTime == null || controller.isSubmitting
                         ? null
-                        : onRequest,
+                        : widget.onRequest,
                 icon:
                     controller.isSubmitting
                         ? SizedBox.square(
@@ -581,6 +708,13 @@ class _RequestableTimesSection extends StatelessWidget {
       ),
     );
   }
+}
+
+class _RequestableDay {
+  const _RequestableDay({required this.label, required this.times});
+
+  final String label;
+  final List<RequestableTime> times;
 }
 
 class _ConsultationPriceSection extends StatelessWidget {

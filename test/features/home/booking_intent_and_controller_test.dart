@@ -138,6 +138,50 @@ void main() {
   });
 
   group('Professional booking controller', () {
+    test('accepts an empty backend schedule without a timezone', () async {
+      final controller = _controller(
+        scheduling: _FakeSchedulingRepository(
+          responses: <RequestableTimes>[_emptyTimesWithoutTimezone()],
+        ),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.initialize();
+
+      expect(controller.requestableTimes, isNotNull);
+      expect(controller.requestableTimes!.times, isEmpty);
+      expect(controller.timesError, isNull);
+    });
+
+    test('rejects non-empty backend times without a timezone', () async {
+      final controller = _controller(
+        scheduling: _FakeSchedulingRepository(
+          responses: <RequestableTimes>[
+            RequestableTimes(
+              professionalProfileId: 'pro-1',
+              timezone: null,
+              durationMinutes: 30,
+              cadenceMinutes: 30,
+              leadTimeMinutes: 120,
+              bookingHorizonDays: 60,
+              times: <RequestableTime>[
+                RequestableTime(
+                  startAt: _firstStart,
+                  endAt: _firstStart.add(const Duration(minutes: 30)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+      addTearDown(controller.dispose);
+
+      await controller.initialize();
+
+      expect(controller.requestableTimes, isNull);
+      expect(controller.timesError, contains('Could not load'));
+    });
+
     test('time change replaces the idempotency key', () async {
       final store = InMemoryBookingIntentStore();
       final scheduling = _FakeSchedulingRepository(
@@ -582,6 +626,18 @@ RequestableTimes _times({bool empty = false, bool twoTimes = false}) {
                   endAt: _secondStart.add(const Duration(minutes: 30)),
                 ),
             ],
+  );
+}
+
+RequestableTimes _emptyTimesWithoutTimezone() {
+  return const RequestableTimes(
+    professionalProfileId: 'pro-1',
+    timezone: null,
+    durationMinutes: 30,
+    cadenceMinutes: 30,
+    leadTimeMinutes: 120,
+    bookingHorizonDays: 60,
+    times: <RequestableTime>[],
   );
 }
 

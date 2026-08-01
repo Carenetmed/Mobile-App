@@ -204,10 +204,17 @@ class ProfessionalBookingController extends ChangeNotifier {
       if (!_acceptTimesGeneration(generation)) {
         return;
       }
+      final timezone = loaded.timezone?.trim();
+      final hasRequestableTimes = loaded.times.isNotEmpty;
       if (loaded.professionalProfileId != professionalProfileId ||
-          loaded.timezone == null ||
-          loaded.timezone!.trim().isEmpty ||
-          !ProfessionalTimeFormatter().isValidTimezone(loaded.timezone!) ||
+          (hasRequestableTimes &&
+              (timezone == null ||
+                  timezone.isEmpty ||
+                  !ProfessionalTimeFormatter().isValidTimezone(timezone))) ||
+          (!hasRequestableTimes &&
+              timezone != null &&
+              timezone.isNotEmpty &&
+              !ProfessionalTimeFormatter().isValidTimezone(timezone)) ||
           loaded.durationMinutes != 30 ||
           loaded.cadenceMinutes != 30 ||
           loaded.leadTimeMinutes != 120 ||

@@ -741,6 +741,9 @@ String _consultationEntryCopy(
   if (reason == 'PAYMENT_REQUIRED' || reason?.startsWith('PAYMENT_') == true) {
     return 'Payment must be completed before consultation access opens.';
   }
+  if (reason == 'APPOINTMENT_REQUESTED') {
+    return 'Consultation access opens after the professional accepts the request and payment is completed.';
+  }
   return 'Consultation access is controlled by the appointment status and schedule.';
 }
 

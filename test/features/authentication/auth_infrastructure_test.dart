@@ -114,6 +114,58 @@ void main() {
       });
     });
 
+    test('concurrent refresh calls share one token rotation', () async {
+      final store = InMemorySessionStore();
+      await store.save(
+        _session(accessToken: 'old-access', refreshToken: 'old-refresh'),
+      );
+      final response = Completer<ResponseBody>();
+      final adapter = _FakeAdapter(
+        responseJson: const <String, dynamic>{},
+        responseCompleter: response,
+      );
+      final repository = AuthRepository(
+        apiClient: AuthApiClient(
+          config: const CareNetApiConfig(baseUrl: 'http://127.0.0.1:8080'),
+          dio: Dio()..httpClientAdapter = adapter,
+        ),
+        sessionStore: store,
+      );
+
+      final first = repository.refresh();
+      final second = repository.refresh();
+      for (
+        var attempt = 0;
+        attempt < 10 && adapter.fetchCalls == 0;
+        attempt++
+      ) {
+        await Future<void>.delayed(Duration.zero);
+      }
+
+      expect(adapter.fetchCalls, 1);
+      response.complete(
+        ResponseBody.fromString(
+          jsonEncode(
+            _sessionJson(
+              accessToken: 'new-access',
+              refreshToken: 'new-refresh',
+            ),
+          ),
+          200,
+          headers: <String, List<String>>{
+            Headers.contentTypeHeader: <String>[Headers.jsonContentType],
+          },
+        ),
+      );
+
+      final sessions = await Future.wait([first, second]);
+      expect(sessions.map((session) => session.accessToken), <String>[
+        'new-access',
+        'new-access',
+      ]);
+      expect(adapter.fetchCalls, 1);
+    });
+
     test(
       'account repository clears session on unauthorized current account',
       () async {
@@ -215,11 +267,17 @@ Map<String, dynamic> _sessionJson({
 }
 
 class _FakeAdapter implements HttpClientAdapter {
-  _FakeAdapter({required this.responseJson, this.statusCode = 200});
+  _FakeAdapter({
+    required this.responseJson,
+    this.statusCode = 200,
+    this.responseCompleter,
+  });
 
   final Map<String, dynamic> responseJson;
   final int statusCode;
+  final Completer<ResponseBody>? responseCompleter;
   RequestOptions? lastOptions;
+  int fetchCalls = 0;
 
   @override
   void close({bool force = false}) {}
@@ -230,7 +288,12 @@ class _FakeAdapter implements HttpClientAdapter {
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
   ) async {
+    fetchCalls += 1;
     lastOptions = options;
+    final completer = responseCompleter;
+    if (completer != null) {
+      return completer.future;
+    }
     final body = jsonEncode(responseJson);
     return ResponseBody.fromString(
       body,

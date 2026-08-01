@@ -161,6 +161,37 @@ void main() {
     expect(find.textContaining('45 min'), findsNothing);
   });
 
+  testWidgets('mounts only the selected day from a large times response', (
+    tester,
+  ) async {
+    final firstStart = DateTime.parse('2026-07-25T08:00:00.000Z');
+    final scheduling = _FakeSchedulingRepository(
+      response: RequestableTimes(
+        professionalProfileId: 'pro-1',
+        timezone: 'Africa/Lagos',
+        durationMinutes: 30,
+        cadenceMinutes: 30,
+        leadTimeMinutes: 120,
+        bookingHorizonDays: 60,
+        times: <RequestableTime>[
+          for (var day = 0; day < 60; day++)
+            RequestableTime(
+              startAt: firstStart.add(Duration(days: day)),
+              endAt: firstStart.add(Duration(days: day, minutes: 30)),
+            ),
+        ],
+      ),
+    );
+
+    await _pumpDetails(tester, schedulingRepository: scheduling);
+
+    expect(find.text('Choose a date'), findsOneWidget);
+    expect(
+      find.textContaining('9:00 AM Africa/Lagos - 30 min'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('unauthenticated request saves intent before entering auth', (
     tester,
   ) async {
@@ -233,28 +264,29 @@ void main() {
     expect(find.textContaining('not confirmed yet'), findsOneWidget);
   });
 
-  testWidgets('audio selection preserves the shared price and reaches backend', (
-    tester,
-  ) async {
-    final scheduling = _FakeSchedulingRepository();
-    await _pumpDetails(tester, schedulingRepository: scheduling);
+  testWidgets(
+    'audio selection preserves the shared price and reaches backend',
+    (tester) async {
+      final scheduling = _FakeSchedulingRepository();
+      await _pumpDetails(tester, schedulingRepository: scheduling);
 
-    await tester.tap(find.text('Audio'));
-    await tester.pump();
-    expect(find.text('NGN 15,000.00'), findsOneWidget);
-    expect(
-      find.text('Video and audio use the same consultation fee.'),
-      findsOneWidget,
-    );
-    await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
-    await tester.pump();
-    await tester.tap(find.text('Request selected time'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Send request'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Audio'));
+      await tester.pump();
+      expect(find.text('NGN 15,000.00'), findsOneWidget);
+      expect(
+        find.text('Video and audio use the same consultation fee.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+      await tester.pump();
+      await tester.tap(find.text('Request selected time'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Send request'));
+      await tester.pumpAndSettle();
 
-    expect(scheduling.requestedConsultationMode, ConsultationMode.audio);
-  });
+      expect(scheduling.requestedConsultationMode, ConsultationMode.audio);
+    },
+  );
 }
 
 class _FakeProfileRepository implements ProfileRepository {
@@ -297,9 +329,11 @@ class _FakeProfileRepository implements ProfileRepository {
 }
 
 class _FakeSchedulingRepository implements SchedulingRepository {
-  _FakeSchedulingRepository({this.timesFailure});
+  _FakeSchedulingRepository({this.timesFailure, RequestableTimes? response})
+    : _response = response;
 
   final Object? timesFailure;
+  final RequestableTimes? _response;
   final List<String> requestableIds = <String>[];
   int requestCalls = 0;
   String? requestedProfessionalId;
@@ -308,20 +342,22 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   String? idempotencyKey;
   ConsultationMode? requestedConsultationMode;
 
-  RequestableTimes get response => RequestableTimes(
-    professionalProfileId: 'pro-1',
-    timezone: 'Africa/Lagos',
-    durationMinutes: 30,
-    cadenceMinutes: 30,
-    leadTimeMinutes: 120,
-    bookingHorizonDays: 60,
-    times: <RequestableTime>[
-      RequestableTime(
-        startAt: DateTime.parse('2026-07-25T08:00:00.000Z'),
-        endAt: DateTime.parse('2026-07-25T08:30:00.000Z'),
-      ),
-    ],
-  );
+  RequestableTimes get response =>
+      _response ??
+      RequestableTimes(
+        professionalProfileId: 'pro-1',
+        timezone: 'Africa/Lagos',
+        durationMinutes: 30,
+        cadenceMinutes: 30,
+        leadTimeMinutes: 120,
+        bookingHorizonDays: 60,
+        times: <RequestableTime>[
+          RequestableTime(
+            startAt: DateTime.parse('2026-07-25T08:00:00.000Z'),
+            endAt: DateTime.parse('2026-07-25T08:30:00.000Z'),
+          ),
+        ],
+      );
 
   @override
   Future<RequestableTimes> publicRequestableTimes({

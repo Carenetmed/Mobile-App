@@ -1,6 +1,7 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/constants/navigators/router.dart';
 import 'package:app_t/core/constants/strings.dart';
+import 'package:app_t/core/routing/app_navigator.dart';
 import 'package:app_t/core/theme/bloc/theme_bloc.dart';
 import 'package:app_t/core/theme/theme.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ class CarenetApp extends StatelessWidget {
             designSize: const Size(430, 932),
             builder: (context, child) {
               return MaterialApp(
+                navigatorKey: appNavigatorKey,
                 title: Strings.appName,
                 debugShowCheckedModeBanner: false,
                 themeMode: themeMode,

@@ -3,16 +3,20 @@ import '../../domain/entities/auth_session.dart';
 import '../models/auth_session_model.dart';
 import '../services/auth_api_client.dart';
 import '../storage/session_store.dart';
+import '../../../Notifications/domain/services/notification_session_lifecycle.dart';
 
 class AuthRepository {
   AuthRepository({
     required AuthApiClient apiClient,
     required SessionStore sessionStore,
+    NotificationSessionLifecycle? notificationLifecycle,
   }) : _apiClient = apiClient,
-       _sessionStore = sessionStore;
+       _sessionStore = sessionStore,
+       _notificationLifecycle = notificationLifecycle;
 
   final AuthApiClient _apiClient;
   final SessionStore _sessionStore;
+  final NotificationSessionLifecycle? _notificationLifecycle;
   Future<AuthSession>? _refreshing;
 
   Future<AuthSession> register({
@@ -28,6 +32,7 @@ class AuthRepository {
       profile: profile,
     );
     await _sessionStore.save(session);
+    await _notifyAuthenticated(session);
     return session;
   }
 
@@ -37,6 +42,7 @@ class AuthRepository {
   }) async {
     final session = await _apiClient.login(email: email, password: password);
     await _sessionStore.save(session);
+    await _notifyAuthenticated(session);
     return session;
   }
 
@@ -72,9 +78,11 @@ class AuthRepository {
         refreshToken: current.refreshToken,
       );
       await _sessionStore.save(session);
+      await _notifyAuthenticated(session);
       return session;
     } on AuthFailure catch (failure) {
       if (failure.shouldClearSession) {
+        await _notifyBeforeClear(current);
         await _sessionStore.clear();
       }
       rethrow;
@@ -85,6 +93,7 @@ class AuthRepository {
     final current = await _sessionStore.read();
     try {
       if (current != null) {
+        await _notifyBeforeClear(current);
         await _apiClient.logout(refreshToken: current.refreshToken);
       }
     } finally {
@@ -101,6 +110,8 @@ class AuthRepository {
     required String password,
   }) async {
     await _apiClient.confirmPasswordReset(token: token, password: password);
+    final current = await _sessionStore.read();
+    if (current != null) await _notifyBeforeClear(current);
     await _sessionStore.clear();
   }
 
@@ -110,6 +121,7 @@ class AuthRepository {
   }) async {
     final session = await _apiClient.googleSignIn(idToken: idToken, role: role);
     await _sessionStore.save(session);
+    await _notifyAuthenticated(session);
     return session;
   }
 
@@ -130,5 +142,21 @@ class AuthRepository {
       );
     }
     return current;
+  }
+
+  Future<void> _notifyAuthenticated(AuthSessionModel session) async {
+    try {
+      await _notificationLifecycle?.onAuthenticatedSession(session);
+    } catch (_) {
+      // Notification setup must never invalidate a successful auth session.
+    }
+  }
+
+  Future<void> _notifyBeforeClear(AuthSessionModel session) async {
+    try {
+      await _notificationLifecycle?.beforeLogout(session);
+    } catch (_) {
+      // Session cleanup remains authoritative when notification cleanup fails.
+    }
   }
 }

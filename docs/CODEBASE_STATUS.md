@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-07-29 PAY-P1-008 paid-consultation financial experience.
+**Last updated:** 2026-08-02 NOTIF-P1-010 transactional notification milestone.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -38,6 +38,10 @@ PAY-P1-008 adds backend-authoritative consultation pricing, hosted Paystack
 checkout, payment-state refresh, and a professional finance surface for held
 earnings, balances, bank setup, payout cooling, ledger, and payout history.
 Flutter never confirms payment from browser return and never handles card data.
+NOTIF-P1-010 adds a backend-owned durable transactional inbox, channel
+preferences, FCM installation lifecycle, contextual permission UX, unread header
+badge, privacy-safe foreground/background/terminated handling, and owner-checked
+allowlisted routing. Push and email remain transport rather than product authority.
 Many retained routes and local account/profile seams still require the ordered
 Phase 1 narrowing plan before release claims.
 
@@ -53,7 +57,7 @@ not override the `APP-P1` product boundary.
 | App entry | `lib/main.dart` -> `CarenetApp` in `lib/app.dart` |
 | Start screen | `RouteName.splash` (not notifications) |
 | Splash -> session guard | 800ms then `AuthRepository.restore()` routes usable stored sessions to `dashboard`; missing, invalid, or failed restore falls back to `onboarding` |
-| Named routes | Baseline has **74 router cases** plus the reserved unused `login` constant; final Phase 1 disposition is in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
+| Named routes | Current router has **78 cases** plus the reserved unused `login` constant; final Phase 1 disposition is in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
 | Onboarding UI | First launch shows a care gateway with `Browse verified care`, `Create account`, and `Already have an account? Sign in`. Create account opens role-first signup instead of direct phone signup |
 | Role-based onboarding boundary | `ROLE_BASED_ONBOARDING_AUTH_BOUNDARY.md` records the PRD-backed product decision that CareNet sign-up must branch into patient and professional onboarding before Google sign-up or broader auth expansion. Professional accounts must proceed through profile, credential upload, and manual verification before public listing |
 | Role-registration backend contract | `ROLE_REGISTRATION_BACKEND_CONTRACT.md` records the exact frontend/backend boundary: email/password and Google-created accounts must use explicit `PATIENT`/`PROFESSIONAL` role selection before account creation is treated as complete. Existing linked Google sign-in and authenticated Google linking remain valid, but first-time Google sign-up stays disabled until role-selection onboarding exists |
@@ -89,9 +93,9 @@ not override the `APP-P1` product boundary.
 | Paid consultation experience | Public detail displays the exact backend NGN consultation price and fails closed when not bookable. Appointment Detail renders backend payment state, serializes hosted Paystack initialization with one persisted account/appointment idempotency key, opens only the exact HTTPS Paystack checkout host, and refreshes backend authority on app resume. Professional Account exposes price, held/eligible/available/processing/paid balances, masked payout profile, bank resolution/confirmation, ledger, and payout history. No card data, recipient code, or local payment success is stored or shown |
 | Home inner tabs | `Feed`, `Messages`, and `Articles` all render real content; Messages preview hands off to the dedicated `messages` route |
 | Messaging flow | Primary Messages destination shows an honest appointment-conversation empty state; seeded social conversations and arbitrary new-chat behavior are not presented as production data |
-| Notifications screen | Header bell opens an honest empty notification surface; seeded local/social notifications and deferred route promotions are removed |
-| Notification card routing | `Complete your profile` -> `medicalEdit`, `Dr. Lagbaja has replied your message.` -> `messages`, `You are missing updates` -> `dashboard`, `Your appointment is booked` -> `appointments`, `Update your reading...` -> `readings`, `Dr. Tamedu has published a new article` -> `articles`, `Your emergency request is approved.` -> `emergency`, and `Dr. Lakasegbe has published a new podcast` -> `podcast` |
-| Notification categories | `All`, `Events`, `Appointment`, and `Messages` now filter the list honestly; `Payment` is explicitly disabled until that feature surface exists |
+| Notifications screen | Header bell opens the authenticated backend inbox with loading, empty, error, retained refresh, pagination, unread styling, read-one/read-all, and no seeded fallback. The account area and inbox settings action open backend notification preferences |
+| Notification routing | FCM taps carry an opaque notification ID. Flutter restores the session, fetches that owner-scoped notification, marks it read, then resolves only appointment/consultation, conversation, professional verification, professional finance, or account-security route codes. Unknown/stale/foreign items fail closed to the inbox |
+| Notification categories | Backend categories are Appointments, Messages, Consultations, Payments, Earnings and payouts, Account and security, and Professional verification. The in-app inbox remains durable while push/email preferences are changed per category |
 | Legacy messaging cleanup | `Chat_2.dart` and `Message.dart` are removed; `RouteName.message` is a fail-closed compatibility alias and cannot expose a seeded conversation |
 | Readings flow | `readings` now routes into `manageReadings` via the `Add new Readings` tile, and `Done` returns to `readings` |
 | Readings export state | `Download Readings` is intentionally deferred and labeled as such until add-reading/device onboarding exists |
@@ -516,6 +520,21 @@ not override the `APP-P1` product boundary.
   Flutter tests, clean `flutter analyze`, standard and staging-configured debug
   Android APK builds, stable dependency resolution, and `git diff --check`.
 - Canonical contract: `PHASE_1_APPOINTMENT_CONSULTATIONS.md`.
+
+## NOTIF-P1-010 transactional notifications
+
+- Backend `NOTIF-P1-010A` owns durable domain events, recipient resolution,
+  inbox projection, preferences, reminders, provider delivery state, retry and
+  signed Resend webhook processing.
+- Flutter `APP-P1-010B` owns authenticated inbox presentation, read/unread,
+  preference controls, secure installation lifecycle, contextual FCM permission,
+  foreground display, pending cold-start taps, and owner-checked route resolution.
+- Push content is generic and privacy-safe. Destination pages reload current
+  appointment, conversation, consultation, finance, verification, or account
+  authority from CareNet APIs.
+- Firebase configuration is compile-time and environment-specific. Provider
+  secrets and Firebase Admin credentials are not present in the mobile repository.
+- Canonical contract: `PHASE_1_TRANSACTIONAL_NOTIFICATIONS.md`.
 
 ## Design debt (fix in Phase 2+)
 

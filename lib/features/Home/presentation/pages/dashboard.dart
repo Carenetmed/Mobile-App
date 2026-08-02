@@ -15,6 +15,7 @@ import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart
 import 'package:app_t/features/Home/presentation/state/marketplace_home_state.dart';
 import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
 import 'package:app_t/features/Messaging/presentation/pages/Messages.dart';
+import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:flutter/material.dart';
 
 class Dashboard extends StatefulWidget {
@@ -24,6 +25,7 @@ class Dashboard extends StatefulWidget {
     this.profileRepository,
     this.onboardingRepository,
     this.schedulingRepository,
+    this.notificationCoordinator,
     this.initialIndex = 0,
   });
 
@@ -31,6 +33,7 @@ class Dashboard extends StatefulWidget {
   final ProfileRepository? profileRepository;
   final OnboardingRepository? onboardingRepository;
   final SchedulingRepository? schedulingRepository;
+  final NotificationCoordinator? notificationCoordinator;
   final int initialIndex;
 
   @override
@@ -97,13 +100,7 @@ class _DashboardState extends State<Dashboard> {
                 ),
               ),
               actions: [
-                IconButton(
-                  tooltip: 'Notifications',
-                  onPressed:
-                      () =>
-                          Navigator.pushNamed(context, RouteName.notification),
-                  icon: const Icon(Icons.notifications_outlined),
-                ),
+                _notificationButton(context),
                 IconButton(
                   tooltip: 'Account',
                   onPressed:
@@ -166,6 +163,63 @@ class _DashboardState extends State<Dashboard> {
     });
   }
 
+  Widget _notificationButton(BuildContext context) {
+    final coordinator =
+        widget.notificationCoordinator ??
+        (sl.isRegistered<NotificationCoordinator>()
+            ? sl<NotificationCoordinator>()
+            : null);
+    Widget button(int unreadCount) {
+      return IconButton(
+        tooltip:
+            unreadCount > 0
+                ? 'Notifications, $unreadCount unread'
+                : 'Notifications',
+        onPressed: () => Navigator.pushNamed(context, RouteName.notification),
+        icon: SizedBox.square(
+          dimension: 28,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const Center(child: Icon(Icons.notifications_outlined)),
+              if (unreadCount > 0)
+                Positioned(
+                  right: -5,
+                  top: -4,
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      minWidth: 17,
+                      minHeight: 17,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: Color(0xFFC62828),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      unreadCount > 99 ? '99+' : '$unreadCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (coordinator == null) return button(0);
+    return AnimatedBuilder(
+      animation: coordinator,
+      builder: (_, __) => button(coordinator.unreadCount),
+    );
+  }
+
   _DashboardRole? _resolvedRole(AuthSessionModel? session) {
     if (session == null ||
         session.accessToken.trim().isEmpty ||
@@ -196,23 +250,22 @@ class _DashboardState extends State<Dashboard> {
                       : MarketplaceHomeRole.patient,
               onPrimaryAction: () => _selectIndex(1),
               onAppointments: () => _selectIndex(2),
-              onAppointment:
-                  (appointmentId) {
-                    Navigator.pushNamed(
-                      context,
-                      RouteName.appointmentDetail,
-                      arguments: appointmentId,
-                    ).then((_) {
-                      if (!mounted) {
-                        return;
-                      }
-                      setState(() {
-                        _appointmentsRefreshVersion += 1;
-                        _index = 2;
-                        _builtIndices.add(2);
-                      });
-                    });
-                  },
+              onAppointment: (appointmentId) {
+                Navigator.pushNamed(
+                  context,
+                  RouteName.appointmentDetail,
+                  arguments: appointmentId,
+                ).then((_) {
+                  if (!mounted) {
+                    return;
+                  }
+                  setState(() {
+                    _appointmentsRefreshVersion += 1;
+                    _index = 2;
+                    _builtIndices.add(2);
+                  });
+                });
+              },
               onReadinessAction:
                   (readiness) => Navigator.pushNamed(
                     context,

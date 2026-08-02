@@ -7,7 +7,9 @@
 > conservative while removing deferred routes from normal visible reachability.
 > `dashboard` resolves the authenticated backend session role into patient
 > Home/Find Care/Appointments/Messages or professional
-> Home/Schedule/Appointments/Messages. `notification` opens from the header bell,
+> Home/Schedule/Appointments/Messages. `notification` opens the backend-owned
+> transactional inbox from the header bell; `notificationPreferences` opens
+> from the inbox or Account,
 > and the Home destination composes owner profile, account readiness, own
 > appointments, and professional availability through existing repositories.
 > Home actions switch to the retained Find Care, Schedule, or Appointments tabs;
@@ -103,7 +105,8 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `messages` | `messages` | `MessagesPage` (authenticated appointment conversations) | `lib/features/Messaging/presentation/pages/Messages.dart` |
 | `chat` | `chat` | `ChatPage` (typed conversation/appointment arguments; backend authority required) | `lib/features/Messaging/presentation/pages/Chat.dart` |
 | `message` | `message` | `ChatPage` fail-closed compatibility alias; no seeded conversation | `lib/features/Messaging/presentation/pages/Chat.dart` |
-| `notification` | `notification` | `NotificationsPage` | `lib/features/Messaging/presentation/pages/Notification.dart` |
+| `notification` | `notification` | `NotificationsPage` (authenticated durable inbox) | `lib/features/Messaging/presentation/pages/Notification.dart` |
+| `notificationPreferences` | `notificationPreferences` | `NotificationPreferencesPage` | `lib/features/Notifications/presentation/pages/notification_preferences_page.dart` |
 | `reminder` | `reminder` | `ReminderShellPage` | `lib/features/Home/presentation/pages/reminder_shell.dart` |
 | `schedules` | `schedules` | `SchedulesShellPage` | `lib/features/Home/presentation/pages/schedules_shell.dart` |
 | `selectedDates` | `selectedDates` | `SelectedDatesShellPage` (professional recurring availability) | `lib/features/Home/presentation/pages/selected_dates_shell.dart` |

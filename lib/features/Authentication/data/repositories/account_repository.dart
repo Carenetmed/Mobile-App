@@ -3,16 +3,20 @@ import '../../domain/entities/auth_user.dart';
 import '../models/auth_session_model.dart';
 import '../services/auth_api_client.dart';
 import '../storage/session_store.dart';
+import '../../../Notifications/domain/services/notification_session_lifecycle.dart';
 
 class AccountRepository {
-  const AccountRepository({
+  AccountRepository({
     required AuthApiClient apiClient,
     required SessionStore sessionStore,
+    NotificationSessionLifecycle? notificationLifecycle,
   }) : _apiClient = apiClient,
-       _sessionStore = sessionStore;
+       _sessionStore = sessionStore,
+       _notificationLifecycle = notificationLifecycle;
 
   final AuthApiClient _apiClient;
   final SessionStore _sessionStore;
+  final NotificationSessionLifecycle? _notificationLifecycle;
 
   Future<AuthUser> currentAccount() async {
     final current = await _requireSession();
@@ -20,6 +24,11 @@ class AccountRepository {
       return await _apiClient.me(accessToken: current.accessToken);
     } on AuthFailure catch (failure) {
       if (failure.shouldClearSession) {
+        try {
+          await _notificationLifecycle?.beforeLogout(current);
+        } catch (_) {
+          // Session invalidation remains authoritative if cleanup is unavailable.
+        }
         await _sessionStore.clear();
       }
       rethrow;

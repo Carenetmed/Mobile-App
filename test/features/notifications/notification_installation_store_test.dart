@@ -1,0 +1,58 @@
+import 'package:app_t/features/Notifications/data/services/firebase_notification_transport.dart';
+import 'package:app_t/features/Notifications/data/storage/notification_installation_store.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    FlutterSecureStorage.setMockInitialValues(<String, String>{});
+  });
+
+  test(
+    'installation identifier is generated once and persists securely',
+    () async {
+      final store = SecureNotificationInstallationStore();
+
+      final first = await store.installationId();
+      final second = await store.installationId();
+
+      expect(first, hasLength(32));
+      expect(second, first);
+      expect(first, matches(RegExp(r'^[a-f0-9]{32}$')));
+    },
+  );
+
+  test('account binding and pending tap are independently cleared', () async {
+    final store = SecureNotificationInstallationStore();
+    await store.bindUser('user-1');
+    await store.savePendingNotificationId('notification-1');
+
+    await store.clearPendingNotificationId();
+    expect(await store.boundUserId(), 'user-1');
+    expect(await store.pendingNotificationId(), isNull);
+
+    await store.clearBinding();
+    expect(await store.boundUserId(), isNull);
+  });
+
+  test('Firebase client config requires all four non-secret identifiers', () {
+    const complete = FirebaseClientConfig(
+      projectId: 'staging-project',
+      appId: '1:123:android:abc',
+      messagingSenderId: '123',
+      apiKey: 'public-firebase-api-key',
+    );
+    const incomplete = FirebaseClientConfig(
+      projectId: 'staging-project',
+      appId: '',
+      messagingSenderId: '123',
+      apiKey: 'public-firebase-api-key',
+    );
+
+    expect(complete.isConfigured, isTrue);
+    expect(complete.options.projectId, 'staging-project');
+    expect(incomplete.isConfigured, isFalse);
+  });
+}

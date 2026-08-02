@@ -268,9 +268,11 @@ These are removal or replacement requirements, not acceptable production data:
 6. Delete exclusive deferred code only after navigation pruning, retained-flow
    tests, and package/asset usage checks pass.
 
-## Decisions that still block complete Phase 1
+## APP-P1-001 unresolved decisions and later resolutions
 
-These questions are intentionally unanswered:
+This table records what was intentionally unanswered in APP-P1-001. Later
+canonical milestone contracts supersede rows marked implemented; remaining
+support, dual-role, and follow-up policy still require deliberate decisions.
 
 | Area | Decision still required | Blocks |
 |---|---|---|
@@ -279,7 +281,7 @@ These questions are intentionally unanswered:
 | Consultation implementation | External RTC vendor, server-side room/token lifecycle, join window, reconnect/failure behavior, consent/privacy, session completion, and audit event details. The Phase 1 placement and CareNet authorization ownership are approved | Join Consultation runtime behavior |
 | Messaging implementation | Appointment eligibility states, send/read model, realtime transport, attachments, retention, moderation, notification interaction, and audit details. Appointment ownership and placement are approved | Messages data and appointment chat runtime behavior |
 | Support | Support channel, ticket ownership, escalation, dispute intake, operating hours, emergency disclaimer | Support and post-booking recovery |
-| Notifications | Server event catalog, push provider, permission timing, read state, deep links, quiet hours | Real notification center and bell badge |
+| Notifications | Implemented by `NOTIF-P1-010`: durable event catalogue/inbox, preferences, backend reminders, FCM, critical Resend email, contextual permission, read state, unread badge, and owner-checked allowlisted routes. Quiet hours and marketing communication remain deferred | `PHASE_1_TRANSACTIONAL_NOTIFICATIONS.md` |
 | Refund/follow-up | Eligibility, actor authority, timelines, payout reversal, follow-up booking rules | Refund and post-consultation paths |
 
 No runtime slice may invent these answers. Affected work must stop at the existing

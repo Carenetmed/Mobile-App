@@ -304,18 +304,19 @@ Implementation contract: `PHASE_1_FIND_CARE.md`.
 The A-J plan can fully narrow and prove the existing backend-supported core.
 Appointment-linked plain-text messaging and paid-consultation financial
 authority are implemented. `CALL-P1-009` implements the approved external-RTC
-consultation boundary. Notification delivery, broader support operations,
-dual-role accounts, and profile/deferred-source cleanup remain separate.
+consultation boundary. `NOTIF-P1-010` implements durable transactional inbox,
+reminder, push, and critical-email authority. Broader support operations,
+dual-role accounts, marketing communication, and profile/deferred-source cleanup
+remain separate.
 
 Those lanes must be selected deliberately after the current-core narrowing. They
 are not automatically inserted into this plan and are not silently treated as done.
 
 ## Next runtime selection
 
-No later capability starts automatically after `CALL-P1-009`. The project lead
-must select and approve the next Phase 1 launch gate. Push delivery, profile
-cleanup, retention/privacy policy, and deferred-source cleanup remain separate
-milestones.
+No later capability starts automatically after `NOTIF-P1-010`. The project lead
+must select and approve the next Phase 1 launch gate. Profile cleanup,
+retention/privacy policy, and deferred-source cleanup remain separate milestones.
 
 ## CALL-P1-009 - Appointment-linked consultations
 
@@ -330,5 +331,21 @@ custom WebRTC transport, recording, transcription, automatic refund, or
 automatic completion was added.
 
 Canonical contract: `PHASE_1_APPOINTMENT_CONSULTATIONS.md`.
+
+## NOTIF-P1-010 - Durable transactional notifications
+
+Status: backend and Flutter implementation complete on dedicated milestone
+branches; full CI, staging/provider, physical-device proof, review and merge are
+required before final completion is claimed.
+
+The backend owns event authority, recipient resolution, durable inbox,
+preferences, reminder planning, provider-neutral delivery state, retries,
+Firebase Admin push, Resend email, and signed email webhooks. Flutter owns secure
+installation registration, contextual permission, inbox/read state, unread badge,
+preference controls, foreground/background/terminated receipt, and owner-checked
+allowlisted route resolution. Provider payloads are generic and destination
+screens reload current CareNet state.
+
+Canonical mobile contract: `PHASE_1_TRANSACTIONAL_NOTIFICATIONS.md`.
 
 No later capability is selected automatically after this milestone.

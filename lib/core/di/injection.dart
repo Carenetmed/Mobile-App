@@ -24,6 +24,12 @@ import '../../features/Home/data/storage/payment_checkout_intent_store.dart';
 import '../../features/Home/domain/services/booking_resume_service.dart';
 import '../../features/Messaging/data/repositories/messaging_repository.dart';
 import '../../features/Messaging/data/services/messaging_api_client.dart';
+import '../../features/Notifications/data/repositories/notification_repository.dart';
+import '../../features/Notifications/data/services/firebase_notification_transport.dart';
+import '../../features/Notifications/data/services/notification_api_client.dart';
+import '../../features/Notifications/data/storage/notification_installation_store.dart';
+import '../../features/Notifications/presentation/state/notification_coordinator.dart';
+import '../routing/app_navigator.dart';
 
 /// Global service locator. Register dependencies here as features are built.
 final GetIt sl = GetIt.instance;
@@ -96,11 +102,45 @@ Future<void> configureDependencies() async {
       () => MessagingApiClient(config: sl<CareNetApiConfig>()),
     );
   }
+  if (!sl.isRegistered<NotificationApiClient>()) {
+    sl.registerLazySingleton<NotificationApiClient>(
+      () => NotificationApiClient(config: sl<CareNetApiConfig>()),
+    );
+  }
+  if (!sl.isRegistered<NotificationInstallationStore>()) {
+    sl.registerLazySingleton<NotificationInstallationStore>(
+      SecureNotificationInstallationStore.new,
+    );
+  }
+  if (!sl.isRegistered<NotificationTransport>()) {
+    sl.registerLazySingleton<NotificationTransport>(
+      FirebaseNotificationTransport.new,
+    );
+  }
+  if (!sl.isRegistered<NotificationRepository>()) {
+    sl.registerLazySingleton<NotificationRepository>(
+      () => NotificationRepository(
+        apiClient: sl<NotificationApiClient>(),
+        sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<NotificationCoordinator>()) {
+    sl.registerLazySingleton<NotificationCoordinator>(
+      () => NotificationCoordinator(
+        repository: sl<NotificationRepository>(),
+        installationStore: sl<NotificationInstallationStore>(),
+        transport: sl<NotificationTransport>(),
+        navigatorKey: appNavigatorKey,
+      ),
+    );
+  }
   if (!sl.isRegistered<AuthRepository>()) {
     sl.registerLazySingleton<AuthRepository>(
       () => AuthRepository(
         apiClient: sl<AuthApiClient>(),
         sessionStore: sl<SessionStore>(),
+        notificationLifecycle: sl<NotificationCoordinator>(),
       ),
     );
   }
@@ -109,6 +149,7 @@ Future<void> configureDependencies() async {
       () => AccountRepository(
         apiClient: sl<AuthApiClient>(),
         sessionStore: sl<SessionStore>(),
+        notificationLifecycle: sl<NotificationCoordinator>(),
       ),
     );
   }

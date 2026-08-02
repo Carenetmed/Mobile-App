@@ -96,6 +96,7 @@ class RouteName {
   static const String chat = 'chat';
   static const String message = 'message';
   static const String notification = 'notification';
+  static const String notificationPreferences = 'notificationPreferences';
   static const String reminder = 'reminder';
   static const String schedules = 'schedules';
   static const String selectedDates = 'selectedDates';

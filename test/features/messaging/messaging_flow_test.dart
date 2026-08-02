@@ -4,10 +4,12 @@ import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
 import 'package:app_t/features/Messaging/domain/entities/messaging_models.dart';
 import 'package:app_t/features/Messaging/data/services/messaging_realtime_client.dart';
 import 'package:app_t/features/Messaging/presentation/state/messaging_controllers.dart';
+import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'messaging_test_fakes.dart';
+import '../notifications/notification_test_fakes.dart';
 
 void main() {
   testWidgets('empty backend list shows honest appointment-linked state', (
@@ -125,7 +127,29 @@ void main() {
   testWidgets('notifications do not expose deferred seeded activity', (
     tester,
   ) async {
-    await tester.pumpWidget(const MaterialApp(home: NotificationsPage()));
+    final repository = FakeNotificationRepository();
+    final coordinator = NotificationCoordinator(
+      repository: repository,
+      installationStore: FakeNotificationInstallationStore(),
+      transport: FakeNotificationTransport(),
+      navigatorKey: GlobalKey<NavigatorState>(),
+      metadataLoader:
+          () async => const NotificationDeviceMetadata(
+            platform: 'ANDROID',
+            appId: 'com.carenet.app',
+            appVersion: '1.0.0+1',
+            locale: 'en_NG',
+          ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: NotificationsPage(
+          repository: repository,
+          coordinator: coordinator,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
     expect(find.text('No notifications yet'), findsOneWidget);
     expect(find.textContaining('Circle'), findsNothing);
     expect(find.textContaining('podcast'), findsNothing);

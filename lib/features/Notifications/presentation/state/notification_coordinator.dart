@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Messaging/presentation/state/messaging_controllers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -60,6 +62,7 @@ class NotificationCoordinator extends ChangeNotifier
   AuthSessionModel? _session;
   Future<void>? _activeRegistration;
   Future<void>? _activeTap;
+  bool _navigationReady = false;
 
   bool get pushConfigured => _transport.isConfigured;
 
@@ -75,7 +78,8 @@ class NotificationCoordinator extends ChangeNotifier
       WidgetsBinding.instance.addObserver(this);
       _observingLifecycle = true;
       permission = await _transport.permission();
-    } catch (_) {
+    } catch (error) {
+      _debug('transport initialization failed (${error.runtimeType}).');
       permission = NotificationPermissionValue.notDetermined;
     }
     _notify();
@@ -92,6 +96,9 @@ class NotificationCoordinator extends ChangeNotifier
   @override
   Future<void> onAuthenticatedSession(AuthSessionModel session) async {
     final previousUser = await _installationStore.boundUserId();
+    _debug(
+      'authenticated session; previous owner matches=${previousUser == null || previousUser == session.user.id}.',
+    );
     if (previousUser != null && previousUser != session.user.id) {
       await _installationStore.clearPendingNotificationId();
       unreadCount = 0;
@@ -99,6 +106,12 @@ class NotificationCoordinator extends ChangeNotifier
     _session = session;
     await _registerCurrentInstallation();
     await refreshUnreadCount();
+    if (_navigationReady) await _resolvePendingTap();
+  }
+
+  Future<void> markNavigationReady() async {
+    _navigationReady = true;
+    _debug('navigation is ready.');
     await _resolvePendingTap();
   }
 
@@ -217,7 +230,12 @@ class NotificationCoordinator extends ChangeNotifier
 
   Future<void> _handleTap(String notificationId) async {
     await _installationStore.savePendingNotificationId(notificationId);
-    if (_session == null || _navigatorKey.currentState == null) return;
+    _debug('tap saved for owner validation.');
+    if (!_navigationReady ||
+        _session == null ||
+        _navigatorKey.currentState == null) {
+      return;
+    }
     await _resolvePendingTap();
   }
 
@@ -225,17 +243,36 @@ class NotificationCoordinator extends ChangeNotifier
     final navigator = _navigatorKey.currentState;
     final session = _session;
     final id = await _installationStore.pendingNotificationId();
+    _debug('pending tap available=${id != null}.');
     if (navigator == null || session == null || id == null) return;
     try {
       final notification = await _repository.notification(id);
       if (!notification.isRead) await _repository.markRead(id);
       await _installationStore.clearPendingNotificationId();
       await refreshUnreadCount();
+      _debug('owned tap resolved to ${notification.routeCode ?? 'INBOX'}.');
       _openOwnedDestination(navigator, notification);
+    } on AuthFailure catch (failure) {
+      if (_isRecoverableTapFailure(failure)) {
+        _debug('owned tap deferred after recoverable ${failure.type.name}.');
+        return;
+      }
+      await _installationStore.clearPendingNotificationId();
+      navigator.pushNamed(RouteName.notification);
     } catch (_) {
       await _installationStore.clearPendingNotificationId();
       navigator.pushNamed(RouteName.notification);
     }
+  }
+
+  bool _isRecoverableTapFailure(AuthFailure failure) {
+    return failure.type == AuthFailureType.unauthorized ||
+        failure.type == AuthFailureType.network ||
+        failure.type == AuthFailureType.server;
+  }
+
+  void _debug(String message) {
+    if (kDebugMode) debugPrint('CareNet notifications: $message');
   }
 
   void _openOwnedDestination(

@@ -56,7 +56,7 @@ not override the `APP-P1` product boundary.
 |------|---------|
 | App entry | `lib/main.dart` -> `CarenetApp` in `lib/app.dart` |
 | Start screen | `RouteName.splash` (not notifications) |
-| Splash -> session guard | 800ms then `AuthRepository.restore()` routes usable stored sessions to `dashboard`; missing, invalid, or failed restore falls back to `onboarding` |
+| Splash -> session guard | 800ms then `AuthRepository.restore()` routes usable stored sessions to `dashboard`; missing or invalid restore falls back to `onboarding`. Auth refresh and booking-resume readiness calls are bounded to five seconds so an unavailable dependency cannot leave startup hanging, and pending notification routing begins only after the replacement frame is ready |
 | Named routes | Current router has **78 cases** plus the reserved unused `login` constant; final Phase 1 disposition is in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
 | Onboarding UI | First launch shows a care gateway with `Browse verified care`, `Create account`, and `Already have an account? Sign in`. Create account opens role-first signup instead of direct phone signup |
 | Role-based onboarding boundary | `ROLE_BASED_ONBOARDING_AUTH_BOUNDARY.md` records the PRD-backed product decision that CareNet sign-up must branch into patient and professional onboarding before Google sign-up or broader auth expansion. Professional accounts must proceed through profile, credential upload, and manual verification before public listing |
@@ -94,7 +94,7 @@ not override the `APP-P1` product boundary.
 | Home inner tabs | `Feed`, `Messages`, and `Articles` all render real content; Messages preview hands off to the dedicated `messages` route |
 | Messaging flow | Primary Messages destination shows an honest appointment-conversation empty state; seeded social conversations and arbitrary new-chat behavior are not presented as production data |
 | Notifications screen | Header bell opens the authenticated backend inbox with loading, empty, error, retained refresh, pagination, unread styling, read-one/read-all, and no seeded fallback. The account area and inbox settings action open backend notification preferences |
-| Notification routing | FCM taps carry an opaque notification ID. Flutter restores the session, fetches that owner-scoped notification, marks it read, then resolves only appointment/consultation, conversation, professional verification, professional finance, or account-security route codes. Unknown/stale/foreign items fail closed to the inbox |
+| Notification routing | FCM taps carry an opaque notification ID. Flutter retains cold-start taps until navigation and the authenticated session are ready, fetches that owner-scoped notification, marks it read, then resolves only appointment/consultation, conversation, professional verification, professional finance, or account-security route codes. Recoverable session/network/server failures preserve the pending tap for retry; unknown/stale/foreign items fail closed to the inbox. Physical Android staging proof opened the exact appointment conversation from a terminated-app message notification |
 | Notification categories | Backend categories are Appointments, Messages, Consultations, Payments, Earnings and payouts, Account and security, and Professional verification. The in-app inbox remains durable while push/email preferences are changed per category |
 | Legacy messaging cleanup | `Chat_2.dart` and `Message.dart` are removed; `RouteName.message` is a fail-closed compatibility alias and cannot expose a seeded conversation |
 | Readings flow | `readings` now routes into `manageReadings` via the `Add new Readings` tile, and `Done` returns to `readings` |
@@ -534,6 +534,12 @@ not override the `APP-P1` product boundary.
   authority from CareNet APIs.
 - Firebase configuration is compile-time and environment-specific. Provider
   secrets and Firebase Admin credentials are not present in the mobile repository.
+- Staging and physical Android proof covers native high-importance channel
+  creation, a valid notification drawable, foreground/background/terminated
+  receipt, owner-scoped cold-start routing to the exact appointment conversation,
+  and bounded splash/readiness recovery. Provider acceptance and signed email
+  webhook processing are proven separately; production delivery and iOS APNs are
+  not claimed.
 - Canonical contract: `PHASE_1_TRANSACTIONAL_NOTIFICATIONS.md`.
 
 ## Design debt (fix in Phase 2+)

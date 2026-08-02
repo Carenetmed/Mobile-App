@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -100,14 +101,16 @@ class FirebaseNotificationTransport implements NotificationTransport {
     required Future<void> Function() onTokenRefresh,
   }) async {
     if (!isConfigured) return;
+    _debug('transport initialization started.');
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(options: _config.options);
     }
+    _debug('Firebase initialized.');
     final messaging = _messaging ?? FirebaseMessaging.instance;
     _messaging = messaging;
     await _localNotifications.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('launcher_icon'),
+        android: AndroidInitializationSettings('carenet_notification'),
         iOS: DarwinInitializationSettings(),
       ),
       onDidReceiveNotificationResponse: (response) async {
@@ -115,6 +118,7 @@ class FirebaseNotificationTransport implements NotificationTransport {
         if (id != null) await onTap(id);
       },
     );
+    _debug('local notification tap handler initialized.');
     await _localNotifications
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -136,7 +140,17 @@ class FirebaseNotificationTransport implements NotificationTransport {
     });
     final initial = await messaging.getInitialMessage();
     final initialId = initial == null ? null : _notificationId(initial.data);
+    if (kDebugMode) {
+      debugPrint(
+        'CareNet notifications: initial message present=${initial != null}, '
+        'owned id present=${initialId != null}.',
+      );
+    }
     if (initialId != null) await onTap(initialId);
+  }
+
+  void _debug(String message) {
+    if (kDebugMode) debugPrint('CareNet notifications: $message');
   }
 
   Future<void> _showForeground(
@@ -150,8 +164,7 @@ class FirebaseNotificationTransport implements NotificationTransport {
     await _localNotifications.show(
       id: id.hashCode & 0x7fffffff,
       title: notification?.title ?? 'CareNet update',
-      body:
-          notification?.body ?? 'Open CareNet to view the latest update.',
+      body: notification?.body ?? 'Open CareNet to view the latest update.',
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'carenet_transactional',
@@ -159,7 +172,7 @@ class FirebaseNotificationTransport implements NotificationTransport {
           channelDescription: 'Appointment and account updates from CareNet.',
           importance: Importance.high,
           priority: Priority.high,
-          icon: 'launcher_icon',
+          icon: 'carenet_notification',
         ),
         iOS: DarwinNotificationDetails(),
       ),

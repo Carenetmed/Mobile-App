@@ -73,6 +73,7 @@ class FakeNotificationRepository implements NotificationRepository {
   AuthSessionModel session;
   List<CareNotification> items;
   Object? listFailure;
+  Object? notificationFailure;
   Object? preferencesFailure;
   Completer<NotificationPage>? listCompleter;
   int unread = 0;
@@ -111,6 +112,7 @@ class FakeNotificationRepository implements NotificationRepository {
 
   @override
   Future<CareNotification> notification(String id) async {
+    if (notificationFailure case final failure?) throw failure;
     final item =
         notificationsById[id] ??
         items.where((candidate) => candidate.id == id).firstOrNull;

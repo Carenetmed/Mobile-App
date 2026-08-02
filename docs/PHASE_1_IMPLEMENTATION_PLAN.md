@@ -335,8 +335,9 @@ Canonical contract: `PHASE_1_APPOINTMENT_CONSULTATIONS.md`.
 ## NOTIF-P1-010 - Durable transactional notifications
 
 Status: backend and Flutter implementation complete on dedicated milestone
-branches; full CI, staging/provider, physical-device proof, review and merge are
-required before final completion is claimed.
+branches. Staging/provider and physical Android foreground/background/terminated
+proof are complete; final CI, adversarial review, and merge remain before final
+completion is claimed.
 
 The backend owns event authority, recipient resolution, durable inbox,
 preferences, reminder planning, provider-neutral delivery state, retries,

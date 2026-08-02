@@ -1,4 +1,5 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -100,6 +101,7 @@ void main() {
     );
     await tester.pumpWidget(_routingApp(navigatorKey));
     await coordinator.onAuthenticatedSession(repository.session);
+    await coordinator.markNavigationReady();
 
     await coordinator.handleTap('notification-appointment');
     await tester.pumpAndSettle();
@@ -129,6 +131,7 @@ void main() {
     );
     await tester.pumpWidget(_routingApp(navigatorKey));
     await coordinator.onAuthenticatedSession(repository.session);
+    await coordinator.markNavigationReady();
 
     await coordinator.handleTap('notification-unknown');
     await tester.pumpAndSettle();
@@ -161,8 +164,53 @@ void main() {
     await coordinator.onAuthenticatedSession(repository.session);
     await tester.pumpAndSettle();
 
+    expect(store.pendingNotification, 'cold-tap');
+    expect(find.text('home'), findsOneWidget);
+
+    await coordinator.markNavigationReady();
+    await tester.pumpAndSettle();
+
     expect(store.pendingNotification, isNull);
     expect(find.text('appointment:appointment-cold'), findsOneWidget);
+  });
+
+  testWidgets('recoverable tap failure preserves intent for session retry', (
+    tester,
+  ) async {
+    final navigatorKey = GlobalKey<NavigatorState>();
+    final store = FakeNotificationInstallationStore();
+    final repository = FakeNotificationRepository(
+        items: [
+          notificationTestItem(id: 'retry-tap', entityId: 'appointment-retry'),
+        ],
+      )
+      ..notificationFailure = const AuthFailure(
+        type: AuthFailureType.unauthorized,
+        message: 'Session refresh is still in progress.',
+        statusCode: 401,
+      );
+    final coordinator = _coordinator(
+      repository,
+      store,
+      FakeNotificationTransport(),
+      navigatorKey: navigatorKey,
+    );
+
+    await tester.pumpWidget(_routingApp(navigatorKey));
+    await coordinator.onAuthenticatedSession(repository.session);
+    await coordinator.markNavigationReady();
+    await coordinator.handleTap('retry-tap');
+    await tester.pumpAndSettle();
+
+    expect(store.pendingNotification, 'retry-tap');
+    expect(find.text('home'), findsOneWidget);
+
+    repository.notificationFailure = null;
+    await coordinator.onAuthenticatedSession(repository.session);
+    await tester.pumpAndSettle();
+
+    expect(store.pendingNotification, isNull);
+    expect(find.text('appointment:appointment-retry'), findsOneWidget);
   });
 }
 

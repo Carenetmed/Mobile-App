@@ -132,9 +132,21 @@ Automated coverage proves API ownership headers and parsing, installation
 metadata, secure persistent installation identity, account switching, logout,
 permission UX, inbox states, read/read-all, preference rollback, cold-start tap
 retention, route allowlisting, auth lifecycle isolation, and the header unread
-badge. Full analyze, Flutter tests, Android debug build, CI, staging migration,
-provider delivery, and physical-device evidence remain release gates until their
-results are recorded.
+badge. Local analyze, all 469 Flutter tests, and the staging-configured Android
+debug build pass for the phone-tested implementation. Staging migration,
+worker scheduling, FCM provider acceptance, Resend provider acceptance, signed
+webhook processing, inbox projection, and delivery-state updates were verified
+against the deployed staging service.
+
+Physical Android proof covered foreground, background, and terminated receipt.
+A terminated-app tap for a real appointment message retained the opaque
+notification ID through startup, restored the authenticated owner, fetched the
+owner-scoped inbox item, and opened the exact appointment conversation. Android
+uses the native high-importance `carenet_transactional` channel and a valid
+monochrome drawable; startup work is bounded so an unavailable readiness call
+cannot leave the splash screen or notification route hanging. These checks are
+staging evidence, not a production delivery, user-read, Play Store, or iOS APNs
+certification claim. Final CI and reviewed merge remain release gates.
 
 ## Explicit exclusions
 

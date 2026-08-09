@@ -61,6 +61,7 @@ import 'package:app_t/features/Messaging/presentation/pages/Messages.dart'
     as messages;
 import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
 import 'package:app_t/features/Messaging/presentation/state/messaging_controllers.dart';
+import 'package:app_t/features/Notifications/presentation/pages/notification_preferences_page.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/commitment_screen.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
@@ -332,6 +333,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _page(settings, const chat.ChatPage());
     case RouteName.notification:
       return _page(settings, const NotificationsPage());
+    case RouteName.notificationPreferences:
+      return _page(settings, const NotificationPreferencesPage());
     case RouteName.reminder:
       return _page(settings, const ReminderShellPage());
     case RouteName.schedules:

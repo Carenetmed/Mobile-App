@@ -52,7 +52,7 @@ The baseline defines 75 `RouteName` constants. Seventy-four have router cases;
 
 | Route | Current screen | Class | Phase 1 disposition | Figma/reference |
 |---|---|---|---|---|
-| `dashboard` | `Dashboard` | ADAPT | Role-aware five-tab shell; notification moves to header bell | `/dashboard` |
+| `dashboard` | `Dashboard` | ADAPT | Role-aware four-tab shell; notification and account access live in the header | `/dashboard` |
 | `search` | `SearchShellPage` | ADAPT | Canonical patient **Find Care** destination using backend public professionals | `/search`, `/search-find-a-consultant` |
 | `findMentor` | `FindMentorShellPage` | DELETE | Duplicate local discovery route; consolidate into Find Care | `/find-mentor` |
 | `specialistDetails` | `SpecialistDetailsShellPage` | ADAPT | Canonical public professional detail; remove local compatibility branch | `/specialist-details` |
@@ -109,7 +109,8 @@ The baseline defines 75 `RouteName` constants. Seventy-four have router cases;
 | `messages` | `MessagesPage` | ADAPT | Appointment-linked conversation list only; remove seeded/generic social data | `/messages` |
 | `chat` | `ChatPage` | ADAPT | Appointment-authorized conversation only; no seeded default | Existing chat/message reference |
 | `message` | `ChatPage` unavailable alias | DELETE | Remove duplicate compatibility alias after callers use `chat` | `/message` |
-| `notification` | `NotificationsPage` | ADAPT | Header-bell destination; remove static social/emergency/content entries | `/notification`, `/notifications` |
+| `notification` | `NotificationsPage` | KEEP | Header-bell destination backed by the authenticated durable transactional inbox | `/notification`, `/notifications` |
+| `notificationPreferences` | `NotificationPreferencesPage` | KEEP | Post-baseline route for backend push/email category preferences, opened from Account or inbox | New Phase 1 transactional-notification surface |
 | `reminder` | `ReminderShellPage` | DEFER | Generic local reminders are outside Phase 1 | `/reminder` |
 | `schedules` | `SchedulesShellPage` | DEFER | Generic event/task schedule is not professional availability | `/schedules` |
 | `selectedDates` | `SelectedDatesShellPage` | ADAPT | Canonical professional **Schedule** using real own availability | `/selected-dates`, `/schedule` family |

@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:app_t/core/constants/app_assets.dart';
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
 import 'package:app_t/features/Home/domain/services/booking_resume_service.dart';
+import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:app_t/shared/widgets/svg_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,10 +19,16 @@ class SplashScreen extends StatefulWidget {
     super.key,
     this.authRepository,
     this.bookingResumeService,
+    this.notificationCoordinator,
+    this.refreshTimeout = const Duration(seconds: 5),
+    this.bookingResumeTimeout = const Duration(seconds: 5),
   });
 
   final AuthRepository? authRepository;
   final BookingResumeService? bookingResumeService;
+  final NotificationCoordinator? notificationCoordinator;
+  final Duration refreshTimeout;
+  final Duration bookingResumeTimeout;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -40,6 +50,15 @@ class _SplashScreenState extends State<SplashScreen> {
         : null;
   }
 
+  NotificationCoordinator? get _notificationCoordinator {
+    if (widget.notificationCoordinator != null) {
+      return widget.notificationCoordinator;
+    }
+    return sl.isRegistered<NotificationCoordinator>()
+        ? sl<NotificationCoordinator>()
+        : null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -54,33 +73,48 @@ class _SplashScreenState extends State<SplashScreen> {
       session = null;
     }
 
+    if (_hasUsableSession(session)) {
+      try {
+        session = await _authRepository.refresh().timeout(
+          widget.refreshTimeout,
+        );
+      } on TimeoutException {
+        // Continue with the restored session while the serialized refresh
+        // remains eligible to complete and notify dependent session services.
+      } on AuthFailure catch (failure) {
+        if (failure.shouldClearSession) session = null;
+      } catch (_) {
+        // A transient refresh failure does not erase a locally restorable session.
+      }
+    }
+
     if (!mounted) return;
     if (!_hasUsableSession(session)) {
-      Navigator.of(context).pushReplacementNamed(RouteName.onboarding);
+      _replaceWith(RouteName.onboarding);
       return;
     }
 
     final resumeService = _bookingResumeService;
     if (resumeService != null) {
       try {
-        final decision = await resumeService.resolveAfterAuthentication();
+        final decision = await resumeService
+            .resolveAfterAuthentication()
+            .timeout(widget.bookingResumeTimeout);
         if (!mounted) return;
         if (decision.target == BookingResumeTarget.professionalDetail &&
             decision.intent != null) {
-          Navigator.of(context).pushReplacementNamed(
+          _replaceWith(
             RouteName.specialistDetails,
             arguments: decision.intent!.professionalProfileId,
           );
           return;
         }
         if (decision.target == BookingResumeTarget.patientOnboarding) {
-          Navigator.of(
-            context,
-          ).pushReplacementNamed(RouteName.patientOnboardingSetup);
+          _replaceWith(RouteName.patientOnboardingSetup);
           return;
         }
         if (decision.target == BookingResumeTarget.authentication) {
-          Navigator.of(context).pushReplacementNamed(RouteName.signInEmail);
+          _replaceWith(RouteName.signInEmail);
           return;
         }
       } catch (_) {
@@ -88,7 +122,14 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     }
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed(RouteName.dashboard);
+    _replaceWith(RouteName.dashboard);
+  }
+
+  void _replaceWith(String routeName, {Object? arguments}) {
+    Navigator.of(context).pushReplacementNamed(routeName, arguments: arguments);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_notificationCoordinator?.markNavigationReady());
+    });
   }
 
   bool _hasUsableSession(AuthSession? session) {

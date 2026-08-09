@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
@@ -21,6 +23,8 @@ Future<void> _pumpSplash(
   WidgetTester tester, {
   required _FakeAuthRepository repository,
   BookingResumeService? bookingResumeService,
+  Duration refreshTimeout = const Duration(seconds: 10),
+  Duration bookingResumeTimeout = const Duration(seconds: 10),
 }) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
@@ -34,6 +38,8 @@ Future<void> _pumpSplash(
             home: SplashScreen(
               authRepository: repository,
               bookingResumeService: bookingResumeService,
+              refreshTimeout: refreshTimeout,
+              bookingResumeTimeout: bookingResumeTimeout,
             ),
             routes: <String, WidgetBuilder>{
               RouteName.dashboard:
@@ -64,6 +70,28 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(repository.restoreCalls, 1);
+      expect(repository.refreshCalls, 1);
+      expect(find.text('dashboard'), findsOneWidget);
+      expect(find.text('onboarding'), findsNothing);
+    });
+
+    testWidgets('bounded refresh cannot strand an authenticated launch', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository(
+        session: _session(),
+        refreshCompleter: Completer<AuthSession>(),
+      );
+
+      await _pumpSplash(
+        tester,
+        repository: repository,
+        refreshTimeout: const Duration(milliseconds: 100),
+      );
+      await tester.pump(const Duration(milliseconds: 901));
+      await tester.pumpAndSettle();
+
+      expect(repository.refreshCalls, 1);
       expect(find.text('dashboard'), findsOneWidget);
       expect(find.text('onboarding'), findsNothing);
     });
@@ -108,6 +136,48 @@ void main() {
       },
     );
 
+    testWidgets('bounded booking recovery cannot strand app startup', (
+      tester,
+    ) async {
+      final session = _session();
+      final sessionStore = InMemorySessionStore()..save(session);
+      final intentStore =
+          InMemoryBookingIntentStore()..save(
+            BookingIntent(
+              professionalProfileId: 'professional-slow',
+              startAt: DateTime.utc(2026, 7, 24, 9),
+              endAt: DateTime.utc(2026, 7, 24, 9, 30),
+              durationMinutes: 30,
+              idempotencyKey: 'booking-key-slow',
+              resumeRoute: RouteName.specialistDetails,
+              createdAt: DateTime.utc(2026, 7, 23),
+              expiresAt: DateTime.utc(2027, 7, 23),
+              accountUserId: session.user.id,
+            ),
+          );
+      final readinessCompleter = Completer<AccountReadiness>();
+      final resumeService = BookingResumeService(
+        bookingIntentStore: intentStore,
+        sessionStore: sessionStore,
+        onboardingRepository: _ReadyPatientOnboardingRepository(
+          sessionStore: sessionStore,
+          readinessCompleter: readinessCompleter,
+        ),
+      );
+
+      await _pumpSplash(
+        tester,
+        repository: _FakeAuthRepository(session: session),
+        bookingResumeService: resumeService,
+        bookingResumeTimeout: const Duration(milliseconds: 100),
+      );
+      await tester.pump(const Duration(milliseconds: 901));
+      await tester.pumpAndSettle();
+
+      expect(find.text('dashboard'), findsOneWidget);
+      expect(await intentStore.read(), isNotNull);
+    });
+
     testWidgets('routes missing sessions to onboarding', (tester) async {
       final repository = _FakeAuthRepository();
 
@@ -116,6 +186,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(repository.restoreCalls, 1);
+      expect(repository.refreshCalls, 0);
       expect(find.text('onboarding'), findsOneWidget);
       expect(find.text('dashboard'), findsNothing);
     });
@@ -130,6 +201,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(repository.restoreCalls, 1);
+      expect(repository.refreshCalls, 0);
       expect(find.text('onboarding'), findsOneWidget);
       expect(find.text('dashboard'), findsNothing);
     });
@@ -142,6 +214,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(repository.restoreCalls, 1);
+      expect(repository.refreshCalls, 0);
       expect(find.text('onboarding'), findsOneWidget);
       expect(find.text('dashboard'), findsNothing);
     });
@@ -149,11 +222,16 @@ void main() {
 }
 
 class _ReadyPatientOnboardingRepository extends OnboardingRepository {
-  _ReadyPatientOnboardingRepository({required super.sessionStore})
-    : super(apiClient: _UnusedOnboardingApiClient());
+  _ReadyPatientOnboardingRepository({
+    required super.sessionStore,
+    this.readinessCompleter,
+  }) : super(apiClient: _UnusedOnboardingApiClient());
+
+  final Completer<AccountReadiness>? readinessCompleter;
 
   @override
   Future<AccountReadiness> accountReadiness() async {
+    if (readinessCompleter case final completer?) return completer.future;
     return const AccountReadiness(
       account: ReadinessAccount(
         role: 'PATIENT',
@@ -176,11 +254,17 @@ class _UnusedOnboardingApiClient implements OnboardingApiClient {
 }
 
 class _FakeAuthRepository implements AuthRepository {
-  _FakeAuthRepository({this.session, this.throwsOnRestore = false});
+  _FakeAuthRepository({
+    this.session,
+    this.throwsOnRestore = false,
+    this.refreshCompleter,
+  });
 
   final AuthSession? session;
   final bool throwsOnRestore;
+  final Completer<AuthSession>? refreshCompleter;
   int restoreCalls = 0;
+  int refreshCalls = 0;
 
   @override
   Future<AuthSession?> restore() async {
@@ -189,6 +273,15 @@ class _FakeAuthRepository implements AuthRepository {
       throw StateError('restore failed');
     }
     return session;
+  }
+
+  @override
+  Future<AuthSession> refresh() async {
+    refreshCalls += 1;
+    if (refreshCompleter case final completer?) return completer.future;
+    final current = session;
+    if (current == null) throw StateError('No session to refresh');
+    return current;
   }
 
   @override

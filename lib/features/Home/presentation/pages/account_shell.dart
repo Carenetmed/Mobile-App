@@ -398,6 +398,17 @@ class _AccountShellPageState extends State<AccountShellPage> {
                   },
                 ),
                 _AccountTile(
+                  icon: Icons.notifications_outlined,
+                  title: 'Notification preferences',
+                  subtitle: 'Choose push and email updates by category',
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      RouteName.notificationPreferences,
+                    );
+                  },
+                ),
+                _AccountTile(
                   icon: Icons.mail_outline,
                   title: 'Email address',
                   subtitle: accountEmail,

@@ -14,13 +14,20 @@ import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
 import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart';
+import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../notifications/notification_test_fakes.dart';
+
 const Size _phoneSize = Size(430, 932);
 
-Future<void> _pumpDashboard(WidgetTester tester, {required String role}) async {
+Future<void> _pumpDashboard(
+  WidgetTester tester, {
+  required String role,
+  NotificationCoordinator? notificationCoordinator,
+}) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
@@ -52,6 +59,7 @@ Future<void> _pumpDashboard(WidgetTester tester, {required String role}) async {
               profileRepository: _FakeProfileRepository(),
               onboardingRepository: _FakeOnboardingRepository(role: role),
               schedulingRepository: _FakeSchedulingRepository(),
+              notificationCoordinator: notificationCoordinator,
             ),
             routes: <String, WidgetBuilder>{
               RouteName.notification:
@@ -124,6 +132,35 @@ void main() {
     await tester.tap(find.byTooltip('Account'));
     await tester.pumpAndSettle();
     expect(find.text('account-route'), findsOneWidget);
+  });
+
+  testWidgets('header bell exposes the authoritative unread count', (
+    tester,
+  ) async {
+    final coordinator = NotificationCoordinator(
+      repository: FakeNotificationRepository(),
+      installationStore: FakeNotificationInstallationStore(),
+      transport: FakeNotificationTransport(),
+      navigatorKey: GlobalKey<NavigatorState>(),
+      metadataLoader:
+          () async => const NotificationDeviceMetadata(
+            platform: 'ANDROID',
+            appId: 'com.carenet.app',
+            appVersion: '1.0.0+1',
+            locale: 'en_NG',
+          ),
+    )..unreadCount = 12;
+
+    await _pumpDashboard(
+      tester,
+      role: 'PATIENT',
+      notificationCoordinator: coordinator,
+    );
+
+    expect(find.text('12'), findsOneWidget);
+    await tester.tap(find.byTooltip('Notifications, 12 unread'));
+    await tester.pumpAndSettle();
+    expect(find.text('notification-route'), findsOneWidget);
   });
 
   testWidgets('messages never expose seeded social conversations', (

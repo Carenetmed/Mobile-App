@@ -116,6 +116,10 @@ Future<void> _pumpAccount(
               RouteName.professionalFinance:
                   (_) =>
                       const Scaffold(body: Text('professional-finance-route')),
+              RouteName.notificationPreferences:
+                  (_) => const Scaffold(
+                    body: Text('notification-preferences-route'),
+                  ),
             },
           ),
     ),
@@ -179,6 +183,30 @@ void main() {
 
     expect(find.text('Account'), findsOneWidget);
     expect(find.text('Delete account'), findsWidgets);
+  });
+
+  testWidgets('account area opens transactional notification preferences', (
+    tester,
+  ) async {
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(
+        user: const AuthUser(
+          id: 'patient-1',
+          email: 'patient@carenet.app',
+          role: 'PATIENT',
+          status: 'ACTIVE',
+          emailVerified: true,
+        ),
+      ),
+    );
+
+    await tester.scrollUntilVisible(find.text('Notification preferences'), 200);
+    await tester.tap(find.text('Notification preferences'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('notification-preferences-route'), findsOneWidget);
   });
 
   testWidgets('logout clears session and returns to onboarding', (

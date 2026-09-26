@@ -1,10 +1,13 @@
 import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
 
 import '../config/carenet_api_config.dart';
+import '../network/carenet_http_client.dart';
 import '../../features/Authentication/data/repositories/account_repository.dart';
 import '../../features/Authentication/data/repositories/auth_repository.dart';
 import '../../features/Authentication/data/services/auth_api_client.dart';
 import '../../features/Authentication/data/services/google_sign_in_provider.dart';
+import '../../features/Authentication/data/services/session_refresh_coordinator.dart';
 import '../../features/Authentication/data/storage/session_store.dart';
 import '../../features/Consultation/data/repositories/consultation_repository.dart';
 import '../../features/Consultation/data/services/consultation_api_client.dart';
@@ -41,9 +44,12 @@ Future<void> configureDependencies() async {
       CareNetApiConfig.fromEnvironment,
     );
   }
+  if (!sl.isRegistered<Dio>()) {
+    sl.registerLazySingleton<Dio>(CareNetHttpClient.create);
+  }
   if (!sl.isRegistered<AuthApiClient>()) {
     sl.registerLazySingleton<AuthApiClient>(
-      () => AuthApiClient(config: sl<CareNetApiConfig>()),
+      () => AuthApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
     );
   }
   if (!sl.isRegistered<GoogleSignInConfig>()) {
@@ -59,6 +65,24 @@ Future<void> configureDependencies() async {
   if (!sl.isRegistered<SessionStore>()) {
     sl.registerLazySingleton<SessionStore>(SecureSessionStore.new);
   }
+  if (!sl.isRegistered<SessionRefreshCoordinator>()) {
+    sl.registerLazySingleton<SessionRefreshCoordinator>(
+      () => SessionRefreshCoordinator(
+        apiClient: sl<AuthApiClient>(),
+        sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl<Dio>().interceptors.any(
+    (item) => item is SessionRefreshInterceptor,
+  )) {
+    sl<Dio>().interceptors.add(
+      SessionRefreshInterceptor(
+        dio: sl<Dio>(),
+        coordinator: sl<SessionRefreshCoordinator>(),
+      ),
+    );
+  }
   if (!sl.isRegistered<BookingIntentStore>()) {
     sl.registerLazySingleton<BookingIntentStore>(SecureBookingIntentStore.new);
   }
@@ -69,42 +93,48 @@ Future<void> configureDependencies() async {
   }
   if (!sl.isRegistered<ProfileApiClient>()) {
     sl.registerLazySingleton<ProfileApiClient>(
-      () => ProfileApiClient(config: sl<CareNetApiConfig>()),
+      () => ProfileApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
     );
   }
   if (!sl.isRegistered<FinancialApiClient>()) {
     sl.registerLazySingleton<FinancialApiClient>(
-      () => FinancialApiClient(config: sl<CareNetApiConfig>()),
+      () => FinancialApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
     );
   }
   if (!sl.isRegistered<OnboardingApiClient>()) {
     sl.registerLazySingleton<OnboardingApiClient>(
-      () => OnboardingApiClient(config: sl<CareNetApiConfig>()),
+      () => OnboardingApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
     );
   }
   if (!sl.isRegistered<SchedulingApiClient>()) {
     sl.registerLazySingleton<SchedulingApiClient>(
-      () => SchedulingApiClient(config: sl<CareNetApiConfig>()),
+      () => SchedulingApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
     );
   }
   if (!sl.isRegistered<ConsultationApiClient>()) {
     sl.registerLazySingleton<ConsultationApiClient>(
-      () => ConsultationApiClient(config: sl<CareNetApiConfig>()),
+      () =>
+          ConsultationApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
     );
   }
   if (!sl.isRegistered<VerificationApiClient>()) {
     sl.registerLazySingleton<VerificationApiClient>(
-      () => VerificationApiClient(config: sl<CareNetApiConfig>()),
+      () => VerificationApiClient(
+        config: sl<CareNetApiConfig>(),
+        dio: sl<Dio>(),
+        uploadDio: CareNetHttpClient.createUpload(),
+      ),
     );
   }
   if (!sl.isRegistered<MessagingApiClient>()) {
     sl.registerLazySingleton<MessagingApiClient>(
-      () => MessagingApiClient(config: sl<CareNetApiConfig>()),
+      () => MessagingApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
     );
   }
   if (!sl.isRegistered<NotificationApiClient>()) {
     sl.registerLazySingleton<NotificationApiClient>(
-      () => NotificationApiClient(config: sl<CareNetApiConfig>()),
+      () =>
+          NotificationApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
     );
   }
   if (!sl.isRegistered<NotificationInstallationStore>()) {
@@ -141,6 +171,7 @@ Future<void> configureDependencies() async {
         apiClient: sl<AuthApiClient>(),
         sessionStore: sl<SessionStore>(),
         notificationLifecycle: sl<NotificationCoordinator>(),
+        refreshCoordinator: sl<SessionRefreshCoordinator>(),
       ),
     );
   }

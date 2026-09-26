@@ -1,4 +1,5 @@
 import 'package:app_t/core/config/carenet_api_config.dart';
+import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:dio/dio.dart';
@@ -11,7 +12,7 @@ import '../models/requestable_times_model.dart';
 class SchedulingApiClient {
   SchedulingApiClient({required CareNetApiConfig config, Dio? dio})
     : _config = config,
-      _dio = dio ?? Dio();
+      _dio = dio ?? CareNetHttpClient.create();
 
   final CareNetApiConfig _config;
   final Dio _dio;
@@ -75,8 +76,9 @@ class SchedulingApiClient {
       () => _dio.put<dynamic>(
         _url(ownAvailabilityPath),
         data: <String, dynamic>{
-          'availabilityWindows':
-              windows.map((window) => window.toJson()).toList(),
+          'availabilityWindows': windows
+              .map((window) => window.toJson())
+              .toList(),
         },
         options: Options(headers: _bearerHeaders(accessToken)),
       ),
@@ -240,7 +242,7 @@ class SchedulingApiClient {
         : response is Map<String, dynamic> && response['items'] is List
         ? response['items'] as List<dynamic>
         : response is Map<String, dynamic> &&
-            response['availabilityWindows'] is List
+              response['availabilityWindows'] is List
         ? response['availabilityWindows'] as List<dynamic>
         : response is Map<String, dynamic> && response['appointments'] is List
         ? response['appointments'] as List<dynamic>

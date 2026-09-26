@@ -18,10 +18,14 @@ Future<void> main() async {
   ]);
 
   await configureDependencies();
-  await sl<NotificationCoordinator>().initialize();
-
   runApp(const CarenetApp());
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    unawaited(sl<NotificationCoordinator>().restoreSession());
+    unawaited(_initializeOptionalNotifications());
   });
+}
+
+Future<void> _initializeOptionalNotifications() async {
+  final coordinator = sl<NotificationCoordinator>();
+  await coordinator.initialize();
+  await coordinator.restoreSession();
 }

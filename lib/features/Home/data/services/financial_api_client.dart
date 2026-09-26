@@ -1,4 +1,5 @@
 import 'package:app_t/core/config/carenet_api_config.dart';
+import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:dio/dio.dart';
 
@@ -9,7 +10,7 @@ import '../models/financial_models.dart';
 class FinancialApiClient {
   FinancialApiClient({required CareNetApiConfig config, Dio? dio})
     : _config = config,
-      _dio = dio ?? Dio();
+      _dio = dio ?? CareNetHttpClient.create();
 
   final CareNetApiConfig _config;
   final Dio _dio;
@@ -237,14 +238,13 @@ class FinancialApiClient {
       _ => 'Network error. Please try again.',
     };
     return AuthFailure(
-      type:
-          code == 401 || code == 403
-              ? AuthFailureType.unauthorized
-              : code == 400 || code == 422 || code == 409
-              ? AuthFailureType.validation
-              : code != null && code >= 500
-              ? AuthFailureType.server
-              : AuthFailureType.network,
+      type: code == 401 || code == 403
+          ? AuthFailureType.unauthorized
+          : code == 400 || code == 422 || code == 409
+          ? AuthFailureType.validation
+          : code != null && code >= 500
+          ? AuthFailureType.server
+          : AuthFailureType.network,
       message: message,
       statusCode: code,
     );

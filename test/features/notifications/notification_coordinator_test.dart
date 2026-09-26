@@ -1,12 +1,35 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Notifications/data/services/firebase_notification_transport.dart';
 import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'dart:async';
 
 import 'notification_test_fakes.dart';
 
 void main() {
+  testWidgets('provider initialization timeout remains recoverable', (
+    tester,
+  ) async {
+    final transport = _NeverInitializingTransport();
+    final coordinator = NotificationCoordinator(
+      repository: FakeNotificationRepository(),
+      installationStore: FakeNotificationInstallationStore(),
+      transport: transport,
+      navigatorKey: GlobalKey<NavigatorState>(),
+      providerTimeout: const Duration(milliseconds: 10),
+    );
+    addTearDown(coordinator.dispose);
+
+    final initialization = coordinator.initialize();
+    await tester.pump(const Duration(milliseconds: 11));
+    await initialization;
+
+    expect(coordinator.initialized, isTrue);
+    expect(coordinator.permission, NotificationPermissionValue.notDetermined);
+  });
+
   testWidgets('registers one installation with bounded non-secret metadata', (
     tester,
   ) async {
@@ -212,6 +235,32 @@ void main() {
     expect(store.pendingNotification, isNull);
     expect(find.text('appointment:appointment-retry'), findsOneWidget);
   });
+}
+
+class _NeverInitializingTransport implements NotificationTransport {
+  @override
+  bool get isConfigured => true;
+
+  @override
+  Future<String?> endpoint() async => null;
+
+  @override
+  Future<void> initialize({
+    required Future<void> Function() onForegroundMessage,
+    required NotificationTapCallback onTap,
+    required Future<void> Function() onTokenRefresh,
+  }) => Completer<void>().future;
+
+  @override
+  Future<bool> openSettings() async => false;
+
+  @override
+  Future<NotificationPermissionValue> permission() async =>
+      NotificationPermissionValue.notDetermined;
+
+  @override
+  Future<NotificationPermissionValue> requestPermission() async =>
+      NotificationPermissionValue.notDetermined;
 }
 
 NotificationCoordinator _coordinator(

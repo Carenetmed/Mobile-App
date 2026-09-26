@@ -1,4 +1,5 @@
 import 'package:app_t/core/config/carenet_api_config.dart';
+import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:dio/dio.dart';
 
@@ -7,7 +8,7 @@ import '../../domain/entities/messaging_models.dart';
 class MessagingApiClient {
   MessagingApiClient({required CareNetApiConfig config, Dio? dio})
     : _config = config,
-      _dio = dio ?? Dio();
+      _dio = dio ?? CareNetHttpClient.create();
 
   final CareNetApiConfig _config;
   final Dio _dio;

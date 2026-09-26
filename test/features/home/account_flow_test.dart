@@ -380,7 +380,7 @@ void main() {
     expect(find.text('Manage Profile'), findsNothing);
     expect(find.text('Verification documents'), findsNothing);
     expect(find.text('Payments & payouts'), findsNothing);
-    expect(find.text('Settings & Profile'), findsOneWidget);
+    expect(find.text('View or edit profile'), findsOneWidget);
   });
 
   testWidgets('account exposes Google link entry below authentication', (
@@ -393,13 +393,14 @@ void main() {
       googleIdTokenProvider: _FakeGoogleIdTokenProvider(),
     );
 
-    expect(find.text('Authentication'), findsOneWidget);
+    expect(find.text('Account security'), findsOneWidget);
     expect(find.text('Google account'), findsOneWidget);
-    expect(find.text('Settings & Profile'), findsOneWidget);
+    expect(find.text('View or edit profile'), findsOneWidget);
 
-    final authenticationTop = tester.getTopLeft(find.text('Authentication')).dy;
+    final authenticationTop =
+        tester.getTopLeft(find.text('Account security')).dy;
     final googleTop = tester.getTopLeft(find.text('Google account')).dy;
-    final settingsTop = tester.getTopLeft(find.text('Settings & Profile')).dy;
+    final settingsTop = tester.getTopLeft(find.text('View or edit profile')).dy;
     expect(authenticationTop < googleTop, isTrue);
     expect(googleTop < settingsTop, isTrue);
   });
@@ -542,7 +543,7 @@ void main() {
     expect(find.text('Google account linked.'), findsNothing);
   });
 
-  testWidgets('account read failure keeps local account display', (
+  testWidgets('account read failure never falls back to seeded identity', (
     tester,
   ) async {
     final repository = _FakeAccountRepository(
@@ -559,8 +560,9 @@ void main() {
 
     expect(repository.currentAccountCalls, 1);
     expect(find.text('Please sign in again.'), findsOneWidget);
-    expect(find.text('doctor@carenet.app'), findsOneWidget);
-    expect(find.text('Email + phone login is active'), findsOneWidget);
+    expect(find.text('doctor@carenet.app'), findsNothing);
+    expect(find.text('Unavailable'), findsOneWidget);
+    expect(find.text('Account details unavailable'), findsOneWidget);
   });
 
   testWidgets('logout failure shows safe error without navigation', (
@@ -583,84 +585,45 @@ void main() {
     expect(find.text('onboarding'), findsNothing);
   });
 
-  testWidgets('delete account validates required fields', (tester) async {
-    await _pumpDashboard(tester);
-
-    await _openAccount(tester);
-
-    await tester.tap(find.text('Delete account').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Delete account').last);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Email is required'), findsOneWidget);
-    expect(find.text('Phone number is required'), findsOneWidget);
-    expect(find.text('Password is required'), findsOneWidget);
-  });
-
-  testWidgets('deactivate instead shows the local deactivation modal', (
+  testWidgets('delete account is disabled until backend authority exists', (
     tester,
   ) async {
     await _pumpDashboard(tester);
-
     await _openAccount(tester);
+    await tester.scrollUntilVisible(find.text('Delete account'), 200);
 
-    await tester.tap(find.text('Delete account').first);
+    expect(find.text('Delete account'), findsOneWidget);
+    expect(find.textContaining('secure account deletion'), findsOneWidget);
+    await tester.tap(find.text('Delete account'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Deactivate your instead?'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Your account is now deactivated'), findsOneWidget);
-    expect(find.text('Activate account'), findsOneWidget);
-  });
-
-  testWidgets('settings profile validates username and saves locally', (
-    tester,
-  ) async {
-    await _pumpDashboard(tester);
-
-    await _openAccount(tester);
-
-    await tester.tap(find.text('Settings & Profile'));
-    await tester.pumpAndSettle();
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'lagbaja_carenet'),
-      'lagbajatamedu',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'doctor@carenet.app'),
-      'doctor',
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Username taken'), findsOneWidget);
-    expect(find.text('Enter a valid email address'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'lagbajatamedu'),
-      'lagbaja_new',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'doctor'),
-      'newdoctor@carenet.app',
-    );
-    await tester.enterText(
-      find.widgetWithText(
-        TextFormField,
-        'Husband | Father | Anonymous | Needs help constantly',
-      ),
-      'Local test bio update',
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Save Changes'));
-    await tester.pumpAndSettle();
-
     expect(find.text('Account'), findsOneWidget);
-    expect(find.text('newdoctor@carenet.app'), findsOneWidget);
   });
+  testWidgets('direct delete route fails closed', (tester) async {
+    await _pumpDashboard(tester);
+    Navigator.of(
+      tester.element(find.byType(Dashboard)),
+    ).pushNamed(RouteName.deleteAccount);
+    await tester.pumpAndSettle();
 
+    expect(
+      find.textContaining('not available in CareNet Phase 1'),
+      findsOneWidget,
+    );
+    expect(find.text('Deactivate your instead?'), findsNothing);
+  });
+  testWidgets('direct local settings route fails closed', (tester) async {
+    await _pumpDashboard(tester);
+    Navigator.of(
+      tester.element(find.byType(Dashboard)),
+    ).pushNamed(RouteName.settings);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('not available in CareNet Phase 1'),
+      findsOneWidget,
+    );
+    expect(find.text('Settings & Profile'), findsNothing);
+  });
   testWidgets('settings profile reads backend patient profile safely', (
     tester,
   ) async {
@@ -802,348 +765,85 @@ void main() {
     expect(AccountLocalStore.snapshot.value.username, 'lagbaja_carenet');
   });
 
-  testWidgets('authentication row opens two-step verification route', (
+  testWidgets('local PIN authentication route fails closed', (tester) async {
+    await _pumpDashboard(tester);
+    Navigator.of(
+      tester.element(find.byType(Dashboard)),
+    ).pushNamed(RouteName.changeAuthentication);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('not available in CareNet Phase 1'),
+      findsOneWidget,
+    );
+    expect(find.text('Two-step verification'), findsNothing);
+  });
+  testWidgets('account does not expose unsupported phone mutation', (
     tester,
   ) async {
     await _pumpDashboard(tester);
-
     await _openAccount(tester);
 
-    await tester.tap(find.text('Authentication'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Two-step verification'), findsWidgets);
-    expect(find.text('Change PIN'), findsOneWidget);
-    expect(find.text('Turn off'), findsOneWidget);
-    expect(find.text('Learn more'), findsOneWidget);
-    expect(find.byIcon(Icons.lock_outline), findsWidgets);
-
-    await tester.tap(find.text('Review turn-on setup'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Turn on Authentication'), findsOneWidget);
-    expect(
-      find.text(
-        'For extra security, turn on two-step verification, which will require a PIN when switching your device.',
-      ),
-      findsOneWidget,
-    );
-    expect(find.text('Turn on'), findsOneWidget);
-    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
-
-    await tester.tap(find.text('Review PIN setup'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('Create a 6-digit PIN that you can remember'),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('PIN is required'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter 6-digit PIN'),
-      '123',
-    );
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Enter a 6-digit PIN'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter 6-digit PIN'),
-      '123456',
-    );
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.textContaining('ready for secure backend storage'),
-      findsOneWidget,
-    );
-    expect(find.text('Review confirmation step'), findsOneWidget);
-
-    await tester.tap(find.text('Review confirmation step'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Confirm your PIN'), findsWidgets);
-
-    await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('PIN is required'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, '*  *  *      *   *   *'),
-      '123',
-    );
-    await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Enter a 6-digit PIN'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, '*  *  *      *   *   *'),
-      '654321',
-    );
-    await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('PINs do not match'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, '*  *  *      *   *   *'),
-      '123456',
-    );
-    await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('PIN confirmation is ready'), findsOneWidget);
-
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Turn on'), findsOneWidget);
-    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+    expect(find.text('Phone number'), findsNothing);
+    expect(find.text('+234 801 234 5678'), findsNothing);
   });
-
-  testWidgets('phone number row opens local add-phone draft route', (
-    tester,
-  ) async {
+  testWidgets('direct phone confirmation route fails closed', (tester) async {
     await _pumpDashboard(tester);
-
-    await _openAccount(tester);
-
-    await tester.tap(find.text('Phone number'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Add phone number'), findsOneWidget);
-    expect(find.text('Current: +234 801 234 5678'), findsOneWidget);
-
-    await tester.tap(find.text('Prepare verification'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Phone number is required'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter phone number'),
-      '+234 802 111 2222',
-    );
-    await tester.tap(find.text('Prepare verification'));
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('ready for SMS verification'), findsOneWidget);
-    expect(find.text('Open confirmation step'), findsOneWidget);
-
-    await tester.tap(find.text('Open confirmation step'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Confirm phone number'), findsOneWidget);
-    expect(find.text('Enter your phone number to continue'), findsOneWidget);
-    expect(
-      find.widgetWithText(TextFormField, '+234 802 111 2222'),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-
-    expect(
-      find.textContaining('ready for backend OTP verification'),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-
-    expect(find.text('+234 801 234 5678'), findsOneWidget);
-  });
-
-  testWidgets('confirm phone number route validates without saving account', (
-    tester,
-  ) async {
-    await _pumpDashboard(tester);
-
     Navigator.of(
       tester.element(find.byType(Dashboard)),
     ).pushNamed(RouteName.confirmPhoneNumber);
     await tester.pumpAndSettle();
 
-    expect(find.text('Confirm phone number'), findsOneWidget);
-    expect(find.text('Current saved phone: +234 801 234 5678'), findsOneWidget);
-
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Phone number is required'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter phone number'),
-      '123',
+    expect(
+      find.textContaining('not available in CareNet Phase 1'),
+      findsOneWidget,
     );
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Enter a valid phone number'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, '123'),
-      '+234 803 333 4444',
+    expect(find.text('Confirm phone number'), findsNothing);
+  });
+  testWidgets('account email is backend-owned and read only', (tester) async {
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(
+        user: const AuthUser(
+          id: 'patient-1',
+          email: 'patient@carenet.app',
+          role: 'PATIENT',
+          status: 'ACTIVE',
+          emailVerified: true,
+        ),
+      ),
     );
-    await tester.tap(find.text('Next'));
+
+    expect(find.text('patient@carenet.app'), findsOneWidget);
+    expect(find.text('Add email address'), findsNothing);
+  });
+  testWidgets('direct local email-change route fails closed', (tester) async {
+    await _pumpDashboard(tester);
+    Navigator.of(
+      tester.element(find.byType(Dashboard)),
+    ).pushNamed(RouteName.changeEmail);
     await tester.pumpAndSettle();
 
     expect(
-      find.textContaining('ready for backend OTP verification'),
+      find.textContaining('not available in CareNet Phase 1'),
       findsOneWidget,
     );
-
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-    await _openAccount(tester);
-
-    expect(find.text('+234 801 234 5678'), findsOneWidget);
+    expect(find.text('Change your email address'), findsNothing);
   });
-
-  testWidgets('email address row opens local add-email draft route', (
-    tester,
-  ) async {
+  testWidgets('direct local email-review route fails closed', (tester) async {
     await _pumpDashboard(tester);
-
-    await _openAccount(tester);
-
-    await tester.tap(find.text('Email address'));
+    Navigator.of(
+      tester.element(find.byType(Dashboard)),
+    ).pushNamed(RouteName.editEmail);
     await tester.pumpAndSettle();
 
-    expect(find.text('Add email address'), findsOneWidget);
-    expect(find.text('Current: doctor@carenet.app'), findsOneWidget);
-
-    await tester.tap(find.text('Prepare verification'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Email address is required'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter email address'),
-      'doctor',
-    );
-    await tester.tap(find.text('Prepare verification'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Enter a valid email address'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter email address'),
-      'newdoctor@carenet.app',
-    );
-    await tester.tap(find.text('Prepare verification'));
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('ready for email verification'), findsOneWidget);
-
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-
-    expect(find.text('doctor@carenet.app'), findsOneWidget);
-  });
-
-  testWidgets('change existing email opens local change-email draft route', (
-    tester,
-  ) async {
-    await _pumpDashboard(tester);
-
-    await _openAccount(tester);
-
-    await tester.tap(find.text('Email address'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Change existing email'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Change your email address'), findsOneWidget);
     expect(
-      find.text('We will send a verification code to this email address'),
+      find.textContaining('not available in CareNet Phase 1'),
       findsOneWidget,
     );
-    expect(find.text('Current: doctor@carenet.app'), findsOneWidget);
-
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Email address is required'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter email'),
-      'doctor',
-    );
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Enter a valid email address'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter email'),
-      'doctor@carenet.app',
-    );
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Enter a different email address'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter email'),
-      'changed-doctor@carenet.app',
-    );
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-
-    expect(find.textContaining('ready for code verification'), findsOneWidget);
-
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-
-    expect(find.text('doctor@carenet.app'), findsOneWidget);
+    expect(find.text('Review current email'), findsNothing);
   });
-
-  testWidgets('review current email opens local edit-email route', (
-    tester,
-  ) async {
-    await _pumpDashboard(tester);
-
-    await _openAccount(tester);
-
-    await tester.tap(find.text('Email address'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Review current email'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Email address'), findsWidgets);
-    expect(find.text('Email'), findsOneWidget);
-    expect(find.text('doctor@carenet.app'), findsOneWidget);
-    expect(find.text('Verified'), findsOneWidget);
-    expect(find.text('Edit email'), findsOneWidget);
-    expect(find.text('Remove email'), findsOneWidget);
-    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
-
-    await tester.tap(find.text('Remove email'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('doctor@carenet.app'), findsOneWidget);
-
-    await tester.tap(find.text('Edit email'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Change your email address'), findsOneWidget);
-  });
-
   testWidgets('review current email requests verification through repository', (
     tester,
   ) async {
@@ -1300,76 +1000,29 @@ void main() {
     );
   });
 
-  testWidgets('password-to-save route prepares backend re-auth only', (
+  testWidgets('direct local reauthentication draft route fails closed', (
     tester,
   ) async {
     await _pumpDashboard(tester);
-
-    await _openAccount(tester);
-
-    await tester.tap(find.text('Email address'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Review current email'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Review password step'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Enter password to save'), findsOneWidget);
-    expect(find.text('Enter your password to continue'), findsOneWidget);
-
-    await tester.tap(find.text('Confirm'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Password is required'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter your password'),
-      'short',
-    );
-    await tester.tap(find.text('Confirm'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Enter at least 8 characters'), findsOneWidget);
-
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Enter your password'),
-      'CareNet@123',
-    );
-    await tester.tap(find.text('Confirm'));
+    Navigator.of(
+      tester.element(find.byType(Dashboard)),
+    ).pushNamed(RouteName.enterPasswordToSave);
     await tester.pumpAndSettle();
 
     expect(
-      find.textContaining('ready for backend re-authentication'),
+      find.textContaining('not available in CareNet Phase 1'),
       findsOneWidget,
     );
-
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.arrow_back));
-    await tester.pumpAndSettle();
-
-    expect(find.text('doctor@carenet.app'), findsOneWidget);
+    expect(find.text('Enter your password'), findsNothing);
   });
-
-  testWidgets('password row opens locked password route', (tester) async {
+  testWidgets('account does not expose local password metadata', (
+    tester,
+  ) async {
     await _pumpDashboard(tester);
-
     await _openAccount(tester);
 
-    await tester.tap(find.text('Password'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Password'), findsWidgets);
-    expect(
-      find.text(
-        'Your password helps to keep your account secure and makes it easy to log into your account',
-      ),
-      findsOneWidget,
-    );
-    expect(find.text('Edit password'), findsOneWidget);
-    expect(find.byIcon(Icons.lock_outline), findsWidgets);
+    expect(find.text('Password'), findsNothing);
+    expect(find.textContaining('Last changed locally'), findsNothing);
   });
 }
 

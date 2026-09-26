@@ -14,7 +14,13 @@
 > appointments, and professional availability through existing repositories.
 > Home actions switch to the retained Find Care, Schedule, or Appointments tabs;
 > readiness actions use the existing onboarding readiness route resolver.
-> `account` opens from the header avatar, and no drawer is active. Patient setup
+> `account` opens from the header avatar, and no drawer is active. Its identity,
+> role, status, and email come only from the authenticated account endpoint;
+> seeded `AccountLocalStore` values are not rendered or used as fallback.
+> Patients edit the existing backend patient profile and professionals enter
+> backend professional management. Local PIN, phone, email mutation,
+> deactivation, and deletion drafts fail closed until authoritative contracts
+> exist. Patient setup
 > follows backend readiness instead of entering `communityAgreement`.
 > `search` is the canonical Find Care route. Patient Home and the persistent
 > Find Care tab enter the same `SearchShellPage`; legacy `findMentor` is a
@@ -28,6 +34,12 @@
 > manages recurring `/availability/me` rules and never generates patient slots.
 
 All navigation uses **`RouteName`** constants and **`generateRoute`** in `lib/core/constants/navigators/router.dart`.
+
+The verified inventory remains 79 declared constants (78 registered route
+values plus the reserved, unwired `login`). Deferred health-reading, content,
+community, emergency, creator-portfolio, and local account-mutation constants
+are retained for source recovery, but route resolution now opens
+`DeferredFeaturePage`; their seeded screens are not active product surfaces.
 
 Do not invent route strings in screens. Add new routes here and in `RouteName` before use.
 
@@ -92,7 +104,7 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `enterPasswordToSave` | `enterPasswordToSave` | `EnterPasswordToSaveShellPage` | `lib/features/Home/presentation/pages/enter_password_to_save_shell.dart` |
 | `password` | `password` | `PasswordShellPage` | `lib/features/Home/presentation/pages/password_shell.dart` |
 | `publicProfile` | `publicProfile` | `SearchShellPage` (legacy compatibility alias; seeded profile booking disconnected) | `lib/features/Home/presentation/pages/search_shell.dart` |
-| `manageProfile` | `manageProfile` | `ManageProfileShellPage` | `lib/features/Home/presentation/pages/manage_profile_shell.dart` |
+| `manageProfile` | `manageProfile` | `ProfessionalOnboardingSetupPage` (backend-owned professional editor compatibility alias) | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
 | `managePortfolio` | `managePortfolio` | `ManagePortfolioShellPage` | `lib/features/Home/presentation/pages/manage_portfolio_shell.dart` |
 | `professionalVerificationDocuments` | `professionalVerificationDocuments` | `ProfessionalVerificationDocumentsShellPage` | `lib/features/Home/presentation/pages/professional_verification_documents_shell.dart` |
 | `professionalFinance` | `professionalFinance` | `ProfessionalFinanceShellPage` (professional price, bank, balances, ledger, payouts) | `lib/features/Home/presentation/pages/professional_finance_shell.dart` |

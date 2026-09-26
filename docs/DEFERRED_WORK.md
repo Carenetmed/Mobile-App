@@ -172,6 +172,19 @@ Required backend/product contracts before enabling deeper controls:
 
 ## Current rule for future slices
 
+## APP-P1-014 authority follow-up
+
+- Add a backend-owned account deletion/deactivation request with recent
+  reauthentication, retention status, audit behavior, and full session/token
+  revocation before re-enabling either control.
+- Add real email-change, phone verification, password-change, and second-factor
+  contracts before re-enabling the retained local account source screens.
+- Delete `AccountLocalStore` and retained deferred screen sources only in a
+  dedicated cleanup slice after dependency analysis. They are unreachable from
+  the active router but remain recoverable today.
+- Replace the common deferred route page only when a backend/product contract
+  explicitly returns that capability to Phase 1 scope.
+
 When a new slice touches one of the areas above:
 
 1. Re-check the relevant blueprint folder and `routes.json`.

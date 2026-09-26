@@ -52,6 +52,20 @@ Future<void> _pumpWithRoutes(
 
 void main() {
   group('Sign in flow', () {
+    testWidgets('email entry hides unsupported identity providers', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(googleIdTokenProvider: _disabledGoogleProvider),
+      );
+
+      expect(find.text('Continue with Phone'), findsNothing);
+      expect(find.text('Continue with Facebook'), findsNothing);
+      expect(find.text('Continue with Apple'), findsNothing);
+      expect(find.text('Continue with Google'), findsOneWidget);
+    });
+
     testWidgets(
       'sign in email blocks invalid input and navigates after backend success',
       (tester) async {

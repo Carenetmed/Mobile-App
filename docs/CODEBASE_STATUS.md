@@ -1,6 +1,13 @@
 # Codebase status
 
-**Last updated:** 2026-09-26 APP-P1-011 network/session/startup foundation.
+**Last updated:** 2026-09-26 APP-P1-012 authentication/onboarding readiness.
+
+## Authentication readiness
+
+- Active email sign-in and signup use the green marketplace presentation and scroll under constrained layouts.
+- Phone, Facebook, and Apple identity choices are not advertised before supported provider contracts exist.
+- Password signup collects only backend-owned registration fields: email, password, and selected role. Profile identity and date of birth remain in the role-specific backend profile flow.
+- Mobile password validation matches the backend 15-128 character passphrase policy and known-weak-password baseline.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 

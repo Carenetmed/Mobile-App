@@ -3,7 +3,6 @@ import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
-import 'package:app_t/core/model/sign_in_model.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
@@ -104,32 +103,11 @@ class _SignUpEmailState extends State<SignUpEmail> {
 
   @override
   Widget build(BuildContext context) {
-    final List<AuthenticationModel> signUp = [
-      AuthenticationModel(
-        assetPath: AssetsIcon.phone,
-        title: 'Continue with Phone',
-        btnAction: () {
-          Navigator.pushNamed(context, RouteName.signUpPhone);
-        },
-      ),
-      AuthenticationModel(
-        assetPath: AssetsIcon.google,
-        title: 'Continue with Google',
-        btnAction: _googleIdTokenProvider.isConfigured ? _onGoogleSignUp : null,
-      ),
-      AuthenticationModel(
-        assetPath: AssetsIcon.facebook,
-        title: 'Continue with Facebook',
-      ),
-      AuthenticationModel(
-        assetPath: AssetsIcon.apple,
-        title: 'Continue with Apple',
-      ),
-    ];
     return Scaffold(
+      backgroundColor: const Color(0xFFF7FBFA),
       resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: RPadding(
+        child: SingleChildScrollView(
           padding: REdgeInsets.only(left: 15.w, right: 15.w, top: .04.sh),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +115,7 @@ class _SignUpEmailState extends State<SignUpEmail> {
               Align(
                 alignment: Alignment.topCenter,
                 child: Text(
-                  'Sign up with email',
+                  'Create your CareNet account',
                   style: TextStyle(
                     fontSize: FontSizes.footer2,
                     fontFamily: AppFonts.montserrat,
@@ -157,7 +135,7 @@ class _SignUpEmailState extends State<SignUpEmail> {
               SizedBox(height: 15.h),
               CarenetButton(label: 'Continue', onPressed: _onContinue),
               Padding(
-                padding: REdgeInsets.only(bottom: .052.sh, top: .15.sh),
+                padding: REdgeInsets.only(bottom: 12.h, top: 32.h),
                 child: Center(
                   child: Text(
                     'or',
@@ -170,20 +148,14 @@ class _SignUpEmailState extends State<SignUpEmail> {
                   ),
                 ),
               ),
-              SizedBox(
-                height: .27.sh,
-                child: ListView.builder(
-                  itemCount: signUp.length,
-                  itemBuilder: (context, index) {
-                    return AuthWidget(
-                      btnAction: signUp[index].btnAction,
-                      assetPath: signUp[index].assetPath,
-                      title: signUp[index].title,
-                    );
-                  },
-                ),
+              AuthWidget(
+                btnAction: _googleIdTokenProvider.isConfigured
+                    ? _onGoogleSignUp
+                    : null,
+                assetPath: AssetsIcon.google,
+                title: 'Continue with Google',
               ),
-              SizedBox(height: .045.sh),
+              SizedBox(height: 28.h),
               CarenetButton(
                 label: 'Already have an account? Sign in',
                 onPressed: () {

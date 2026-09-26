@@ -3,7 +3,6 @@ import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
-import 'package:app_t/core/model/sign_in_model.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
@@ -176,33 +175,8 @@ class _SignInEmailState extends State<SignInEmail> {
 
   @override
   Widget build(BuildContext context) {
-    final signInOptions = [
-      AuthenticationModel(
-        assetPath: AssetsIcon.phone,
-        title: 'Continue with Phone',
-        btnAction: () {
-          Navigator.pushNamed(context, RouteName.signInPhone);
-        },
-      ),
-      AuthenticationModel(
-        assetPath: AssetsIcon.google,
-        title: 'Continue with Google',
-        btnAction:
-            _isSubmitting || !_googleIdTokenProvider.isConfigured
-                ? null
-                : _onGoogleSignIn,
-      ),
-      AuthenticationModel(
-        assetPath: AssetsIcon.facebook,
-        title: 'Continue with Facebook',
-      ),
-      AuthenticationModel(
-        assetPath: AssetsIcon.apple,
-        title: 'Continue with Apple',
-      ),
-    ];
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF7FBFA),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: REdgeInsets.only(left: 15.w, right: 15.w, top: .04.sh),
@@ -212,7 +186,7 @@ class _SignInEmailState extends State<SignInEmail> {
               Align(
                 alignment: Alignment.topCenter,
                 child: Text(
-                  'Sign in with Email',
+                  'Welcome back',
                   style: TextStyle(
                     fontSize: FontSizes.footer2,
                     fontFamily: AppFonts.montserrat,
@@ -243,10 +217,9 @@ class _SignInEmailState extends State<SignInEmail> {
                       _visiblePassword = !_visiblePassword;
                     });
                   },
-                  icon:
-                      _visiblePassword
-                          ? SvgImage(imgName: AssetsIcon.visible)
-                          : const Icon(Icons.visibility_off),
+                  icon: _visiblePassword
+                      ? SvgImage(imgName: AssetsIcon.visible)
+                      : const Icon(Icons.visibility_off),
                 ),
               ),
               SizedBox(height: 15.h),
@@ -284,10 +257,10 @@ class _SignInEmailState extends State<SignInEmail> {
                 onPressed: _isSubmitting ? null : _onContinue,
               ),
               RPadding(
-                padding: REdgeInsets.only(top: 15.h, bottom: .05.sh),
+                padding: REdgeInsets.only(top: 24.h, bottom: 12.h),
                 child: Center(
                   child: Text(
-                    'Other sign in options',
+                    'Or continue securely with',
                     style: TextStyle(
                       fontSize: FontSizes.footer2,
                       fontFamily: AppFonts.montserrat,
@@ -297,35 +270,26 @@ class _SignInEmailState extends State<SignInEmail> {
                   ),
                 ),
               ),
-              Center(
-                child: Padding(
-                  padding: REdgeInsets.symmetric(vertical: .03.sh),
+              AuthWidget(
+                btnAction: _isSubmitting || !_googleIdTokenProvider.isConfigured
+                    ? null
+                    : _onGoogleSignIn,
+                assetPath: AssetsIcon.google,
+                title: 'Continue with Google',
+              ),
+              if (!_googleIdTokenProvider.isConfigured)
+                Padding(
+                  padding: REdgeInsets.only(top: 8.h),
                   child: Text(
-                    'or',
+                    'Google sign-in is temporarily unavailable.',
                     style: TextStyle(
                       fontSize: FontSizes.body3,
                       fontFamily: AppFonts.montserrat,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.kBlack,
+                      color: AppColors.primaryBlue5,
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: .03.sh),
-              SizedBox(
-                height: .27.sh,
-                child: ListView.builder(
-                  itemCount: signInOptions.length,
-                  itemBuilder: (context, index) {
-                    return AuthWidget(
-                      btnAction: signInOptions[index].btnAction,
-                      assetPath: signInOptions[index].assetPath,
-                      title: signInOptions[index].title,
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: .045.sh),
+              SizedBox(height: 28.h),
               CarenetButton(
                 label: 'Don\'t have an account? Sign up',
                 onPressed: () {

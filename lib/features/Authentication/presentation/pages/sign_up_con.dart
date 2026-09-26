@@ -1,17 +1,15 @@
-import 'package:app_t/core/constants/app_assets.dart';
-import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
+import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
-import 'package:app_t/features/Authentication/presentation/widget/bordered_keyboard_input.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/presentation/services/booking_resume_navigator.dart';
 import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
-import 'package:app_t/shared/widgets/svg_image.dart';
+import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -34,15 +32,10 @@ class FinSignUp extends StatefulWidget {
 }
 
 class _FinSignUpState extends State<FinSignUp> {
-  // TextEditingController _dateController = TextEditingController();
-
   bool _visiblePassword = true;
   bool _visibleConfirmPassword = true;
 
-  late final TextEditingController _firstNameController;
-  late final TextEditingController _lastNameController;
   late final TextEditingController _emailController;
-  late final TextEditingController _dateController;
   late final TextEditingController _passwordController;
   late final TextEditingController _confirmPasswordController;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -60,21 +53,15 @@ class _FinSignUpState extends State<FinSignUp> {
   @override
   void initState() {
     super.initState();
-    _firstNameController = TextEditingController();
-    _lastNameController = TextEditingController();
     _emailController = TextEditingController(text: widget.initialEmail ?? '');
-    _dateController = TextEditingController();
     _passwordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
     _passwordController.dispose();
     _emailController.dispose();
-    _dateController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
@@ -82,135 +69,94 @@ class _FinSignUpState extends State<FinSignUp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7FBFA),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: REdgeInsets.symmetric(horizontal: 15.w, vertical: .06.sh),
+          padding: REdgeInsets.fromLTRB(20, 18, 20, 28),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.of(context).maybePop();
-                    },
-                    icon: const Icon(Icons.arrow_back_ios),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Finish signing up',
-                    style: TextStyle(
-                      fontFamily: AppFonts.montserrat,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const Spacer(),
-                ],
+              IconButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
               ),
               SizedBox(height: 20.h),
+              Text(
+                'Secure your ${widget.selectedRole.title.toLowerCase()} account',
+                style: TextStyle(
+                  fontFamily: AppFonts.montserrat,
+                  fontSize: 26.sp,
+                  height: 1.2,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF102A2A),
+                ),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                'Create your login now. Your profile details are collected in the next role-specific step.',
+                style: TextStyle(
+                  fontFamily: AppFonts.montserrat,
+                  fontSize: 14.sp,
+                  height: 1.45,
+                  color: CarenetColors.neutral500,
+                ),
+              ),
+              SizedBox(height: 28.h),
               Form(
                 key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    BorderedTextInput(
-                      keyboardType1: TextInputType.name,
-                      keyboardType2: TextInputType.name,
-                      hintText1: 'First name',
-                      hintText2: 'Last name',
-                      controller1: _firstNameController,
-                      controller2: _lastNameController,
-                      suffixIcon2: SizedBox(),
-
-                      validator1: Validators.validateFirstName,
-                      validator2: Validators.validateLastNAme,
+                    CarenetTextField(
+                      label: 'Email address',
+                      hintText: 'you@example.com',
+                      keyboardType: TextInputType.emailAddress,
+                      controller: _emailController,
+                      validator: Validators.validateEmail,
                     ),
-                    SizedBox(height: 3.h),
-                    Text(
-                      'Please make sure it matches the name on your government ID',
-                      style: TextStyle(
-                        fontFamily: AppFonts.montserrat,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    SizedBox(height: 50.h),
-                    BorderedTextInput(
-                      keyboardType2: TextInputType.emailAddress,
-                      suffixIcon1: Icon(Icons.keyboard_arrow_down_rounded),
-                      controller1: _dateController,
-                      controller2: _emailController,
-                      validator1: Validators.validateBirthday,
-                      validator2: Validators.validateEmail,
-                      suffixIcon2: SizedBox(),
-                      readOnly1: true,
-                      onTap1: () async {
-                        final picker = await showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(3000),
-                        );
-                        if (picker != null) {
-                          setState(() {
-                            _dateController.text =
-                                picker.toString().split(' ')[0];
-                          });
-                        }
-                      },
-                      hintText1: 'Birthday',
-                      hintText2: 'Email address',
-                    ),
-                    SizedBox(height: 3.h),
-                    Text(
-                      'Your birthday wont be shared with other people who use this\nservice',
-                      style: TextStyle(
-                        fontFamily: AppFonts.montserrat,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    SizedBox(height: 50.h),
-                    BorderedTextInput(
-                      keyboardType1: TextInputType.visiblePassword,
-                      keyboardType2: TextInputType.visiblePassword,
-                      obscureText1: _visiblePassword,
-                      obscureText2: _visibleConfirmPassword,
-                      controller1: _passwordController,
-                      controller2: _confirmPasswordController,
-                      validator1: Validators.validatePassword,
-                      validator2:
-                          (value) => Validators.validateConfirmPassword(
-                            value,
-                            password: _passwordController.text,
-                          ),
-                      hintText1: 'Password',
-                      hintText2: 'Confirm password',
-                      suffixIcon1: IconButton(
+                    SizedBox(height: 14.h),
+                    CarenetTextField(
+                      label: 'Password',
+                      hintText: 'At least 15 characters',
+                      controller: _passwordController,
+                      obscureText: _visiblePassword,
+                      validator: Validators.validatePassword,
+                      suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
                             _visiblePassword = !_visiblePassword;
                           });
                         },
-                        icon:
-                            _visiblePassword
-                                ? SvgImage(imgName: AssetsIcon.visible)
-                                : Icon(Icons.visibility_off),
+                        icon: Icon(
+                          _visiblePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
                       ),
-                      suffixIcon2: IconButton(
+                    ),
+                    SizedBox(height: 14.h),
+                    CarenetTextField(
+                      label: 'Confirm password',
+                      hintText: 'Enter it again',
+                      controller: _confirmPasswordController,
+                      obscureText: _visibleConfirmPassword,
+                      validator: (value) => Validators.validateConfirmPassword(
+                        value,
+                        password: _passwordController.text,
+                      ),
+                      suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
                             _visibleConfirmPassword = !_visibleConfirmPassword;
                           });
                         },
-                        icon:
-                            _visibleConfirmPassword
-                                ? SvgImage(imgName: AssetsIcon.visible)
-                                : Icon(Icons.visibility_off),
+                        icon: Icon(
+                          _visibleConfirmPassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
                       ),
                     ),
                   ],
@@ -223,12 +169,12 @@ class _FinSignUpState extends State<FinSignUp> {
                   fontFamily: AppFonts.montserrat,
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primaryBlue5,
+                  color: const Color(0xFF155E63),
                 ),
               ),
               SizedBox(height: 8.h),
               Text(
-                'Your password must be at least 15 characters long including\nnumbers and special characters.',
+                'Use 15 to 128 characters. Longer passphrases are supported.',
                 style: TextStyle(
                   fontFamily: AppFonts.montserrat,
                   fontSize: 12.sp,
@@ -248,57 +194,22 @@ class _FinSignUpState extends State<FinSignUp> {
                 ),
                 SizedBox(height: 12.h),
               ],
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text:
-                          'By selecting Agree and continue, I agree to Carenet\'s',
-                      style: TextStyle(
-                        fontFamily: AppFonts.montserrat,
-                        color: AppColors.kBlack,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    TextSpan(
-                      text: ' Terms of\nService,',
-                      style: TextStyle(
-                        fontFamily: AppFonts.montserrat,
-                        fontSize: 12.sp,
-                        color: AppColors.primaryBlue5,
-                        fontWeight: FontWeight.w400,
-                        decoration: TextDecoration.underline,
-                        decorationColor: AppColors.primaryBlue5,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'and I acknowledge the',
-                      style: TextStyle(
-                        fontFamily: AppFonts.montserrat,
-                        fontSize: 12.sp,
-                        color: AppColors.kBlack,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'Privacy Policy.',
-                      style: TextStyle(
-                        fontFamily: AppFonts.montserrat,
-                        fontSize: 12.sp,
-                        color: AppColors.primaryBlue5,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
+              Text(
+                'By continuing, you agree to CareNet\'s Terms of Service and acknowledge the Privacy Policy.',
+                style: TextStyle(
+                  fontFamily: AppFonts.montserrat,
+                  color: CarenetColors.neutral500,
+                  fontSize: 12.sp,
+                  height: 1.45,
                 ),
               ),
 
               SizedBox(height: 5.h),
               CarenetButton(
                 onPressed: _isSubmitting ? null : _onAgreeAndContinue,
-                label:
-                    _isSubmitting ? 'Creating account...' : ' Agree & continue',
+                label: _isSubmitting
+                    ? 'Creating account...'
+                    : ' Agree & continue',
               ),
             ],
           ),

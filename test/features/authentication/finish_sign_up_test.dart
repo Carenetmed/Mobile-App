@@ -67,9 +67,6 @@ void main() {
       await tester.tap(find.text(' Agree & continue'));
       await tester.pump();
 
-      expect(find.text('First name is required'), findsOneWidget);
-      expect(find.text('Last name is required'), findsOneWidget);
-      expect(find.text('Birthday is required'), findsOneWidget);
       expect(find.text('Email Address is required'), findsOneWidget);
       expect(find.text('Please enter your password'), findsNWidgets(2));
       expect(find.text('community-agreement'), findsNothing);
@@ -88,15 +85,9 @@ void main() {
       );
 
       final fields = find.byType(EditableText);
-      await tester.enterText(fields.at(0), 'John');
-      await tester.enterText(fields.at(1), 'Doe');
-      await tester.tap(find.byType(TextFormField).at(2));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
-      await tester.pumpAndSettle();
-      await tester.enterText(fields.at(3), 'john@example.com');
-      await tester.enterText(fields.at(4), 'StrongPassword1!');
-      await tester.enterText(fields.at(5), 'StrongPassword1!');
+      await tester.enterText(fields.at(0), 'john@example.com');
+      await tester.enterText(fields.at(1), 'correct horse battery staple');
+      await tester.enterText(fields.at(2), 'correct horse battery staple');
 
       await tester.tap(find.text(' Agree & continue'));
       await tester.pumpAndSettle();
@@ -149,6 +140,36 @@ void main() {
         find.widgetWithText(TextFormField, 'hello@example.com'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('does not collect profile fields discarded by registration', (
+      tester,
+    ) async {
+      await _pumpFinishSignUp(tester);
+
+      expect(find.text('First name'), findsNothing);
+      expect(find.text('Last name'), findsNothing);
+      expect(find.text('Birthday'), findsNothing);
+      expect(
+        find.textContaining('profile details are collected'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('accepts a backend-valid passphrase without complexity rules', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository();
+      await _pumpFinishSignUp(tester, authRepository: repository);
+
+      final fields = find.byType(EditableText);
+      await tester.enterText(fields.at(0), 'john@example.com');
+      await tester.enterText(fields.at(1), 'all lowercase passphrase');
+      await tester.enterText(fields.at(2), 'all lowercase passphrase');
+      await tester.tap(find.text(' Agree & continue'));
+      await tester.pumpAndSettle();
+
+      expect(repository.registerCalls, 1);
     });
 
     testWidgets('shows safe backend error without navigation', (tester) async {
@@ -220,15 +241,9 @@ void main() {
       await _pumpFinishSignUp(tester);
 
       final fields = find.byType(EditableText);
-      await tester.enterText(fields.at(0), 'John');
-      await tester.enterText(fields.at(1), 'Doe');
-      await tester.tap(find.byType(TextFormField).at(2));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('OK'));
-      await tester.pumpAndSettle();
-      await tester.enterText(fields.at(3), 'john@example.com');
-      await tester.enterText(fields.at(4), 'StrongPassword1!');
-      await tester.enterText(fields.at(5), 'MismatchPassword1!');
+      await tester.enterText(fields.at(0), 'john@example.com');
+      await tester.enterText(fields.at(1), 'correct horse battery staple');
+      await tester.enterText(fields.at(2), 'mismatch horse battery staple');
 
       await tester.tap(find.text(' Agree & continue'));
       await tester.pumpAndSettle();
@@ -242,15 +257,9 @@ void main() {
 
 Future<void> _fillValidForm(WidgetTester tester) async {
   final fields = find.byType(EditableText);
-  await tester.enterText(fields.at(0), 'John');
-  await tester.enterText(fields.at(1), 'Doe');
-  await tester.tap(find.byType(TextFormField).at(2));
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('OK'));
-  await tester.pumpAndSettle();
-  await tester.enterText(fields.at(3), 'john@example.com');
-  await tester.enterText(fields.at(4), 'StrongPassword1!');
-  await tester.enterText(fields.at(5), 'StrongPassword1!');
+  await tester.enterText(fields.at(0), 'john@example.com');
+  await tester.enterText(fields.at(1), 'correct horse battery staple');
+  await tester.enterText(fields.at(2), 'correct horse battery staple');
 }
 
 class _FakeAuthRepository implements AuthRepository {

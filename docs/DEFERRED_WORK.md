@@ -6,6 +6,15 @@ Rule: do not implement a deferred item until its product and backend contracts
 are defined. Do not fake backend, payment, or media behavior to make a screen
 look complete.
 
+## Account lifecycle
+
+- Backend-owned soft deletion and session revocation are active through the
+  Account surface.
+- Hard erasure, restoration/grace periods, data export, and a published
+  retention duration remain deferred pending legal and product policy.
+- The app must continue to describe retained records without inventing a
+  deletion deadline.
+
 ## Authentication providers
 
 - Phone OTP and Apple identity stay hidden until their backend/provider contracts and device acceptance are complete.

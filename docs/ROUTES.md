@@ -19,8 +19,10 @@
 > seeded `AccountLocalStore` values are not rendered or used as fallback.
 > Patients edit the existing backend patient profile and professionals enter
 > backend professional management. Local PIN, phone, email mutation,
-> deactivation, and deletion drafts fail closed until authoritative contracts
-> exist. Patient setup
+> deactivation drafts fail closed. `deleteAccount` now resolves to the canonical
+> Account surface, where backend-owned deletion requires recent password or
+> linked-Google reauthentication, explicit confirmation, and ends all sessions.
+> Patient setup
 > follows backend readiness instead of entering `communityAgreement`.
 > `search` is the canonical Find Care route. Patient Home and the persistent
 > Find Care tab enter the same `SearchShellPage`; legacy `findMentor` is a

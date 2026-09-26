@@ -176,12 +176,11 @@ void main() {
         final repository = AccountRepository(
           apiClient: AuthApiClient(
             config: const CareNetApiConfig(baseUrl: 'http://127.0.0.1:8080'),
-            dio:
-                Dio()
-                  ..httpClientAdapter = _FakeAdapter(
-                    statusCode: 401,
-                    responseJson: <String, dynamic>{'message': 'Unauthorized'},
-                  ),
+            dio: Dio()
+              ..httpClientAdapter = _FakeAdapter(
+                statusCode: 401,
+                responseJson: <String, dynamic>{'message': 'Unauthorized'},
+              ),
           ),
           sessionStore: store,
         );
@@ -232,6 +231,53 @@ void main() {
           'token': 'opaque-reset-token',
           'newPassword': 'CareNet@123',
         });
+        expect(await store.read(), isNull);
+      },
+    );
+
+    test(
+      'account deletion sends reauthentication and clears session',
+      () async {
+        final store = InMemorySessionStore();
+        await store.save(
+          _session(
+            accessToken: 'account-access',
+            refreshToken: 'account-refresh',
+          ),
+        );
+        final adapter = _FakeAdapter(
+          responseJson: <String, dynamic>{
+            'accountStatus': 'DELETED',
+            'deletionRequestedAt': '2026-09-26T12:00:00.000Z',
+            'retentionStatus': 'RETAINED_UNDER_POLICY',
+            'sessionsRevoked': true,
+          },
+        );
+        final repository = AccountRepository(
+          apiClient: AuthApiClient(
+            config: const CareNetApiConfig(baseUrl: 'http://127.0.0.1:8080'),
+            dio: Dio()..httpClientAdapter = adapter,
+          ),
+          sessionStore: store,
+        );
+
+        final receipt = await repository.requestAccountDeletion(
+          password: 'CareNet@123',
+        );
+
+        expect(
+          adapter.lastOptions?.uri.toString(),
+          endsWith('/auth/account-deletion/request'),
+        );
+        expect(
+          adapter.lastOptions?.headers['Authorization'],
+          'Bearer account-access',
+        );
+        expect(adapter.lastOptions?.data, <String, dynamic>{
+          'password': 'CareNet@123',
+          'confirmation': 'DELETE',
+        });
+        expect(receipt.isValid, isTrue);
         expect(await store.read(), isNull);
       },
     );

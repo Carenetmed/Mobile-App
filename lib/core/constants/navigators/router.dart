@@ -54,16 +54,17 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _page(
         settings,
         FinSignUp(
-          initialEmail:
-              args is FinishSignUpArgs
-                  ? args.initialEmail
-                  : args is String
-                  ? args
-                  : null,
-          selectedRole:
-              args is FinishSignUpArgs ? args.role : SignUpRole.patient,
-          onboardingRepository:
-              args is FinishSignUpArgs ? args.onboardingRepository : null,
+          initialEmail: args is FinishSignUpArgs
+              ? args.initialEmail
+              : args is String
+              ? args
+              : null,
+          selectedRole: args is FinishSignUpArgs
+              ? args.role
+              : SignUpRole.patient,
+          onboardingRepository: args is FinishSignUpArgs
+              ? args.onboardingRepository
+              : null,
         ),
       );
     case RouteName.signUpRole:
@@ -71,22 +72,24 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _page(
         settings,
         SignUpRoleSelectionPage(
-          initialEmail:
-              args is SignUpRoleSelectionArgs ? args.initialEmail : null,
-          googleSignUp:
-              args is SignUpRoleSelectionArgs ? args.googleSignUp : false,
-          passwordSignUp:
-              args is SignUpRoleSelectionArgs ? args.passwordSignUp : false,
-          authRepository:
-              args is SignUpRoleSelectionArgs ? args.authRepository : null,
-          googleIdTokenProvider:
-              args is SignUpRoleSelectionArgs
-                  ? args.googleIdTokenProvider
-                  : null,
-          onboardingRepository:
-              args is SignUpRoleSelectionArgs
-                  ? args.onboardingRepository
-                  : null,
+          initialEmail: args is SignUpRoleSelectionArgs
+              ? args.initialEmail
+              : null,
+          googleSignUp: args is SignUpRoleSelectionArgs
+              ? args.googleSignUp
+              : false,
+          passwordSignUp: args is SignUpRoleSelectionArgs
+              ? args.passwordSignUp
+              : false,
+          authRepository: args is SignUpRoleSelectionArgs
+              ? args.authRepository
+              : null,
+          googleIdTokenProvider: args is SignUpRoleSelectionArgs
+              ? args.googleIdTokenProvider
+              : null,
+          onboardingRepository: args is SignUpRoleSelectionArgs
+              ? args.onboardingRepository
+              : null,
         ),
       );
     case RouteName.communityAgreement:
@@ -154,8 +157,9 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _page(
         settings,
         ConsultationShellPage(
-          appointmentId:
-              args is ConsultationRouteArgs ? args.appointmentId : null,
+          appointmentId: args is ConsultationRouteArgs
+              ? args.appointmentId
+              : null,
         ),
       );
     case RouteName.bookAppointment:
@@ -213,7 +217,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.podcast:
     case RouteName.emergency:
     case RouteName.distressCall:
-    case RouteName.deleteAccount:
     case RouteName.settings:
     case RouteName.changeAuthentication:
     case RouteName.turnOnAuthentication:
@@ -238,6 +241,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.qAAnswerForYou:
     case RouteName.commentAnswer:
       return _page(settings, const DeferredFeaturePage());
+    case RouteName.deleteAccount:
+      return _page(settings, const AccountShellPage());
     default:
       return MaterialPageRoute<void>(
         settings: settings,

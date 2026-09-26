@@ -40,12 +40,14 @@ class AccountShellPage extends StatefulWidget {
 
 class _AccountShellPageState extends State<AccountShellPage> {
   bool _isLoggingOut = false;
+  bool _isDeletingAccount = false;
   bool _isLoadingCurrentAccount = true;
   bool _isLinkingGoogle = false;
   String? _logoutError;
   String? _currentAccountError;
   String? _googleLinkMessage;
   String? _googleLinkError;
+  String? _accountDeletionError;
   AuthUser? _currentAccount;
 
   AuthRepository get _authRepository =>
@@ -206,6 +208,83 @@ class _AccountShellPageState extends State<AccountShellPage> {
         _googleLinkMessage = null;
         _googleLinkError = 'Google account linking failed. Please try again.';
         _isLinkingGoogle = false;
+      });
+    }
+  }
+
+  Future<void> _deleteAccount() async {
+    if (_isDeletingAccount || _isLoadingCurrentAccount) return;
+    final choice = await showDialog<_AccountDeletionChoice>(
+      context: context,
+      builder: (_) => _AccountDeletionDialog(
+        googleAvailable: _googleIdTokenProvider?.isConfigured ?? false,
+      ),
+    );
+    if (choice == null || !mounted) return;
+
+    setState(() {
+      _isDeletingAccount = true;
+      _accountDeletionError = null;
+    });
+
+    try {
+      String? googleIdToken;
+      if (choice.useGoogle) {
+        googleIdToken = await _googleIdTokenProvider!.signInIdToken();
+      }
+      final receipt = await _accountRepository.requestAccountDeletion(
+        password: choice.password,
+        googleIdToken: googleIdToken,
+      );
+      await _bookingIntentStore?.clear();
+      await _paymentCheckoutIntentStore?.clear();
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Account deletion requested'),
+          content: Text(
+            'Your CareNet account is no longer active and all sessions were '
+            'signed out. Records that CareNet must retain remain protected '
+            'under the applicable retention policy.\n\n'
+            'Request recorded ${receipt.deletionRequestedAt.toLocal()}.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Continue'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted) return;
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(RouteName.onboarding, (route) => false);
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      setState(() {
+        _accountDeletionError = switch (failure.type) {
+          AuthFailureType.unauthorized || AuthFailureType.invalidCredentials =>
+            'Your recent authentication was not accepted. Try again.',
+          AuthFailureType.validation =>
+            'Check the confirmation details and try again.',
+          AuthFailureType.missingConfiguration =>
+            'Account deletion is not available right now.',
+          AuthFailureType.network ||
+          AuthFailureType.server ||
+          AuthFailureType.unknown =>
+            'Account deletion could not be completed. Please try again.',
+        };
+        _isDeletingAccount = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _accountDeletionError =
+            'Account deletion could not be completed. Please try again.';
+        _isDeletingAccount = false;
       });
     }
   }
@@ -414,16 +493,123 @@ class _AccountShellPageState extends State<AccountShellPage> {
                 ],
                 _AccountTile(
                   icon: Icons.delete_outline,
-                  title: 'Delete account',
+                  title: _isDeletingAccount
+                      ? 'Requesting account deletion...'
+                      : 'Delete account',
                   subtitle:
-                      'Unavailable until secure account deletion is supported',
-                  onTap: null,
+                      'Requires recent authentication and signs out every session',
+                  onTap: _isDeletingAccount ? null : _deleteAccount,
                 ),
+                if (_accountDeletionError != null)
+                  Padding(
+                    padding: REdgeInsets.only(bottom: 14.h),
+                    child: Text(
+                      _accountDeletionError!,
+                      style: TextStyle(
+                        fontSize: FontSizes.footer4,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
               ],
             );
           },
         ),
       ),
+    );
+  }
+}
+
+class _AccountDeletionChoice {
+  const _AccountDeletionChoice.password(this.password) : useGoogle = false;
+  const _AccountDeletionChoice.google() : password = null, useGoogle = true;
+
+  final String? password;
+  final bool useGoogle;
+}
+
+class _AccountDeletionDialog extends StatefulWidget {
+  const _AccountDeletionDialog({required this.googleAvailable});
+
+  final bool googleAvailable;
+
+  @override
+  State<_AccountDeletionDialog> createState() => _AccountDeletionDialogState();
+}
+
+class _AccountDeletionDialogState extends State<_AccountDeletionDialog> {
+  final _passwordController = TextEditingController();
+  final _confirmationController = TextEditingController();
+
+  bool get _confirmed => _confirmationController.text.trim() == 'DELETE';
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Delete your CareNet account?'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'This deactivates your account, revokes every session, and stops '
+              'account access. Records CareNet must retain remain protected '
+              'under the applicable retention policy.',
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _confirmationController,
+              autocorrect: false,
+              textCapitalization: TextCapitalization.characters,
+              decoration: const InputDecoration(
+                labelText: 'Type DELETE to confirm',
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              autofillHints: const [AutofillHints.password],
+              decoration: const InputDecoration(labelText: 'Current password'),
+              onChanged: (_) => setState(() {}),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Keep account'),
+        ),
+        if (widget.googleAvailable)
+          TextButton(
+            onPressed: _confirmed
+                ? () => Navigator.of(
+                    context,
+                  ).pop(const _AccountDeletionChoice.google())
+                : null,
+            child: const Text('Verify with Google'),
+          ),
+        FilledButton(
+          onPressed: _confirmed && _passwordController.text.isNotEmpty
+              ? () => Navigator.of(
+                  context,
+                ).pop(_AccountDeletionChoice.password(_passwordController.text))
+              : null,
+          child: const Text('Delete account'),
+        ),
+      ],
     );
   }
 }

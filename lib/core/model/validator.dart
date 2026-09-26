@@ -1,4 +1,13 @@
 class Validators {
+  static const Set<String> _knownWeakPasswords = <String>{
+    'password',
+    'password123',
+    'password1234',
+    'password12345',
+    'qwerty123456789',
+    '123456789012345',
+    'carenet12345678',
+  };
   static String? validateRequiredField(
     String? value, {
     required String fieldName,
@@ -52,10 +61,10 @@ class Validators {
       return 'Please enter your password';
     } else if (value.length < 15) {
       return 'Password must be at least 15 characters long';
-    } else if (!RegExp(
-      r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$&*~]).{15,}$',
-    ).hasMatch(value)) {
-      return 'Must include uppercase, number, and special character';
+    } else if (value.length > 128) {
+      return 'Password must be no more than 128 characters long';
+    } else if (_knownWeakPasswords.contains(value.toLowerCase())) {
+      return 'Choose a less common password';
     }
     return null;
   }
@@ -66,12 +75,8 @@ class Validators {
   }) {
     if (value == null || value.isEmpty) {
       return 'Please enter your password';
-    } else if (value.length < 15) {
-      return 'Password must be at least 15 characters long';
-    } else if (!RegExp(
-      r'^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$&*~]).{15,}$',
-    ).hasMatch(value)) {
-      return 'Must include uppercase, number, and special character';
+    } else if (validatePassword(value) case final error?) {
+      return error;
     } else if (value != password) {
       return 'Passwords do not match';
     }

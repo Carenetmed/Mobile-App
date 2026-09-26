@@ -6,6 +6,12 @@ Rule: do not implement a deferred item until its product and backend contracts
 are defined. Do not fake backend, payment, or media behavior to make a screen
 look complete.
 
+## Authentication providers
+
+- Phone OTP and Apple identity stay hidden until their backend/provider contracts and device acceptance are complete.
+- Facebook identity is outside the approved Phase 1 authentication surface.
+- Firebase Hosting landing pages and Android app-link verification for email verification and password reset remain in the Firebase/environment slice.
+
 ---
 
 ## Phase 1 product deferrals

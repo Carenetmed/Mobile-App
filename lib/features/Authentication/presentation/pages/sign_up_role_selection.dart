@@ -403,14 +403,6 @@ class _MethodStep extends StatelessWidget {
           subtitle: 'Create an account with email and password.',
           onTap: isSubmitting ? null : onEmail,
         ),
-        SizedBox(height: 12.h),
-        const _MethodCard(
-          icon: Icons.phone_iphone_rounded,
-          title: 'Continue with phone',
-          subtitle:
-              'Phone signup is unavailable until real OTP verification is ready.',
-          onTap: null,
-        ),
       ],
     );
   }

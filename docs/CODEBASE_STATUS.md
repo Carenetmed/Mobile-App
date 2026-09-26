@@ -564,6 +564,24 @@ not override the `APP-P1` product boundary.
 
 ## Design debt (fix in Phase 2+)
 
+## APP-P1-014 account and route authority
+
+- The active Account screen renders only `/account/me` identity, role, status,
+  and email. It never falls back to `AccountLocalStore`.
+- Patient profile access uses the existing backend patient profile setup;
+  professional profile uses the backend professional setup editor, while
+  verification, finance, notification preferences,
+  Google linking, and logout retain their authoritative integrations.
+- Unsupported local PIN, phone, email mutation, deactivation, and deletion
+  controls are no longer active. Account deletion remains blocked pending a
+  backend reauthentication, retention, audit, and session-revocation contract.
+- Deferred social/content/readings/emergency/creator routes now fail closed to
+  a common unavailable screen. Their source is retained for later deletion.
+- Route inventory verification: 79 declared constants, including the reserved
+  and unwired `login` constant.
+- Verification baseline remains 481 complete Flutter tests; no test was
+  skipped, disabled, or removed.
+
 | Issue | Where |
 |-------|--------|
 | `finishSignUp` still uses legacy `BorderedTextInput` and wrapper button | `lib/features/Authentication/presentation/pages/sign_up_con.dart` |

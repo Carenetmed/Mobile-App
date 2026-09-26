@@ -265,34 +265,33 @@ class _AccountShellPageState extends State<AccountShellPage> {
       ),
       body: SafeArea(
         top: false,
-        child: ValueListenableBuilder<AccountProfileSnapshot>(
-          valueListenable: AccountLocalStore.snapshot,
-          builder: (context, snapshot, _) {
-            final accountEmail = _currentAccount?.email ?? snapshot.email;
-            final authenticationLabel =
-                _isLoadingCurrentAccount
-                    ? 'Loading account session...'
-                    : _currentAccount == null
-                    ? snapshot.authenticationLabel
-                    : '${_currentAccount!.role} account - ${_currentAccount!.status.toLowerCase()}';
+        child: Builder(
+          builder: (context) {
+            final accountEmail = _currentAccount?.email;
+            final authenticationLabel = _isLoadingCurrentAccount
+                ? 'Loading account session...'
+                : _currentAccount == null
+                ? 'Account details unavailable'
+                : '${_currentAccount!.role} account - ${_currentAccount!.status.toLowerCase()}';
             final googleProvider = _googleIdTokenProvider;
             final isGoogleConfigured = googleProvider?.isConfigured ?? false;
-            final googleLinkSubtitle =
-                _isLinkingGoogle
-                    ? 'Linking Google account...'
-                    : _googleLinkMessage ??
-                        _googleLinkError ??
-                        (_isLoadingCurrentAccount
-                            ? 'Load account before linking Google'
-                            : !isGoogleConfigured
-                            ? 'Google account linking is not configured yet.'
-                            : 'Link Google account');
+            final googleLinkSubtitle = _isLinkingGoogle
+                ? 'Linking Google account...'
+                : _googleLinkMessage ??
+                      _googleLinkError ??
+                      (_isLoadingCurrentAccount
+                          ? 'Load account before linking Google'
+                          : !isGoogleConfigured
+                          ? 'Google account linking is not configured yet.'
+                          : 'Link Google account');
             final canLinkGoogle =
                 !_isLoadingCurrentAccount &&
                 !_isLinkingGoogle &&
                 isGoogleConfigured;
             final isProfessionalAccount =
                 _currentAccount?.role.toUpperCase() == 'PROFESSIONAL';
+            final isPatientAccount =
+                _currentAccount?.role.toUpperCase() == 'PATIENT';
             return ListView(
               padding: REdgeInsets.all(16.r),
               children: [
@@ -317,37 +316,11 @@ class _AccountShellPageState extends State<AccountShellPage> {
                     ),
                   ),
                 ],
-                if (snapshot.deactivationNotice != null) ...[
-                  Container(
-                    margin: REdgeInsets.only(bottom: 16.h),
-                    padding: REdgeInsets.all(14.r),
-                    decoration: BoxDecoration(
-                      color: AppColors.blue02,
-                      borderRadius: BorderRadius.circular(12.r),
-                      border: Border.all(color: AppColors.white04),
-                    ),
-                    child: Text(
-                      snapshot.deactivationNotice!,
-                      style: TextStyle(
-                        fontSize: FontSizes.footer3,
-                        fontFamily: AppFonts.montserrat,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.primaryBlue5,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
                 _AccountTile(
                   icon: Icons.lock_outline,
-                  title: 'Authentication',
+                  title: 'Account security',
                   subtitle: authenticationLabel,
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      RouteName.changeAuthentication,
-                    );
-                  },
+                  onTap: null,
                 ),
                 _AccountTile(
                   icon: Icons.link_outlined,
@@ -362,6 +335,18 @@ class _AccountShellPageState extends State<AccountShellPage> {
                     subtitle: 'Professional profile and verification documents',
                     onTap: () {
                       Navigator.pushNamed(context, RouteName.manageProfile);
+                    },
+                  ),
+                if (isPatientAccount)
+                  _AccountTile(
+                    icon: Icons.person_outline,
+                    title: 'View or edit profile',
+                    subtitle: 'Patient profile details used by CareNet',
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        RouteName.patientOnboardingSetup,
+                      );
                     },
                   ),
                 if (isProfessionalAccount)
@@ -390,14 +375,6 @@ class _AccountShellPageState extends State<AccountShellPage> {
                     },
                   ),
                 _AccountTile(
-                  icon: Icons.manage_accounts_outlined,
-                  title: 'Settings & Profile',
-                  subtitle: 'Edit your local account profile details',
-                  onTap: () {
-                    Navigator.pushNamed(context, RouteName.settings);
-                  },
-                ),
-                _AccountTile(
                   icon: Icons.notifications_outlined,
                   title: 'Notification preferences',
                   subtitle: 'Choose push and email updates by category',
@@ -411,31 +388,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
                 _AccountTile(
                   icon: Icons.mail_outline,
                   title: 'Email address',
-                  subtitle: accountEmail,
-                  onTap: () {
-                    Navigator.pushNamed(context, RouteName.addEmail);
-                  },
-                ),
-                _AccountTile(
-                  icon: Icons.phone_android_outlined,
-                  title: 'Phone number',
-                  subtitle: snapshot.phoneNumber,
-                  onTap: () {
-                    Navigator.pushNamed(context, RouteName.addPhoneNumber);
-                  },
-                ),
-                _AccountTile(
-                  icon: Icons.password_outlined,
-                  title: 'Password',
-                  subtitle: snapshot.passwordHint,
-                  onTap: () {
-                    Navigator.pushNamed(context, RouteName.password);
-                  },
-                ),
-                _AccountTile(
-                  icon: Icons.info_outline,
-                  title: 'Help',
-                  subtitle: snapshot.helpLabel,
+                  subtitle: accountEmail ?? 'Unavailable',
                   onTap: null,
                 ),
                 _AccountTile(
@@ -462,10 +415,9 @@ class _AccountShellPageState extends State<AccountShellPage> {
                 _AccountTile(
                   icon: Icons.delete_outline,
                   title: 'Delete account',
-                  subtitle: 'Open the local confirmation flow',
-                  onTap: () {
-                    Navigator.pushNamed(context, RouteName.deleteAccount);
-                  },
+                  subtitle:
+                      'Unavailable until secure account deletion is supported',
+                  onTap: null,
                 ),
               ],
             );
@@ -584,24 +536,20 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
     final email = _emailController.text.trim();
     final username = _usernameController.text.trim();
     setState(() {
-      _firstNameError =
-          _firstNameController.text.trim().isEmpty
-              ? 'First name is required'
-              : null;
-      _lastNameError =
-          _lastNameController.text.trim().isEmpty
-              ? 'Last name is required'
-              : null;
-      _usernameError =
-          username.isEmpty
-              ? 'Username is required'
-              : (!AccountLocalStore.isUsernameAvailable(username)
-                  ? 'Username taken'
-                  : null);
-      _emailError =
-          email.isEmpty
-              ? 'Enter your email address'
-              : (!email.contains('@') ? 'Enter a valid email address' : null);
+      _firstNameError = _firstNameController.text.trim().isEmpty
+          ? 'First name is required'
+          : null;
+      _lastNameError = _lastNameController.text.trim().isEmpty
+          ? 'Last name is required'
+          : null;
+      _usernameError = username.isEmpty
+          ? 'Username is required'
+          : (!AccountLocalStore.isUsernameAvailable(username)
+                ? 'Username taken'
+                : null);
+      _emailError = email.isEmpty
+          ? 'Enter your email address'
+          : (!email.contains('@') ? 'Enter a valid email address' : null);
       _bioError = _bioController.text.trim().isEmpty ? 'Bio is required' : null;
     });
   }
@@ -679,12 +627,12 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
   @override
   Widget build(BuildContext context) {
     final snapshot = AccountLocalStore.snapshot.value;
-    final displayName =
-        _patientProfile?.name.trim().isNotEmpty == true
-            ? _patientProfile!.name.trim()
-            : '${snapshot.firstName} ${snapshot.lastName}';
-    final avatarLetter =
-        displayName.trim().isEmpty ? '?' : displayName.trim().characters.first;
+    final displayName = _patientProfile?.name.trim().isNotEmpty == true
+        ? _patientProfile!.name.trim()
+        : '${snapshot.firstName} ${snapshot.lastName}';
+    final avatarLetter = displayName.trim().isEmpty
+        ? '?'
+        : displayName.trim().characters.first;
 
     return Scaffold(
       backgroundColor: AppColors.kWhite,
@@ -786,10 +734,9 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
               label: 'First Name',
               controller: _firstNameController,
               onChanged: (_) => _validate(),
-              validationState:
-                  _firstNameError == null
-                      ? CarenetTextFieldValidationState.none
-                      : CarenetTextFieldValidationState.invalid,
+              validationState: _firstNameError == null
+                  ? CarenetTextFieldValidationState.none
+                  : CarenetTextFieldValidationState.invalid,
               errorText: _firstNameError,
             ),
             SizedBox(height: 14.h),
@@ -797,10 +744,9 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
               label: 'Last Name',
               controller: _lastNameController,
               onChanged: (_) => _validate(),
-              validationState:
-                  _lastNameError == null
-                      ? CarenetTextFieldValidationState.none
-                      : CarenetTextFieldValidationState.invalid,
+              validationState: _lastNameError == null
+                  ? CarenetTextFieldValidationState.none
+                  : CarenetTextFieldValidationState.invalid,
               errorText: _lastNameError,
             ),
             SizedBox(height: 14.h),
@@ -808,10 +754,9 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
               label: 'Username',
               controller: _usernameController,
               onChanged: (_) => _validate(),
-              validationState:
-                  _usernameError == null
-                      ? CarenetTextFieldValidationState.none
-                      : CarenetTextFieldValidationState.invalid,
+              validationState: _usernameError == null
+                  ? CarenetTextFieldValidationState.none
+                  : CarenetTextFieldValidationState.invalid,
               errorText: _usernameError,
             ),
             SizedBox(height: 14.h),
@@ -819,10 +764,9 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
               label: 'Email',
               controller: _emailController,
               onChanged: (_) => _validate(),
-              validationState:
-                  _emailError == null
-                      ? CarenetTextFieldValidationState.none
-                      : CarenetTextFieldValidationState.invalid,
+              validationState: _emailError == null
+                  ? CarenetTextFieldValidationState.none
+                  : CarenetTextFieldValidationState.invalid,
               errorText: _emailError,
             ),
             SizedBox(height: 14.h),
@@ -830,10 +774,9 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
               label: 'Bio',
               controller: _bioController,
               onChanged: (_) => _validate(),
-              validationState:
-                  _bioError == null
-                      ? CarenetTextFieldValidationState.none
-                      : CarenetTextFieldValidationState.invalid,
+              validationState: _bioError == null
+                  ? CarenetTextFieldValidationState.none
+                  : CarenetTextFieldValidationState.invalid,
               errorText: _bioError,
             ),
             SizedBox(height: 20.h),
@@ -854,10 +797,9 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
                 SizedBox(width: 16.w),
                 Expanded(
                   child: CarenetButton(
-                    label:
-                        _isSavingPatientName
-                            ? 'Saving name...'
-                            : 'Save Changes',
+                    label: _isSavingPatientName
+                        ? 'Saving name...'
+                        : 'Save Changes',
                     onPressed: _canSave && !_isSavingPatientName ? _save : null,
                   ),
                 ),
@@ -921,20 +863,19 @@ class _PatientProfileReadPanel extends StatelessWidget {
       if (profile?.location?.trim().isNotEmpty == true)
         'Location: ${profile!.location!.trim()}',
     ];
-    final message =
-        isLoading
-            ? 'Loading patient profile...'
-            : isSaving
-            ? 'Saving patient profile name...'
-            : error != null
-            ? error!
-            : successMessage != null
-            ? successMessage!
-            : profile == null
-            ? 'No backend patient profile yet. Local settings remain editable.'
-            : rows.isEmpty
-            ? 'Backend patient profile loaded without display fields.'
-            : rows.join('\n');
+    final message = isLoading
+        ? 'Loading patient profile...'
+        : isSaving
+        ? 'Saving patient profile name...'
+        : error != null
+        ? error!
+        : successMessage != null
+        ? successMessage!
+        : profile == null
+        ? 'No backend patient profile yet. Local settings remain editable.'
+        : rows.isEmpty
+        ? 'Backend patient profile loaded without display fields.'
+        : rows.join('\n');
 
     return Container(
       padding: REdgeInsets.all(14.r),
@@ -1013,47 +954,46 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
     AccountLocalStore.deactivateAccount();
     showDialog<void>(
       context: context,
-      builder:
-          (dialogContext) => AlertDialog(
-            backgroundColor: AppColors.kWhite,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            title: Text(
-              'Your account is now deactivated',
-              style: TextStyle(
-                fontSize: FontSizes.body2,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w700,
-                color: AppColors.kBlack,
-              ),
-            ),
-            content: Text(
-              'Your account will not be visible in search, but you can still reactivate it locally from this slice.',
-              style: TextStyle(
-                fontSize: FontSizes.footer3,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w400,
-                color: AppColors.primaryBlue11,
-                height: 1.4,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(dialogContext).pop();
-                },
-                child: const Text('Close'),
-              ),
-              TextButton(
-                onPressed: () {
-                  AccountLocalStore.reactivateAccount();
-                  Navigator.of(dialogContext).pop();
-                },
-                child: const Text('Activate account'),
-              ),
-            ],
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.kWhite,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        title: Text(
+          'Your account is now deactivated',
+          style: TextStyle(
+            fontSize: FontSizes.body2,
+            fontFamily: AppFonts.montserrat,
+            fontWeight: FontWeight.w700,
+            color: AppColors.kBlack,
           ),
+        ),
+        content: Text(
+          'Your account will not be visible in search, but you can still reactivate it locally from this slice.',
+          style: TextStyle(
+            fontSize: FontSizes.footer3,
+            fontFamily: AppFonts.montserrat,
+            fontWeight: FontWeight.w400,
+            color: AppColors.primaryBlue11,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text('Close'),
+          ),
+          TextButton(
+            onPressed: () {
+              AccountLocalStore.reactivateAccount();
+              Navigator.of(dialogContext).pop();
+            },
+            child: const Text('Activate account'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1144,10 +1084,9 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
               hintText: 'Enter email',
               controller: _emailController,
               onChanged: (_) => setState(() => _emailError = null),
-              validationState:
-                  _emailError == null
-                      ? CarenetTextFieldValidationState.none
-                      : CarenetTextFieldValidationState.invalid,
+              validationState: _emailError == null
+                  ? CarenetTextFieldValidationState.none
+                  : CarenetTextFieldValidationState.invalid,
               errorText: _emailError,
             ),
             SizedBox(height: 14.h),
@@ -1156,10 +1095,9 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
               hintText: 'Enter phone number',
               controller: _phoneController,
               onChanged: (_) => setState(() => _phoneError = null),
-              validationState:
-                  _phoneError == null
-                      ? CarenetTextFieldValidationState.none
-                      : CarenetTextFieldValidationState.invalid,
+              validationState: _phoneError == null
+                  ? CarenetTextFieldValidationState.none
+                  : CarenetTextFieldValidationState.invalid,
               errorText: _phoneError,
             ),
             SizedBox(height: 14.h),
@@ -1169,10 +1107,9 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
               controller: _passwordController,
               obscureText: true,
               onChanged: (_) => setState(() => _passwordError = null),
-              validationState:
-                  _passwordError == null
-                      ? CarenetTextFieldValidationState.none
-                      : CarenetTextFieldValidationState.invalid,
+              validationState: _passwordError == null
+                  ? CarenetTextFieldValidationState.none
+                  : CarenetTextFieldValidationState.invalid,
               errorText: _passwordError,
             ),
             SizedBox(height: 20.h),
@@ -1226,10 +1163,9 @@ class _AccountTile extends StatelessWidget {
             color: AppColors.primaryBlue11,
           ),
         ),
-        trailing:
-            onTap == null
-                ? const Icon(Icons.lock_outline, size: 18)
-                : const Icon(Icons.chevron_right),
+        trailing: onTap == null
+            ? const Icon(Icons.lock_outline, size: 18)
+            : const Icon(Icons.chevron_right),
         onTap: onTap,
       ),
     );

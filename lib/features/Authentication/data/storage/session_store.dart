@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../models/auth_session_model.dart';
@@ -15,6 +17,8 @@ class SecureSessionStore implements SessionStore {
     FlutterSecureStorage storage = const FlutterSecureStorage(),
   }) : _storage = storage;
 
+  static const String _sessionKey = 'carenet.session.v1';
+  static const int _schemaVersion = 1;
   static const String _accessTokenKey = 'carenet.accessToken';
   static const String _refreshTokenKey = 'carenet.refreshToken';
   static const String _tokenTypeKey = 'carenet.tokenType';
@@ -29,35 +33,56 @@ class SecureSessionStore implements SessionStore {
 
   @override
   Future<void> save(AuthSessionModel session) async {
-    // Encrypted Android preferences are a shared persistent store. Complete the
-    // session as one ordered write sequence before a protected route rereads it.
-    await _storage.write(key: _accessTokenKey, value: session.accessToken);
-    await _storage.write(key: _refreshTokenKey, value: session.refreshToken);
-    await _storage.write(key: _tokenTypeKey, value: session.tokenType);
+    _validate(session);
     await _storage.write(
-      key: _expiresInKey,
-      value: session.expiresIn.toString(),
+      key: _sessionKey,
+      value: jsonEncode(<String, dynamic>{
+        'schemaVersion': _schemaVersion,
+        'session': session.toJson(),
+      }),
     );
-    await _storage.write(key: _userIdKey, value: session.user.id);
-    await _storage.write(key: _userEmailKey, value: session.user.email);
-    await _storage.write(key: _userRoleKey, value: session.user.role);
-    await _storage.write(key: _userStatusKey, value: session.user.status);
-    await _storage.write(
-      key: _userEmailVerifiedKey,
-      value: session.user.emailVerified.toString(),
-    );
+    await _clearLegacy();
   }
 
   @override
   Future<AuthSessionModel?> read() async {
+    final encoded = await _storage.read(key: _sessionKey);
+    if (encoded != null) {
+      try {
+        final decoded = jsonDecode(encoded);
+        if (decoded is! Map<String, dynamic> ||
+            decoded['schemaVersion'] != _schemaVersion ||
+            decoded['session'] is! Map<String, dynamic>) {
+          await clear();
+          return null;
+        }
+        final session = AuthSessionModel.fromJson(
+          decoded['session'] as Map<String, dynamic>,
+        );
+        _validate(session);
+        return session;
+      } catch (_) {
+        await clear();
+        return null;
+      }
+    }
+
+    final legacy = await _readLegacy();
+    if (legacy == null) return null;
+    await save(legacy);
+    return legacy;
+  }
+
+  Future<AuthSessionModel?> _readLegacy() async {
     final accessToken = await _storage.read(key: _accessTokenKey);
     final refreshToken = await _storage.read(key: _refreshTokenKey);
     if (accessToken == null || refreshToken == null) {
+      await _clearLegacy();
       return null;
     }
 
     final expiresInText = await _storage.read(key: _expiresInKey);
-    return AuthSessionModel.fromJson(<String, dynamic>{
+    final session = AuthSessionModel.fromJson(<String, dynamic>{
       'accessToken': accessToken,
       'refreshToken': refreshToken,
       'tokenType': await _storage.read(key: _tokenTypeKey) ?? 'Bearer',
@@ -71,10 +96,22 @@ class SecureSessionStore implements SessionStore {
             (await _storage.read(key: _userEmailVerifiedKey)) == 'true',
       },
     });
+    try {
+      _validate(session);
+      return session;
+    } catch (_) {
+      await _clearLegacy();
+      return null;
+    }
   }
 
   @override
   Future<void> clear() async {
+    await _storage.delete(key: _sessionKey);
+    await _clearLegacy();
+  }
+
+  Future<void> _clearLegacy() async {
     await Future.wait(<Future<void>>[
       _storage.delete(key: _accessTokenKey),
       _storage.delete(key: _refreshTokenKey),
@@ -86,6 +123,17 @@ class SecureSessionStore implements SessionStore {
       _storage.delete(key: _userStatusKey),
       _storage.delete(key: _userEmailVerifiedKey),
     ]);
+  }
+
+  void _validate(AuthSessionModel session) {
+    if (session.accessToken.trim().isEmpty ||
+        session.refreshToken.trim().isEmpty ||
+        session.user.id.trim().isEmpty ||
+        session.user.email.trim().isEmpty ||
+        session.user.role.trim().isEmpty ||
+        session.user.status.trim().isEmpty) {
+      throw const FormatException('Incomplete authenticated session.');
+    }
   }
 }
 

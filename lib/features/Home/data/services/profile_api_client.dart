@@ -1,4 +1,5 @@
 import 'package:app_t/core/config/carenet_api_config.dart';
+import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:dio/dio.dart';
 
@@ -9,7 +10,7 @@ import '../models/public_professional_model.dart';
 class ProfileApiClient {
   ProfileApiClient({required CareNetApiConfig config, Dio? dio})
     : _config = config,
-      _dio = dio ?? Dio();
+      _dio = dio ?? CareNetHttpClient.create();
 
   final CareNetApiConfig _config;
   final Dio _dio;
@@ -117,12 +118,11 @@ class ProfileApiClient {
         options: Options(headers: const <String, String>{}),
       ),
     );
-    final items =
-        response is List
-            ? response
-            : response is Map<String, dynamic> && response['items'] is List
-            ? response['items'] as List<dynamic>
-            : const <dynamic>[];
+    final items = response is List
+        ? response
+        : response is Map<String, dynamic> && response['items'] is List
+        ? response['items'] as List<dynamic>
+        : const <dynamic>[];
     return items
         .whereType<Map<String, dynamic>>()
         .map(PublicProfessionalModel.fromJson)

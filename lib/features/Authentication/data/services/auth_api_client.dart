@@ -1,4 +1,5 @@
 import 'package:app_t/core/config/carenet_api_config.dart';
+import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:dio/dio.dart';
 
 import '../../domain/entities/auth_failure.dart';
@@ -8,7 +9,7 @@ import '../models/auth_user_model.dart';
 class AuthApiClient {
   AuthApiClient({required CareNetApiConfig config, Dio? dio})
     : _config = config,
-      _dio = dio ?? Dio();
+      _dio = dio ?? CareNetHttpClient.create();
 
   final CareNetApiConfig _config;
   final Dio _dio;

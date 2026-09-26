@@ -2,6 +2,7 @@ import '../../domain/entities/auth_failure.dart';
 import '../../domain/entities/auth_session.dart';
 import '../models/auth_session_model.dart';
 import '../services/auth_api_client.dart';
+import '../services/session_refresh_coordinator.dart';
 import '../storage/session_store.dart';
 import '../../../Notifications/domain/services/notification_session_lifecycle.dart';
 
@@ -10,14 +11,24 @@ class AuthRepository {
     required AuthApiClient apiClient,
     required SessionStore sessionStore,
     NotificationSessionLifecycle? notificationLifecycle,
+    SessionRefreshCoordinator? refreshCoordinator,
   }) : _apiClient = apiClient,
        _sessionStore = sessionStore,
-       _notificationLifecycle = notificationLifecycle;
+       _notificationLifecycle = notificationLifecycle,
+       _refreshCoordinator =
+           refreshCoordinator ??
+           SessionRefreshCoordinator(
+             apiClient: apiClient,
+             sessionStore: sessionStore,
+           ) {
+    _refreshCoordinator.onAuthenticated = _notifyAuthenticated;
+    _refreshCoordinator.onClearing = _notifyBeforeClear;
+  }
 
   final AuthApiClient _apiClient;
   final SessionStore _sessionStore;
   final NotificationSessionLifecycle? _notificationLifecycle;
-  Future<AuthSession>? _refreshing;
+  final SessionRefreshCoordinator _refreshCoordinator;
 
   Future<AuthSession> register({
     required String email,
@@ -50,44 +61,7 @@ class AuthRepository {
     return _sessionStore.read();
   }
 
-  Future<AuthSession> refresh() {
-    final active = _refreshing;
-    if (active != null) {
-      return active;
-    }
-    final future = _refresh();
-    _refreshing = future;
-    return future.whenComplete(() {
-      if (identical(_refreshing, future)) {
-        _refreshing = null;
-      }
-    });
-  }
-
-  Future<AuthSession> _refresh() async {
-    final current = await _sessionStore.read();
-    if (current == null) {
-      throw const AuthFailure(
-        type: AuthFailureType.unauthorized,
-        message: 'Please sign in again.',
-      );
-    }
-
-    try {
-      final session = await _apiClient.refresh(
-        refreshToken: current.refreshToken,
-      );
-      await _sessionStore.save(session);
-      await _notifyAuthenticated(session);
-      return session;
-    } on AuthFailure catch (failure) {
-      if (failure.shouldClearSession) {
-        await _notifyBeforeClear(current);
-        await _sessionStore.clear();
-      }
-      rethrow;
-    }
-  }
+  Future<AuthSession> refresh() => _refreshCoordinator.refresh();
 
   Future<void> logout() async {
     final current = await _sessionStore.read();

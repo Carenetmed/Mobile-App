@@ -1,6 +1,6 @@
 # Codebase status
 
-**Last updated:** 2026-08-02 NOTIF-P1-010 transactional notification milestone.
+**Last updated:** 2026-09-26 APP-P1-011 network/session/startup foundation.
 
 Honest snapshot of `Mobile-App-master` so a new chat does not rediscover problems.
 
@@ -38,6 +38,12 @@ PAY-P1-008 adds backend-authoritative consultation pricing, hosted Paystack
 checkout, payment-state refresh, and a professional finance surface for held
 earnings, balances, bank setup, payout cooling, ledger, and payout history.
 Flutter never confirms payment from browser return and never handles card data.
+APP-P1-011 establishes one bounded Dio transport for active API clients,
+serializes one refresh and one authenticated retry after an HTTP 401, stores the
+complete authenticated session as one versioned secure record with fail-closed
+legacy migration, and moves optional notification initialization after the first
+app frame with a bounded provider timeout. A 403 is never treated as an expired
+session, and public requests remain unauthenticated.
 NOTIF-P1-010 adds a backend-owned durable transactional inbox, channel
 preferences, FCM installation lifecycle, contextual permission UX, unread header
 badge, privacy-safe foreground/background/terminated handling, and owner-checked

@@ -23,6 +23,25 @@ payout, dual-role, or notification-provider contracts.
   without explicit project-lead approval.
 - Stop after each slice for review. Do not start the next row automatically.
 
+## Production-readiness foundation
+
+### APP-P1-011 - Network, Session And Startup Foundation
+
+Status: implemented on dedicated slice branch; verification pending PR CI.
+
+- **Purpose:** Prevent indefinite feature requests, mixed secure-session records,
+  avoidable sign-outs after access-token expiry, and optional notification work
+  delaying the first usable frame.
+- **Behavior:** Active API clients use bounded shared transport defaults;
+  authenticated HTTP 401 responses share one token refresh and retry once with
+  the rotated token; 403 remains an authorization failure; the secure session is
+  one versioned record with fail-closed migration; notification initialization
+  runs after `runApp` and times out safely.
+- **Tests:** Atomic save/read/corrupt/migration, serialized refresh, retry header
+  rotation, provider timeout, complete Flutter suite, analyzer and Android build.
+- **Non-goals:** Product UI redesign, provider activation, account mutations,
+  Firebase environment migration, Paystack activation or physical-device proof.
+
 ## A. Archive and Phase 1 scope lock
 
 ### APP-P1-001 - Phase 1 Marketplace Scope Decision

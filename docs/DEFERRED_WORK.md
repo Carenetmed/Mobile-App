@@ -33,6 +33,13 @@ the later dependency-proven cleanup slices.
 The complete ownership/removal map is
 `PHASE_1_DEPENDENCY_IMPACT_MAP.md`. Core payment, appointment messaging,
 consultation calls, and transactional notification delivery are implemented.
+
+APP-P1-011 closes the shared mobile transport/session foundation: active clients
+have bounded timeouts, authenticated 401 responses serialize one refresh and one
+retry, secure session authority is stored as one versioned record, and optional
+notification startup no longer blocks the first frame. Feature-specific
+cancellation/progress UX and physical poor-network acceptance remain deferred to
+their owning slices.
 Broader support operations, dual-role behavior, marketing communication, and
 advanced profile/deferred-source cleanup remain separate and must not be invented.
 

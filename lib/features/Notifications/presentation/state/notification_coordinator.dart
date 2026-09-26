@@ -41,10 +41,12 @@ class NotificationCoordinator extends ChangeNotifier
     required NotificationTransport transport,
     required GlobalKey<NavigatorState> navigatorKey,
     NotificationDeviceMetadataLoader? metadataLoader,
+    Duration providerTimeout = const Duration(seconds: 8),
   }) : _repository = repository,
        _installationStore = installationStore,
        _transport = transport,
        _navigatorKey = navigatorKey,
+       _providerTimeout = providerTimeout,
        _metadataLoader = metadataLoader ?? _loadDeviceMetadata;
 
   final NotificationRepository _repository;
@@ -52,6 +54,7 @@ class NotificationCoordinator extends ChangeNotifier
   final NotificationTransport _transport;
   final GlobalKey<NavigatorState> _navigatorKey;
   final NotificationDeviceMetadataLoader _metadataLoader;
+  final Duration _providerTimeout;
 
   int unreadCount = 0;
   NotificationPermissionValue permission =
@@ -70,14 +73,16 @@ class NotificationCoordinator extends ChangeNotifier
     if (initialized) return;
     initialized = true;
     try {
-      await _transport.initialize(
-        onForegroundMessage: refreshUnreadCount,
-        onTap: handleTap,
-        onTokenRefresh: _registerCurrentInstallation,
-      );
+      await _transport
+          .initialize(
+            onForegroundMessage: refreshUnreadCount,
+            onTap: handleTap,
+            onTokenRefresh: _registerCurrentInstallation,
+          )
+          .timeout(_providerTimeout);
       WidgetsBinding.instance.addObserver(this);
       _observingLifecycle = true;
-      permission = await _transport.permission();
+      permission = await _transport.permission().timeout(_providerTimeout);
     } catch (error) {
       _debug('transport initialization failed (${error.runtimeType}).');
       permission = NotificationPermissionValue.notDetermined;

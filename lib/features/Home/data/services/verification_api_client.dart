@@ -1,4 +1,5 @@
 import 'package:app_t/core/config/carenet_api_config.dart';
+import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:dio/dio.dart';
 
@@ -10,8 +11,8 @@ class VerificationApiClient {
     Dio? dio,
     Dio? uploadDio,
   }) : _config = config,
-       _dio = dio ?? Dio(),
-       _uploadDio = uploadDio ?? Dio();
+       _dio = dio ?? CareNetHttpClient.create(),
+       _uploadDio = uploadDio ?? CareNetHttpClient.createUpload();
 
   final CareNetApiConfig _config;
   final Dio _dio;
@@ -31,12 +32,12 @@ class VerificationApiClient {
     );
     final items =
         response is Map<String, dynamic> && response['documents'] is List
-            ? response['documents'] as List<dynamic>
-            : response is Map<String, dynamic> && response['items'] is List
-            ? response['items'] as List<dynamic>
-            : response is List
-            ? response
-            : const <dynamic>[];
+        ? response['documents'] as List<dynamic>
+        : response is Map<String, dynamic> && response['items'] is List
+        ? response['items'] as List<dynamic>
+        : response is List
+        ? response
+        : const <dynamic>[];
     return items
         .whereType<Map<String, dynamic>>()
         .map(VerificationDocumentModel.fromJson)
@@ -97,16 +98,17 @@ class VerificationApiClient {
         options: Options(headers: _bearerHeaders(accessToken)),
       ),
     );
-    final documentJson =
-        response is Map<String, dynamic> ? response['document'] : null;
+    final documentJson = response is Map<String, dynamic>
+        ? response['document']
+        : null;
     return VerificationDocumentModel.fromJson(
       documentJson is Map<String, dynamic>
           ? <String, dynamic>{
-            ...documentJson,
-            'checksumProvided':
-                documentJson['checksumProvided'] as bool? ??
-                documentJson['checksumSha256'] != null,
-          }
+              ...documentJson,
+              'checksumProvided':
+                  documentJson['checksumProvided'] as bool? ??
+                  documentJson['checksumSha256'] != null,
+            }
           : const <String, dynamic>{},
     );
   }

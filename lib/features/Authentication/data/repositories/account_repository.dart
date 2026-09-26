@@ -58,9 +58,9 @@ class AccountRepository {
       googleIdToken: googleIdToken,
     );
     try {
-      await _notificationLifecycle?.beforeLogout(current);
+      await _notificationLifecycle?.afterAccountDeletion(current);
     } catch (_) {
-      // The backend already invalidated installations with the account.
+      // Session removal remains authoritative if local cleanup fails.
     } finally {
       await _sessionStore.clear();
     }

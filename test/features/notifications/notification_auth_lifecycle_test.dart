@@ -110,6 +110,11 @@ class _RecordingLifecycle implements NotificationSessionLifecycle {
   }
 
   @override
+  Future<void> afterAccountDeletion(AuthSessionModel session) async {
+    loggedOut.add(session);
+  }
+
+  @override
   Future<void> onAuthenticatedSession(AuthSessionModel session) async {
     authenticated.add(session);
     if (failAuthentication) throw StateError('FCM unavailable');

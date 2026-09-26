@@ -1,6 +1,13 @@
 # Codebase status
 
-**Last updated:** 2026-09-26 APP-P1-012 authentication/onboarding readiness.
+**Last updated:** 2026-09-26 APP-P1-013 Firebase/environment separation.
+
+## Environment separation
+
+- Canonical Firebase apps are registered for Android and iOS staging/production in `project-a96784ee-811c-46ab-a7b`.
+- Android staging (`com.carenet.app.staging`) and production (`com.carenet.app`) are explicit Gradle flavors with distinct labels.
+- Runtime environment validation rejects wrong-project Firebase configuration and insecure production API URLs.
+- iOS remains registered only; Apple signing, schemes, APNs, and device proof are unresolved release gates.
 
 ## Authentication readiness
 

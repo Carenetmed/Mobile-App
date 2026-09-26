@@ -211,6 +211,15 @@ class NotificationCoordinator extends ChangeNotifier
     }
   }
 
+  @override
+  Future<void> afterAccountDeletion(AuthSessionModel session) async {
+    _session = null;
+    unreadCount = 0;
+    await _installationStore.clearBinding();
+    await _installationStore.clearPendingNotificationId();
+    _notify();
+  }
+
   Future<void> refreshUnreadCount() async {
     if (_session == null) return;
     try {

@@ -2,6 +2,7 @@ import 'package:app_t/core/config/carenet_api_config.dart';
 import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:dio/dio.dart';
 
+import '../../domain/entities/account_deletion_receipt.dart';
 import '../../domain/entities/auth_failure.dart';
 import '../models/auth_session_model.dart';
 import '../models/auth_user_model.dart';
@@ -27,6 +28,8 @@ class AuthApiClient {
   static const String passwordResetConfirmPath = '/auth/password-reset/confirm';
   static const String googleSignInPath = '/auth/google/sign-in';
   static const String googleLinkPath = '/auth/google/link';
+  static const String accountDeletionRequestPath =
+      '/auth/account-deletion/request';
 
   Map<String, String> bearerHeaders(String accessToken) {
     return <String, String>{'Authorization': 'Bearer $accessToken'};
@@ -132,6 +135,30 @@ class AuthApiClient {
       accessToken: accessToken,
       data: <String, dynamic>{'idToken': idToken},
     );
+  }
+
+  Future<AccountDeletionReceipt> requestAccountDeletion({
+    required String accessToken,
+    String? password,
+    String? googleIdToken,
+  }) async {
+    final data = await _post(
+      accountDeletionRequestPath,
+      accessToken: accessToken,
+      data: <String, dynamic>{
+        if (password != null) 'password': password,
+        if (googleIdToken != null) 'googleIdToken': googleIdToken,
+        'confirmation': 'DELETE',
+      },
+    );
+    final receipt = AccountDeletionReceipt.fromJson(data);
+    if (!receipt.isValid) {
+      throw const AuthFailure(
+        type: AuthFailureType.server,
+        message: 'Account deletion could not be confirmed. Please try again.',
+      );
+    }
+    return receipt;
   }
 
   Future<Map<String, dynamic>> _get(String path, {String? accessToken}) async {

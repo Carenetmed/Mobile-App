@@ -6,6 +6,7 @@ import 'package:app_t/features/Authentication/data/services/google_sign_in_provi
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Authentication/domain/entities/account_deletion_receipt.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
@@ -57,18 +58,17 @@ Future<void> _pumpDashboard(WidgetTester tester) async {
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
-      builder:
-          (_, __) => MaterialApp(
-            home: Dashboard(
-              sessionStore: sessionStore,
-              profileRepository: _FakeProfileRepository(
-                patientProfile: const PatientProfile(name: 'Patient'),
-              ),
-              onboardingRepository: const _DashboardOnboardingRepository(),
-              schedulingRepository: const _DashboardSchedulingRepository(),
-            ),
-            onGenerateRoute: generateRoute,
+      builder: (_, __) => MaterialApp(
+        home: Dashboard(
+          sessionStore: sessionStore,
+          profileRepository: _FakeProfileRepository(
+            patientProfile: const PatientProfile(name: 'Patient'),
           ),
+          onboardingRepository: const _DashboardOnboardingRepository(),
+          schedulingRepository: const _DashboardSchedulingRepository(),
+        ),
+        onGenerateRoute: generateRoute,
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -95,33 +95,26 @@ Future<void> _pumpAccount(
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
-      builder:
-          (_, __) => MaterialApp(
-            home: AccountShellPage(
-              authRepository: repository,
-              accountRepository: accountRepository,
-              googleIdTokenProvider: googleIdTokenProvider,
-              bookingIntentStore: bookingIntentStore,
-              paymentCheckoutIntentStore: paymentCheckoutIntentStore,
-            ),
-            routes: <String, WidgetBuilder>{
-              RouteName.onboarding:
-                  (_) => const Scaffold(body: Text('onboarding')),
-              RouteName.manageProfile:
-                  (_) => const Scaffold(body: Text('manage-profile-route')),
-              RouteName.professionalVerificationDocuments:
-                  (_) => const Scaffold(
-                    body: Text('verification-documents-route'),
-                  ),
-              RouteName.professionalFinance:
-                  (_) =>
-                      const Scaffold(body: Text('professional-finance-route')),
-              RouteName.notificationPreferences:
-                  (_) => const Scaffold(
-                    body: Text('notification-preferences-route'),
-                  ),
-            },
-          ),
+      builder: (_, __) => MaterialApp(
+        home: AccountShellPage(
+          authRepository: repository,
+          accountRepository: accountRepository,
+          googleIdTokenProvider: googleIdTokenProvider,
+          bookingIntentStore: bookingIntentStore,
+          paymentCheckoutIntentStore: paymentCheckoutIntentStore,
+        ),
+        routes: <String, WidgetBuilder>{
+          RouteName.onboarding: (_) => const Scaffold(body: Text('onboarding')),
+          RouteName.manageProfile: (_) =>
+              const Scaffold(body: Text('manage-profile-route')),
+          RouteName.professionalVerificationDocuments: (_) =>
+              const Scaffold(body: Text('verification-documents-route')),
+          RouteName.professionalFinance: (_) =>
+              const Scaffold(body: Text('professional-finance-route')),
+          RouteName.notificationPreferences: (_) =>
+              const Scaffold(body: Text('notification-preferences-route')),
+        },
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -139,16 +132,15 @@ Future<void> _pumpEditEmail(
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
-      builder:
-          (_, __) => MaterialApp(
-            home: EditEmailShellPage(accountRepository: repository),
-            routes: <String, WidgetBuilder>{
-              RouteName.changeEmail:
-                  (_) => const Scaffold(body: Text('change-email')),
-              RouteName.enterPasswordToSave:
-                  (_) => const Scaffold(body: Text('password-step')),
-            },
-          ),
+      builder: (_, __) => MaterialApp(
+        home: EditEmailShellPage(accountRepository: repository),
+        routes: <String, WidgetBuilder>{
+          RouteName.changeEmail: (_) =>
+              const Scaffold(body: Text('change-email')),
+          RouteName.enterPasswordToSave: (_) =>
+              const Scaffold(body: Text('password-step')),
+        },
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -166,10 +158,9 @@ Future<void> _pumpSettingsProfile(
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
-      builder:
-          (_, __) => MaterialApp(
-            home: SettingsProfilePage(profileRepository: profileRepository),
-          ),
+      builder: (_, __) => MaterialApp(
+        home: SettingsProfilePage(profileRepository: profileRepository),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -397,8 +388,9 @@ void main() {
     expect(find.text('Google account'), findsOneWidget);
     expect(find.text('View or edit profile'), findsOneWidget);
 
-    final authenticationTop =
-        tester.getTopLeft(find.text('Account security')).dy;
+    final authenticationTop = tester
+        .getTopLeft(find.text('Account security'))
+        .dy;
     final googleTop = tester.getTopLeft(find.text('Google account')).dy;
     final settingsTop = tester.getTopLeft(find.text('View or edit profile')).dy;
     expect(authenticationTop < googleTop, isTrue);
@@ -585,31 +577,88 @@ void main() {
     expect(find.text('onboarding'), findsNothing);
   });
 
-  testWidgets('delete account is disabled until backend authority exists', (
+  testWidgets('password reauthentication deletes account and signs out', (
     tester,
   ) async {
-    await _pumpDashboard(tester);
-    await _openAccount(tester);
+    final accountRepository = _FakeAccountRepository();
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: accountRepository,
+    );
     await tester.scrollUntilVisible(find.text('Delete account'), 200);
-
-    expect(find.text('Delete account'), findsOneWidget);
-    expect(find.textContaining('secure account deletion'), findsOneWidget);
     await tester.tap(find.text('Delete account'));
     await tester.pumpAndSettle();
-    expect(find.text('Account'), findsOneWidget);
+
+    expect(find.text('Delete your CareNet account?'), findsOneWidget);
+    expect(find.textContaining('retention policy'), findsOneWidget);
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Type DELETE to confirm'),
+      'DELETE',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Current password'),
+      'CareNet@123',
+    );
+    await tester.pump();
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete account'));
+    await tester.pumpAndSettle();
+
+    expect(accountRepository.deletionCalls, 1);
+    expect(accountRepository.lastDeletionPassword, 'CareNet@123');
+    expect(accountRepository.lastDeletionGoogleToken, isNull);
+    expect(find.text('Account deletion requested'), findsOneWidget);
+    expect(find.textContaining('all sessions were signed out'), findsOneWidget);
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(find.text('onboarding'), findsOneWidget);
   });
-  testWidgets('direct delete route fails closed', (tester) async {
+
+  testWidgets('Google reauthentication sends provider token without password', (
+    tester,
+  ) async {
+    final accountRepository = _FakeAccountRepository();
+    final googleProvider = _FakeGoogleIdTokenProvider(
+      idToken: 'fresh-google-id-token',
+    );
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: accountRepository,
+      googleIdTokenProvider: googleProvider,
+    );
+    await tester.scrollUntilVisible(find.text('Delete account'), 200);
+    await tester.tap(find.text('Delete account'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Type DELETE to confirm'),
+      'DELETE',
+    );
+    await tester.pump();
+    await tester.tap(find.text('Verify with Google'));
+    await tester.pumpAndSettle();
+
+    expect(googleProvider.signInCalls, 1);
+    expect(accountRepository.lastDeletionGoogleToken, 'fresh-google-id-token');
+    expect(accountRepository.lastDeletionPassword, isNull);
+    expect(find.text('fresh-google-id-token'), findsNothing);
+  });
+
+  testWidgets('direct delete route opens canonical account authority', (
+    tester,
+  ) async {
     await _pumpDashboard(tester);
     Navigator.of(
       tester.element(find.byType(Dashboard)),
     ).pushNamed(RouteName.deleteAccount);
     await tester.pumpAndSettle();
 
+    expect(find.text('Account'), findsOneWidget);
+    expect(find.text('Delete account'), findsOneWidget);
     expect(
       find.textContaining('not available in CareNet Phase 1'),
-      findsOneWidget,
+      findsNothing,
     );
-    expect(find.text('Deactivate your instead?'), findsNothing);
   });
   testWidgets('direct local settings route fails closed', (tester) async {
     await _pumpDashboard(tester);
@@ -900,16 +949,15 @@ void main() {
     await tester.pumpWidget(
       ScreenUtilInit(
         designSize: _phoneSize,
-        builder:
-            (_, __) => MaterialApp(
-              home: EmailVerificationConfirmPage(
-                token: 'opaque-verification-token',
-                accountRepository: repository,
-              ),
-              routes: <String, WidgetBuilder>{
-                RouteName.account: (_) => const Scaffold(body: Text('account')),
-              },
-            ),
+        builder: (_, __) => MaterialApp(
+          home: EmailVerificationConfirmPage(
+            token: 'opaque-verification-token',
+            accountRepository: repository,
+          ),
+          routes: <String, WidgetBuilder>{
+            RouteName.account: (_) => const Scaffold(body: Text('account')),
+          },
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -939,17 +987,16 @@ void main() {
     await tester.pumpWidget(
       ScreenUtilInit(
         designSize: _phoneSize,
-        builder:
-            (_, __) => MaterialApp(
-              home: EmailVerificationConfirmPage(
-                token: null,
-                accountRepository: repository,
-              ),
-              routes: <String, WidgetBuilder>{
-                RouteName.editEmail:
-                    (_) => const Scaffold(body: Text('edit-email')),
-              },
-            ),
+        builder: (_, __) => MaterialApp(
+          home: EmailVerificationConfirmPage(
+            token: null,
+            accountRepository: repository,
+          ),
+          routes: <String, WidgetBuilder>{
+            RouteName.editEmail: (_) =>
+                const Scaffold(body: Text('edit-email')),
+          },
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -979,13 +1026,12 @@ void main() {
     await tester.pumpWidget(
       ScreenUtilInit(
         designSize: _phoneSize,
-        builder:
-            (_, __) => MaterialApp(
-              home: EmailVerificationConfirmPage(
-                token: 'opaque-verification-token',
-                accountRepository: repository,
-              ),
-            ),
+        builder: (_, __) => MaterialApp(
+          home: EmailVerificationConfirmPage(
+            token: 'opaque-verification-token',
+            accountRepository: repository,
+          ),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -1092,6 +1138,9 @@ class _FakeAccountRepository implements AccountRepository {
   int requestEmailVerificationCalls = 0;
   int confirmEmailVerificationCalls = 0;
   String? lastVerificationToken;
+  int deletionCalls = 0;
+  String? lastDeletionPassword;
+  String? lastDeletionGoogleToken;
 
   @override
   Future<AuthUser> currentAccount() async {
@@ -1127,6 +1176,24 @@ class _FakeAccountRepository implements AccountRepository {
     if (failure != null) {
       throw failure;
     }
+  }
+
+  @override
+  Future<AccountDeletionReceipt> requestAccountDeletion({
+    String? password,
+    String? googleIdToken,
+  }) async {
+    deletionCalls += 1;
+    lastDeletionPassword = password;
+    lastDeletionGoogleToken = googleIdToken;
+    final failure = this.failure;
+    if (failure != null) throw failure;
+    return AccountDeletionReceipt(
+      accountStatus: 'DELETED',
+      deletionRequestedAt: DateTime.utc(2026, 9, 26, 12),
+      retentionStatus: 'RETAINED_UNDER_POLICY',
+      sessionsRevoked: true,
+    );
   }
 
   @override

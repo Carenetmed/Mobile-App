@@ -1,6 +1,17 @@
 # Codebase status
 
-**Last updated:** 2026-09-26 APP-P1-013 Firebase/environment separation.
+**Last updated:** 2026-09-26 APP-P1-015 account deletion authority.
+
+## Account lifecycle
+
+- Account deletion uses the protected backend contract and requires explicit
+  `DELETE` confirmation plus a current password or a freshly verified linked
+  Google identity.
+- A successful request clears the secure session and pending booking/payment
+  intents, reports that every session was revoked, and states truthfully that
+  required records remain under the applicable retention policy.
+- Local account state never grants deletion authority and no hard-erasure or
+  restoration behavior is claimed.
 
 ## Environment separation
 

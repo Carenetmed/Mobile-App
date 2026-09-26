@@ -1,3 +1,4 @@
+import '../../domain/entities/account_deletion_receipt.dart';
 import '../../domain/entities/auth_failure.dart';
 import '../../domain/entities/auth_user.dart';
 import '../models/auth_session_model.dart';
@@ -44,6 +45,26 @@ class AccountRepository {
 
   Future<void> confirmEmailVerification({required String token}) {
     return _apiClient.confirmEmailVerification(token: token);
+  }
+
+  Future<AccountDeletionReceipt> requestAccountDeletion({
+    String? password,
+    String? googleIdToken,
+  }) async {
+    final current = await _requireSession();
+    final receipt = await _apiClient.requestAccountDeletion(
+      accessToken: current.accessToken,
+      password: password,
+      googleIdToken: googleIdToken,
+    );
+    try {
+      await _notificationLifecycle?.afterAccountDeletion(current);
+    } catch (_) {
+      // Session removal remains authoritative if local cleanup fails.
+    } finally {
+      await _sessionStore.clear();
+    }
+    return receipt;
   }
 
   Future<AuthSessionModel> _requireSession() async {

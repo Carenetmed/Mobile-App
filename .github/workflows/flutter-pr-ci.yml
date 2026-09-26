@@ -62,7 +62,7 @@ jobs:
         run: flutter test
 
       - name: Build debug APK
-        run: flutter build apk --debug
+        run: flutter build apk --debug --flavor staging
 
       - name: Release transient build output
         if: always()

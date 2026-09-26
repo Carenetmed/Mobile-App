@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../../core/config/app_environment.dart';
+
 enum NotificationPermissionValue {
   notDetermined,
   authorized,
@@ -39,7 +41,7 @@ class FirebaseClientConfig {
   final String apiKey;
 
   bool get isConfigured =>
-      projectId.trim().isNotEmpty &&
+      projectId.trim() == AppEnvironmentConfig.canonicalFirebaseProjectId &&
       appId.trim().isNotEmpty &&
       messagingSenderId.trim().isNotEmpty &&
       apiKey.trim().isNotEmpty;

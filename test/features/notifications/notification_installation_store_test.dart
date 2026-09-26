@@ -1,4 +1,5 @@
 import 'package:app_t/features/Notifications/data/services/firebase_notification_transport.dart';
+import 'package:app_t/core/config/app_environment.dart';
 import 'package:app_t/features/Notifications/data/storage/notification_installation_store.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,20 +40,32 @@ void main() {
 
   test('Firebase client config requires all four non-secret identifiers', () {
     const complete = FirebaseClientConfig(
-      projectId: 'staging-project',
+      projectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
       appId: '1:123:android:abc',
       messagingSenderId: '123',
       apiKey: 'public-firebase-api-key',
     );
     const incomplete = FirebaseClientConfig(
-      projectId: 'staging-project',
+      projectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
       appId: '',
       messagingSenderId: '123',
       apiKey: 'public-firebase-api-key',
     );
 
     expect(complete.isConfigured, isTrue);
-    expect(complete.options.projectId, 'staging-project');
+    expect(
+      complete.options.projectId,
+      AppEnvironmentConfig.canonicalFirebaseProjectId,
+    );
     expect(incomplete.isConfigured, isFalse);
+    expect(
+      const FirebaseClientConfig(
+        projectId: 'carenet-175b7',
+        appId: 'wrong-app',
+        messagingSenderId: '123',
+        apiKey: 'public-firebase-api-key',
+      ).isConfigured,
+      isFalse,
+    );
   });
 }

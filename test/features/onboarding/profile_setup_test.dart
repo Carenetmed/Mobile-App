@@ -75,6 +75,13 @@ void main() {
       final fields = find.byType(EditableText);
       await tester.enterText(fields.at(0), 'Ada Patient');
       await tester.enterText(fields.at(2), 'Ikeja');
+      await _selectCatalogValue(tester, 'patient-state', 'Lagos');
+      await _selectCatalogValue(tester, 'patient-country', 'Nigeria');
+      await _selectCatalogValue(
+        tester,
+        'patient-health-interest',
+        'Primary care',
+      );
 
       await tester.ensureVisible(find.text('Save and continue'));
       await tester.pumpAndSettle();
@@ -130,6 +137,58 @@ void main() {
       expect(find.text('Required patient field: Country'), findsOneWidget);
     });
 
+    testWidgets('patient setup preloads only matching backend profile values', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository(
+        patientProfile: const PatientProfile(
+          name: 'Ada Existing',
+          city: 'Ikeja',
+          state: 'LA',
+          country: 'NG',
+          healthInterests: 'PRIMARY_CARE',
+        ),
+      );
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        child: PatientOnboardingSetupPage(
+          profileRepository: repository,
+          onboardingRepository: _FakeOnboardingRepository(),
+        ),
+      );
+
+      expect(find.text('Ada Existing'), findsOneWidget);
+      expect(find.text('Ikeja'), findsOneWidget);
+      expect(find.text('Lagos'), findsWidgets);
+      expect(find.text('Nigeria'), findsWidgets);
+      expect(find.text('Primary care'), findsWidgets);
+    });
+
+    testWidgets('new patient must explicitly select catalog values', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository();
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        child: PatientOnboardingSetupPage(
+          profileRepository: repository,
+          onboardingRepository: _FakeOnboardingRepository(),
+        ),
+      );
+
+      await tester.enterText(find.byType(EditableText).first, 'Ada Patient');
+      await tester.ensureVisible(find.text('Save and continue'));
+      await tester.tap(find.text('Save and continue'));
+      await tester.pump();
+
+      expect(find.text('State is required'), findsOneWidget);
+      expect(find.text('Country is required'), findsOneWidget);
+      expect(find.text('Health interest is required'), findsOneWidget);
+      expect(repository.updatePatientCalls, 0);
+    });
+
     testWidgets('patient setup blocks save when catalog cannot load', (
       tester,
     ) async {
@@ -173,6 +232,14 @@ void main() {
           onboardingRepository: _FakeOnboardingRepository(),
         ),
       );
+
+      await _selectCatalogValue(
+        tester,
+        'professional-category',
+        'Medical doctor',
+      );
+      await _selectCatalogValue(tester, 'professional-state', 'Lagos');
+      await _selectCatalogValue(tester, 'professional-country', 'Nigeria');
 
       await tester.ensureVisible(find.text('Save and verify'));
       await tester.pumpAndSettle();
@@ -248,6 +315,40 @@ void main() {
       );
     });
 
+    testWidgets('professional setup preloads matching backend profile values', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository(
+        professionalProfile: const ProfessionalProfile(
+          legalName: 'Ada Okafor',
+          displayName: 'Dr. Ada Okafor',
+          category: 'MEDICAL_DOCTOR',
+          specialty: 'Cardiology',
+          licenseNumber: 'MDCN-12345',
+          qualifications: 'MBBS',
+          yearsOfExperience: 8,
+          practiceName: 'Care Clinic',
+          practiceCity: 'Ikeja',
+          practiceState: 'LA',
+          practiceCountry: 'NG',
+        ),
+      );
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        child: ProfessionalOnboardingSetupPage(
+          profileRepository: repository,
+          onboardingRepository: _FakeOnboardingRepository(),
+        ),
+      );
+
+      expect(find.text('Ada Okafor'), findsOneWidget);
+      expect(find.text('Dr. Ada Okafor'), findsWidgets);
+      expect(find.text('Medical doctor'), findsWidgets);
+      expect(find.text('Lagos'), findsWidgets);
+      expect(find.text('Nigeria'), findsWidgets);
+    });
+
     testWidgets('professional setup saves required Nigeria profile fields', (
       tester,
     ) async {
@@ -272,6 +373,13 @@ void main() {
       await tester.enterText(fields.at(6), 'Care Clinic');
       await tester.enterText(fields.at(7), '1 Care Street');
       await tester.enterText(fields.at(8), 'Ikeja');
+      await _selectCatalogValue(
+        tester,
+        'professional-category',
+        'Medical doctor',
+      );
+      await _selectCatalogValue(tester, 'professional-state', 'Lagos');
+      await _selectCatalogValue(tester, 'professional-country', 'Nigeria');
 
       await tester.ensureVisible(find.text('Save and verify'));
       await tester.pumpAndSettle();
@@ -333,7 +441,23 @@ Future<void> _fillMinimumProfessionalForm(WidgetTester tester) async {
   await tester.enterText(fields.at(5), '5');
   await tester.enterText(fields.at(6), 'Care Clinic');
   await tester.enterText(fields.at(8), 'Ikeja');
+  await _selectCatalogValue(tester, 'professional-category', 'Medical doctor');
+  await _selectCatalogValue(tester, 'professional-state', 'Lagos');
+  await _selectCatalogValue(tester, 'professional-country', 'Nigeria');
   await tester.ensureVisible(find.text('Save and verify'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _selectCatalogValue(
+  WidgetTester tester,
+  String key,
+  String value,
+) async {
+  final field = find.byKey(ValueKey<String>(key));
+  await tester.ensureVisible(field);
+  await tester.tap(field);
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(value).last);
   await tester.pumpAndSettle();
 }
 
@@ -416,9 +540,15 @@ const _catalog = OnboardingCatalog(
 );
 
 class _FakeProfileRepository implements ProfileRepository {
-  _FakeProfileRepository({this.failure});
+  _FakeProfileRepository({
+    this.failure,
+    this.patientProfile,
+    this.professionalProfile,
+  });
 
   final AuthFailure? failure;
+  final PatientProfile? patientProfile;
+  final ProfessionalProfile? professionalProfile;
   int updatePatientCalls = 0;
   int updateProfessionalCalls = 0;
   String? lastPatientName;
@@ -516,10 +646,10 @@ class _FakeProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<PatientProfile?> patientMe() async => null;
+  Future<PatientProfile?> patientMe() async => patientProfile;
 
   @override
-  Future<ProfessionalProfile?> professionalMe() async => null;
+  Future<ProfessionalProfile?> professionalMe() async => professionalProfile;
 
   @override
   Future<List<PublicProfessional>> publicProfessionals() async {

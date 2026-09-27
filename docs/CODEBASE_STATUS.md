@@ -1,6 +1,18 @@
 # Codebase status
 
-**Last updated:** 2026-09-26 APP-P1-015 account deletion authority.
+**Last updated:** 2026-09-27 APP-P1-016 authentication/onboarding authority.
+
+## Authentication and onboarding authority
+
+- Direct phone sign-in/signup routes resolve to the supported email surfaces;
+  retained phone, Facebook, and Apple source is not active product UI.
+- Legacy community, notification-agreement, and medical-agreement routes resolve
+  to the role-appropriate backend-owned setup forms rather than reviving the
+  obsolete onboarding chain.
+- Patient and professional setup load existing backend profiles before edits.
+  Stored catalog codes are restored only when they match the current backend
+  catalog; new users must make explicit country, state, health-interest, and
+  profession selections instead of accepting a client-chosen first option.
 
 ## Account lifecycle
 
@@ -95,7 +107,7 @@ not override the `APP-P1` product boundary.
 | Role-selection signup | `signUpRole` now sits between signup entry and account creation. Email/password registration sends only `email`, `password`, and the selected backend role. Configured Google signup also requires patient/professional role selection, sends a real Google `idToken` plus selected role, then routes into the matching setup surface. Patient registration continues to `patientOnboardingSetup`; professional registration continues to `medicalProfessional` |
 | Patient/professional onboarding requirements | `PATIENT_PROFESSIONAL_ONBOARDING_UI_REQUIREMENTS.md` defines the serious next onboarding flow against backend `CAR-BE-119` fields. Profile entity/model/repository expansion is now complete; polished patient/professional setup screens remain the next runtime slice |
 | Profile contract expansion | `PROFILE_NIGERIA_ONBOARDING_CONTRACT_EXPANSION.md` records that patient/professional profile entities, models, API payloads, and repository methods now support the backend `CAR-BE-119` onboarding fields. Runtime polished setup screens are still the next slice |
-| Patient/professional setup UI | `patientOnboardingSetup` and `medicalProfessional` now load backend-owned onboarding catalogs and account readiness. Patient setup uses controlled country/state/primary-health-interest choices before saving profile fields. Professional setup uses controlled profession, derived regulator/council, controlled practice country/state, and account readiness copy before saving required profile fields and opening verification documents. Public listing still waits for backend verification |
+| Patient/professional setup UI | `patientOnboardingSetup` and `medicalProfessional` load backend-owned onboarding catalogs, existing profiles, and account readiness. Matching persisted catalog codes are restored for edits; otherwise country/state/interest/profession choices remain empty until explicitly selected. Professional listing still waits for backend verification |
 | Backend-owned onboarding catalog/readiness repository | `OnboardingApiClient` and `OnboardingRepository` consume backend `APP-ID-003` contracts for public `GET /catalogs/onboarding` and protected `GET /account/readiness`. Setup screens now consume this repository without fake local fallback, block save when catalog options are unavailable, and send catalog-owned codes through the currently accepted profile DTO fields |
 | Onboarding profile payload code alignment | `ONBOARDING_PROFILE_PAYLOAD_CODE_ALIGNMENT_DECISION.md` decides not to invent unsupported Flutter request fields for `countryCode`, `professionCode`, or `regulatorCode` yet. `ONBOARDING_SETUP_PAYLOAD_VALUE_ALIGNMENT.md` records that patient setup now sends `country`, `state`, and `healthInterests` as backend-accepted catalog codes, while professional setup sends `category`, `licensingCouncil`, `practiceCountry`, and `practiceState` as backend-accepted catalog/regulator codes through current DTO fields |
 | Production onboarding domain boundary | `PRODUCTION_ONBOARDING_DOMAIN_HARDENING_BOUNDARY.md` accepts the serious MVP boundary for onboarding: no in-app role switching or dual-mode accounts yet, duplicate identity/application state remains backend-owned, partial professional applications resume through readiness, professional setup stays Nigeria-catalog/regulator driven, required evidence guidance comes from backend catalogs/readiness, and the next slice should plan readiness/resume UX hardening before runtime edits |

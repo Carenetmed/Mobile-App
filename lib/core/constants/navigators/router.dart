@@ -2,10 +2,8 @@ import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/routing/deferred_feature_page.dart';
 import 'package:app_t/core/routing/unknown_route_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
-import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
-import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_role_selection.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_email.dart';
@@ -32,9 +30,6 @@ import 'package:app_t/features/Messaging/presentation/pages/Messages.dart'
 import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
 import 'package:app_t/features/Messaging/presentation/state/messaging_controllers.dart';
 import 'package:app_t/features/Notifications/presentation/pages/notification_preferences_page.dart';
-import 'package:app_t/features/Onboarding/presentation/pages/commitment_screen.dart';
-import 'package:app_t/features/Onboarding/presentation/pages/medical_agreement.dart';
-import 'package:app_t/features/Onboarding/presentation/pages/notification.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/onboarding.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/profile_setup.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/user_edit.dart';
@@ -93,21 +88,20 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         ),
       );
     case RouteName.communityAgreement:
-      return _page(settings, CommunityCommitment());
+    case RouteName.notificationAgreement:
+      return _page(settings, const PatientOnboardingSetupPage());
     case RouteName.patientOnboardingSetup:
       return _page(settings, const PatientOnboardingSetupPage());
-    case RouteName.notificationAgreement:
-      return _page(settings, NotificationScreen());
     case RouteName.medicalAgreement:
-      return _page(settings, MedicalAgreement());
+      return _page(settings, const ProfessionalOnboardingSetupPage());
     case RouteName.medicalProfessional:
       return _page(settings, const ProfessionalOnboardingSetupPage());
     case RouteName.signUpPhone:
-      return _page(settings, SignUpPhone());
+      return _page(settings, const SignUpEmail());
     case RouteName.signUpEmail:
       return _page(settings, SignUpEmail());
     case RouteName.signInPhone:
-      return _page(settings, const SignInPhone());
+      return _page(settings, const SignInEmail());
     case RouteName.signInEmail:
       return _page(settings, const SignInEmail());
     case RouteName.enterEmail:

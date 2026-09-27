@@ -19,6 +19,9 @@ look complete.
 
 - Phone OTP and Apple identity stay hidden until their backend/provider contracts and device acceptance are complete.
 - Facebook identity is outside the approved Phase 1 authentication surface.
+- Direct legacy phone auth route values now resolve to supported email auth;
+  retained phone/provider widgets are source-recovery candidates for a later
+  dependency-proven deletion slice, not active authentication paths.
 - Firebase Hosting landing pages and Android app-link verification for email verification and password reset remain in the Firebase/environment slice.
 
 ---

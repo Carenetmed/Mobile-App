@@ -7,6 +7,8 @@ import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
 import 'package:app_t/features/Home/domain/entities/onboarding_catalog.dart';
+import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
+import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
 import 'package:app_t/features/Home/presentation/services/booking_resume_navigator.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
@@ -102,6 +104,7 @@ class _PatientOnboardingSetupPageState
             ),
             SizedBox(height: 14.h),
             _CatalogSelect<OnboardingRegion>(
+              fieldKey: const ValueKey('patient-state'),
               label: 'State',
               hintText: _catalogHint('Select state'),
               value: _selectedState,
@@ -115,6 +118,7 @@ class _PatientOnboardingSetupPageState
             ),
             SizedBox(height: 14.h),
             _CatalogSelect<OnboardingCountry>(
+              fieldKey: const ValueKey('patient-country'),
               label: 'Country',
               hintText: _catalogHint('Select country'),
               value: _selectedCountry,
@@ -129,6 +133,7 @@ class _PatientOnboardingSetupPageState
             ),
             SizedBox(height: 14.h),
             _CatalogSelect<PatientHealthInterest>(
+              fieldKey: const ValueKey('patient-health-interest'),
               label: 'Primary health interest',
               hintText: _catalogHint('Select interest'),
               value: _selectedHealthInterest,
@@ -167,24 +172,23 @@ class _PatientOnboardingSetupPageState
 
   Future<void> _loadCatalog() async {
     try {
-      final catalog = await _onboardingRepository.onboardingCatalog();
+      final results = await Future.wait<Object?>(<Future<Object?>>[
+        _onboardingRepository.onboardingCatalog(),
+        _profileRepository.patientMe(),
+        _onboardingRepository.accountReadiness(),
+      ]);
+      final catalog = results[0]! as OnboardingCatalog;
+      final profile = results[1] as PatientProfile?;
+      final readiness = results[2]! as AccountReadiness;
       if (!mounted) {
         return;
       }
       setState(() {
         _catalog = catalog;
-        _selectedCountry = _firstLaunchCountry(catalog);
-        _selectedState =
-            catalog.nigeriaStates.isNotEmpty
-                ? catalog.nigeriaStates.first
-                : null;
-        _selectedHealthInterest =
-            catalog.patientHealthInterestCatalog.isNotEmpty
-                ? catalog.patientHealthInterestCatalog.first
-                : null;
+        _applyPatientProfile(profile, catalog);
+        _readiness = readiness;
         _isLoadingCatalog = false;
       });
-      _loadReadiness();
     } on AuthFailure catch (failure) {
       if (mounted) {
         setState(() {
@@ -202,21 +206,35 @@ class _PatientOnboardingSetupPageState
     }
   }
 
-  Future<void> _loadReadiness() async {
-    try {
-      final readiness = await _onboardingRepository.accountReadiness();
-      if (mounted) {
-        setState(() => _readiness = readiness);
-      }
-    } on AuthFailure catch (failure) {
-      if (mounted) {
-        setState(() => _message = failure.message);
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _message = 'Could not load account readiness.');
-      }
+  void _applyPatientProfile(
+    PatientProfile? profile,
+    OnboardingCatalog catalog,
+  ) {
+    if (profile == null) {
+      return;
     }
+    _nameController.text = profile.name;
+    _cityController.text = profile.city ?? '';
+    final dateOfBirth = profile.dateOfBirth;
+    if (dateOfBirth != null) {
+      _dateOfBirth = dateOfBirth.toUtc();
+      _dateOfBirthController.text = _formatDate(dateOfBirth);
+    }
+    _selectedCountry = _byCode(
+      catalog.countries,
+      profile.country,
+      (x) => x.code,
+    );
+    _selectedState = _byCode(
+      catalog.nigeriaStates,
+      profile.state,
+      (x) => x.code,
+    );
+    _selectedHealthInterest = _byCode(
+      catalog.patientHealthInterestCatalog,
+      profile.healthInterests,
+      (x) => x.code,
+    );
   }
 
   Future<void> _pickDateOfBirth() async {
@@ -379,6 +397,7 @@ class _ProfessionalOnboardingSetupPageState
             ),
             SizedBox(height: 14.h),
             _CatalogSelect<ProfessionalCatalogItem>(
+              fieldKey: const ValueKey('professional-category'),
               label: 'Profession/category',
               hintText: _catalogHint('Select profession'),
               value: _selectedProfession,
@@ -468,6 +487,7 @@ class _ProfessionalOnboardingSetupPageState
             ),
             SizedBox(height: 14.h),
             _CatalogSelect<OnboardingRegion>(
+              fieldKey: const ValueKey('professional-state'),
               label: 'Practice state',
               hintText: _catalogHint('Select state'),
               value: _selectedState,
@@ -483,6 +503,7 @@ class _ProfessionalOnboardingSetupPageState
             ),
             SizedBox(height: 14.h),
             _CatalogSelect<OnboardingCountry>(
+              fieldKey: const ValueKey('professional-country'),
               label: 'Practice country',
               hintText: _catalogHint('Select country'),
               value: _selectedCountry,
@@ -523,24 +544,23 @@ class _ProfessionalOnboardingSetupPageState
 
   Future<void> _loadCatalog() async {
     try {
-      final catalog = await _onboardingRepository.onboardingCatalog();
+      final results = await Future.wait<Object?>(<Future<Object?>>[
+        _onboardingRepository.onboardingCatalog(),
+        _profileRepository.professionalMe(),
+        _onboardingRepository.accountReadiness(),
+      ]);
+      final catalog = results[0]! as OnboardingCatalog;
+      final profile = results[1] as ProfessionalProfile?;
+      final readiness = results[2]! as AccountReadiness;
       if (!mounted) {
         return;
       }
       setState(() {
         _catalog = catalog;
-        _selectedCountry = _firstLaunchCountry(catalog);
-        _selectedState =
-            catalog.nigeriaStates.isNotEmpty
-                ? catalog.nigeriaStates.first
-                : null;
-        _selectedProfession =
-            catalog.professionalCatalog.isNotEmpty
-                ? catalog.professionalCatalog.first
-                : null;
+        _applyProfessionalProfile(profile, catalog);
+        _readiness = readiness;
         _isLoadingCatalog = false;
       });
-      _loadReadiness();
     } on AuthFailure catch (failure) {
       if (mounted) {
         setState(() {
@@ -558,21 +578,37 @@ class _ProfessionalOnboardingSetupPageState
     }
   }
 
-  Future<void> _loadReadiness() async {
-    try {
-      final readiness = await _onboardingRepository.accountReadiness();
-      if (mounted) {
-        setState(() => _readiness = readiness);
-      }
-    } on AuthFailure catch (failure) {
-      if (mounted) {
-        setState(() => _message = failure.message);
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _message = 'Could not load account readiness.');
-      }
+  void _applyProfessionalProfile(
+    ProfessionalProfile? profile,
+    OnboardingCatalog catalog,
+  ) {
+    if (profile == null) {
+      return;
     }
+    _legalNameController.text = profile.legalName ?? '';
+    _displayNameController.text = profile.displayName;
+    _specialtyController.text = profile.specialty ?? '';
+    _licenseNumberController.text = profile.licenseNumber ?? '';
+    _qualificationsController.text = profile.qualifications ?? '';
+    _yearsController.text = profile.yearsOfExperience?.toString() ?? '';
+    _practiceNameController.text = profile.practiceName ?? '';
+    _practiceAddressController.text = profile.practiceAddress ?? '';
+    _practiceCityController.text = profile.practiceCity ?? '';
+    _selectedProfession = _byCode(
+      catalog.professionalCatalog,
+      profile.category,
+      (x) => x.code,
+    );
+    _selectedState = _byCode(
+      catalog.nigeriaStates,
+      profile.practiceState,
+      (x) => x.code,
+    );
+    _selectedCountry = _byCode(
+      catalog.countries,
+      profile.practiceCountry,
+      (x) => x.code,
+    );
   }
 
   Future<void> _saveProfessionalProfile() async {
@@ -831,6 +867,7 @@ class _ReadinessProgressCard extends StatelessWidget {
 
 class _CatalogSelect<T> extends StatelessWidget {
   const _CatalogSelect({
+    required this.fieldKey,
     required this.label,
     required this.hintText,
     required this.value,
@@ -840,6 +877,7 @@ class _CatalogSelect<T> extends StatelessWidget {
     required this.validator,
   });
 
+  final Key fieldKey;
   final String label;
   final String hintText;
   final T? value;
@@ -869,6 +907,7 @@ class _CatalogSelect<T> extends StatelessWidget {
         ),
         SizedBox(height: 8.h),
         DropdownButtonFormField<T>(
+          key: fieldKey,
           initialValue: items.contains(value) ? value : null,
           items: items
               .map(
@@ -1025,13 +1064,16 @@ String? _emptyToNull(String value) {
   return trimmed.isEmpty ? null : trimmed;
 }
 
-OnboardingCountry? _firstLaunchCountry(OnboardingCatalog catalog) {
-  for (final country in catalog.countries) {
-    if (country.code == catalog.launchCountry) {
-      return country;
+T? _byCode<T>(List<T> values, String? code, String Function(T) readCode) {
+  if (code == null || code.trim().isEmpty) {
+    return null;
+  }
+  for (final value in values) {
+    if (readCode(value) == code) {
+      return value;
     }
   }
-  return catalog.countries.isNotEmpty ? catalog.countries.first : null;
+  return null;
 }
 
 String _catalogHint(String fallback) {

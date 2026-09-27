@@ -27,9 +27,13 @@ class SchedulingRepository {
 
   Future<RequestableTimes> publicRequestableTimes({
     required String professionalProfileId,
+    DateTime? rangeStartAt,
+    DateTime? rangeEndAt,
   }) {
     return _apiClient.publicRequestableTimes(
       professionalProfileId: professionalProfileId,
+      rangeStartAt: rangeStartAt,
+      rangeEndAt: rangeEndAt,
     );
   }
 

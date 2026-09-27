@@ -33,6 +33,8 @@ enum BookingSubmissionOutcome {
 }
 
 class ProfessionalBookingController extends ChangeNotifier {
+  static const int requestableRangeDays = 14;
+
   ProfessionalBookingController({
     required this.professionalProfileId,
     required ProfileRepository profileRepository,
@@ -72,6 +74,7 @@ class ProfessionalBookingController extends ChangeNotifier {
   bool profileNotFound = false;
   bool isLoadingProfile = false;
   bool isLoadingTimes = false;
+  bool isLoadingLaterTimes = false;
   bool isRefreshing = false;
   bool isSubmitting = false;
 
@@ -81,6 +84,7 @@ class ProfessionalBookingController extends ChangeNotifier {
   int _profileGeneration = 0;
   int _timesGeneration = 0;
   bool _disposed = false;
+  DateTime? _bookingWindowEndAt;
 
   Future<void> initialize() async {
     await _restoreIntent();
@@ -97,7 +101,10 @@ class ProfessionalBookingController extends ChangeNotifier {
   }
 
   Future<void> refresh() async {
-    if (isRefreshing || _profileLoad != null || _timesLoad != null) {
+    if (isRefreshing ||
+        isLoadingLaterTimes ||
+        _profileLoad != null ||
+        _timesLoad != null) {
       return;
     }
     isRefreshing = true;
@@ -176,6 +183,7 @@ class ProfessionalBookingController extends ChangeNotifier {
   }
 
   Future<void> loadTimes({bool refresh = false}) {
+    if (isLoadingLaterTimes) return Future<void>.value();
     final active = _timesLoad;
     if (active != null) {
       return active;
@@ -198,40 +206,52 @@ class ProfessionalBookingController extends ChangeNotifier {
     timesError = null;
     _notify();
     try {
+      final rangeStartAt = _clock().toUtc();
+      final rangeEndAt = rangeStartAt.add(
+        const Duration(days: requestableRangeDays),
+      );
       final loaded = await _schedulingRepository.publicRequestableTimes(
         professionalProfileId: professionalProfileId,
+        rangeStartAt: rangeStartAt,
+        rangeEndAt: rangeEndAt,
       );
       if (!_acceptTimesGeneration(generation)) {
         return;
       }
-      final timezone = loaded.timezone?.trim();
-      final hasRequestableTimes = loaded.times.isNotEmpty;
-      if (loaded.professionalProfileId != professionalProfileId ||
-          (hasRequestableTimes &&
-              (timezone == null ||
-                  timezone.isEmpty ||
-                  !ProfessionalTimeFormatter().isValidTimezone(timezone))) ||
-          (!hasRequestableTimes &&
-              timezone != null &&
-              timezone.isNotEmpty &&
-              !ProfessionalTimeFormatter().isValidTimezone(timezone)) ||
-          loaded.durationMinutes != 30 ||
-          loaded.cadenceMinutes != 30 ||
-          loaded.leadTimeMinutes != 120 ||
-          loaded.bookingHorizonDays != 60 ||
-          loaded.times.any((time) => time.durationMinutes != 30)) {
+      if (!_hasValidTimesContract(loaded) ||
+          (loaded.rangeStartAt != null &&
+              (loaded.rangeStartAt!.toUtc() != rangeStartAt ||
+                  loaded.rangeEndAt!.isAfter(rangeEndAt)))) {
         throw const FormatException('Invalid requestable-time contract.');
       }
-      requestableTimes = loaded;
+      final effectiveLoaded =
+          loaded.rangeStartAt == null
+              ? RequestableTimes(
+                professionalProfileId: loaded.professionalProfileId,
+                timezone: loaded.timezone,
+                durationMinutes: loaded.durationMinutes,
+                cadenceMinutes: loaded.cadenceMinutes,
+                leadTimeMinutes: loaded.leadTimeMinutes,
+                bookingHorizonDays: loaded.bookingHorizonDays,
+                times: loaded.times,
+                rangeStartAt: rangeStartAt,
+                rangeEndAt: rangeEndAt,
+              )
+              : loaded;
+      requestableTimes = effectiveLoaded;
+      _bookingWindowEndAt = rangeStartAt.add(
+        Duration(days: loaded.bookingHorizonDays),
+      );
       final selected = selectedTime;
-      if (selected != null && !_containsTime(loaded, selected.startAt)) {
+      if (selected != null &&
+          !_containsTime(effectiveLoaded, selected.startAt)) {
         selectedTime = null;
         bookingIntent = null;
         await _bookingIntentStore.clear();
         bookingError =
             'The selected time is no longer available. Please choose another.';
       } else if (selected == null && bookingIntent != null) {
-        final restored = loaded.times.where(
+        final restored = effectiveLoaded.times.where(
           (time) =>
               time.startAt.toUtc() == bookingIntent!.startAt.toUtc() &&
               time.durationMinutes == bookingIntent!.durationMinutes,
@@ -256,6 +276,106 @@ class ProfessionalBookingController extends ChangeNotifier {
         _notify();
       }
     }
+  }
+
+  bool get canLoadLaterTimes {
+    final rangeEndAt = requestableTimes?.rangeEndAt;
+    final bookingWindowEndAt = _bookingWindowEndAt;
+    return rangeEndAt != null &&
+        bookingWindowEndAt != null &&
+        rangeEndAt.isBefore(bookingWindowEndAt) &&
+        !isLoadingLaterTimes;
+  }
+
+  Future<void> loadLaterTimes() async {
+    if (!canLoadLaterTimes || _timesLoad != null) return;
+    final current = requestableTimes!;
+    final startAt = current.rangeEndAt!;
+    final policyEndAt = _bookingWindowEndAt!;
+    final candidateEnd = startAt.add(
+      const Duration(days: requestableRangeDays),
+    );
+    final endAt =
+        candidateEnd.isBefore(policyEndAt) ? candidateEnd : policyEndAt;
+    isLoadingLaterTimes = true;
+    timesError = null;
+    _notify();
+    try {
+      final loaded = await _schedulingRepository.publicRequestableTimes(
+        professionalProfileId: professionalProfileId,
+        rangeStartAt: startAt,
+        rangeEndAt: endAt,
+      );
+      if (_disposed) return;
+      if (!_hasValidTimesContract(loaded) ||
+          loaded.rangeStartAt?.toUtc() != startAt.toUtc() ||
+          loaded.rangeEndAt == null ||
+          loaded.rangeEndAt!.isAfter(endAt) ||
+          loaded.timezone != current.timezone ||
+          loaded.durationMinutes != current.durationMinutes ||
+          loaded.cadenceMinutes != current.cadenceMinutes ||
+          loaded.leadTimeMinutes != current.leadTimeMinutes ||
+          loaded.bookingHorizonDays != current.bookingHorizonDays) {
+        throw const FormatException('Invalid requestable-time page.');
+      }
+      final merged =
+          <int, RequestableTime>{
+              for (final time in current.times)
+                time.startAt.toUtc().millisecondsSinceEpoch: time,
+              for (final time in loaded.times)
+                time.startAt.toUtc().millisecondsSinceEpoch: time,
+            }.values.toList()
+            ..sort((left, right) => left.startAt.compareTo(right.startAt));
+      requestableTimes = RequestableTimes(
+        professionalProfileId: current.professionalProfileId,
+        timezone: loaded.timezone ?? current.timezone,
+        durationMinutes: current.durationMinutes,
+        cadenceMinutes: current.cadenceMinutes,
+        leadTimeMinutes: current.leadTimeMinutes,
+        bookingHorizonDays: current.bookingHorizonDays,
+        times: merged,
+        rangeStartAt: current.rangeStartAt,
+        rangeEndAt: loaded.rangeEndAt,
+      );
+    } catch (_) {
+      if (!_disposed) {
+        timesError =
+            'Could not load later appointment times. Please try again.';
+      }
+    } finally {
+      if (!_disposed) {
+        isLoadingLaterTimes = false;
+        _notify();
+      }
+    }
+  }
+
+  bool _hasValidTimesContract(RequestableTimes loaded) {
+    final timezone = loaded.timezone?.trim();
+    final hasRequestableTimes = loaded.times.isNotEmpty;
+    return loaded.professionalProfileId == professionalProfileId &&
+        (!hasRequestableTimes ||
+            (timezone != null &&
+                timezone.isNotEmpty &&
+                ProfessionalTimeFormatter().isValidTimezone(timezone))) &&
+        (hasRequestableTimes ||
+            timezone == null ||
+            timezone.isEmpty ||
+            ProfessionalTimeFormatter().isValidTimezone(timezone)) &&
+        loaded.durationMinutes == 30 &&
+        loaded.cadenceMinutes == 30 &&
+        loaded.leadTimeMinutes == 120 &&
+        loaded.bookingHorizonDays == 60 &&
+        ((loaded.rangeStartAt == null) == (loaded.rangeEndAt == null)) &&
+        (loaded.rangeStartAt == null ||
+            loaded.rangeEndAt!.isAfter(loaded.rangeStartAt!)) &&
+        loaded.times.every(
+          (time) =>
+              time.durationMinutes == 30 &&
+              (loaded.rangeStartAt == null ||
+                  (!time.startAt.isBefore(loaded.rangeStartAt!) &&
+                      !time.endAt.isAfter(loaded.rangeEndAt!))),
+        );
   }
 
   Future<void> selectTime(RequestableTime time) async {

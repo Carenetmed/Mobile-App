@@ -161,6 +161,31 @@ void main() {
     expect(find.textContaining('45 min'), findsNothing);
   });
 
+  testWidgets('empty bounded range offers later backend times', (tester) async {
+    final scheduling = _FakeSchedulingRepository(
+      response: const RequestableTimes(
+        professionalProfileId: 'pro-1',
+        timezone: 'Africa/Lagos',
+        durationMinutes: 30,
+        cadenceMinutes: 30,
+        leadTimeMinutes: 120,
+        bookingHorizonDays: 60,
+        times: <RequestableTime>[],
+      ),
+    );
+
+    await _pumpDetails(tester, schedulingRepository: scheduling);
+
+    expect(
+      find.text('No appointment times are available in this date range.'),
+      findsOneWidget,
+    );
+    expect(find.text('Load later times'), findsOneWidget);
+    await tester.tap(find.text('Load later times'));
+    await tester.pump();
+    expect(scheduling.requestableIds, <String>['pro-1', 'pro-1']);
+  });
+
   testWidgets('mounts only the selected day from a large times response', (
     tester,
   ) async {
@@ -204,6 +229,11 @@ void main() {
 
     await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
     await tester.pump();
+    await tester.drag(
+      find.byType(ListView).first,
+      const Offset(0, -120),
+    );
+    await tester.pump();
     await tester.tap(find.text('Request selected time'));
     await tester.pumpAndSettle();
 
@@ -226,6 +256,11 @@ void main() {
 
     await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
     await tester.pump();
+    await tester.drag(
+      find.byType(ListView).first,
+      const Offset(0, -120),
+    );
+    await tester.pump();
     await tester.tap(find.text('Request selected time'));
     await tester.pumpAndSettle();
 
@@ -244,6 +279,11 @@ void main() {
     await _pumpDetails(tester, schedulingRepository: scheduling);
 
     await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+    await tester.pump();
+    await tester.drag(
+      find.byType(ListView).first,
+      const Offset(0, -120),
+    );
     await tester.pump();
     await tester.tap(find.text('Request selected time'));
     await tester.pumpAndSettle();
@@ -278,6 +318,11 @@ void main() {
         findsOneWidget,
       );
       await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+      await tester.pump();
+      await tester.drag(
+        find.byType(ListView).first,
+        const Offset(0, -120),
+      );
       await tester.pump();
       await tester.tap(find.text('Request selected time'));
       await tester.pumpAndSettle();
@@ -362,6 +407,8 @@ class _FakeSchedulingRepository implements SchedulingRepository {
   @override
   Future<RequestableTimes> publicRequestableTimes({
     required String professionalProfileId,
+    DateTime? rangeStartAt,
+    DateTime? rangeEndAt,
   }) async {
     requestableIds.add(professionalProfileId);
     if (timesFailure != null) {

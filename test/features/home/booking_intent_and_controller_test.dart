@@ -138,6 +138,101 @@ void main() {
   });
 
   group('Professional booking controller', () {
+    test('loads bounded requestable-time pages and merges them', () async {
+      final now = DateTime.parse('2026-07-24T12:00:00Z');
+      final firstEnd = now.add(const Duration(days: 14));
+      final secondEnd = firstEnd.add(const Duration(days: 14));
+      final laterStart = DateTime.parse('2026-08-08T08:00:00Z');
+      final scheduling = _FakeSchedulingRepository(
+        responses: <RequestableTimes>[
+          _times(rangeStartAt: now, rangeEndAt: firstEnd),
+          RequestableTimes(
+            professionalProfileId: 'pro-1',
+            timezone: 'Africa/Lagos',
+            durationMinutes: 30,
+            cadenceMinutes: 30,
+            leadTimeMinutes: 120,
+            bookingHorizonDays: 60,
+            rangeStartAt: firstEnd,
+            rangeEndAt: secondEnd,
+            times: <RequestableTime>[
+              RequestableTime(
+                startAt: laterStart,
+                endAt: laterStart.add(const Duration(minutes: 30)),
+              ),
+              RequestableTime(
+                startAt: laterStart,
+                endAt: laterStart.add(const Duration(minutes: 30)),
+              ),
+            ],
+          ),
+        ],
+      );
+      final controller = _controller(scheduling: scheduling, clock: () => now);
+      addTearDown(controller.dispose);
+
+      await controller.initialize();
+      await controller.loadLaterTimes();
+
+      expect(scheduling.requestedRanges, <(DateTime?, DateTime?)>[
+        (now, firstEnd),
+        (firstEnd, secondEnd),
+      ]);
+      expect(
+        controller.requestableTimes!.times.map((time) => time.startAt),
+        <DateTime>[_firstStart, laterStart],
+      );
+      expect(controller.requestableTimes!.rangeEndAt, secondEnd);
+    });
+
+    test('serializes repeated later-page requests', () async {
+      final now = DateTime.parse('2026-07-24T12:00:00Z');
+      final firstEnd = now.add(const Duration(days: 14));
+      final secondEnd = firstEnd.add(const Duration(days: 14));
+      final laterPage = Completer<RequestableTimes>();
+      final scheduling = _FakeSchedulingRepository(
+        responses: <RequestableTimes>[
+          _times(rangeStartAt: now, rangeEndAt: firstEnd),
+        ],
+        timesCompleters: <Completer<RequestableTimes>?>[null, laterPage],
+      );
+      final controller = _controller(scheduling: scheduling, clock: () => now);
+      addTearDown(controller.dispose);
+      await controller.initialize();
+
+      final first = controller.loadLaterTimes();
+      final second = controller.loadLaterTimes();
+      await Future<void>.delayed(Duration.zero);
+      expect(scheduling.responseIndex, 2);
+      laterPage.complete(
+        _times(empty: true, rangeStartAt: firstEnd, rangeEndAt: secondEnd),
+      );
+      await Future.wait(<Future<void>>[first, second]);
+
+      expect(controller.requestableTimes!.rangeEndAt, secondEnd);
+      expect(controller.timesError, isNull);
+    });
+
+    test('later-page failure preserves previously loaded times', () async {
+      final now = DateTime.parse('2026-07-24T12:00:00Z');
+      final firstEnd = now.add(const Duration(days: 14));
+      final scheduling = _FakeSchedulingRepository(
+        responses: <RequestableTimes>[
+          _times(rangeStartAt: now, rangeEndAt: firstEnd),
+        ],
+        timesFailures: <Object?>[null, StateError('offline')],
+      );
+      final controller = _controller(scheduling: scheduling, clock: () => now);
+      addTearDown(controller.dispose);
+      await controller.initialize();
+
+      await controller.loadLaterTimes();
+
+      expect(controller.requestableTimes!.times.single.startAt, _firstStart);
+      expect(controller.requestableTimes!.rangeEndAt, firstEnd);
+      expect(controller.timesError, contains('Could not load later'));
+    });
+
     test('accepts an empty backend schedule without a timezone', () async {
       final controller = _controller(
         scheduling: _FakeSchedulingRepository(
@@ -457,6 +552,7 @@ ProfessionalBookingController _controller({
   BookingIntentStore? store,
   _FakeSchedulingRepository? scheduling,
   ProfileRepository? profileRepository,
+  DateTime Function()? clock,
 }) {
   return ProfessionalBookingController(
     professionalProfileId: 'pro-1',
@@ -465,7 +561,7 @@ ProfessionalBookingController _controller({
     bookingIntentStore: store ?? InMemoryBookingIntentStore(),
     sessionStore: _sessionStore(role: 'PATIENT'),
     onboardingRepository: const _FakeOnboardingRepository(),
-    clock: () => DateTime.now().toUtc(),
+    clock: clock ?? () => DateTime.now().toUtc(),
   );
 }
 
@@ -512,23 +608,40 @@ class _FakeSchedulingRepository implements SchedulingRepository {
     List<RequestableTimes>? responses,
     this.requestFailures = const <Object?>[],
     this.requestCompleter,
+    this.timesFailures = const <Object?>[],
+    this.timesCompleters = const <Completer<RequestableTimes>?>[],
   }) : responses = responses ?? <RequestableTimes>[_times()];
 
   final List<RequestableTimes> responses;
   final List<Object?> requestFailures;
   final Completer<AppointmentSummary>? requestCompleter;
+  final List<Object?> timesFailures;
+  final List<Completer<RequestableTimes>?> timesCompleters;
   int responseIndex = 0;
   int requestCalls = 0;
   final List<String> requestKeys = <String>[];
+  final List<(DateTime?, DateTime?)> requestedRanges =
+      <(DateTime?, DateTime?)>[];
 
   @override
   Future<RequestableTimes> publicRequestableTimes({
     required String professionalProfileId,
+    DateTime? rangeStartAt,
+    DateTime? rangeEndAt,
   }) async {
-    final index =
-        responseIndex < responses.length ? responseIndex : responses.length - 1;
+    requestedRanges.add((rangeStartAt, rangeEndAt));
+    final callIndex = responseIndex;
+    final responseListIndex =
+        callIndex < responses.length ? callIndex : responses.length - 1;
     responseIndex += 1;
-    return responses[index];
+    if (callIndex < timesFailures.length && timesFailures[callIndex] != null) {
+      throw timesFailures[callIndex]!;
+    }
+    if (callIndex < timesCompleters.length &&
+        timesCompleters[callIndex] != null) {
+      return timesCompleters[callIndex]!.future;
+    }
+    return responses[responseListIndex];
   }
 
   @override
@@ -604,7 +717,12 @@ SessionStore _sessionStore({
 final DateTime _firstStart = DateTime.parse('2026-07-25T08:00:00Z');
 final DateTime _secondStart = DateTime.parse('2026-07-25T08:30:00Z');
 
-RequestableTimes _times({bool empty = false, bool twoTimes = false}) {
+RequestableTimes _times({
+  bool empty = false,
+  bool twoTimes = false,
+  DateTime? rangeStartAt,
+  DateTime? rangeEndAt,
+}) {
   return RequestableTimes(
     professionalProfileId: 'pro-1',
     timezone: 'Africa/Lagos',
@@ -612,6 +730,8 @@ RequestableTimes _times({bool empty = false, bool twoTimes = false}) {
     cadenceMinutes: 30,
     leadTimeMinutes: 120,
     bookingHorizonDays: 60,
+    rangeStartAt: rangeStartAt,
+    rangeEndAt: rangeEndAt,
     times:
         empty
             ? const <RequestableTime>[]

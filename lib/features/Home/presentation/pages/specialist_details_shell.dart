@@ -576,10 +576,13 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
           else if (response.times.isEmpty)
             _InlineNotice(
               icon: Icons.event_busy_outlined,
-              message:
-                  'This professional has no requestable times in the current booking window.',
-              actionLabel: 'Refresh',
-              onAction: () => controller.loadTimes(refresh: true),
+              message: 'No appointment times are available in this date range.',
+              actionLabel:
+                  controller.canLoadLaterTimes ? 'Load later times' : 'Refresh',
+              onAction:
+                  controller.canLoadLaterTimes
+                      ? controller.loadLaterTimes
+                      : () => controller.loadTimes(refresh: true),
             )
           else if (timezone == null || timezone.trim().isEmpty)
             const _InlineNotice(
@@ -652,6 +655,30 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
                 ),
               ),
             ),
+            if (controller.canLoadLaterTimes || controller.isLoadingLaterTimes)
+              Padding(
+                padding: REdgeInsets.only(top: 4, bottom: 9),
+                child: OutlinedButton.icon(
+                  onPressed:
+                      controller.isLoadingLaterTimes
+                          ? null
+                          : controller.loadLaterTimes,
+                  icon:
+                      controller.isLoadingLaterTimes
+                          ? SizedBox.square(
+                            dimension: 16.r,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Icon(Icons.expand_more),
+                  label: Text(
+                    controller.isLoadingLaterTimes
+                        ? 'Loading later times...'
+                        : 'Load later times',
+                  ),
+                ),
+              ),
             if (controller.bookingIntent != null) ...[
               SizedBox(height: 4.h),
               _InlineNotice(

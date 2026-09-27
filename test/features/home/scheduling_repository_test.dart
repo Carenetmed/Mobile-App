@@ -199,6 +199,8 @@ void main() {
           'cadenceMinutes': 30,
           'leadTimeMinutes': 120,
           'bookingHorizonDays': 60,
+          'rangeStartAt': '2026-07-24T12:00:00.000Z',
+          'rangeEndAt': '2026-08-07T12:00:00.000Z',
           'times': <Map<String, dynamic>>[
             <String, dynamic>{
               'startAt': '2026-07-25T08:00:00.000Z',
@@ -211,6 +213,8 @@ void main() {
 
       final RequestableTimes response = await repository.publicRequestableTimes(
         professionalProfileId: 'professional-1',
+        rangeStartAt: DateTime.parse('2026-07-24T12:00:00.000Z'),
+        rangeEndAt: DateTime.parse('2026-08-07T12:00:00.000Z'),
       );
 
       expect(response.professionalProfileId, 'professional-1');
@@ -219,14 +223,17 @@ void main() {
       expect(response.cadenceMinutes, 30);
       expect(response.leadTimeMinutes, 120);
       expect(response.bookingHorizonDays, 60);
+      expect(response.rangeStartAt, DateTime.parse('2026-07-24T12:00:00.000Z'));
+      expect(response.rangeEndAt, DateTime.parse('2026-08-07T12:00:00.000Z'));
       expect(
         response.times.single.startAt,
         DateTime.parse('2026-07-25T08:00:00.000Z'),
       );
-      expect(
-        adapter.lastOptions?.uri.toString(),
-        endsWith('/professionals/professional-1/requestable-times'),
-      );
+      expect(adapter.lastOptions?.uri.path, endsWith('/requestable-times'));
+      expect(adapter.lastOptions?.uri.queryParameters, <String, String>{
+        'from': '2026-07-24T12:00:00.000Z',
+        'to': '2026-08-07T12:00:00.000Z',
+      });
       expect(
         adapter.lastOptions?.headers.containsKey('Authorization'),
         isFalse,

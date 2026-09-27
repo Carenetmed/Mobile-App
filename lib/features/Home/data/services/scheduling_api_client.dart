@@ -46,10 +46,17 @@ class SchedulingApiClient {
 
   Future<RequestableTimesModel> publicRequestableTimes({
     required String professionalProfileId,
+    DateTime? rangeStartAt,
+    DateTime? rangeEndAt,
   }) async {
     final response = await _request(
       () => _dio.get<dynamic>(
         _url(publicRequestableTimesPath(professionalProfileId)),
+        queryParameters: <String, dynamic>{
+          if (rangeStartAt != null)
+            'from': rangeStartAt.toUtc().toIso8601String(),
+          if (rangeEndAt != null) 'to': rangeEndAt.toUtc().toIso8601String(),
+        },
         options: Options(headers: const <String, String>{}),
       ),
     );
@@ -76,9 +83,8 @@ class SchedulingApiClient {
       () => _dio.put<dynamic>(
         _url(ownAvailabilityPath),
         data: <String, dynamic>{
-          'availabilityWindows': windows
-              .map((window) => window.toJson())
-              .toList(),
+          'availabilityWindows':
+              windows.map((window) => window.toJson()).toList(),
         },
         options: Options(headers: _bearerHeaders(accessToken)),
       ),
@@ -242,7 +248,7 @@ class SchedulingApiClient {
         : response is Map<String, dynamic> && response['items'] is List
         ? response['items'] as List<dynamic>
         : response is Map<String, dynamic> &&
-              response['availabilityWindows'] is List
+            response['availabilityWindows'] is List
         ? response['availabilityWindows'] as List<dynamic>
         : response is Map<String, dynamic> && response['appointments'] is List
         ? response['appointments'] as List<dynamic>

@@ -180,6 +180,17 @@ Implementation contract: `PHASE_1_FIND_CARE.md`.
 - **Non-goals:** Payment, calls, messaging, ratings/reviews, calendar sync,
   notification sending, refund/cancellation redesign, backend changes.
 
+### APP-P1-018 - Bounded Requestable-Time Loading - DONE
+
+- **Purpose:** Adopt the backend bounded-range contract so Specialist Details does not
+  transfer the complete 60-day requestable-time set on initial load.
+- **Implemented behavior:** The initial request covers 14 UTC days. Patients can load
+  later contiguous ranges explicitly; responses are policy/range validated, merged,
+  deduplicated and ordered. Empty ranges can advance, repeated loads serialize, and
+  later-page failures retain prior valid times.
+- **Non-goals:** Recurrence generation, booking policy changes, appointment lifecycle,
+  Schedule behavior, payment, messaging, calls, or backend changes.
+
 ## F. Real professional availability management
 
 ### APP-P1-006 - Complete Appointment Experience And Professional Schedule - DONE

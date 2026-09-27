@@ -51,6 +51,14 @@ The accepted mobile contract is:
 - `startAt` and `endAt` are UTC ISO-8601 instants;
 - `timezone` is the professional IANA timezone.
 
+Mobile requests an initial half-open 14-day UTC range with `from` and `to` query
+parameters. `Load later times` requests the next contiguous range, up to the
+backend-owned 60-day horizon, then merges exact backend intervals by UTC start time.
+An empty range remains honest and can advance to a later range. Paging is serialized;
+an invalid range response fails closed, and a later-page failure preserves already
+loaded times. The temporary no-query backend behavior remains a rollout compatibility
+boundary, not the canonical mobile request.
+
 The `timezone` Dart package converts each returned UTC instant into the
 professional timezone using IANA rules, including daylight-saving transitions.
 Device-local time may appear only as a clearly secondary label.

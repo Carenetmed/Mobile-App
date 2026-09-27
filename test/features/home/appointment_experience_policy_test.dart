@@ -6,6 +6,31 @@ void main() {
   const policy = AppointmentExperiencePolicy();
   final now = DateTime.utc(2026, 7, 26, 12);
 
+  test('counterpart display identity fails closed on a role mismatch', () {
+    final appointment = AppointmentSummary(
+      id: 'appointment-identity',
+      patientProfileId: 'patient-1',
+      professionalProfileId: 'professional-1',
+      requestedStartAt: now,
+      durationMinutes: 30,
+      status: AppointmentStatus.requested,
+      counterpart: const AppointmentCounterpart(
+        profileId: 'patient-1',
+        role: AppointmentCounterpartRole.patient,
+        displayName: 'Ada Patient',
+      ),
+    );
+
+    expect(
+      appointment.counterpartDisplayName(professionalViewer: true),
+      'Ada Patient',
+    );
+    expect(
+      appointment.counterpartDisplayName(professionalViewer: false),
+      'Professional',
+    );
+  });
+
   group('appointment action policy', () {
     test('patient can cancel or reschedule requested and accepted states', () {
       for (final status in <AppointmentStatus>[

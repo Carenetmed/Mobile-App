@@ -32,7 +32,7 @@ void main() {
 
     expect(find.text('Upcoming'), findsOneWidget);
     expect(find.text('REQUEST SENT'), findsOneWidget);
-    expect(find.text('Appointment with Professional'), findsNWidgets(2));
+    expect(find.text('Appointment with Dr Care'), findsNWidgets(2));
     expect(find.textContaining('confirmed'), findsNothing);
     expect(find.textContaining('payment'), findsNothing);
 
@@ -49,13 +49,18 @@ void main() {
   ) async {
     final repository = _SchedulingFake(
       appointments: <AppointmentSummary>[
-        _appointment(status: AppointmentStatus.requested),
+        _appointment(
+          status: AppointmentStatus.requested,
+          counterpartRole: AppointmentCounterpartRole.patient,
+          counterpartName: 'Ada Patient',
+        ),
       ],
     );
     await _pumpDetail(tester, repository: repository, role: 'PROFESSIONAL');
 
     expect(find.byKey(const Key('appointment-action-accept')), findsOneWidget);
     expect(find.byKey(const Key('appointment-action-decline')), findsOneWidget);
+    expect(find.text('Appointment with Ada Patient'), findsOneWidget);
     expect(find.text('Join consultation'), findsNothing);
     expect(find.text('Payment'), findsNothing);
 
@@ -318,6 +323,9 @@ AppointmentSummary _appointment({
   String id = 'appointment-1',
   AppointmentStatus status = AppointmentStatus.requested,
   DateTime? start,
+  AppointmentCounterpartRole counterpartRole =
+      AppointmentCounterpartRole.professional,
+  String counterpartName = 'Dr Care',
 }) {
   return AppointmentSummary(
     id: id,
@@ -327,6 +335,14 @@ AppointmentSummary _appointment({
     durationMinutes: 30,
     status: status,
     createdAt: DateTime.utc(2026, 7, 25, 10),
+    counterpart: AppointmentCounterpart(
+      profileId:
+          counterpartRole == AppointmentCounterpartRole.professional
+              ? 'professional-1'
+              : 'patient-1',
+      role: counterpartRole,
+      displayName: counterpartName,
+    ),
   );
 }
 

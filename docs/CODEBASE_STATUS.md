@@ -538,6 +538,17 @@ not override the `APP-P1` product boundary.
 | Focused APP-ID-014 build/device check | Build passed: staging Android debug APK at `build/app/outputs/flutter-apk/app-debug.apk`; phone smoke blocked because `flutter devices` lists only Windows/Chrome/Edge and `adb devices` lists no Android serial |
 | Focused APP-P1-004 verification | Passed: 29 targeted Find Care/dashboard route tests, full `flutter test` with 308 tests, full `flutter analyze` with no issues, Android debug APK build, `git diff --check`, and unchanged `pubspec.lock`. No Specialist Details, Schedule, appointment lifecycle, dependency, asset, native, or backend source changed |
 
+## APP-P1-019 appointment participant identity
+
+- Appointment responses now parse the backend viewer-scoped counterpart profile
+  id, role, and display name.
+- Active Home, appointment list, and appointment detail surfaces display the
+  persisted counterpart name when its role matches the authenticated viewer.
+- Missing, malformed, or role-mismatched identity falls back to a neutral role
+  label and cannot alter appointment ownership or action authority.
+- Messaging keeps its existing conversation-owned counterpart contract;
+  notification presentation remains server-authored.
+
 ## MSG-P1-007 appointment messaging
 
 - Backend authority is merged at

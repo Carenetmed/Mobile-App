@@ -892,8 +892,9 @@ class _AppointmentListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final counterpart =
-        role == AppointmentViewerRole.professional ? 'Patient' : 'Professional';
+    final counterpart = appointment.counterpartDisplayName(
+      professionalViewer: role == AppointmentViewerRole.professional,
+    );
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -936,8 +937,9 @@ class _AppointmentStatusHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final counterpart =
-        role == AppointmentViewerRole.professional ? 'Patient' : 'Professional';
+    final counterpart = appointment.counterpartDisplayName(
+      professionalViewer: role == AppointmentViewerRole.professional,
+    );
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),

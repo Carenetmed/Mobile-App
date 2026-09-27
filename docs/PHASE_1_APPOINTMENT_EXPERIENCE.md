@@ -1,6 +1,6 @@
 # Phase 1 appointment experience and professional Schedule
 
-**Slice:** APP-P1-006
+**Slice:** APP-P1-006, APP-P1-019
 **Status:** Implemented
 **Backend contract:** `620b0232cdbffb786bf70303cded2aa4835f45b7`
 
@@ -33,9 +33,12 @@ Future sections sort by requested time ascending, then appointment ID. Past and
 closed sections sort by requested time descending, then appointment ID.
 Malformed timestamps expose no action.
 
-The API currently supplies profile IDs but no participant display names. The UI
-uses the neutral role labels `Professional` and `Patient`; it does not fabricate
-names, consultation mode, fee, location, messages, payment, or call readiness.
+The API supplies one viewer-scoped `counterpart` with persisted profile id,
+role, and display name. Patient views accept only a professional counterpart;
+professional views accept only a patient counterpart. Missing or mismatched
+identity fails safely to a neutral role label and never grants authority. The UI
+does not fabricate consultation mode, fee, location, messages, payment, or call
+readiness.
 
 ## Detail and actions
 
@@ -104,7 +107,8 @@ controllers do not notify widgets.
 ## Explicit limits
 
 - No single-appointment backend read endpoint.
-- No participant display names in appointment responses.
+- Rich participant profiles and contact details remain outside appointment
+  responses.
 - No dedicated audit-history read in mobile detail.
 - No cancellation reason, reschedule reason, no-show, dispute, or follow-up
   contract.

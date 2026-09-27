@@ -1,0 +1,18 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.carenet.app.staging",
+      "sha256_cert_fingerprints": ["5A:04:92:52:01:0F:84:C8:5C:0D:31:6C:D2:63:7B:58:5D:6B:D8:85:AE:04:1F:67:29:7D:22:CA:0F:D9:22:5F"]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.carenet.app",
+      "sha256_cert_fingerprints": ["5A:04:92:52:01:0F:84:C8:5C:0D:31:6C:D2:63:7B:58:5D:6B:D8:85:AE:04:1F:67:29:7D:22:CA:0F:D9:22:5F"]
+    }
+  }
+]

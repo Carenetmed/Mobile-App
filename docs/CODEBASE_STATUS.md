@@ -1,6 +1,15 @@
 # Codebase status
 
-**Last updated:** 2026-09-27 APP-P1-016 authentication/onboarding authority.
+**Last updated:** 2026-09-27 APP-P1-017 legal and authentication links.
+
+## Legal and authentication links
+
+- Canonical Firebase Hosting serves Terms, Privacy, Support, account deletion,
+  email-verification fallback, and password-reset fallback pages.
+- Signup and Account open the canonical HTTPS legal/support pages.
+- Android verified links enter the existing token-confirmation screens only for
+  the canonical Hosting host. Production certificate and iOS proof remain
+  release gates.
 
 ## Authentication and onboarding authority
 

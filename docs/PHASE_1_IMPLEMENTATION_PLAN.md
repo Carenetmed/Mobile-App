@@ -10,6 +10,16 @@ consultation are approved Phase 1 capabilities, but this plan does not silently
 invent their runtime contracts. It also does not solve payment, support, refund,
 payout, dual-role, or notification-provider contracts.
 
+## APP-P1-017 - Legal pages and authentication app links
+
+Canonical Firebase Hosting serves versioned Terms, Privacy, Support, and
+account-deletion information. Active signup and Account surfaces open those
+pages. Android email-verification and password-reset HTTPS links are associated
+with the canonical staging and production package IDs and resolve into the
+existing Flutter confirmation screens. Deployment must also update the backend
+`PUBLIC_APP_BASE_URL`; production signing and iOS association remain later
+release gates. See `PHASE_1_LEGAL_AUTH_LINKS.md`.
+
 ## Global gates for every runtime slice
 
 - Start from the approved frontend integration branch on a dedicated slice branch.

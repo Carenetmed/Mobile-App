@@ -1,6 +1,7 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/config/carenet_public_links.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
@@ -26,6 +27,7 @@ class AccountShellPage extends StatefulWidget {
     this.googleIdTokenProvider,
     this.bookingIntentStore,
     this.paymentCheckoutIntentStore,
+    this.publicLinkLauncher,
   });
 
   final AuthRepository? authRepository;
@@ -33,6 +35,7 @@ class AccountShellPage extends StatefulWidget {
   final GoogleIdTokenProvider? googleIdTokenProvider;
   final BookingIntentStore? bookingIntentStore;
   final PaymentCheckoutIntentStore? paymentCheckoutIntentStore;
+  final PublicLinkLauncher? publicLinkLauncher;
 
   @override
   State<AccountShellPage> createState() => _AccountShellPageState();
@@ -80,6 +83,18 @@ class _AccountShellPageState extends State<AccountShellPage> {
     return sl.isRegistered<PaymentCheckoutIntentStore>()
         ? sl<PaymentCheckoutIntentStore>()
         : null;
+  }
+
+  Future<void> _openPublicLink(Uri uri) async {
+    final launcher = widget.publicLinkLauncher ?? CareNetPublicLinks.launch;
+    final opened = await launcher(uri);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not open this page. Please try again.'),
+        ),
+      );
+    }
   }
 
   @override
@@ -463,6 +478,26 @@ class _AccountShellPageState extends State<AccountShellPage> {
                       RouteName.notificationPreferences,
                     );
                   },
+                ),
+                _AccountTile(
+                  icon: Icons.support_agent_outlined,
+                  title: 'Support',
+                  subtitle: 'Help, safety guidance and contact information',
+                  onTap: () => _openPublicLink(CareNetPublicLinks.support),
+                ),
+                _AccountTile(
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Privacy and legal',
+                  subtitle: 'Privacy Policy and Terms of Service',
+                  onTap: () => _openPublicLink(CareNetPublicLinks.privacy),
+                ),
+                _AccountTile(
+                  icon: Icons.manage_accounts_outlined,
+                  title: 'Account deletion information',
+                  subtitle:
+                      'What deletion does and how retained records are handled',
+                  onTap: () =>
+                      _openPublicLink(CareNetPublicLinks.accountDeletion),
                 ),
                 _AccountTile(
                   icon: Icons.mail_outline,

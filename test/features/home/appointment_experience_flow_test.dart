@@ -424,6 +424,8 @@ class _SchedulingFake implements SchedulingRepository {
   @override
   Future<RequestableTimes> publicRequestableTimes({
     required String professionalProfileId,
+    DateTime? rangeStartAt,
+    DateTime? rangeEndAt,
   }) async {
     return RequestableTimes(
       professionalProfileId: professionalProfileId,

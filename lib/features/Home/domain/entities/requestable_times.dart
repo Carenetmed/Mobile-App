@@ -16,6 +16,8 @@ class RequestableTimes {
     required this.leadTimeMinutes,
     required this.bookingHorizonDays,
     required this.times,
+    this.rangeStartAt,
+    this.rangeEndAt,
   });
 
   final String professionalProfileId;
@@ -25,4 +27,6 @@ class RequestableTimes {
   final int leadTimeMinutes;
   final int bookingHorizonDays;
   final List<RequestableTime> times;
+  final DateTime? rangeStartAt;
+  final DateTime? rangeEndAt;
 }

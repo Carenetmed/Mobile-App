@@ -9,6 +9,8 @@ class RequestableTimesModel extends RequestableTimes {
     required super.leadTimeMinutes,
     required super.bookingHorizonDays,
     required super.times,
+    super.rangeStartAt,
+    super.rangeEndAt,
   });
 
   factory RequestableTimesModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,8 @@ class RequestableTimesModel extends RequestableTimes {
       cadenceMinutes: json['cadenceMinutes'] as int? ?? 0,
       leadTimeMinutes: json['leadTimeMinutes'] as int? ?? 0,
       bookingHorizonDays: json['bookingHorizonDays'] as int? ?? 0,
+      rangeStartAt: RequestableTimeModel.utcInstant(json['rangeStartAt']),
+      rangeEndAt: RequestableTimeModel.utcInstant(json['rangeEndAt']),
       times:
           rawTimes is List
               ? rawTimes
@@ -36,15 +40,15 @@ class RequestableTimeModel extends RequestableTime {
   const RequestableTimeModel({required super.startAt, required super.endAt});
 
   static RequestableTimeModel? tryFromJson(Map<String, dynamic> json) {
-    final startAt = _utcInstant(json['startAt']);
-    final endAt = _utcInstant(json['endAt']);
+    final startAt = utcInstant(json['startAt']);
+    final endAt = utcInstant(json['endAt']);
     if (startAt == null || endAt == null || !endAt.isAfter(startAt)) {
       return null;
     }
     return RequestableTimeModel(startAt: startAt, endAt: endAt);
   }
 
-  static DateTime? _utcInstant(Object? value) {
+  static DateTime? utcInstant(Object? value) {
     final parsed = DateTime.tryParse(value is String ? value : '');
     if (parsed == null || !parsed.isUtc) {
       return null;

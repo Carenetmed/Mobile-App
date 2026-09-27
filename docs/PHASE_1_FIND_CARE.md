@@ -101,6 +101,8 @@ APP-P1-005 completed the canonical detail and request boundary. Specialist Detai
 
 - calls `GET /professionals/:professionalProfileId` directly;
 - loads backend-generated requestable times without client recurrence generation;
+- requests requestable times in bounded 14-day ranges and loads later ranges only on
+  explicit patient action;
 - preserves the exact backend professional ID;
 - fails closed without local or seeded fallback;
 - resumes an account-bound booking intent through authentication and patient setup;

@@ -25,6 +25,9 @@
 > Patient setup
 > follows backend readiness instead of entering `communityAgreement`.
 > Legacy `signInPhone`/`signUpPhone` values resolve to email authentication.
+> Canonical HTTPS `/verify-email?token=...` and `/reset-password?token=...`
+> links from `project-a96784ee-811c-46ab-a7b.web.app` resolve to the existing
+> confirmation pages. Absolute links from unrelated hosts are rejected.
 > Legacy community/notification agreement values resolve to patient setup, and
 > `medicalAgreement` resolves to professional setup; their old broad-product
 > widgets are not active routes.

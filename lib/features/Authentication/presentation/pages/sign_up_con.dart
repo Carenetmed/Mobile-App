@@ -1,4 +1,5 @@
 import 'package:app_t/core/constants/fonts.dart';
+import 'package:app_t/core/config/carenet_public_links.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/tokens/carenet_colors.dart';
@@ -20,12 +21,14 @@ class FinSignUp extends StatefulWidget {
     this.selectedRole = SignUpRole.patient,
     this.authRepository,
     this.onboardingRepository,
+    this.publicLinkLauncher,
   });
 
   final String? initialEmail;
   final SignUpRole selectedRole;
   final AuthRepository? authRepository;
   final OnboardingRepository? onboardingRepository;
+  final PublicLinkLauncher? publicLinkLauncher;
 
   @override
   State<FinSignUp> createState() => _FinSignUpState();
@@ -49,6 +52,18 @@ class _FinSignUpState extends State<FinSignUp> {
       widget.onboardingRepository ?? sl<OnboardingRepository>();
 
   static const _routeResolver = OnboardingReadinessRouteResolver();
+
+  Future<void> _openPublicLink(Uri uri) async {
+    final launcher = widget.publicLinkLauncher ?? CareNetPublicLinks.launch;
+    final opened = await launcher(uri);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not open this page. Please try again.'),
+        ),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -142,10 +157,11 @@ class _FinSignUpState extends State<FinSignUp> {
                       hintText: 'Enter it again',
                       controller: _confirmPasswordController,
                       obscureText: _visibleConfirmPassword,
-                      validator: (value) => Validators.validateConfirmPassword(
-                        value,
-                        password: _passwordController.text,
-                      ),
+                      validator:
+                          (value) => Validators.validateConfirmPassword(
+                            value,
+                            password: _passwordController.text,
+                          ),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
@@ -203,13 +219,28 @@ class _FinSignUpState extends State<FinSignUp> {
                   height: 1.45,
                 ),
               ),
+              Wrap(
+                spacing: 8.w,
+                children: [
+                  TextButton(
+                    key: const Key('sign-up-terms-link'),
+                    onPressed: () => _openPublicLink(CareNetPublicLinks.terms),
+                    child: const Text('Terms of Service'),
+                  ),
+                  TextButton(
+                    key: const Key('sign-up-privacy-link'),
+                    onPressed:
+                        () => _openPublicLink(CareNetPublicLinks.privacy),
+                    child: const Text('Privacy Policy'),
+                  ),
+                ],
+              ),
 
               SizedBox(height: 5.h),
               CarenetButton(
                 onPressed: _isSubmitting ? null : _onAgreeAndContinue,
-                label: _isSubmitting
-                    ? 'Creating account...'
-                    : ' Agree & continue',
+                label:
+                    _isSubmitting ? 'Creating account...' : ' Agree & continue',
               ),
             ],
           ),

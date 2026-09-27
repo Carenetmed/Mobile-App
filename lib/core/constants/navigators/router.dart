@@ -39,6 +39,10 @@ import 'package:flutter/material.dart';
 /// Central route table. Every [RouteName] used in the app must have a case here.
 /// See [docs/ROUTES.md] for the human-readable map.
 Route<dynamic> generateRoute(RouteSettings settings) {
+  final authLinkRoute = _authLinkRoute(settings);
+  if (authLinkRoute != null) {
+    return authLinkRoute;
+  }
   switch (settings.name) {
     case RouteName.splash:
       return _page(settings, const SplashScreen());
@@ -243,6 +247,27 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         builder: (_) => UnknownRoutePage(routeName: settings.name),
       );
   }
+}
+
+Route<dynamic>? _authLinkRoute(RouteSettings settings) {
+  final rawName = settings.name;
+  if (rawName == null || rawName.isEmpty) return null;
+
+  final uri = Uri.tryParse(rawName);
+  if (uri == null) return null;
+  if (uri.hasAuthority &&
+      uri.host != 'project-a96784ee-811c-46ab-a7b.web.app') {
+    return null;
+  }
+
+  final token = uri.queryParameters['token'];
+  switch (uri.path) {
+    case '/verify-email':
+      return _page(settings, EmailVerificationConfirmPage(token: token));
+    case '/reset-password':
+      return _page(settings, ResetPasswordConfirmPage(token: token));
+  }
+  return null;
 }
 
 MaterialPageRoute<void> _page(RouteSettings settings, Widget child) {

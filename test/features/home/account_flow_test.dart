@@ -1,5 +1,6 @@
 import 'package:app_t/core/constants/navigators/router.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/config/carenet_public_links.dart';
 import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
@@ -86,6 +87,7 @@ Future<void> _pumpAccount(
   GoogleIdTokenProvider? googleIdTokenProvider,
   BookingIntentStore? bookingIntentStore,
   PaymentCheckoutIntentStore? paymentCheckoutIntentStore,
+  PublicLinkLauncher? publicLinkLauncher,
 }) async {
   AccountLocalStore.reset();
   tester.view.physicalSize = _phoneSize;
@@ -102,6 +104,7 @@ Future<void> _pumpAccount(
           googleIdTokenProvider: googleIdTokenProvider,
           bookingIntentStore: bookingIntentStore,
           paymentCheckoutIntentStore: paymentCheckoutIntentStore,
+          publicLinkLauncher: publicLinkLauncher,
         ),
         routes: <String, WidgetBuilder>{
           RouteName.onboarding: (_) => const Scaffold(body: Text('onboarding')),
@@ -174,6 +177,31 @@ void main() {
 
     expect(find.text('Account'), findsOneWidget);
     expect(find.text('Delete account'), findsWidgets);
+  });
+
+  testWidgets('account opens canonical support and legal pages', (tester) async {
+    final opened = <Uri>[];
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(),
+      publicLinkLauncher: (uri) async {
+        opened.add(uri);
+        return true;
+      },
+    );
+
+    await tester.scrollUntilVisible(find.text('Support'), 300);
+    await tester.tap(find.text('Support'));
+    await tester.pump();
+    await tester.scrollUntilVisible(find.text('Privacy and legal'), 300);
+    await tester.tap(find.text('Privacy and legal'));
+    await tester.pump();
+
+    expect(opened, <Uri>[
+      CareNetPublicLinks.support,
+      CareNetPublicLinks.privacy,
+    ]);
   });
 
   testWidgets('account area opens transactional notification preferences', (

@@ -6,6 +6,15 @@ Rule: do not implement a deferred item until its product and backend contracts
 are defined. Do not fake backend, payment, or media behavior to make a screen
 look complete.
 
+## Legal and authentication-link release gates
+
+- Replace the launch-placeholder support availability notice with a monitored,
+  approved support channel and operating hours.
+- Add protected Android upload and Play App Signing SHA-256 fingerprints to
+  Firebase and `assetlinks.json`, then verify the signed release candidate.
+- Configure and prove iOS Universal Links only after Apple Developer signing,
+  Associated Domains, a Mac, and an iPhone are available.
+
 ## Account lifecycle
 
 - Backend-owned soft deletion and session revocation are active through the

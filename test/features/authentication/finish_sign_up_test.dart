@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/config/carenet_public_links.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
@@ -22,6 +23,7 @@ Future<void> _pumpFinishSignUp(
   _FakeOnboardingRepository? onboardingRepository,
   String? initialEmail,
   SignUpRole selectedRole = SignUpRole.patient,
+  PublicLinkLauncher? publicLinkLauncher,
 }) async {
   tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1.0;
@@ -41,6 +43,7 @@ Future<void> _pumpFinishSignUp(
                         onboardingRepository ?? _FakeOnboardingRepository(),
                     initialEmail: initialEmail,
                     selectedRole: selectedRole,
+                    publicLinkLauncher: publicLinkLauncher,
                   ),
               RouteName.communityAgreement:
                   (_) => const Scaffold(body: Text('community-agreement')),
@@ -59,6 +62,30 @@ Future<void> _pumpFinishSignUp(
 
 void main() {
   group('Finish sign up', () {
+    testWidgets('legal controls open canonical public pages', (tester) async {
+      final opened = <Uri>[];
+      await _pumpFinishSignUp(
+        tester,
+        publicLinkLauncher: (uri) async {
+          opened.add(uri);
+          return true;
+        },
+      );
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('sign-up-terms-link')).last,
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.byKey(const Key('sign-up-terms-link')).last);
+      await tester.tap(find.byKey(const Key('sign-up-privacy-link')).last);
+      await tester.pump();
+
+      expect(opened, <Uri>[
+        CareNetPublicLinks.terms,
+        CareNetPublicLinks.privacy,
+      ]);
+    });
     testWidgets('blocks navigation when required fields are empty', (
       tester,
     ) async {

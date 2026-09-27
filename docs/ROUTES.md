@@ -24,6 +24,10 @@
 > linked-Google reauthentication, explicit confirmation, and ends all sessions.
 > Patient setup
 > follows backend readiness instead of entering `communityAgreement`.
+> Legacy `signInPhone`/`signUpPhone` values resolve to email authentication.
+> Legacy community/notification agreement values resolve to patient setup, and
+> `medicalAgreement` resolves to professional setup; their old broad-product
+> widgets are not active routes.
 > `search` is the canonical Find Care route. Patient Home and the persistent
 > Find Care tab enter the same `SearchShellPage`; legacy `findMentor` is a
 > compatibility alias to that screen and no longer opens a separate marketplace.
@@ -49,17 +53,17 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 |--------------------|--------------|---------------|------|
 | `splash` | `splash` | `SplashScreen` | `lib/features/splash/presentation/pages/splash_screen.dart` |
 | `onboarding` | `onboarding` | `OnboardingView` | `lib/features/Onboarding/presentation/pages/onboarding.dart` |
-| `signUpPhone` | `signUpPhone` | `SignUpPhone` | `lib/features/Authentication/presentation/pages/sign_up_phone.dart` |
+| `signUpPhone` | `signUpPhone` | `SignUpEmail` (unsupported phone-auth compatibility alias) | `lib/features/Authentication/presentation/pages/sign_up_email.dart` |
 | `signUpEmail` | `signUpEmail` | `SignUpEmail` | `lib/features/Authentication/presentation/pages/sign_up_email.dart` |
 | `signUpRole` | `signUpRole` | `SignUpRoleSelectionPage` | `lib/features/Authentication/presentation/pages/sign_up_role_selection.dart` |
 | `finishSignUp` | `finishSignUp` | `FinSignUp` | `lib/features/Authentication/presentation/pages/sign_up_con.dart` |
 | `patientOnboardingSetup` | `patientOnboardingSetup` | `PatientOnboardingSetupPage` | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
-| `communityAgreement` | `communityAgreement` | `CommunityCommitment` | `lib/features/Onboarding/presentation/pages/commitment_screen.dart` |
-| `notificationAgreement` | `notificationAgreement` | `NotificationScreen` | `lib/features/Onboarding/presentation/pages/notification.dart` |
-| `medicalAgreement` | `medicalAgreement` | `MedicalAgreement` | `lib/features/Onboarding/presentation/pages/medical_agreement.dart` |
+| `communityAgreement` | `communityAgreement` | `PatientOnboardingSetupPage` (legacy compatibility alias) | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
+| `notificationAgreement` | `notificationAgreement` | `PatientOnboardingSetupPage` (legacy compatibility alias) | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
+| `medicalAgreement` | `medicalAgreement` | `ProfessionalOnboardingSetupPage` (legacy compatibility alias) | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
 | `medicalProfessional` | `medicalProfessional` | `ProfessionalOnboardingSetupPage` | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
 | `medicalEdit` | `medicalEdit` | `UserEdit` | `lib/features/Onboarding/presentation/pages/user_edit.dart` |
-| `signInPhone` | `signInPhone` | `SignInPhone` | `lib/features/Authentication/presentation/pages/sign_in_phone.dart` |
+| `signInPhone` | `signInPhone` | `SignInEmail` (unsupported phone-auth compatibility alias) | `lib/features/Authentication/presentation/pages/sign_in_email.dart` |
 | `signInEmail` | `signInEmail` | `SignInEmail` | `lib/features/Authentication/presentation/pages/sign_in_email.dart` |
 | `enterEmail` | `enterEmail` | `EnterEmailPage` | `lib/features/Authentication/presentation/pages/enter_email.dart` |
 | `enterPassword` | `enterPassword` | `EnterPasswordPage` | `lib/features/Authentication/presentation/pages/enter_password.dart` |

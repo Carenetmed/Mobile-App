@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
@@ -324,11 +326,13 @@ class _FakeVerificationRepository implements VerificationRepository {
     this.documentsResult = const <VerificationDocument>[],
     this.failure,
     this.uploadFailure,
+    this.holdUpload = false,
   });
 
   List<VerificationDocument> documentsResult;
   final Object? failure;
   final Object? uploadFailure;
+  final bool holdUpload;
   VerificationUploadRequest? lastUploadRequest;
 
   @override
@@ -349,6 +353,14 @@ class _FakeVerificationRepository implements VerificationRepository {
       throw error;
     }
     lastUploadRequest = request;
+    request.onProgress?.call(0.5);
+    if (holdUpload) {
+      final cancelled = Completer<void>();
+      request.controller?.bind(
+        () => cancelled.completeError(const VerificationUploadCancelled()),
+      );
+      await cancelled.future;
+    }
     final document = VerificationDocument(
       id: 'uploaded-document',
       documentType: request.documentType,
@@ -669,7 +681,8 @@ void main() {
       expect(repository.lastUploadRequest!.mimeType, 'application/pdf');
       expect(repository.lastUploadRequest!.fileBytes, <int>[1, 2, 3, 4]);
       expect(repository.lastUploadRequest!.fileSizeBytes, 4);
-      expect(repository.lastUploadRequest!.checksumSha256, isNull);
+      expect(repository.lastUploadRequest!.controller, isNotNull);
+      expect(repository.lastUploadRequest!.onProgress, isNotNull);
       expect(repository.documentsResult, hasLength(1));
       expect(repository.documentsResult.single.documentType, 'LICENSE');
       expect(
@@ -781,6 +794,37 @@ void main() {
 
     expect(find.text('No file selected.'), findsOneWidget);
     expect(repository.lastUploadRequest, isNull);
+  });
+
+  testWidgets('in-flight verification upload shows progress and cancels', (
+    tester,
+  ) async {
+    final repository = _FakeVerificationRepository(holdUpload: true);
+    await _pumpManageProfile(
+      tester,
+      verificationRepository: repository,
+      verificationDocumentPicker: const _FakeVerificationDocumentPicker(
+        file: VerificationPickedFile(
+          name: 'license.pdf',
+          mimeType: 'application/pdf',
+          bytes: <int>[1, 2, 3],
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Choose file to upload'));
+    await tester.pump();
+
+    expect(find.text('50% uploaded'), findsOneWidget);
+    expect(find.text('Cancel upload'), findsOneWidget);
+
+    await tester.tap(find.text('Cancel upload'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Upload cancelled.'), findsOneWidget);
+    expect(find.text('Document uploaded and pending review.'), findsNothing);
   });
 
   testWidgets('verification upload failure shows safe error without success', (

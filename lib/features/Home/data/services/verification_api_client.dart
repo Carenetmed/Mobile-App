@@ -32,12 +32,12 @@ class VerificationApiClient {
     );
     final items =
         response is Map<String, dynamic> && response['documents'] is List
-        ? response['documents'] as List<dynamic>
-        : response is Map<String, dynamic> && response['items'] is List
-        ? response['items'] as List<dynamic>
-        : response is List
-        ? response
-        : const <dynamic>[];
+            ? response['documents'] as List<dynamic>
+            : response is Map<String, dynamic> && response['items'] is List
+            ? response['items'] as List<dynamic>
+            : response is List
+            ? response
+            : const <dynamic>[];
     return items
         .whereType<Map<String, dynamic>>()
         .map(VerificationDocumentModel.fromJson)
@@ -72,12 +72,16 @@ class VerificationApiClient {
     required String signedUploadUrl,
     required List<int> fileBytes,
     required String mimeType,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
   }) async {
     await _request(
       () => _uploadDio.put<dynamic>(
         signedUploadUrl,
         data: fileBytes,
         options: Options(headers: <String, String>{'Content-Type': mimeType}),
+        cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
       ),
     );
   }
@@ -85,30 +89,29 @@ class VerificationApiClient {
   Future<VerificationDocumentModel> uploadComplete({
     required String accessToken,
     required String documentId,
-    int? fileSizeBytes,
-    String? checksumSha256,
+    required int fileSizeBytes,
+    required String checksumSha256,
   }) async {
     final response = await _request(
       () => _dio.post<dynamic>(
         _url('$documentsPath/$documentId/upload-complete'),
         data: <String, dynamic>{
-          if (fileSizeBytes != null) 'fileSizeBytes': fileSizeBytes,
-          if (checksumSha256 != null) 'checksumSha256': checksumSha256,
+          'fileSizeBytes': fileSizeBytes,
+          'checksumSha256': checksumSha256,
         },
         options: Options(headers: _bearerHeaders(accessToken)),
       ),
     );
-    final documentJson = response is Map<String, dynamic>
-        ? response['document']
-        : null;
+    final documentJson =
+        response is Map<String, dynamic> ? response['document'] : null;
     return VerificationDocumentModel.fromJson(
       documentJson is Map<String, dynamic>
           ? <String, dynamic>{
-              ...documentJson,
-              'checksumProvided':
-                  documentJson['checksumProvided'] as bool? ??
-                  documentJson['checksumSha256'] != null,
-            }
+            ...documentJson,
+            'checksumProvided':
+                documentJson['checksumProvided'] as bool? ??
+                documentJson['checksumSha256'] != null,
+          }
           : const <String, dynamic>{},
     );
   }

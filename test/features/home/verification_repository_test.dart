@@ -9,6 +9,7 @@ import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart'
 import 'package:app_t/features/Home/data/repositories/verification_repository.dart';
 import 'package:app_t/features/Home/data/services/verification_api_client.dart';
 import 'package:app_t/features/Home/domain/entities/verification_upload_request.dart';
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -91,7 +92,7 @@ void main() {
               'storageProvider': 'gcs',
               'mimeType': 'application/pdf',
               'fileSizeBytes': 3,
-              'checksumSha256': null,
+              'checksumSha256': sha256.convert(<int>[1, 2, 3]).toString(),
               'status': 'PENDING',
               'uploadedAt': '2026-07-15T08:00:00.000Z',
             },
@@ -105,13 +106,15 @@ void main() {
           uploadAdapter: uploadAdapter,
           withSession: true,
         );
+        final progress = <double>[];
 
         final document = await repository.uploadDocument(
-          const VerificationUploadRequest(
+          VerificationUploadRequest(
             documentType: 'license',
             originalFileName: 'license.pdf',
             mimeType: 'application/pdf',
-            fileBytes: <int>[1, 2, 3],
+            fileBytes: const <int>[1, 2, 3],
+            onProgress: progress.add,
           ),
         );
 
@@ -159,6 +162,8 @@ void main() {
         expect(signedPutRequest.headers.containsKey('Authorization'), isFalse);
         expect(signedPutRequest.headers['Content-Type'], 'application/pdf');
         expect(signedPutRequest.data, <int>[1, 2, 3]);
+        signedPutRequest.onSendProgress?.call(2, 3);
+        expect(progress.single, closeTo(2 / 3, 0.0001));
 
         final completeRequest = apiAdapter.requests.last;
         expect(completeRequest.method, 'POST');
@@ -167,13 +172,15 @@ void main() {
           endsWith('/verification/documents/document-1/upload-complete'),
         );
         expect(completeRequest.headers['Authorization'], 'Bearer access-token');
-        expect(completeRequest.data, <String, dynamic>{'fileSizeBytes': 3});
+        expect(completeRequest.data, <String, dynamic>{
+          'fileSizeBytes': 3,
+          'checksumSha256': sha256.convert(<int>[1, 2, 3]).toString(),
+        });
       },
     );
 
-    test('upload complete includes checksum only when provided', () async {
-      final checksum =
-          '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+    test('upload complete always includes computed checksum', () async {
+      final checksum = sha256.convert(<int>[4, 5]).toString();
       final apiAdapter = _QueueAdapter(<_QueuedResponse>[
         _QueuedResponse.json(<String, dynamic>{
           'document': <String, dynamic>{
@@ -218,7 +225,6 @@ void main() {
           originalFileName: 'identity.png',
           mimeType: 'image/png',
           fileBytes: const <int>[4, 5],
-          checksumSha256: checksum,
         ),
       );
 
@@ -247,6 +253,26 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('pre-cancelled upload makes no API or storage request', () async {
+      final adapter = _QueueAdapter(<_QueuedResponse>[]);
+      final repository = _repository(apiAdapter: adapter, withSession: true);
+      final controller = VerificationUploadController()..cancel();
+
+      await expectLater(
+        repository.uploadDocument(
+          VerificationUploadRequest(
+            documentType: 'license',
+            originalFileName: 'license.pdf',
+            mimeType: 'application/pdf',
+            fileBytes: const <int>[1, 2, 3],
+            controller: controller,
+          ),
+        ),
+        throwsA(isA<VerificationUploadCancelled>()),
+      );
+      expect(adapter.requests, isEmpty);
     });
 
     test('missing backend config fails closed', () async {

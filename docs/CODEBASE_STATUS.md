@@ -1,6 +1,18 @@
 # Codebase status
 
-**Last updated:** 2026-09-27 APP-P1-017 legal and authentication links.
+**Last updated:** 2026-09-28 APP-P1-020 verification upload integrity.
+
+## Verification upload integrity
+
+- Verification files are SHA-256 hashed off the UI isolate before upload
+  completion; completion always sends the file byte count and digest required by
+  the backend integrity contract.
+- The signed GCS transfer exposes bounded progress and an explicit cancel action.
+  Cancellation aborts the active Dio request and never reports review success.
+- Signed URLs, object keys, checksums, local paths, and provider internals remain
+  absent from the UI and logs.
+- Malware scanning, retention/orphan cleanup, background uploads, admin review,
+  production bucket IAM proof, and physical-device acceptance remain separate.
 
 ## Legal and authentication links
 
@@ -249,7 +261,7 @@ not override the `APP-P1` product boundary.
 | Professional verification repository boundary | `PROFESSIONAL_VERIFICATION_UPLOAD_LIST_BOUNDARY.md` accepts Manage Profile as the professional-owned entry point, and `VerificationRepository` now covers owner document list, upload-init, internal signed upload PUT, and upload-complete behind safe entities and focused tests. Runtime screen wiring, file picker UI, visible upload flow, admin review, private previews/downloads, public document access, staging data, and production claims remain deferred |
 | Professional verification documents shell | Manage Profile now has a `Verification` entry that opens `professionalVerificationDocuments`. The shell reads owner verification documents through `VerificationRepository.documents`, shows loading/empty/safe-error states, displays safe status metadata only, and keeps upload locked until the file-picker/upload UX boundary is decided |
 | Professional verification upload picker boundary | `PROFESSIONAL_VERIFICATION_UPLOAD_PICKER_BOUNDARY.md` selects a PDF-capable picker path for the next runtime upload slice. Do not use the existing `image_picker` dependency for verification upload because PDF support is required. Runtime upload and package changes remain queued for 52.79 |
-| Professional verification upload flow | `professionalVerificationDocuments` now supports one controlled upload flow with `file_picker`, document type selection, PDF/JPEG/PNG validation, 10 MB app-side size guard, safe cancel/error/success states, `VerificationRepository.uploadDocument`, and owner document reload. Checksum, previews/downloads, admin review, rejection reasons, scanning claims, public exposure, staging data, and production claims remain deferred |
+| Professional verification upload flow | `professionalVerificationDocuments` supports one controlled upload flow with `file_picker`, document type selection, PDF/JPEG/PNG validation, a 10 MB app-side size guard, off-UI-isolate SHA-256, bounded transfer progress, active cancellation, integrity completion, safe states, and owner document reload. Previews/downloads, admin review, rejection reasons, malware scanning, public exposure, and production claims remain deferred |
 | Professional verification upload regression | `PROFESSIONAL_VERIFICATION_UPLOAD_REGRESSION.md` records focused proof for owner list success/empty/error, upload success with reload, picker cancellation, invalid type, 10 MB guard, safe backend failure, dependency presence, and private-data non-exposure |
 | Next surface after verification regression | `NEXT_SURFACE_AFTER_VERIFICATION_UPLOAD_REGRESSION_DECISION.md` selects professional basic profile field editing as the next backend-completed Flutter surface, with a boundary decision before runtime `displayName`/`category`/`specialty` wiring. Website/address, verification expansion, admin review, scheduling staging data, payments, reviews, calls, calendar sync, notes, prescriptions, staging, and production claims remain deferred |
 | Professional basic profile edit boundary | `PROFESSIONAL_BASIC_PROFILE_EDIT_BOUNDARY.md` selects `editYourName` as a display-name-only runtime update. The next implementation must read an existing professional profile, preserve category/specialty/bio, block empty-profile creation, and keep website/address/account/verification/availability/appointment/payment/review/call/calendar/note/prescription data out |

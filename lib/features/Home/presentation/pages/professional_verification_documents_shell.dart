@@ -89,6 +89,8 @@ class _ProfessionalVerificationDocumentsShellPageState
     extends State<ProfessionalVerificationDocumentsShellPage> {
   bool _isLoading = true;
   bool _isUploading = false;
+  double _uploadProgress = 0;
+  VerificationUploadController? _uploadController;
   String? _error;
   String? _readinessError;
   String? _uploadError;
@@ -117,6 +119,12 @@ class _ProfessionalVerificationDocumentsShellPageState
     super.initState();
     _loadReadiness();
     _loadDocuments();
+  }
+
+  @override
+  void dispose() {
+    _uploadController?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadReadiness() async {
@@ -227,7 +235,10 @@ class _ProfessionalVerificationDocumentsShellPageState
 
     setState(() {
       _isUploading = true;
+      _uploadProgress = 0;
     });
+    final uploadController = VerificationUploadController();
+    _uploadController = uploadController;
 
     try {
       await _verificationRepository.uploadDocument(
@@ -237,6 +248,15 @@ class _ProfessionalVerificationDocumentsShellPageState
           mimeType: picked.mimeType,
           fileBytes: picked.bytes,
           fileSizeBytes: picked.bytes.length,
+          controller: uploadController,
+          onProgress: (progress) {
+            if (!mounted || _uploadController != uploadController) {
+              return;
+            }
+            setState(() {
+              _uploadProgress = progress;
+            });
+          },
         ),
       );
       if (!mounted) {
@@ -246,6 +266,13 @@ class _ProfessionalVerificationDocumentsShellPageState
         _uploadSuccess = 'Document uploaded and pending review.';
       });
       await _loadDocuments();
+    } on VerificationUploadCancelled {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _uploadError = 'Upload cancelled.';
+      });
     } on AuthFailure catch (failure) {
       if (!mounted) {
         return;
@@ -264,9 +291,15 @@ class _ProfessionalVerificationDocumentsShellPageState
       if (mounted) {
         setState(() {
           _isUploading = false;
+          _uploadProgress = 0;
+          _uploadController = null;
         });
       }
     }
+  }
+
+  void _cancelUpload() {
+    _uploadController?.cancel();
   }
 
   String? _validatePickedFile(VerificationPickedFile file) {
@@ -343,6 +376,7 @@ class _ProfessionalVerificationDocumentsShellPageState
                 documentTypes: _documentTypes,
                 selectedDocumentType: _selectedDocumentType,
                 isUploading: _isUploading,
+                uploadProgress: _uploadProgress,
                 error: _uploadError,
                 success: _uploadSuccess,
                 onDocumentTypeChanged: (value) {
@@ -356,6 +390,7 @@ class _ProfessionalVerificationDocumentsShellPageState
                   });
                 },
                 onUpload: _isUploading ? null : _uploadDocument,
+                onCancel: _isUploading ? _cancelUpload : null,
               ),
               SizedBox(height: 16.h),
               if (_isLoading)
@@ -441,19 +476,23 @@ class _UploadCard extends StatelessWidget {
     required this.documentTypes,
     required this.selectedDocumentType,
     required this.isUploading,
+    required this.uploadProgress,
     required this.error,
     required this.success,
     required this.onDocumentTypeChanged,
     required this.onUpload,
+    required this.onCancel,
   });
 
   final List<String> documentTypes;
   final String selectedDocumentType;
   final bool isUploading;
+  final double uploadProgress;
   final String? error;
   final String? success;
   final ValueChanged<String?> onDocumentTypeChanged;
   final VoidCallback? onUpload;
+  final VoidCallback? onCancel;
 
   @override
   Widget build(BuildContext context) {
@@ -535,6 +574,34 @@ class _UploadCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (isUploading) ...[
+                  SizedBox(height: 10.h),
+                  Semantics(
+                    label: 'Document upload progress',
+                    value: '${(uploadProgress * 100).round()} percent',
+                    child: LinearProgressIndicator(value: uploadProgress),
+                  ),
+                  SizedBox(height: 8.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${(uploadProgress * 100).round()}% uploaded',
+                          style: TextStyle(
+                            fontSize: FontSizes.footer4,
+                            fontFamily: AppFonts.montserrat,
+                            color: AppColors.primaryBlue11,
+                          ),
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: onCancel,
+                        icon: const Icon(Icons.close),
+                        label: const Text('Cancel upload'),
+                      ),
+                    ],
+                  ),
+                ],
                 if (error != null) ...[
                   SizedBox(height: 10.h),
                   _InlineMessage(message: error!, isError: true),

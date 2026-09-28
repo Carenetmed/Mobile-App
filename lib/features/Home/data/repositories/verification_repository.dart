@@ -1,6 +1,10 @@
+import 'dart:isolate';
+
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart';
 
 import '../../domain/entities/verification_document.dart';
 import '../../domain/entities/verification_upload_request.dart';
@@ -25,7 +29,18 @@ class VerificationRepository {
     VerificationUploadRequest request,
   ) async {
     final current = await _requireSession();
-    final fileSizeBytes = request.fileSizeBytes ?? request.fileBytes.length;
+    final fileBytes = List<int>.unmodifiable(request.fileBytes);
+    final fileSizeBytes = fileBytes.length;
+    final controller = request.controller;
+    if (controller?.isCancelled ?? false) {
+      throw const VerificationUploadCancelled();
+    }
+    final checksumSha256 = await Isolate.run(
+      () => sha256.convert(fileBytes).toString(),
+    );
+    if (controller?.isCancelled ?? false) {
+      throw const VerificationUploadCancelled();
+    }
     final init = await _apiClient.uploadInit(
       accessToken: current.accessToken,
       documentType: request.documentType,
@@ -34,17 +49,38 @@ class VerificationRepository {
       fileSizeBytes: fileSizeBytes,
     );
 
-    await _apiClient.uploadBytes(
-      signedUploadUrl: init.signedUploadUrl,
-      fileBytes: request.fileBytes,
-      mimeType: request.mimeType,
-    );
+    final cancelToken = CancelToken();
+    controller?.bind(() => cancelToken.cancel('Upload cancelled.'));
+    try {
+      await _apiClient.uploadBytes(
+        signedUploadUrl: init.signedUploadUrl,
+        fileBytes: fileBytes,
+        mimeType: request.mimeType,
+        cancelToken: cancelToken,
+        onSendProgress: (sent, total) {
+          if (total > 0) {
+            request.onProgress?.call((sent / total).clamp(0, 1));
+          }
+        },
+      );
+    } on AuthFailure {
+      if (cancelToken.isCancelled) {
+        throw const VerificationUploadCancelled();
+      }
+      rethrow;
+    } finally {
+      controller?.unbind();
+    }
+
+    if (controller?.isCancelled ?? false) {
+      throw const VerificationUploadCancelled();
+    }
 
     return _apiClient.uploadComplete(
       accessToken: current.accessToken,
       documentId: init.document.id,
       fileSizeBytes: fileSizeBytes,
-      checksumSha256: request.checksumSha256,
+      checksumSha256: checksumSha256,
     );
   }
 
@@ -58,4 +94,8 @@ class VerificationRepository {
     }
     return current;
   }
+}
+
+class VerificationUploadCancelled implements Exception {
+  const VerificationUploadCancelled();
 }

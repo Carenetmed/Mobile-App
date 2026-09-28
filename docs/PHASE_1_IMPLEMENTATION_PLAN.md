@@ -20,6 +20,20 @@ existing Flutter confirmation screens. Deployment must also update the backend
 `PUBLIC_APP_BASE_URL`; production signing and iOS association remain later
 release gates. See `PHASE_1_LEGAL_AUTH_LINKS.md`.
 
+## APP-P1-020 - Verification upload integrity
+
+Status: implemented; verification pending PR CI.
+
+- Computes SHA-256 from the selected bytes off the UI isolate and always sends
+  digest plus byte count to the backend upload-complete contract.
+- Surfaces actual signed-upload transfer progress and supports explicit Dio
+  cancellation without claiming the document entered review.
+- Keeps signed URLs, private object keys, digests, local paths, and provider
+  errors out of user-visible state and logs.
+- Uses the backend as authority for object integrity and review eligibility.
+- Defers malware scanning, retention/cleanup, background upload, admin review,
+  cloud IAM proof, and physical-device acceptance.
+
 ## Global gates for every runtime slice
 
 - Start from the approved frontend integration branch on a dedicated slice branch.

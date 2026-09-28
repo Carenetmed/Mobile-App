@@ -5,7 +5,8 @@ class VerificationUploadRequest {
     required this.mimeType,
     required this.fileBytes,
     this.fileSizeBytes,
-    this.checksumSha256,
+    this.onProgress,
+    this.controller,
   });
 
   final String documentType;
@@ -13,5 +14,32 @@ class VerificationUploadRequest {
   final String mimeType;
   final List<int> fileBytes;
   final int? fileSizeBytes;
-  final String? checksumSha256;
+  final void Function(double progress)? onProgress;
+  final VerificationUploadController? controller;
+}
+
+class VerificationUploadController {
+  bool _isCancelled = false;
+  void Function()? _cancelActiveRequest;
+
+  bool get isCancelled => _isCancelled;
+
+  void cancel() {
+    if (_isCancelled) {
+      return;
+    }
+    _isCancelled = true;
+    _cancelActiveRequest?.call();
+  }
+
+  void bind(void Function() cancelActiveRequest) {
+    _cancelActiveRequest = cancelActiveRequest;
+    if (_isCancelled) {
+      cancelActiveRequest();
+    }
+  }
+
+  void unbind() {
+    _cancelActiveRequest = null;
+  }
 }

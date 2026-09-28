@@ -519,6 +519,20 @@ class _AppointmentCard extends StatelessWidget {
                         AppColors.blue01,
                       ),
                     ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      appointment.counterpart?.displayName.trim().isNotEmpty ==
+                              true
+                          ? appointment.counterpart!.displayName.trim()
+                          : 'Appointment participant',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: _text(
+                        FontSizes.footer2,
+                        FontWeight.w600,
+                        AppColors.blue01,
+                      ),
+                    ),
                     SizedBox(height: 4.h),
                     Text(
                       _dateLabel(appointment.requestedStartAt),

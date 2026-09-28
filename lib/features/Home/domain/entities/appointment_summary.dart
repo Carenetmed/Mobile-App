@@ -9,6 +9,7 @@ class AppointmentSummary {
     this.consultationMode,
     this.createdAt,
     this.updatedAt,
+    this.counterpart,
     this.pricing,
     this.payment,
   });
@@ -22,8 +23,38 @@ class AppointmentSummary {
   final ConsultationMode? consultationMode;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final AppointmentCounterpart? counterpart;
   final AppointmentPricing? pricing;
   final AppointmentPayment? payment;
+
+  String counterpartDisplayName({required bool professionalViewer}) {
+    final identity = counterpart;
+    final expectedRole =
+        professionalViewer
+            ? AppointmentCounterpartRole.patient
+            : AppointmentCounterpartRole.professional;
+    if (identity == null || identity.role != expectedRole) {
+      return professionalViewer ? 'Patient' : 'Professional';
+    }
+    final displayName = identity.displayName.trim();
+    return displayName.isEmpty
+        ? (professionalViewer ? 'Patient' : 'Professional')
+        : displayName;
+  }
+}
+
+enum AppointmentCounterpartRole { patient, professional }
+
+class AppointmentCounterpart {
+  const AppointmentCounterpart({
+    required this.profileId,
+    required this.role,
+    required this.displayName,
+  });
+
+  final String profileId;
+  final AppointmentCounterpartRole role;
+  final String displayName;
 }
 
 enum ConsultationMode { video, audio }

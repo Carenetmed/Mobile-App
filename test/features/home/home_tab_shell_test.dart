@@ -248,6 +248,7 @@ void main() {
 
       expect(find.text('Waiting for professional response'), findsWidgets);
       expect(find.text('Accepted appointment'), findsOneWidget);
+      expect(find.text('Dr Care'), findsNWidgets(2));
       expect(find.textContaining('Jul 24'), findsOneWidget);
 
       await tester.tap(find.text('Accepted appointment'));
@@ -547,5 +548,10 @@ AppointmentSummary _appointment({
     requestedStartAt: start,
     durationMinutes: 30,
     status: status,
+    counterpart: const AppointmentCounterpart(
+      profileId: 'professional-1',
+      role: AppointmentCounterpartRole.professional,
+      displayName: 'Dr Care',
+    ),
   );
 }

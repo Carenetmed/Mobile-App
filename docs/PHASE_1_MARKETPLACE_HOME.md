@@ -64,9 +64,10 @@ become Home priority cards.
 
 ## Known limitations
 
-- Appointment summaries do not contain participant display names, consultation
-  type, payment state, messaging eligibility, or call eligibility. Home therefore
-  shows only truthful schedule and status information.
+- Appointment summaries contain a backend-owned, viewer-scoped counterpart
+  display identity. Home shows that persisted name with truthful schedule and
+  status information, but does not infer consultation, payment, messaging, or
+  call eligibility from it.
 - Home does not fetch an aggregate endpoint; it composes existing owner endpoints.
 - Availability is used only to determine whether an active owner window exists.
   It does not duplicate schedule editing.

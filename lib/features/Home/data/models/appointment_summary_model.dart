@@ -11,6 +11,7 @@ class AppointmentSummaryModel extends AppointmentSummary {
     super.consultationMode,
     super.createdAt,
     super.updatedAt,
+    super.counterpart,
     super.pricing,
     super.payment,
   });
@@ -26,8 +27,26 @@ class AppointmentSummaryModel extends AppointmentSummary {
       consultationMode: ConsultationModeWire.tryParse(json['consultationMode']),
       createdAt: _asDateTime(json['createdAt']),
       updatedAt: _asDateTime(json['updatedAt']),
+      counterpart: _counterpartFromJson(json['counterpart']),
       pricing: _pricingFromJson(json['pricing']),
       payment: _paymentFromJson(json['payment']),
+    );
+  }
+
+  static AppointmentCounterpart? _counterpartFromJson(Object? value) {
+    if (value is! Map<String, dynamic>) return null;
+    final profileId = (value['profileId'] as String? ?? '').trim();
+    final displayName = (value['displayName'] as String? ?? '').trim();
+    final role = switch (value['role']) {
+      'PATIENT' => AppointmentCounterpartRole.patient,
+      'PROFESSIONAL' => AppointmentCounterpartRole.professional,
+      _ => null,
+    };
+    if (profileId.isEmpty || displayName.isEmpty || role == null) return null;
+    return AppointmentCounterpart(
+      profileId: profileId,
+      role: role,
+      displayName: displayName,
     );
   }
 

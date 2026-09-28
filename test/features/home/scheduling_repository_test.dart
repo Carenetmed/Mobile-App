@@ -286,6 +286,12 @@ void main() {
       expect(appointments, hasLength(2));
       expect(appointments.first.status, AppointmentStatus.accepted);
       expect(appointments.last.status, AppointmentStatus.completed);
+      expect(appointments.first.counterpart?.profileId, 'professional-1');
+      expect(
+        appointments.first.counterpart?.role,
+        AppointmentCounterpartRole.professional,
+      );
+      expect(appointments.first.counterpart?.displayName, 'Dr Care');
       expect(adapter.lastOptions?.method, 'GET');
       expect(adapter.lastOptions?.uri.toString(), endsWith('/appointments'));
     });
@@ -468,6 +474,11 @@ Map<String, dynamic> _appointmentJson({
     'status': status,
     'createdAt': '2026-07-14T08:00:00.000Z',
     'updatedAt': '2026-07-14T08:00:00.000Z',
+    'counterpart': <String, dynamic>{
+      'profileId': 'professional-1',
+      'role': 'PROFESSIONAL',
+      'displayName': 'Dr Care',
+    },
     'paymentState': 'SHOULD_NOT_BE_AUTHORITY',
   };
 }

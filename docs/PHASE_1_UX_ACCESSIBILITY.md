@@ -79,7 +79,7 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 
 | Router destination / aliases | Current screen | Evidence | Accessibility result |
 | --- | --- | --- | --- |
-| `splash` | SplashScreen | `widget_test.dart`, `session_restore_guard_test.dart` | Startup behavior covered; layout/semantics at large text not checked. |
+| `splash` | SplashScreen | `widget_test.dart`, `session_restore_guard_test.dart` | At 320x568 / 2x text, brand text remains present and exposed with its text semantics, no layout exception occurs, and the onboarding handoff still completes. Screen-reader/device proof remains open. |
 | `onboarding` | OnboardingView | `onboarding_gateway_test.dart` | At 320x568 / 2x text, browse, create-account, and sign-in choices remain reachable by scrolling without layout exceptions; sign-in routing is exercised. Screen-reader/keyboard and device proof remain open. |
 | `finishSignUp` | FinSignUp | `finish_sign_up_test.dart` | At 320x568 / 2x text, the form, validation, legal links, and submit action remain scroll-accessible without layout exceptions; backend submission and failure are covered separately. Screen-reader/keyboard and device proof remain open. |
 | `signUpRole` | SignUpRoleSelectionPage | `booking_signup_boundary_test.dart` | Normal role choice and booking-origin patient-only signup are exercised at 320x568 / 2x text, including the next signup-method step; screen-reader/keyboard and device proof remain open. |
@@ -149,6 +149,10 @@ acceptance is still required before release.
   browse, create-account, and sign-in choices remain reachable through the
   scroll view without layout exceptions. The tested layout required no
   application change; screen-reader/keyboard and device checks remain open.
+- The splash screen has 320x568 / 2x-text coverage for visible and semantically
+  named brand text, no layout exceptions, and the existing onboarding startup
+  handoff. The tested layout required no application change; device proof
+  remains open.
 
 These repairs are bounded findings, not a claim that all active routes have
 passed every contrast, keyboard, focus-order, or largest-text criterion. The

@@ -18,8 +18,10 @@ Future<void> _pumpSetup(
   WidgetTester tester, {
   required Widget child,
   required _FakeProfileRepository repository,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
-  tester.view.physicalSize = _phoneSize;
+  tester.view.physicalSize = screenSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
@@ -27,7 +29,12 @@ Future<void> _pumpSetup(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder:
-          (_, __) => MaterialApp(
+          (context, _) => MaterialApp(
+            builder:
+                (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+                  child: child!,
+                ),
             routes: <String, WidgetBuilder>{
               RouteName.dashboard:
                   (_) => const Scaffold(body: Text('patient-dashboard')),
@@ -45,6 +52,68 @@ Future<void> _pumpSetup(
 
 void main() {
   group('Patient and professional onboarding setup', () {
+    testWidgets('patient setup completes at compact width with 2x text', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository();
+      final onboardingRepository = _FakeOnboardingRepository(
+        readiness: const AccountReadiness(
+          account: ReadinessAccount(
+            role: 'PATIENT',
+            status: 'ACTIVE',
+            emailVerified: true,
+          ),
+          patient: PatientReadiness(
+            profileStatus: 'COMPLETE',
+            requiredFields: <String>[],
+          ),
+          professional: null,
+          nextAction: 'PATIENT_BOOKING_GATE',
+          requiredActions: <String>[],
+        ),
+      );
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        screenSize: const Size(320, 568),
+        textScaler: const TextScaler.linear(2),
+        child: PatientOnboardingSetupPage(
+          profileRepository: repository,
+          onboardingRepository: onboardingRepository,
+        ),
+      );
+
+      expect(find.text('Set up your patient profile'), findsOneWidget);
+      expect(find.byType(EditableText), findsNWidgets(3));
+      expect(tester.takeException(), isNull);
+
+      final fields = find.byType(EditableText);
+      await tester.enterText(fields.at(0), 'Ada Patient');
+      await tester.ensureVisible(fields.at(2));
+      await tester.enterText(fields.at(2), 'Ikeja');
+      await _selectCatalogValue(tester, 'patient-state', 'Lagos');
+      await _selectCatalogValue(tester, 'patient-country', 'Nigeria');
+      await _selectCatalogValue(
+        tester,
+        'patient-health-interest',
+        'Primary care',
+      );
+
+      final save = find.text('Save and continue');
+      await tester.ensureVisible(save);
+      await tester.pumpAndSettle();
+      expect(save, findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+
+      expect(repository.updatePatientCalls, 1);
+      expect(repository.lastPatientName, 'Ada Patient');
+      expect(repository.lastPatientCity, 'Ikeja');
+      expect(find.text('patient-dashboard'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('patient setup saves backend profile fields', (tester) async {
       final repository = _FakeProfileRepository();
       final onboardingRepository = _FakeOnboardingRepository(

@@ -905,11 +905,11 @@ class _AppointmentListCard extends StatelessWidget {
           child: Icon(Icons.medical_services_outlined),
         ),
         title: Text('Appointment with $counterpart'),
-        subtitle: Text(_appointmentDate(appointment.requestedStartAt)),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(_appointmentDate(appointment.requestedStartAt)),
+            const SizedBox(height: 4),
             Text(
               _statusLabel(appointment.status),
               style: const TextStyle(
@@ -918,9 +918,9 @@ class _AppointmentListCard extends StatelessWidget {
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const Icon(Icons.chevron_right, size: 18),
           ],
         ),
+        trailing: const Icon(Icons.chevron_right, size: 18),
       ),
     );
   }

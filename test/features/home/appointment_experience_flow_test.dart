@@ -44,6 +44,49 @@ void main() {
     expect(repository.listCalls, 2);
   });
 
+  testWidgets('appointments list and detail remain usable at 2x text', (
+    tester,
+  ) async {
+    final repository = _SchedulingFake(
+      appointments: <AppointmentSummary>[
+        _appointment(
+          id: 'large-text-appointment',
+          status: AppointmentStatus.requested,
+          counterpartRole: AppointmentCounterpartRole.patient,
+          counterpartName: 'A very long patient display name',
+        ),
+      ],
+    );
+    await _pumpList(
+      tester,
+      repository: repository,
+      role: 'PROFESSIONAL',
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+    );
+
+    expect(find.text('Appointments').first, findsOneWidget);
+    expect(tester.takeException(), isNull);
+    final row = find.byKey(const Key('appointment-large-text-appointment'));
+    await tester.scrollUntilVisible(
+      row,
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(row.hitTestable(), findsOneWidget);
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Appointment details'), findsOneWidget);
+    expect(find.text('REQUEST SENT'), findsOneWidget);
+    final accept = find.byKey(const Key('appointment-action-accept'));
+    await tester.ensureVisible(accept);
+    await tester.pumpAndSettle();
+    expect(accept.hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('professional request is action needed and can be accepted', (
     tester,
   ) async {
@@ -253,12 +296,24 @@ Future<void> _pumpList(
   WidgetTester tester, {
   required _SchedulingFake repository,
   required String role,
+  Size screenSize = const Size(430, 932),
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
+  tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = screenSize;
+  addTearDown(tester.view.reset);
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: const Size(430, 932),
       builder:
           (_, __) => MaterialApp(
+            builder:
+                (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: textScaler,
+                  ),
+                  child: child!,
+                ),
             home: AppointmentsShellPage(
               schedulingRepository: repository,
               sessionStore: _sessionStore(role),

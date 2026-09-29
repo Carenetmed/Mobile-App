@@ -1,10 +1,10 @@
 import 'package:app_t/core/constants/app_assets.dart';
-import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
@@ -117,14 +117,27 @@ class _SignUpEmailState extends State<SignUpEmail> {
                 child: Text(
                   'Create your CareNet account',
                   style: TextStyle(
-                    fontSize: FontSizes.footer2,
+                    fontSize: FontSizes.body1,
                     fontFamily: AppFonts.montserrat,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.primaryBlue5,
+                    fontWeight: FontWeight.w700,
+                    color: CarenetColors.primary700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Center(
+                child: Text(
+                  'Enter your email to continue.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: FontSizes.footer1,
+                    fontFamily: AppFonts.montserrat,
+                    color: CarenetColors.neutral600,
                   ),
                 ),
               ),
-              SizedBox(height: .05.sh),
+              SizedBox(height: .04.sh),
               CarenetTextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -143,15 +156,16 @@ class _SignUpEmailState extends State<SignUpEmail> {
                       fontSize: FontSizes.body3,
                       fontFamily: AppFonts.montserrat,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.kBlack,
+                      color: CarenetColors.neutral700,
                     ),
                   ),
                 ),
               ),
               AuthWidget(
-                btnAction: _googleIdTokenProvider.isConfigured
-                    ? _onGoogleSignUp
-                    : null,
+                btnAction:
+                    _googleIdTokenProvider.isConfigured
+                        ? _onGoogleSignUp
+                        : null,
                 assetPath: AssetsIcon.google,
                 title: 'Continue with Google',
               ),

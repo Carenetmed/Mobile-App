@@ -63,7 +63,7 @@ or accessibility conformance.
 
 | Active flow family | Existing automated evidence | Accessibility evidence and open limit |
 | --- | --- | --- |
-| Authentication, recovery, signup, session restore | `sign_in_flow_test.dart`, `sign_up_flow_test.dart`, `finish_sign_up_test.dart`, `password_recovery_flow_test.dart`, `session_restore_guard_test.dart`, and `session_resilience_test.dart` | Sign-in and email signup have 320x568 / 2x-text flow coverage; password visibility, recovery action sizing, and recovery back controls are labelled. Role selection, screen-reader/keyboard, and physical-device proof remain open. |
+| Authentication, recovery, signup, session restore | `sign_in_flow_test.dart`, `sign_up_flow_test.dart`, `booking_signup_boundary_test.dart`, `finish_sign_up_test.dart`, `password_recovery_flow_test.dart`, `session_restore_guard_test.dart`, and `session_resilience_test.dart` | Sign-in, email signup, and role selection have 320x568 / 2x-text flow coverage; password visibility, recovery action sizing, and recovery back controls are labelled. Screen-reader/keyboard and physical-device proof remain open. |
 | Patient onboarding and readiness | `onboarding_gateway_test.dart`, `profile_setup_test.dart`, `onboarding_readiness_route_resolver_test.dart` | Flow and failure states are covered; this pass does not claim largest-text or screen-reader coverage for every form state. |
 | Dashboard, role navigation, Home, Find Care, profile detail, booking | `dashboard_shell_test.dart`, `home_tab_shell_test.dart`, `search_flow_test.dart`, `specialist_details_flow_test.dart`, and `booking_intent_and_controller_test.dart` | Navigation, routing, loading and error contracts are tested. Added a regression for the selected navigation accent token; large-text coverage is not universal. |
 | Appointments and professional Schedule | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart`, `professional_schedule_test.dart`, and `scheduling_repository_test.dart` | Lifecycle, ownership, and availability behavior are covered; physical keyboard/TalkBack and all enlarged-text states remain open. The active appointment-list back control now has a tooltip. |
@@ -82,10 +82,10 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 | `splash` | SplashScreen | `widget_test.dart`, `session_restore_guard_test.dart` | Startup behavior covered; layout/semantics at large text not checked. |
 | `onboarding` | OnboardingView | `onboarding_gateway_test.dart` | Entry choices/routing covered; visual accessibility not certified. |
 | `finishSignUp` | FinSignUp | `finish_sign_up_test.dart` | Validation, legal links, submission/failure covered; enlarged text not checked. |
-| `signUpRole` | SignUpRoleSelectionPage | `booking_signup_boundary_test.dart` | Patient-only booking signup and normal role choices covered; large-text layout not checked. |
+| `signUpRole` | SignUpRoleSelectionPage | `booking_signup_boundary_test.dart` | Normal role choice and booking-origin patient-only signup are exercised at 320x568 / 2x text, including the next signup-method step; screen-reader/keyboard and device proof remain open. |
 | `communityAgreement`, `notificationAgreement`, `patientOnboardingSetup` | PatientOnboardingSetupPage | `profile_setup_test.dart` | Backend form/readiness states covered; layout and focus order not certified. |
 | `medicalAgreement`, `medicalProfessional`, `manageProfile` | ProfessionalOnboardingSetupPage | `profile_setup_test.dart`, `manage_profile_flow_test.dart` | Profile/readiness behavior covered; layout and focus order not certified. |
-| `signUpPhone`, `signUpEmail` | SignUpEmail | `sign_up_flow_test.dart` | Email signup has 320x568 / 2x-text required-field and sign-in handoff coverage, with green heading hierarchy; the role-selection step and physical screen-reader/keyboard proof remain open. |
+| `signUpPhone`, `signUpEmail` | SignUpEmail | `sign_up_flow_test.dart` | Email signup has 320x568 / 2x-text required-field and sign-in handoff coverage, with green heading hierarchy; physical screen-reader/keyboard proof remains open. |
 | `signInPhone`, `signInEmail` | SignInEmail | `sign_in_flow_test.dart` | Password/recovery/provider semantics and 320x568 at 2x text covered. |
 | `enterEmail`, `enterPassword` | Password recovery forms | `password_recovery_flow_test.dart` | Validation/routing and labelled Back covered; large-text layout not checked. |
 | `resetPasswordConfirm`, `emailVerificationConfirm` | Token confirmation pages | `password_recovery_flow_test.dart`, `auth_route_authority_test.dart` | Token and safe-error behavior covered; device accessibility not certified. |
@@ -130,6 +130,10 @@ acceptance is still required before release.
 - Active email signup now uses the CareNet green heading treatment and concise
   helper copy. A 320x568, 2x-text test covers validation feedback and the
   existing sign-in handoff without changing role-first account creation.
+- Signup role cards now wrap their title and badge instead of forcing both into
+  one horizontal row. Tests cover normal role selection and booking-origin
+  patient-only signup at 320x568 with 2x text, including progression to the
+  next signup step without layout exceptions.
 
 These repairs are bounded findings, not a claim that all active routes have
 passed every contrast, keyboard, focus-order, or largest-text criterion. The

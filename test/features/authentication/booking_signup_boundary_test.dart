@@ -1,6 +1,7 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
+import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_role_selection.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
@@ -41,19 +42,104 @@ void main() {
     expect(find.text('Patient'), findsOneWidget);
     expect(find.text('Medical professional'), findsOneWidget);
   });
+
+  testWidgets('role selection is usable at compact width with 2x text', (
+    tester,
+  ) async {
+    final store = InMemoryBookingIntentStore();
+    _registerResumeService(store);
+
+    await _pumpRoleSelection(
+      tester,
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+    );
+
+    expect(find.text('How will you use CareNet?'), findsOneWidget);
+    expect(find.text('Patient'), findsOneWidget);
+    expect(find.text('Medical professional'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.ensureVisible(find.text('Medical professional'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    await tester.ensureVisible(find.text('Patient'));
+    await tester.tap(find.text('Patient'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Create your patient account'), findsOneWidget);
+    final emailAction = find.text('Continue with email');
+    await tester.ensureVisible(emailAction);
+    await tester.pumpAndSettle();
+    expect(emailAction, findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'booking signup stays patient-only at compact width with 2x text',
+    (tester) async {
+      final store = InMemoryBookingIntentStore();
+      await store.save(_intent());
+      _registerResumeService(store);
+
+      await _pumpRoleSelection(
+        tester,
+        screenSize: const Size(320, 568),
+        textScaler: const TextScaler.linear(2),
+      );
+
+      expect(find.text('Create a patient account'), findsOneWidget);
+      expect(find.text('Medical professional'), findsNothing);
+      expect(find.textContaining('require a patient account'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.ensureVisible(find.text('Patient'));
+      await tester.tap(find.text('Patient'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Patient account selected'), findsOneWidget);
+      expect(find.text('Medical professional'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
 
-Future<void> _pumpRoleSelection(WidgetTester tester) async {
+Future<void> _pumpRoleSelection(
+  WidgetTester tester, {
+  Size screenSize = const Size(430, 932),
+  TextScaler textScaler = TextScaler.noScaling,
+}) async {
+  tester.view.physicalSize = screenSize;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: const Size(430, 932),
       builder:
-          (_, __) => const MaterialApp(
-            home: SignUpRoleSelectionPage(passwordSignUp: true),
+          (context, _) => MaterialApp(
+            home: MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+              child: SignUpRoleSelectionPage(
+                googleIdTokenProvider: const _DisabledGoogleProvider(),
+              ),
+            ),
           ),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _DisabledGoogleProvider implements GoogleIdTokenProvider {
+  const _DisabledGoogleProvider();
+
+  @override
+  bool get isConfigured => false;
+
+  @override
+  Future<String> signInIdToken() async =>
+      throw UnsupportedError('Google signup is disabled in this test.');
 }
 
 void _registerResumeService(BookingIntentStore store) {

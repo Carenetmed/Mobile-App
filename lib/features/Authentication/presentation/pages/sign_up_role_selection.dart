@@ -438,11 +438,12 @@ class _RoleCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 6.h,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Expanded(child: Text(title, style: _cardTitleStyle())),
-                    SizedBox(width: 8.w),
+                    Text(title, style: _cardTitleStyle()),
                     _Badge(label: badge),
                   ],
                 ),

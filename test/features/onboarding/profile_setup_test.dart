@@ -322,6 +322,68 @@ void main() {
       expect(find.text('verification-documents'), findsNothing);
     });
 
+    testWidgets('professional setup completes at compact width with 2x text', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository();
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        screenSize: const Size(320, 568),
+        textScaler: const TextScaler.linear(2),
+        child: ProfessionalOnboardingSetupPage(
+          profileRepository: repository,
+          onboardingRepository: _FakeOnboardingRepository(),
+        ),
+      );
+
+      expect(find.text('Professional verification profile'), findsOneWidget);
+      final fields = find.byType(EditableText);
+      expect(fields, findsNWidgets(9));
+      expect(tester.takeException(), isNull);
+
+      const fieldValues = <int, String>{
+        0: 'Ada Okafor',
+        1: 'Dr. Ada Okafor',
+        2: 'Cardiology',
+        3: 'MDCN-12345',
+        4: 'MBBS',
+        5: '12',
+        6: 'Care Clinic',
+        7: '1 Care Street',
+        8: 'Ikeja',
+      };
+      for (final entry in fieldValues.entries) {
+        final field = fields.at(entry.key);
+        await tester.ensureVisible(field);
+        await tester.enterText(field, entry.value);
+      }
+      await _selectCatalogValue(
+        tester,
+        'professional-category',
+        'Medical doctor',
+      );
+      await _selectCatalogValue(tester, 'professional-state', 'Lagos');
+      await _selectCatalogValue(tester, 'professional-country', 'Nigeria');
+
+      final save = find.text('Save and verify');
+      await tester.ensureVisible(save);
+      await tester.pumpAndSettle();
+      expect(save, findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+
+      expect(repository.updateProfessionalCalls, 1);
+      expect(repository.lastLegalName, 'Ada Okafor');
+      expect(repository.lastDisplayName, 'Dr. Ada Okafor');
+      expect(repository.lastCategory, 'MEDICAL_DOCTOR');
+      expect(repository.lastLicenseNumber, 'MDCN-12345');
+      expect(repository.lastPracticeCity, 'Ikeja');
+      expect(find.text('verification-documents'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('professional setup shows backend required profile fields', (
       tester,
     ) async {

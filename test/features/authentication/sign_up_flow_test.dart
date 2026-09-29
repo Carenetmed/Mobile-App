@@ -1,4 +1,5 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
@@ -20,8 +21,10 @@ const Size _phoneSize = Size(430, 932);
 Future<void> _pumpWithRoutes(
   WidgetTester tester, {
   required Widget home,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
-  tester.view.physicalSize = _phoneSize;
+  tester.view.physicalSize = screenSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
@@ -29,8 +32,11 @@ Future<void> _pumpWithRoutes(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder:
-          (_, __) => MaterialApp(
-            home: home,
+          (context, _) => MaterialApp(
+            home: MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+              child: home,
+            ),
             routes: {
               RouteName.signUpRole: (context) {
                 final args = ModalRoute.of(context)?.settings.arguments;
@@ -90,6 +96,44 @@ Future<void> _pumpWithRoutes(
 
 void main() {
   group('Sign up flow', () {
+    testWidgets('email signup remains usable at compact width with 2x text', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        home: SignUpEmail(googleIdTokenProvider: _disabledGoogleProvider),
+        screenSize: const Size(320, 568),
+        textScaler: const TextScaler.linear(2),
+      );
+
+      expect(find.text('Create your CareNet account'), findsOneWidget);
+      expect(find.text('Enter your email to continue.'), findsOneWidget);
+      final heading = tester.widget<Text>(
+        find.text('Create your CareNet account'),
+      );
+      expect(heading.style?.fontSize, greaterThan(16));
+      expect(heading.style?.fontWeight, FontWeight.w700);
+      expect(heading.style?.color, CarenetColors.primary700);
+      expect(find.byType(EditableText), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.ensureVisible(find.text('Continue'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continue'));
+      await tester.pump();
+      expect(find.text('Email Address is required'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      final signInLink = find.text('Already have an account? Sign in');
+      await tester.ensureVisible(signInLink);
+      await tester.pumpAndSettle();
+      expect(signInLink, findsOneWidget);
+      await tester.tap(signInLink);
+      await tester.pumpAndSettle();
+      expect(find.text('sign-in-email'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('sign up email blocks invalid input and navigates when valid', (
       tester,
     ) async {

@@ -1,12 +1,35 @@
-
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
+import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:flutter/material.dart';
 
+final carenetLightColorScheme = ColorScheme.fromSeed(
+  seedColor: CarenetColors.brand,
+  brightness: Brightness.light,
+).copyWith(
+  primary: CarenetColors.brand,
+  onPrimary: CarenetColors.white,
+  primaryContainer: CarenetColors.primary100,
+  onPrimaryContainer: CarenetColors.primary700,
+  error: CarenetColors.error100,
+  onError: CarenetColors.white,
+);
+final carenetDarkColorScheme = ColorScheme.fromSeed(
+  seedColor: CarenetColors.brand,
+  brightness: Brightness.dark,
+).copyWith(
+  primary: CarenetColors.primary200,
+  onPrimary: CarenetColors.primary700,
+  primaryContainer: CarenetColors.primary700,
+  onPrimaryContainer: CarenetColors.primary100,
+  error: CarenetColors.error200,
+  onError: CarenetColors.primary700,
+);
+
 ThemeData lightTheme = ThemeData(
   useMaterial3: true,
-  colorScheme: lightColorScheme,
+  colorScheme: carenetLightColorScheme,
   scaffoldBackgroundColor: AppColors.kWhite,
   textTheme: TextTheme(
     headlineLarge: const TextStyle().copyWith(
@@ -59,7 +82,7 @@ ThemeData lightTheme = ThemeData(
 
 ThemeData darkTheme = ThemeData(
   useMaterial3: true,
-  colorScheme: darkColorScheme,
+  colorScheme: carenetDarkColorScheme,
   scaffoldBackgroundColor: AppColors.white06,
   textTheme: TextTheme(
     headlineLarge: const TextStyle().copyWith(
@@ -108,101 +131,4 @@ ThemeData darkTheme = ThemeData(
       color: AppColors.kWhite,
     ),
   ),
-);
-
-const darkColorScheme = ColorScheme(
-  brightness: Brightness.dark,
-  primary: Color(0xffffd2cd),
-  surfaceTint: Color(0xffffb4ab),
-  onPrimary: Color(0xff540004),
-  primaryContainer: Color(0xffff544b),
-  onPrimaryContainer: Color(0xff000000),
-  secondary: Color(0xffffd2cd),
-  onSecondary: Color(0xff540004),
-  secondaryContainer: Color(0xfff16258),
-  onSecondaryContainer: Color(0xff000000),
-  tertiary: Color(0xffffd2cd),
-  onTertiary: Color(0xff540004),
-  tertiaryContainer: Color(0xfffb584e),
-  onTertiaryContainer: Color(0xff000000),
-  error: Color(0xffffd2cc),
-  onError: Color(0xff540003),
-  errorContainer: Color(0xffff5449),
-  onErrorContainer: Color(0xff000000),
-  surface: Color(0xff200f0d),
-  onSurface: Color(0xffffffff),
-  onSurfaceVariant: Color(0xffffd2cd),
-  outline: Color(0xffd2a8a3),
-  outlineVariant: Color(0xffae8783),
-  shadow: Color(0xff000000),
-  scrim: Color(0xff000000),
-  inverseSurface: Color(0xfffddbd7),
-  inversePrimary: Color(0xff95000d),
-  primaryFixed: Color(0xffffdad6),
-  onPrimaryFixed: Color(0xff2d0001),
-  primaryFixedDim: Color(0xffffb4ab),
-  onPrimaryFixedVariant: Color(0xff740007),
-  secondaryFixed: Color(0xffffdad6),
-  onSecondaryFixed: Color(0xff2d0001),
-  secondaryFixedDim: Color(0xffffb4ab),
-  onSecondaryFixedVariant: Color(0xff730208),
-  tertiaryFixed: Color(0xffffdad6),
-  onTertiaryFixed: Color(0xff2d0001),
-  tertiaryFixedDim: Color(0xffffb4ab),
-  onTertiaryFixedVariant: Color(0xff740008),
-  surfaceDim: Color(0xff200f0d),
-  surfaceBright: Color(0xff563f3c),
-  surfaceContainerLowest: Color(0xff110403),
-  surfaceContainerLow: Color(0xff2b1917),
-  surfaceContainer: Color(0xff372321),
-  surfaceContainerHigh: Color(0xff432d2b),
-  surfaceContainerHighest: Color(0xff4f3836),
-);
-const lightColorScheme = ColorScheme(
-  brightness: Brightness.light,
-  primary: Color(0xff00327a),
-  surfaceTint: Color(0xff215abd),
-  onPrimary: Color(0xffffffff),
-  primaryContainer: Color(0xff004aad),
-  onPrimaryContainer: Color(0xffebeeff),
-  secondary: Color(0xff25355a),
-  onSecondary: Color(0xffffffff),
-  secondaryContainer: Color(0xff5d6c95),
-  onSecondaryContainer: Color(0xffffffff),
-  tertiary: Color(0xff000000),
-  onTertiary: Color(0xffffffff),
-  tertiaryContainer: Color(0xff0b1c30),
-  onTertiaryContainer: Color(0xff98a8c2),
-  error: Color(0xff740006),
-  onError: Color(0xffffffff),
-  errorContainer: Color(0xffcf2c27),
-  onErrorContainer: Color(0xffffffff),
-  surface: Color(0xfffaf8ff),
-  onSurface: Color(0xff0f1117),
-  onSurfaceVariant: Color(0xff323641),
-  outline: Color(0xff4e525e),
-  outlineVariant: Color(0xff696d7a),
-  shadow: Color(0xff000000),
-  scrim: Color(0xff000000),
-  inverseSurface: Color(0xff2e3037),
-  inversePrimary: Color(0xffb0c6ff),
-  primaryFixed: Color(0xff3669cd),
-  onPrimaryFixed: Color(0xffffffff),
-  primaryFixedDim: Color(0xff0f50b2),
-  onPrimaryFixedVariant: Color(0xffffffff),
-  secondaryFixed: Color(0xff5d6c95),
-  onSecondaryFixed: Color(0xffffffff),
-  secondaryFixedDim: Color(0xff44547b),
-  onSecondaryFixedVariant: Color(0xffffffff),
-  tertiaryFixed: Color(0xff5e6e86),
-  onTertiaryFixed: Color(0xffffffff),
-  tertiaryFixedDim: Color(0xff46566d),
-  onTertiaryFixedVariant: Color(0xffffffff),
-  surfaceDim: Color(0xffc5c6ce),
-  surfaceBright: Color(0xfffaf8ff),
-  surfaceContainerLowest: Color(0xffffffff),
-  surfaceContainerLow: Color(0xfff3f3fc),
-  surfaceContainer: Color(0xffe7e7f0),
-  surfaceContainerHigh: Color(0xffdcdce5),
-  surfaceContainerHighest: Color(0xffd1d1da),
 );

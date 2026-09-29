@@ -155,7 +155,7 @@ class _SelectedDatesShellPageState extends State<SelectedDatesShellPage> {
                 const SizedBox(height: 12),
                 const _ScheduleNotice(
                   message:
-                      'These are recurring availability rules, not confirmed appointment slots. Patient booking uses backend-generated requestable times.',
+                      'These hours show when you are generally available. Patients can request appointment times that fit your schedule.',
                 ),
               ],
             ],

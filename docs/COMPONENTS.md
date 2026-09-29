@@ -9,20 +9,20 @@ Import: `import 'package:app_t/core/tokens/tokens.dart';` (or `carenet_colors.da
 
 | File | Class | Purpose |
 |------|-------|---------|
-| `lib/core/tokens/carenet_colors.dart` | `CarenetColors` | Purple primary scale, neutral grey scale, and semantic field colors from blueprint `screens/color-palette/` |
+| `lib/core/tokens/carenet_colors.dart` | `CarenetColors` | Healthcare-green primary scale, neutral grey scale, and semantic status colors |
 | `lib/core/tokens/tokens.dart` | - | Barrel export for tokens |
 
-### `CarenetColors` (blueprint `color-palette`)
+### `CarenetColors` (Phase 1 marketplace)
 
 | Token | Hex | Blueprint name |
 |-------|-----|----------------|
-| `primary100` | `#ebe5ff` | primary/100 |
-| `primary200` | `#cab6ff` | primary/200 |
-| `primary300` | `#ab84ff` | primary/300 |
-| `primary400` | `#9148ff` | primary/400 |
-| `primary500`, `brand` | `#7000DA` | primary/500 |
-| `primary600` | `#46008c` | primary/600 |
-| `primary700` | `#1f0045` | primary/700 |
+| `primary100` | `#E7F3EC` | light surface |
+| `primary200` | `#C4E2D0` | accessible dark-theme primary |
+| `primary300` | `#92C9AA` | primary/300 |
+| `primary400` | `#4D9A70` | primary/400 |
+| `primary500`, `brand` | `#054F31` | healthcare-green brand |
+| `primary600` | `#043F27` | primary/600 |
+| `primary700` | `#022D1B` | primary/700 |
 | `neutral100` | `#e8e8e9` | grey/100 |
 | `neutral200` | `#c1c0c4` | grey/200 |
 | `neutral300` | `#9a999f` | grey/300 |
@@ -30,12 +30,12 @@ Import: `import 'package:app_t/core/tokens/tokens.dart';` (or `carenet_colors.da
 | `neutral500` | `#535159` | grey/500 |
 | `neutral600` | `#323136` | grey/600 |
 | `neutral700` | `#141416` | grey/700 |
-| `success100` | `#03A900` | Success/100 |
-| `success200` | `#EAFFF3` | Success/200 |
-| `error100` | `#E62F2F` | Error/100 |
-| `error200` | `#FFE3E0` | Error/200 |
-| `info100` | `#0FC2FB` | Infor/100 |
-| `info200` | `#C7F1FF` | Infor/200 |
+| `success100` | `#176B45` | accessible success foreground |
+| `success200` | `#E7F3EC` | success surface |
+| `error100` | `#B3261E` | accessible error foreground |
+| `error200` | `#FCE8E6` | error surface |
+| `info100` | `#155E75` | accessible info foreground |
+| `info200` | `#E6F4F6` | info surface |
 | `white` | `#FFFFFF` | - |
 | `black` | `#000000` | - |
 
@@ -55,7 +55,7 @@ Import: `import 'package:app_t/shared/widgets/carenet_button.dart';`
 
 | Property | Value |
 |----------|--------|
-| Height | 48 (`.h` via ScreenUtil) |
+| Minimum height | 48 (`.h` via ScreenUtil); expands for larger text |
 | Padding | 12 vertical, 16 horizontal |
 | Corner radius | 8 |
 | Label | 16sp Montserrat w400 |
@@ -67,7 +67,7 @@ Import: `import 'package:app_t/shared/widgets/carenet_button.dart';`
 | Primary | bg `brand`, text `white` | bg `neutral100`, text `neutral300` |
 | Outline | bg `white`, border `brand`, text `brand` | bg `white`, border `neutral200`, text `neutral300` |
 
-Press/highlight uses `primary100` / `primary400` tints (hover N/A on mobile; ink feedback only).
+Press/highlight uses `primary100` / `primary400` tints (hover N/A on mobile; ink feedback only). The control exposes one labelled button semantic with its tap action, and its hit target stays at least 48 logical pixels high.
 
 ### Legacy wrappers (still used by existing screens)
 

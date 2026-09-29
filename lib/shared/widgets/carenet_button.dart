@@ -39,6 +39,8 @@ class CarenetButton extends StatelessWidget {
       button: true,
       enabled: _enabled,
       label: label,
+      onTap: _enabled ? onPressed : null,
+      excludeSemantics: true,
       child: Material(
         color: style.background,
         elevation: 0,
@@ -48,17 +50,23 @@ class CarenetButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(8.r),
           splashColor: style.splash,
           highlightColor: style.highlight,
-          child: Ink(
-            height: 48.h,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: style.background,
-              borderRadius: BorderRadius.circular(8.r),
-              border: style.border,
-            ),
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-            child: Center(
-              child: Text(label, style: textStyle, textAlign: TextAlign.center),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: 48.h),
+            child: Ink(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: style.background,
+                borderRadius: BorderRadius.circular(8.r),
+                border: style.border,
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              child: Center(
+                child: Text(
+                  label,
+                  style: textStyle,
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
           ),
         ),

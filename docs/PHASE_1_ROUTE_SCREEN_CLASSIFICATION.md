@@ -21,8 +21,12 @@ screen inventory for the Phase 1 consultation marketplace.
 
 ## Canonical route inventory
 
-The baseline defines 75 `RouteName` constants. Seventy-four have router cases;
-`login` is the only reserved unwired constant.
+The original APP-P1-001 baseline defined 75 `RouteName` constants and 74 router
+cases, with `login` reserved. The live inventory has since grown: as of
+APP-P1-021 it contains 79 constants and 78 router cases; `login` remains the
+only reserved unwired constant. Three later routes (`appointmentDetail`,
+`consultation`, and `professionalFinance`) are included in the current
+classification below.
 
 ### Launch, authentication, and onboarding
 
@@ -57,6 +61,8 @@ The baseline defines 75 `RouteName` constants. Seventy-four have router cases;
 | `findMentor` | `FindMentorShellPage` | DELETE | Duplicate local discovery route; consolidate into Find Care | `/find-mentor` |
 | `specialistDetails` | `SpecialistDetailsShellPage` | ADAPT | Canonical public professional detail; remove local compatibility branch | `/specialist-details` |
 | `appointments` | `AppointmentsShellPage` | ADAPT | Role-aware patient/professional list and lifecycle surface | `/appointments`, `/appointment` |
+| `appointmentDetail` | `AppointmentDetailShellPage` | KEEP | Authenticated exact-ID detail resolved from the current account's backend-owned appointment list | `/appointment-detail` |
+| `consultation` | `ConsultationShellPage` | KEEP | Appointment-linked backend-authorized audio/video consultation; no separate Calls destination | `/consultation` |
 | `bookAppointment` | `BookAppointmentShellPage` | DELETE | Remove local draft form; booking starts from a real backend slot | `/book-appointment` |
 | `readings` | `VitalsReading` | DEFER | Remove from active Phase 1 | `/readings` |
 | `healthRecord` | `HealthRecordShellPage` | DEFER | Remove from active Phase 1 | `/health-record` |
@@ -101,6 +107,7 @@ The baseline defines 75 `RouteName` constants. Seventy-four have router cases;
 | `manageProfile` | `ManageProfileShellPage` | ADAPT | Professional Profile root; keep backend profile/verification sections, remove creator content | `/manage-profile` |
 | `managePortfolio` | `ManagePortfolioShellPage` | DELETE | Creator portfolio is outside Phase 1 | `/manage-portfolio` |
 | `professionalVerificationDocuments` | `ProfessionalVerificationDocumentsShellPage` | KEEP | Real verification upload/list/status and readiness | Backend-owned verification surface |
+| `professionalFinance` | `ProfessionalFinanceShellPage` | KEEP | Backend-priced consultation and professional finance authority; no client-calculated balances | Professional Account finance surface |
 | `editYourName` | `EditYourNameShellPage` | ADAPT | Replace `PublicProfileLocalStore` draft with role-appropriate backend profile update | `/edit-your-name` |
 | `editProfessionalDetails` | `EditProfessionalDetailsShellPage` | ADAPT | Keep backend category/specialty update; align with professional Profile | Professional details reference |
 | `editYourWebsite` | `EditYourWebsiteShellPage` | DEFER | Website is not in the current backend/Phase 1 required profile contract | `/edit-your-website` |

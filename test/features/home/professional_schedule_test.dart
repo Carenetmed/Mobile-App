@@ -186,11 +186,12 @@ void main() {
     );
     expect(
       find.textContaining(
-        'not confirmed appointment slots',
+        'Patients can request appointment times that fit your schedule.',
         skipOffstage: false,
       ),
       findsOneWidget,
     );
+    expect(find.textContaining('backend-generated'), findsNothing);
     expect(find.textContaining('Generated slot'), findsNothing);
   });
 

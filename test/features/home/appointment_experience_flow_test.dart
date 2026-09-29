@@ -205,6 +205,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.radio_button_unchecked));
     await tester.pump();
+    await tester.dragUntilVisible(
+      find.text('Request selected time'),
+      find.byType(ListView).last,
+      const Offset(0, -240),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Request selected time'));
     await tester.pumpAndSettle();
 

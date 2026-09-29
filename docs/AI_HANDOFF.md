@@ -16,6 +16,19 @@
 
 **APP-P1 - Phase 1 consultation marketplace narrowing**
 
+## Current production-readiness continuation
+
+The user approved the multi-slice Production-Readiness Completion Program.
+Current work is `APP-P1-021` (active-route UX/accessibility closure). Payments
+remain the final gated activity and require one explicit user confirmation
+before any Paystack-side or payment deployment mutation. Physical-device
+acceptance remains after the automated and cloud gates.
+
+Current slice: `APP-P1-021A`, shared green-theme/accessibility foundation and
+live route inventory. After it is complete, continue with `APP-P1-021B`, the
+route-by-route active-screen audit. Scope and limitations:
+`PHASE_1_UX_ACCESSIBILITY.md`.
+
 ---
 
 ## Task queue (only ONE may be NEXT)
@@ -259,7 +272,27 @@
 | APP-ID-017 | Select Next Lane After PR #147 Review: after APP-ID-016 is reviewed/merged or explicitly superseded, decide the next narrow frontend/backend integration lane from current product priorities; do not start new onboarding behavior before that review | S | **DONE - Phase 1 consultation marketplace selected** |
 | APP-P1-001 | Phase 1 Marketplace Scope Decision: inspect the committed broad UI, lock patient/professional navigation and product boundaries, classify every route/screen, map dependencies and preservation, define small implementation slices, and do not change runtime code | M | **DONE** |
 | APP-P1-001A | Preserve Committed Broad UI Baseline: after explicit approval, create and verify `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` at exact commit `3e04d6e`; do not touch or claim to preserve existing dirty files | S | **DONE** |
-| APP-P1-002 | Role-Aware Phase 1 Navigation Shell And Active Route Pruning: after archive refs are verified, implement the approved patient/professional five-tab shell, header notification bell, active-nav pruning, and patient onboarding exit correction without deleting deferred source files or implementing unresolved backend modules | M | **NEXT** |
+| APP-P1-002 | Role-Aware Phase 1 Navigation Shell And Active Route Pruning: implement the approved four-destination patient/professional shell, header bell/avatar, active-nav pruning, and patient onboarding exit correction without deleting deferred source files | M | **DONE** |
+| APP-P1-003 | Role-aware marketplace Home | M | **DONE** |
+| APP-MAINT-003 | Flutter pull-request CI | S | **DONE** |
+| APP-P1-004 | Canonical Find Care discovery | M | **DONE** |
+| APP-P1-005 | Canonical professional detail and real booking | L | **DONE** |
+| APP-P1-006 | Appointment experience and professional Schedule | L | **DONE** |
+| MSG-P1-007 | Appointment-linked messaging | L | **DONE** |
+| PAY-P1-008 | Paid-consultation financial authority and Flutter experience | L | **DONE** |
+| CALL-P1-009 | Appointment-linked video/audio consultation | L | **DONE** |
+| NOTIF-P1-010 | Durable transactional notifications | L | **DONE** |
+| APP-P1-011 | Network and session startup foundation | L | **DONE** |
+| APP-P1-012 | Authentication and onboarding readiness | L | **DONE** |
+| APP-P1-013 | Firebase environment separation | L | **DONE** |
+| APP-P1-014 | Account and route authority | L | **DONE** |
+| APP-P1-015 | Backend-owned account deletion | M | **DONE** |
+| APP-P1-016 | Production auth and onboarding | L | **DONE** |
+| APP-P1-017 | Legal and authentication hosting links | M | **DONE** |
+| APP-P1-018 | Bounded requestable-time loading | M | **DONE** |
+| APP-P1-020 | Verification upload integrity | M | **DONE** |
+| APP-P1-021A | Shared marketplace theme/accessibility foundation and route inventory | S | **NEXT** |
+| APP-P1-021B | Audit active routes for contrast, semantics, focus/keyboard, tap targets, responsive and largest-text behavior; repair scoped findings and record blockers | M+ | **PENDING** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 
@@ -627,9 +660,9 @@ Task `53.1` is a docs-only staging seed-data and smoke execution plan.
 145. `flutter run` -> navigate to `manageProfile` -> tap `Edit address` in Basic -> `setAddress` opens with `Set address`, `Your location`, and `Save`; empty/short address values show inline errors; valid address text shows `Address draft prepared` and explicitly says no profile address was saved
 146. No new runtime step for `46.2`: this is the documented decision to stop the set-address lane before profile-address persistence, location/geocoding/map services, device-location permissions, verification, account sync, audit/security records, conflict handling, and backend profile APIs (`DECISIONS.md` D048)
 147. No runtime step for `47.1`: this is the documented route-triage decision after inspecting the remaining blueprint tail; ads/payments/audience, podcast upload/recording, account verification/password/phone/email duplicates, feed/Q&A duplicates, schedule/reminder duplicates, and component/demo frames are skipped until backend/product contracts exist or are already covered (`DECISIONS.md` D049)
-148. No runtime step for `48.1`: this is the documented frontend coverage audit; all non-`login` route constants have router cases, `ROUTES.md` records 68 wired routes, and remaining gaps are documented backend/product seams rather than honest frontend-only screens (`DECISIONS.md` D050)
+148. Historical 2026-06 `48.1` snapshot: 68 wired routes at that time. Later routes superseded that count; current inventory is 79 constants / 78 cases. Backend/product seams remain documented (`DECISIONS.md` D050)
 149. No runtime step for `49.1`: this is the documented backend/product readiness handoff; deferred seams are grouped by contract in `DEFERRED_WORK.md` so backend work can replace local stores/repositories without rewriting completed frontend routes (`DECISIONS.md` D051)
-150. No runtime step for `50.1`: this is the final frontend handoff review; docs/router status still show 68 wired routes, `login` remains the only reserved unwired route constant, and frontend route coverage is ready for backend/product contract selection (`DECISIONS.md` D052)
+150. Historical 2026-06 `50.1` snapshot: 68 wired routes at that time and `login` reserved. Later route additions superseded the count; route UX/accessibility review continues under APP-P1-021 (`DECISIONS.md` D052)
 
 ## Manual test (Phase 0 reference)
 

@@ -39,9 +39,11 @@ Future<void> _pumpSearch(
   Key? pageKey,
   List<RouteSettings>? pushedRoutes,
   bool settle = true,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
-  tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = screenSize;
   addTearDown(tester.view.reset);
 
   await tester.pumpWidget(
@@ -49,6 +51,11 @@ Future<void> _pumpSearch(
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
+            builder:
+                (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+                  child: child!,
+                ),
             home: SearchShellPage(
               key: pageKey,
               profileRepository: profileRepository,
@@ -206,6 +213,44 @@ void main() {
     expect(find.textContaining('fee'), findsNothing);
     expect(find.textContaining('location'), findsNothing);
     expect(find.textContaining('experience'), findsNothing);
+  });
+
+  testWidgets('Find Care search and profile handoff work at 2x text', (
+    tester,
+  ) async {
+    final routes = <RouteSettings>[];
+    await _pumpSearch(
+      tester,
+      profileRepository: _FakeProfileRepository.results(_professionals),
+      pushedRoutes: routes,
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+    );
+
+    expect(
+      find.text('Search by professional name, category, or specialty'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+
+    final searchField = find.byType(TextFormField);
+    await tester.ensureVisible(searchField);
+    await tester.enterText(searchField, 'ada');
+    await tester.pumpAndSettle();
+    expect(find.text('Dr Ada Heart'), findsOneWidget);
+    expect(find.text('Dr Nneka Mind'), findsNothing);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.byTooltip('Clear search'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('View profile').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('View profile').first);
+    await tester.pumpAndSettle();
+
+    expect(routes.single.name, RouteName.specialistDetails);
+    expect(routes.single.arguments, 'pro_heart');
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('name search is trimmed and case insensitive without reloading', (

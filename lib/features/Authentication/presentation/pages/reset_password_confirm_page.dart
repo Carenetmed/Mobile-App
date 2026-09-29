@@ -140,6 +140,7 @@ class _ResetPasswordConfirmPageState extends State<ResetPasswordConfirmPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconButton(
+                tooltip: 'Back',
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const Icon(Icons.arrow_back_ios),
               ),
@@ -192,6 +193,8 @@ class _ResetPasswordConfirmPageState extends State<ResetPasswordConfirmPage> {
                   validationState: _validationStateFor(_passwordError),
                   errorText: _passwordError,
                   suffixIcon: IconButton(
+                    tooltip:
+                        _visiblePassword ? 'Hide password' : 'Show password',
                     onPressed: () {
                       setState(() {
                         _visiblePassword = !_visiblePassword;
@@ -213,6 +216,10 @@ class _ResetPasswordConfirmPageState extends State<ResetPasswordConfirmPage> {
                   validationState: _validationStateFor(_confirmPasswordError),
                   errorText: _confirmPasswordError,
                   suffixIcon: IconButton(
+                    tooltip:
+                        _visibleConfirmPassword
+                            ? 'Hide confirm password'
+                            : 'Show confirm password',
                     onPressed: () {
                       setState(() {
                         _visibleConfirmPassword = !_visibleConfirmPassword;

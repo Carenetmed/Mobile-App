@@ -103,6 +103,7 @@ class _ManageProfileShellPageState extends State<ManageProfileShellPage> {
         backgroundColor: AppColors.kWhite,
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Back',
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const Icon(Icons.arrow_back, color: Colors.black),
         ),

@@ -105,6 +105,7 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconButton(
+                tooltip: 'Back',
                 onPressed: () {
                   Navigator.of(context).maybePop();
                 },

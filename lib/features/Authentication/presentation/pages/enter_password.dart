@@ -92,6 +92,7 @@ class _EnterPasswordPageState extends State<EnterPasswordPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconButton(
+                tooltip: 'Back',
                 onPressed: () {
                   Navigator.of(context).maybePop();
                 },
@@ -128,6 +129,7 @@ class _EnterPasswordPageState extends State<EnterPasswordPage> {
                 validationState: _validationStateFor(_passwordError),
                 errorText: _passwordError,
                 suffixIcon: IconButton(
+                  tooltip: _visiblePassword ? 'Show password' : 'Hide password',
                   onPressed: () {
                     setState(() {
                       _visiblePassword = !_visiblePassword;
@@ -148,6 +150,10 @@ class _EnterPasswordPageState extends State<EnterPasswordPage> {
                 validationState: _validationStateFor(_confirmPasswordError),
                 errorText: _confirmPasswordError,
                 suffixIcon: IconButton(
+                  tooltip:
+                      _visibleConfirmPassword
+                          ? 'Show confirm password'
+                          : 'Hide confirm password',
                   onPressed: () {
                     setState(() {
                       _visibleConfirmPassword = !_visibleConfirmPassword;

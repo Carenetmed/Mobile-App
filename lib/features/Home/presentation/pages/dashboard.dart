@@ -3,6 +3,7 @@ import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
@@ -124,7 +125,7 @@ class _DashboardState extends State<Dashboard> {
             bottomNavigationBar: BottomNavigationBar(
               type: BottomNavigationBarType.fixed,
               backgroundColor: AppColors.kWhite,
-              selectedItemColor: AppColors.primaryBlue11,
+              selectedItemColor: CarenetColors.brand,
               unselectedItemColor: AppColors.kBlack,
               showSelectedLabels: true,
               showUnselectedLabels: true,

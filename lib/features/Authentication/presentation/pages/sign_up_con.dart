@@ -93,6 +93,7 @@ class _FinSignUpState extends State<FinSignUp> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconButton(
+                tooltip: 'Back',
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
               ),
@@ -139,6 +140,10 @@ class _FinSignUpState extends State<FinSignUp> {
                       obscureText: _visiblePassword,
                       validator: Validators.validatePassword,
                       suffixIcon: IconButton(
+                        tooltip:
+                            _visiblePassword
+                                ? 'Show password'
+                                : 'Hide password',
                         onPressed: () {
                           setState(() {
                             _visiblePassword = !_visiblePassword;
@@ -163,6 +168,10 @@ class _FinSignUpState extends State<FinSignUp> {
                             password: _passwordController.text,
                           ),
                       suffixIcon: IconButton(
+                        tooltip:
+                            _visibleConfirmPassword
+                                ? 'Show confirm password'
+                                : 'Hide confirm password',
                         onPressed: () {
                           setState(() {
                             _visibleConfirmPassword = !_visibleConfirmPassword;

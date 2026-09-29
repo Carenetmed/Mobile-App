@@ -17,8 +17,10 @@ const Size _phoneSize = Size(430, 932);
 Future<void> _pumpWithRoutes(
   WidgetTester tester, {
   required Widget home,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
-  tester.view.physicalSize = _phoneSize;
+  tester.view.physicalSize = screenSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
@@ -26,11 +28,16 @@ Future<void> _pumpWithRoutes(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder:
-          (_, __) => MaterialApp(
-            home: home,
+          (context, _) => MaterialApp(
+            home: MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+              child: home,
+            ),
             routes: {
               RouteName.dashboard:
                   (_) => const Scaffold(body: Text('dashboard')),
+              RouteName.enterEmail:
+                  (_) => const Scaffold(body: Text('Enter email')),
               RouteName.signInPhone:
                   (_) => SignInPhone(
                     googleIdTokenProvider: _disabledGoogleProvider,
@@ -52,6 +59,52 @@ Future<void> _pumpWithRoutes(
 
 void main() {
   group('Sign in flow', () {
+    testWidgets('password visibility action has state-aware semantics', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(googleIdTokenProvider: _disabledGoogleProvider),
+      );
+
+      expect(find.byTooltip('Show password'), findsOneWidget);
+      await tester.tap(find.byTooltip('Show password'));
+      await tester.pump();
+      expect(find.byTooltip('Hide password'), findsOneWidget);
+    });
+
+    testWidgets('forgot-password action retains an accessible tap target', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(googleIdTokenProvider: _disabledGoogleProvider),
+      );
+
+      final action = find.ancestor(
+        of: find.text('Forgot Password?'),
+        matching: find.byType(TextButton),
+      );
+      expect(action, findsOneWidget);
+      expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
+
+      await tester.tap(action);
+      await tester.pumpAndSettle();
+      expect(find.text('Enter email'), findsOneWidget);
+    });
+
+    testWidgets('sign-in form fits compact width with 2x text', (tester) async {
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(googleIdTokenProvider: _disabledGoogleProvider),
+        screenSize: const Size(320, 568),
+        textScaler: const TextScaler.linear(2),
+      );
+
+      expect(find.text('Welcome back'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('email entry hides unsupported identity providers', (
       tester,
     ) async {

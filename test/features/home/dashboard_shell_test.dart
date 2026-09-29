@@ -1,4 +1,5 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
@@ -77,6 +78,7 @@ List<String?> _bottomLabels(WidgetTester tester) {
   final navigation = tester.widget<BottomNavigationBar>(
     find.byType(BottomNavigationBar),
   );
+  expect(navigation.selectedItemColor, CarenetColors.brand);
   return navigation.items.map((item) => item.label).toList(growable: false);
 }
 

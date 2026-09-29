@@ -1,10 +1,10 @@
 import 'package:app_t/core/constants/app_assets.dart';
-import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
+import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
@@ -191,7 +191,7 @@ class _SignInEmailState extends State<SignInEmail> {
                     fontSize: FontSizes.footer2,
                     fontFamily: AppFonts.montserrat,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.primaryBlue5,
+                    color: CarenetColors.brand,
                   ),
                 ),
               ),
@@ -212,29 +212,36 @@ class _SignInEmailState extends State<SignInEmail> {
                 validationState: _validationStateFor(_passwordError),
                 errorText: _passwordError,
                 suffixIcon: IconButton(
+                  tooltip: _visiblePassword ? 'Show password' : 'Hide password',
                   onPressed: () {
                     setState(() {
                       _visiblePassword = !_visiblePassword;
                     });
                   },
-                  icon: _visiblePassword
-                      ? SvgImage(imgName: AssetsIcon.visible)
-                      : const Icon(Icons.visibility_off),
+                  icon:
+                      _visiblePassword
+                          ? SvgImage(imgName: AssetsIcon.visible)
+                          : const Icon(Icons.visibility_off),
                 ),
               ),
               SizedBox(height: 15.h),
               Center(
-                child: GestureDetector(
-                  onTap: () {
+                child: TextButton(
+                  onPressed: () {
                     Navigator.pushNamed(context, RouteName.enterEmail);
                   },
+                  style: TextButton.styleFrom(
+                    minimumSize: Size(0, 48.h),
+                    padding: EdgeInsets.zero,
+                    tapTargetSize: MaterialTapTargetSize.padded,
+                  ),
                   child: Text(
                     'Forgot Password?',
                     style: TextStyle(
                       fontSize: FontSizes.footer2,
                       fontFamily: AppFonts.montserrat,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.primaryBlue5,
+                      color: CarenetColors.brand,
                     ),
                   ),
                 ),
@@ -265,15 +272,16 @@ class _SignInEmailState extends State<SignInEmail> {
                       fontSize: FontSizes.footer2,
                       fontFamily: AppFonts.montserrat,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.primaryBlue5,
+                      color: CarenetColors.brand,
                     ),
                   ),
                 ),
               ),
               AuthWidget(
-                btnAction: _isSubmitting || !_googleIdTokenProvider.isConfigured
-                    ? null
-                    : _onGoogleSignIn,
+                btnAction:
+                    _isSubmitting || !_googleIdTokenProvider.isConfigured
+                        ? null
+                        : _onGoogleSignIn,
                 assetPath: AssetsIcon.google,
                 title: 'Continue with Google',
               ),
@@ -285,7 +293,7 @@ class _SignInEmailState extends State<SignInEmail> {
                     style: TextStyle(
                       fontSize: FontSizes.body3,
                       fontFamily: AppFonts.montserrat,
-                      color: AppColors.primaryBlue5,
+                      color: CarenetColors.brand,
                     ),
                   ),
                 ),

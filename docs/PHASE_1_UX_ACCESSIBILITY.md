@@ -14,10 +14,11 @@ The active navigation remains:
 
 ## Work Status
 
-APP-P1-021 is in progress. Its first foundation slice aligns the shared
-`CarenetColors` healthcare-green scale and active Material color schemes,
-improves the shared `CarenetButton` semantic tap target and enlarged-text
-behavior, corrects Schedule wording, and reconciles the live route inventory.
+APP-P1-021A merged in PR #172. It aligns the shared `CarenetColors`
+healthcare-green scale and active Material color schemes, improves the shared
+`CarenetButton` semantic tap target and enlarged-text behavior, corrects
+Schedule wording, and reconciles the live route inventory. APP-P1-021B is now
+auditing the active routes individually.
 
 This foundation does not certify every screen. Active screens still need
 route-by-route checks for contrast, semantics, focus order, keyboard operation,
@@ -51,6 +52,82 @@ and the appointment-linked consultation.
 Deferred source screens are not part of the active-route acceptance sweep unless
 they remain reachable through a visible or direct route. Keep their sources
 recoverable and record any disconnection separately.
+
+### Evidence Map
+
+The 79 route constants are not 79 distinct active screens: aliases share
+widgets, and deferred identifiers resolve to `DeferredFeaturePage`. Existing
+automated evidence is organized by flow rather than one test file per route.
+The table records that evidence without treating a flow test as proof of visual
+or accessibility conformance.
+
+| Active flow family | Existing automated evidence | Accessibility evidence and open limit |
+| --- | --- | --- |
+| Authentication, recovery, signup, session restore | `sign_in_flow_test.dart`, `sign_up_flow_test.dart`, `finish_sign_up_test.dart`, `password_recovery_flow_test.dart`, `session_restore_guard_test.dart`, and `session_resilience_test.dart` | Added 320x568 / 2x-text sign-in coverage, labelled password visibility, minimum-size recovery action, and labelled recovery back controls. Platform screen-reader/keyboard proof remains open. |
+| Patient onboarding and readiness | `onboarding_gateway_test.dart`, `profile_setup_test.dart`, `onboarding_readiness_route_resolver_test.dart` | Flow and failure states are covered; this pass does not claim largest-text or screen-reader coverage for every form state. |
+| Dashboard, role navigation, Home, Find Care, profile detail, booking | `dashboard_shell_test.dart`, `home_tab_shell_test.dart`, `search_flow_test.dart`, `specialist_details_flow_test.dart`, and `booking_intent_and_controller_test.dart` | Navigation, routing, loading and error contracts are tested. Added a regression for the selected navigation accent token; large-text coverage is not universal. |
+| Appointments and professional Schedule | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart`, `professional_schedule_test.dart`, and `scheduling_repository_test.dart` | Lifecycle, ownership, and availability behavior are covered; physical keyboard/TalkBack and all enlarged-text states remain open. The active appointment-list back control now has a tooltip. |
+| Account, profile management, verification, finance | `account_flow_test.dart`, `manage_profile_flow_test.dart`, `financial_flow_test.dart`, and `financial_contract_test.dart` | Authority and API states are covered. Account/Profile/Settings/Delete back controls are now labelled; layout and assistive-technology acceptance still need device verification. |
+| Messages, notifications, consultation | `messaging_flow_test.dart`, `messaging_controller_test.dart`, `notification_inbox_test.dart`, `notification_coordinator_test.dart`, and consultation controller tests | Honest-state, routing, and provider/controller behavior are covered. Real screen-reader, focus-order, and hardware permission behavior are not established by these tests. |
+| Deferred route aliases | `auth_route_authority_test.dart`, `account_flow_test.dart`, and route registration tests | Several old identifiers intentionally render `DeferredFeaturePage` or a canonical screen. Their legacy source screens are not represented as active routes in this accessibility sweep. |
+
+### Active Widget Matrix
+
+This matrix names the distinct router destinations and aliases. “Flow test” is
+behavioral coverage, not an accessibility pass. Large-text, focus-order,
+keyboard, and screen-reader checks are marked only where explicitly exercised.
+
+| Router destination / aliases | Current screen | Evidence | Accessibility result |
+| --- | --- | --- | --- |
+| `splash` | SplashScreen | `widget_test.dart`, `session_restore_guard_test.dart` | Startup behavior covered; layout/semantics at large text not checked. |
+| `onboarding` | OnboardingView | `onboarding_gateway_test.dart` | Entry choices/routing covered; visual accessibility not certified. |
+| `finishSignUp` | FinSignUp | `finish_sign_up_test.dart` | Validation, legal links, submission/failure covered; enlarged text not checked. |
+| `signUpRole` | SignUpRoleSelectionPage | `booking_signup_boundary_test.dart` | Patient-only booking signup and normal role choices covered; large-text layout not checked. |
+| `communityAgreement`, `notificationAgreement`, `patientOnboardingSetup` | PatientOnboardingSetupPage | `profile_setup_test.dart` | Backend form/readiness states covered; layout and focus order not certified. |
+| `medicalAgreement`, `medicalProfessional`, `manageProfile` | ProfessionalOnboardingSetupPage | `profile_setup_test.dart`, `manage_profile_flow_test.dart` | Profile/readiness behavior covered; layout and focus order not certified. |
+| `signUpPhone`, `signUpEmail` | SignUpEmail | `sign_up_flow_test.dart` | Validation/navigation covered; 2x text not checked. |
+| `signInPhone`, `signInEmail` | SignInEmail | `sign_in_flow_test.dart` | Password/recovery/provider semantics and 320x568 at 2x text covered. |
+| `enterEmail`, `enterPassword` | Password recovery forms | `password_recovery_flow_test.dart` | Validation/routing and labelled Back covered; large-text layout not checked. |
+| `resetPasswordConfirm`, `emailVerificationConfirm` | Token confirmation pages | `password_recovery_flow_test.dart`, `auth_route_authority_test.dart` | Token and safe-error behavior covered; device accessibility not certified. |
+| `medicalEdit` | UserEdit | No focused route widget test identified | Accessibility/task-flow evidence gap. |
+| `dashboard` | Dashboard | `dashboard_shell_test.dart` | Role destinations, header actions, tab persistence and Android back covered; selected brand accent asserted. Large-text layout not checked. |
+| `search`, `findMentor`, `bookAppointment`, `publicProfile` | SearchShellPage | `search_flow_test.dart`, `find_mentor_flow_test.dart`, `public_profile_flow_test.dart` | Canonical discovery and legacy alias behavior covered; large-text/keyboard search not certified. |
+| `specialistDetails` | SpecialistDetailsShellPage | `specialist_details_flow_test.dart` | Detail, booking intent and failure flows covered; large-text layout not checked. |
+| `appointments` | AppointmentsShellPage | `appointments_flow_test.dart` | Role/status/list behavior covered; labelled Back added; large-text layout not checked. |
+| `appointmentDetail` | AppointmentDetailShellPage | `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart` | Detail/actions/conflicts covered; large-text and screen-reader sequence not certified. |
+| `consultation` | ConsultationShellPage | `consultation_controller_test.dart` | Controller/authorization behavior covered; physical permission/accessibility proof open. |
+| `account`, `deleteAccount` | AccountShellPage | `account_flow_test.dart` | Authority, legal, account and deletion paths covered; back controls labelled; large-text layout not checked. |
+| `professionalVerificationDocuments` | ProfessionalVerificationDocumentsShellPage | `manage_profile_flow_test.dart` | Upload/list states covered; accessibility layout not certified. |
+| `professionalFinance` | ProfessionalFinanceShellPage | `financial_flow_test.dart`, `financial_contract_test.dart` | Contract/form behavior covered; enlarged-text layout remains open. |
+| `editYourName`, `editProfessionalDetails`, `addDescription` | Professional profile editor shells | `manage_profile_flow_test.dart` | Backend-field behavior covered; accessibility layout not certified. |
+| `messages` | MessagesPage | `messaging_flow_test.dart`, `messaging_controller_test.dart` | Honest inbox/route states covered; keyboard/screen-reader conversation task open. |
+| `chat`, `message` | ChatPage | `chat_route_structure_test.dart`, `messaging_flow_test.dart` | Authority and composer states covered; keyboard focus order not certified. |
+| `notification` | NotificationsPage | `notification_inbox_test.dart`, `dashboard_shell_test.dart` | Inbox/header path covered; large-text and screen-reader announcement order open. |
+| `notificationPreferences` | NotificationPreferencesPage | `account_flow_test.dart`, `notification_coordinator_test.dart` | Preference/provider behavior covered; accessibility layout not certified. |
+| `reminder`, `schedules`, `selectedDates` | ReminderShellPage, SchedulesShellPage, SelectedDatesShellPage | `professional_schedule_test.dart`, `manage_profile_flow_test.dart` | Professional recurring availability behavior covered; reminder/schedules direct-route accessibility evidence is incomplete. |
+| Deferred aliases | DeferredFeaturePage | `auth_route_authority_test.dart`, route classification/registration tests | Deferred screen behavior is intentionally not treated as active feature accessibility coverage. |
+
+Every row without an explicit accessibility check remains **not certified**;
+the matrix is a gap ledger rather than a conformance claim. Physical device
+acceptance is still required before release.
+
+### APP-P1-021B Findings Applied So Far
+
+- The Google sign-in control previously overflowed at a 320 logical-pixel width
+  with 2x text. Its label now wraps within the available width, it has a single
+  named button semantic, and its hit target is at least 48 logical pixels.
+- The email sign-in password toggle now announces Show/Hide password, and the
+  Forgot Password action uses a padded Material button with a 48-pixel minimum
+  target.
+- Back controls on active sign-in/recovery/onboarding and Account/Profile,
+  appointment-list screens now expose a Back label (or the more specific
+  Change account type label when appropriate).
+- The dashboard's selected navigation item now uses `CarenetColors.brand`.
+
+These repairs are bounded findings, not a claim that all active routes have
+passed every contrast, keyboard, focus-order, or largest-text criterion. The
+remaining rows above need targeted follow-up where the automated evidence is
+missing, followed by physical Android/iOS accessibility checks before release.
 
 ## Boundaries
 

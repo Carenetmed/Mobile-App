@@ -190,6 +190,7 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconButton(
+                tooltip: selectedRole == null ? 'Back' : 'Change account type',
                 onPressed:
                     selectedRole == null
                         ? () => Navigator.of(context).maybePop()

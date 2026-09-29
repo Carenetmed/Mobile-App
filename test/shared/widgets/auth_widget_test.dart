@@ -9,15 +9,23 @@ const Size _phoneSize = Size(430, 932);
 Future<void> _pumpAuthWidget(
   WidgetTester tester, {
   required Widget child,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
-  tester.view.physicalSize = _phoneSize;
+  tester.view.physicalSize = screenSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
-      builder: (_, __) => MaterialApp(home: Scaffold(body: child)),
+      builder:
+          (context, _) => MaterialApp(
+            home: MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+              child: Scaffold(body: child),
+            ),
+          ),
     ),
   );
   await tester.pump();
@@ -51,6 +59,31 @@ void main() {
       tester.firstWidget<Semantics>(semanticsFinder).properties.enabled,
       isTrue,
     );
+    expect(
+      tester.firstWidget<Semantics>(semanticsFinder).properties.label,
+      'Continue with Google',
+    );
+  });
+
+  testWidgets('AuthWidget wraps and grows at 2x text on a compact screen', (
+    tester,
+  ) async {
+    await _pumpAuthWidget(
+      tester,
+      child: AuthWidget(
+        assetPath: AssetsIcon.google,
+        title: 'Continue with Google securely',
+        btnAction: () {},
+      ),
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+    );
+
+    expect(
+      tester.getSize(find.byType(InkWell)).height,
+      greaterThanOrEqualTo(48),
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('AuthWidget is visibly disabled when no action exists', (

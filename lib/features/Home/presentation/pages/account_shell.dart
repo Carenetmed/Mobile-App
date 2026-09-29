@@ -343,6 +343,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
         backgroundColor: AppColors.kWhite,
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Back',
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const Icon(Icons.arrow_back, color: Colors.black),
         ),
@@ -861,6 +862,7 @@ class _SettingsProfilePageState extends State<SettingsProfilePage> {
         backgroundColor: AppColors.kWhite,
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Back',
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const Icon(Icons.arrow_back, color: Colors.black),
         ),
@@ -1261,6 +1263,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
         backgroundColor: AppColors.kWhite,
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Back',
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const Icon(Icons.arrow_back, color: Colors.black),
         ),

@@ -71,6 +71,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Enter email'), findsOneWidget);
+      expect(find.byTooltip('Back'), findsOneWidget);
     });
 
     testWidgets('enter email validates and requests password reset', (

@@ -297,20 +297,17 @@ class _ProfessionalFinanceShellPageState
             Text(resolution.accountName),
             Text('${resolution.bankName} - ${resolution.maskedAccountNumber}'),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final actions = [
+                  OutlinedButton(
                     onPressed:
                         _controller.isConfirming
                             ? null
                             : _controller.cancelResolution,
                     child: const Text('Cancel'),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: FilledButton(
+                  FilledButton(
                     key: const Key('confirm-payout-account'),
                     onPressed:
                         _controller.isConfirming
@@ -324,8 +321,25 @@ class _ProfessionalFinanceShellPageState
                       _controller.isConfirming ? 'Confirming...' : 'Confirm',
                     ),
                   ),
-                ),
-              ],
+                ];
+                if (constraints.maxWidth < 340) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      actions[0],
+                      const SizedBox(height: 8),
+                      actions[1],
+                    ],
+                  );
+                }
+                return Row(
+                  children: [
+                    Expanded(child: actions[0]),
+                    const SizedBox(width: 10),
+                    Expanded(child: actions[1]),
+                  ],
+                );
+              },
             ),
           ] else ...[
             if (_controller.isLoadingBanks && _controller.banks.isEmpty)
@@ -490,11 +504,13 @@ class _Section extends StatelessWidget {
             children: [
               Icon(icon, color: CarenetColors.brand),
               const SizedBox(width: 10),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -522,16 +538,22 @@ class _MetricRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        children: [
-          Expanded(child: Text(label)),
-          Text(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final valueText = Text(
             value,
             style: TextStyle(
               fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
             ),
-          ),
-        ],
+          );
+          if (constraints.maxWidth < 340) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [Text(label), valueText],
+            );
+          }
+          return Row(children: [Expanded(child: Text(label)), valueText]);
+        },
       ),
     );
   }
@@ -596,31 +618,41 @@ class _ActivityRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final description = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: CarenetColors.neutral600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          );
+          final amountText = Text(
+            amount,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          );
+          if (constraints.maxWidth < 340) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: CarenetColors.neutral600,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(amount, style: const TextStyle(fontWeight: FontWeight.w700)),
-        ],
+              children: [description, const SizedBox(height: 6), amountText],
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: description),
+              const SizedBox(width: 10),
+              amountText,
+            ],
+          );
+        },
       ),
     );
   }

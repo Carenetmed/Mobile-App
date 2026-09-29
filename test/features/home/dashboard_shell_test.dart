@@ -28,8 +28,10 @@ Future<void> _pumpDashboard(
   WidgetTester tester, {
   required String role,
   NotificationCoordinator? notificationCoordinator,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
-  tester.view.physicalSize = _phoneSize;
+  tester.view.physicalSize = screenSize * tester.view.devicePixelRatio;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
@@ -55,6 +57,11 @@ Future<void> _pumpDashboard(
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
+            builder:
+                (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+                  child: child!,
+                ),
             home: Dashboard(
               sessionStore: sessionStore,
               profileRepository: _FakeProfileRepository(),
@@ -102,6 +109,43 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(SearchShellPage), findsOneWidget);
     expect(find.text('Find Care'), findsWidgets);
+  });
+
+  testWidgets('patient dashboard remains usable on compact large text', (
+    tester,
+  ) async {
+    await _pumpDashboard(
+      tester,
+      role: 'PATIENT',
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+    );
+
+    expect(_bottomLabels(tester), <String?>[
+      'Home',
+      'Find Care',
+      'Appointments',
+      'Messages',
+    ]);
+    expect(find.byTooltip('Notifications'), findsOneWidget);
+    expect(find.byTooltip('Account'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    for (final destination in <String>[
+      'Find Care',
+      'Appointments',
+      'Messages',
+    ]) {
+      await tester.tap(find.text(destination).last);
+      await tester.pumpAndSettle();
+      expect(_bottomLabels(tester), <String?>[
+        'Home',
+        'Find Care',
+        'Appointments',
+        'Messages',
+      ]);
+      expect(tester.takeException(), isNull);
+    }
   });
 
   testWidgets('professional sees the approved four destinations', (

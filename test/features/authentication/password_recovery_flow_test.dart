@@ -304,7 +304,7 @@ void main() {
       tester,
     ) async {
       final repository = _FakeAuthRepository();
-      tester.view.physicalSize = _phoneSize;
+      tester.view.physicalSize = const Size(320, 568);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
@@ -312,7 +312,14 @@ void main() {
         ScreenUtilInit(
           designSize: _phoneSize,
           builder:
-              (_, __) => MaterialApp(
+              (context, _) => MaterialApp(
+                builder:
+                    (context, child) => MediaQuery(
+                      data: MediaQuery.of(
+                        context,
+                      ).copyWith(textScaler: const TextScaler.linear(2)),
+                      child: child!,
+                    ),
                 home: ResetPasswordConfirmPage(
                   token: 'opaque-reset-token',
                   authRepository: repository,
@@ -326,6 +333,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(find.text('Reset password'), findsOneWidget);
+      expect(find.byType(EditableText), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+
+      final updatePassword = find.text('Update password');
+      await tester.scrollUntilVisible(
+        updatePassword,
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
       await tester.tap(find.text('Update password'));
       await tester.pump();
       expect(find.text('Please enter your password'), findsNWidgets(2));
@@ -346,7 +365,13 @@ void main() {
       expect(repository.lastResetPassword, 'CareNetPassword@123');
       expect(find.textContaining('Password updated'), findsOneWidget);
 
-      await tester.tap(find.text('Back to sign in'));
+      final backToSignIn = find.text('Back to sign in');
+      await tester.scrollUntilVisible(
+        backToSignIn,
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(backToSignIn);
       await tester.pumpAndSettle();
 
       expect(find.text('sign-in-email'), findsOneWidget);

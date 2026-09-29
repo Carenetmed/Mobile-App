@@ -25,9 +25,11 @@ Future<void> _pumpDetails(
   SessionStore? sessionStore,
   BookingIntentStore? bookingIntentStore,
   OnboardingRepository? onboardingRepository,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
-  tester.view.physicalSize = _phoneSize;
   tester.view.devicePixelRatio = 1;
+  tester.view.physicalSize = screenSize;
   addTearDown(tester.view.reset);
 
   await tester.pumpWidget(
@@ -35,6 +37,11 @@ Future<void> _pumpDetails(
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
+            builder:
+                (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+                  child: child!,
+                ),
             routes: <String, WidgetBuilder>{
               RouteName.search:
                   (_) => const Scaffold(body: Text('canonical-find-care')),
@@ -161,6 +168,59 @@ void main() {
     expect(find.textContaining('45 min'), findsNothing);
   });
 
+  testWidgets('professional booking flow remains usable at 2x text', (
+    tester,
+  ) async {
+    final scheduling = _FakeSchedulingRepository();
+    await _pumpDetails(
+      tester,
+      schedulingRepository: scheduling,
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+    );
+
+    expect(find.text('Dr Ada Care'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    final availableTime = find.textContaining('9:00 AM Africa/Lagos');
+    await tester.scrollUntilVisible(
+      availableTime,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Professional timezone: Africa/Lagos'), findsOneWidget);
+    await tester.tap(availableTime);
+    await tester.pumpAndSettle();
+
+    final requestButton = find.text('Request selected time');
+    await tester.ensureVisible(requestButton);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.tap(requestButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Request this appointment?'), findsOneWidget);
+    expect(
+      find.textContaining('not confirmed until the professional accepts it'),
+      findsOneWidget,
+    );
+    expect(find.text('Send request'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('Send request'));
+    await tester.pumpAndSettle();
+    expect(find.text('Appointment request sent'), findsOneWidget);
+    expect(find.textContaining('It is not confirmed yet.'), findsOneWidget);
+    expect(find.text('View appointments'), findsOneWidget);
+    expect(scheduling.requestCalls, 1);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('View appointments'));
+    await tester.pumpAndSettle();
+    expect(find.text('appointments-dashboard'), findsOneWidget);
+  });
+
   testWidgets('empty bounded range offers later backend times', (tester) async {
     final scheduling = _FakeSchedulingRepository(
       response: const RequestableTimes(
@@ -229,10 +289,7 @@ void main() {
 
     await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
     await tester.pump();
-    await tester.drag(
-      find.byType(ListView).first,
-      const Offset(0, -120),
-    );
+    await tester.drag(find.byType(ListView).first, const Offset(0, -120));
     await tester.pump();
     await tester.tap(find.text('Request selected time'));
     await tester.pumpAndSettle();
@@ -256,10 +313,7 @@ void main() {
 
     await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
     await tester.pump();
-    await tester.drag(
-      find.byType(ListView).first,
-      const Offset(0, -120),
-    );
+    await tester.drag(find.byType(ListView).first, const Offset(0, -120));
     await tester.pump();
     await tester.tap(find.text('Request selected time'));
     await tester.pumpAndSettle();
@@ -280,10 +334,7 @@ void main() {
 
     await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
     await tester.pump();
-    await tester.drag(
-      find.byType(ListView).first,
-      const Offset(0, -120),
-    );
+    await tester.drag(find.byType(ListView).first, const Offset(0, -120));
     await tester.pump();
     await tester.tap(find.text('Request selected time'));
     await tester.pumpAndSettle();
@@ -319,10 +370,7 @@ void main() {
       );
       await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
       await tester.pump();
-      await tester.drag(
-        find.byType(ListView).first,
-        const Offset(0, -120),
-      );
+      await tester.drag(find.byType(ListView).first, const Offset(0, -120));
       await tester.pump();
       await tester.tap(find.text('Request selected time'));
       await tester.pumpAndSettle();

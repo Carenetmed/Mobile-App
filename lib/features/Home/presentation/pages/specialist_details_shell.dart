@@ -224,6 +224,7 @@ class _SpecialistDetailsShellPageState
       context: context,
       builder:
           (dialogContext) => AlertDialog(
+            scrollable: true,
             title: const Text('Request this appointment?'),
             content: _ConfirmationContent(
               time: time,
@@ -257,6 +258,7 @@ class _SpecialistDetailsShellPageState
           barrierDismissible: false,
           builder:
               (dialogContext) => AlertDialog(
+                scrollable: true,
                 icon: const Icon(
                   Icons.mark_email_read_outlined,
                   color: Color(0xFF18794E),

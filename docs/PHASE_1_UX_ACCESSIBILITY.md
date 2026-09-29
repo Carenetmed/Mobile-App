@@ -65,7 +65,7 @@ or accessibility conformance.
 | --- | --- | --- |
 | Authentication, recovery, signup, session restore | `sign_in_flow_test.dart`, `sign_up_flow_test.dart`, `booking_signup_boundary_test.dart`, `finish_sign_up_test.dart`, `password_recovery_flow_test.dart`, `session_restore_guard_test.dart`, and `session_resilience_test.dart` | Sign-in, email signup, role selection, and finish-signup form have 320x568 / 2x-text flow coverage; password visibility, recovery action sizing, and recovery back controls are labelled. Screen-reader/keyboard and physical-device proof remain open. |
 | Patient onboarding and readiness | `onboarding_gateway_test.dart`, `profile_setup_test.dart`, `onboarding_readiness_route_resolver_test.dart` | Welcome choices and patient/professional profile setup have 320x568 / 2x-text coverage; setup flows include required catalogs and save handoffs. Screen-reader/keyboard and physical-device proof remain open. |
-| Dashboard, role navigation, Home, Find Care, profile detail, booking | `dashboard_shell_test.dart`, `home_tab_shell_test.dart`, `search_flow_test.dart`, `specialist_details_flow_test.dart`, and `booking_intent_and_controller_test.dart` | Patient dashboard destinations and header actions, plus Find Care query and profile handoff, are exercised at 320x568 / 2x text; detail and booking large-text coverage is not universal. |
+| Dashboard, role navigation, Home, Find Care, profile detail, booking | `dashboard_shell_test.dart`, `home_tab_shell_test.dart`, `search_flow_test.dart`, `specialist_details_flow_test.dart`, and `booking_intent_and_controller_test.dart` | Patient dashboard destinations, Find Care query/profile handoff, and professional-detail booking confirmation/success are exercised at 320x568 / 2x text; other booking and role states remain to be checked. |
 | Appointments and professional Schedule | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart`, `professional_schedule_test.dart`, and `scheduling_repository_test.dart` | Lifecycle, ownership, and availability behavior are covered; physical keyboard/TalkBack and all enlarged-text states remain open. The active appointment-list back control now has a tooltip. |
 | Account, profile management, verification, finance | `account_flow_test.dart`, `manage_profile_flow_test.dart`, `financial_flow_test.dart`, and `financial_contract_test.dart` | Finance now has 320x568 / 2x-text coverage through populated financial activity and payout-bank/account entry. Account/Profile/Settings/Delete back controls are labelled; screen-reader, focus-order, and device acceptance remain open. |
 | Messages, notifications, consultation | `messaging_flow_test.dart`, `messaging_controller_test.dart`, `notification_inbox_test.dart`, `notification_coordinator_test.dart`, and consultation controller tests | Honest-state, routing, and provider/controller behavior are covered. Real screen-reader, focus-order, and hardware permission behavior are not established by these tests. |
@@ -92,7 +92,7 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 | `medicalEdit` | UserEdit | No focused route widget test identified | Accessibility/task-flow evidence gap. |
 | `dashboard` | Dashboard | `dashboard_shell_test.dart` | Role destinations, header actions, tab persistence and Android back covered; patient destination switching is checked at 320x568 / 2x text. Professional large-text layout and physical accessibility remain open. |
 | `search`, `findMentor`, `bookAppointment`, `publicProfile` | SearchShellPage | `search_flow_test.dart`, `find_mentor_flow_test.dart`, `public_profile_flow_test.dart` | Canonical discovery and legacy alias behavior covered; patient name query, clear, scroll, and profile handoff are checked at 320x568 / 2x text. Keyboard, TalkBack, and wider discovery states remain uncertified. |
-| `specialistDetails` | SpecialistDetailsShellPage | `specialist_details_flow_test.dart` | Detail, booking intent and failure flows covered; large-text layout not checked. |
+| `specialistDetails` | SpecialistDetailsShellPage | `specialist_details_flow_test.dart` | Patient detail, backend time selection, confirmation, request-sent result, and Appointments handoff are checked at 320x568 / 2x text. Dialog content scrolls while actions remain usable; professional, error, and screen-reader states remain open. |
 | `appointments` | AppointmentsShellPage | `appointments_flow_test.dart` | Role/status/list behavior covered; labelled Back added; large-text layout not checked. |
 | `appointmentDetail` | AppointmentDetailShellPage | `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart` | Detail/actions/conflicts covered; large-text and screen-reader sequence not certified. |
 | `consultation` | ConsultationShellPage | `consultation_controller_test.dart` | Controller/authorization behavior covered; physical permission/accessibility proof open. |
@@ -123,6 +123,10 @@ acceptance is still required before release.
   appointment-list screens now expose a Back label (or the more specific
   Change account type label when appropriate).
 - The dashboard's selected navigation item now uses `CarenetColors.brand`.
+- Patient professional-detail booking now has a 320x568 / 2x-text flow regression.
+  It caught vertical overflow in the long confirmation dialog; the confirmation
+  and request-sent dialogs now allow their content to scroll while preserving
+  the available action buttons.
 - Professional Finance summary/activity rows and payout-confirmation actions
   stack at constrained widths; section headings wrap within their surfaces. A
   320x568, 2x-text widget test traverses populated activity and enters the

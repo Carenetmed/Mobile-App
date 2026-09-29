@@ -19,13 +19,15 @@ const Size _phoneSize = Size(430, 932);
 
 Future<void> _pumpFinishSignUp(
   WidgetTester tester, {
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
   _FakeAuthRepository? authRepository,
   _FakeOnboardingRepository? onboardingRepository,
   String? initialEmail,
   SignUpRole selectedRole = SignUpRole.patient,
   PublicLinkLauncher? publicLinkLauncher,
 }) async {
-  tester.view.physicalSize = _phoneSize;
+  tester.view.physicalSize = screenSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
@@ -33,7 +35,12 @@ Future<void> _pumpFinishSignUp(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder:
-          (_, __) => MaterialApp(
+          (context, _) => MaterialApp(
+            builder:
+                (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+                  child: child!,
+                ),
             initialRoute: RouteName.finishSignUp,
             routes: {
               RouteName.finishSignUp:
@@ -62,6 +69,39 @@ Future<void> _pumpFinishSignUp(
 
 void main() {
   group('Finish sign up', () {
+    testWidgets('finish signup remains usable at 320px with 2x text', (
+      tester,
+    ) async {
+      await _pumpFinishSignUp(
+        tester,
+        screenSize: const Size(320, 568),
+        textScaler: const TextScaler.linear(2),
+      );
+
+      expect(find.text('Secure your patient account'), findsOneWidget);
+      expect(find.byType(EditableText), findsNWidgets(3));
+      expect(tester.takeException(), isNull);
+
+      final submit = find.text(' Agree & continue');
+      await tester.ensureVisible(submit);
+      await tester.pumpAndSettle();
+      await tester.tap(submit);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Email Address is required'), findsOneWidget);
+      expect(find.text('Please enter your password'), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+
+      final termsLink = find.byKey(const Key('sign-up-terms-link')).last;
+      final privacyLink = find.byKey(const Key('sign-up-privacy-link')).last;
+      await tester.ensureVisible(termsLink);
+      await tester.ensureVisible(privacyLink);
+      await tester.pumpAndSettle();
+      expect(termsLink, findsOneWidget);
+      expect(privacyLink, findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('legal controls open canonical public pages', (tester) async {
       final opened = <Uri>[];
       await _pumpFinishSignUp(

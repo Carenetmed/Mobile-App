@@ -1,6 +1,10 @@
 # CareNet — canonical routes
 
-> Phase 1 note: this table records the committed broad-UI baseline. The approved
+Live inventory at APP-P1-021: `RouteName` defines 79 identifiers; 78 are
+registered in `generateRoute`, with `login` intentionally reserved and unwired.
+The detailed KEEP/ADAPT/DEFER/DELETE table is maintained separately below.
+
+> Phase 1 note: this table records current named-route resolution. The approved
 > patient/professional navigation contract and final KEEP/ADAPT/DEFER/DELETE
 > disposition are authoritative in `PHASE_1_MARKETPLACE_BOUNDARY.md` and
 > `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md`. APP-P1-002 keeps route registration

@@ -34,6 +34,20 @@ Status: implemented; verification pending PR CI.
 - Defers malware scanning, retention/cleanup, background upload, admin review,
   cloud IAM proof, and physical-device acceptance.
 
+## APP-P1-021 - Active-route UX and accessibility closure
+
+Status: in progress; shared foundation and route-inventory reconciliation are
+the first focused slice. The canonical checklist is
+`PHASE_1_UX_ACCESSIBILITY.md`.
+
+The milestone audits active patient and professional routes for truthful copy,
+contrast, semantics, focus order, keyboard use where applicable, tap targets,
+responsive layouts, and enlarged text. Shared theme/button changes are a
+foundation, not a declaration that all screens are ready. Physical-device
+accessibility acceptance remains a later gate. Content publishing or short-form
+video is not part of this accessibility milestone and requires a separate
+product, moderation, storage, and cost decision.
+
 ## Global gates for every runtime slice
 
 - Start from the approved frontend integration branch on a dedicated slice branch.

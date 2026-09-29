@@ -1,6 +1,23 @@
 # Codebase status
 
-**Last updated:** 2026-09-28 APP-P1-020 verification upload integrity.
+**Last updated:** 2026-09-29 APP-P1-021 shared UX/accessibility foundation.
+
+## APP-P1-021 shared UX/accessibility foundation
+
+- Shared marketplace tokens and active Material color schemes use the CareNet
+  healthcare-green palette with tested text contrast for primary and semantic
+  status pairs.
+- `CarenetButton` provides one labelled, tappable button semantic, a minimum
+  48-logical-pixel hit target, and a content-driven height that accommodates
+  enlarged text.
+- Professional Schedule no longer describes requestable times with
+  engineering-facing "backend-generated" wording.
+- Current route inventory is 79 named identifiers and 78 router registrations;
+  `login` is the only reserved unwired constant. The three later routes now have
+  explicit rows in the classification table.
+- This is a shared foundation only, not an accessibility sign-off for every
+  active route. Per-screen contrast, focus order, TalkBack, keyboard, and largest
+  text checks remain in the APP-P1-021 follow-up sweep.
 
 ## Verification upload integrity
 
@@ -121,7 +138,7 @@ not override the `APP-P1` product boundary.
 | App entry | `lib/main.dart` -> `CarenetApp` in `lib/app.dart` |
 | Start screen | `RouteName.splash` (not notifications) |
 | Splash -> session guard | 800ms then `AuthRepository.restore()` routes usable stored sessions to `dashboard`; missing or invalid restore falls back to `onboarding`. Auth refresh and booking-resume readiness calls are bounded to five seconds so an unavailable dependency cannot leave startup hanging, and pending notification routing begins only after the replacement frame is ready |
-| Named routes | Current router has **78 cases** plus the reserved unused `login` constant; final Phase 1 disposition is in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
+| Named routes | Current inventory has **79 constants and 78 router cases**; `login` is the reserved unused constant. Final Phase 1 disposition is in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
 | Onboarding UI | First launch shows a care gateway with `Browse verified care`, `Create account`, and `Already have an account? Sign in`. Create account opens role-first signup instead of direct phone signup |
 | Role-based onboarding boundary | `ROLE_BASED_ONBOARDING_AUTH_BOUNDARY.md` records the PRD-backed product decision that CareNet sign-up must branch into patient and professional onboarding before Google sign-up or broader auth expansion. Professional accounts must proceed through profile, credential upload, and manual verification before public listing |
 | Role-registration backend contract | `ROLE_REGISTRATION_BACKEND_CONTRACT.md` records the exact frontend/backend boundary: email/password and Google-created accounts must use explicit `PATIENT`/`PROFESSIONAL` role selection before account creation is treated as complete. Existing linked Google sign-in and authenticated Google linking remain valid, but first-time Google sign-up stays disabled until role-selection onboarding exists |
@@ -306,9 +323,9 @@ not override the `APP-P1` product boundary.
 | Set address slice | `setAddress` is now a registered route from Manage Profile Basic `Edit address`. It validates local location/address text and shows a prepared-address summary that explicitly does not save profile state or use location services |
 | Set address boundary | `setAddress` stops after local validation and draft preparation. Profile-address persistence, location/geocoding/map services, device-location permissions, verification changes, account identity sync, audit/security records, conflict handling, and backend profile APIs remain deferred (`DECISIONS.md` D048) |
 | Remaining blueprint tail triage | After Manage Profile basics, no new honest frontend-only route is selected from the remaining blueprint tail. Ads/payments/audience, media upload/recording, backend account verification, duplicate feed/Q&A/schedule/reminder routes, and component/demo frames are deferred or already covered (`DECISIONS.md` D049) |
-| Frontend coverage audit | No remaining honest frontend-only route gaps were found in the audited docs/router surface. All non-`login` route constants have router cases, `ROUTES.md` records 68 wired routes, and remaining gaps are backend/product seams documented in `DEFERRED_WORK.md` (`DECISIONS.md` D050) |
+| Historical frontend coverage audit | At that earlier audit, the route inventory was reported as 68 wired routes. Later appointment detail, consultation, finance, and other routes superseded that count; current inventory is 79 constants / 78 cases. Backend/product seams remain in `DEFERRED_WORK.md` (`DECISIONS.md` D050) |
 | Backend/product readiness handoff | `DEFERRED_WORK.md` now groups deferred seams by contract group and replacement path so backend work can replace local stores/repositories without rewriting completed frontend routes (`DECISIONS.md` D051) |
-| Final frontend handoff review | Frontend route coverage is ready for backend/product contract selection. Docs/router status agree on 68 wired routes, `login` remains the only reserved unwired constant, and no additional honest frontend-only route slice is selected before backend/product contracts (`DECISIONS.md` D052) |
+| Historical frontend handoff review | At that review, 68 wired routes were reported and `login` was the only reserved unwired constant. The live count has since advanced to 78 cases / 79 constants; route-specific UX/accessibility review continues under APP-P1-021 (`DECISIONS.md` D052) |
 | First backend contract selection | Backend/product integration starts with `Auth/session/account persistence`. The next slice must define the API/session/provider/repository contract before implementation; no locked controls are enabled by this decision (`DECISIONS.md` D053) |
 | Auth/session/account contract | `docs/AUTH_SESSION_ACCOUNT_CONTRACT.md` defines the Flutter-side backend contract: environment/base URL rules, REST API style, bearer-token auth, secure refresh-token storage, auth/account models, validation/error behavior, provider boundaries, and repository replacement plan. Runtime screens remain local/client-only until the next infrastructure slice (`DECISIONS.md` D054) |
 | Auth/session/account infrastructure | The app now has a backend-ready auth boundary without screen wiring: `CareNetApiConfig`, `AuthApiClient`, secure/in-memory session stores, auth/session/user models, `AuthRepository`, `AccountRepository`, DI registration, and focused tests. Existing auth screens still use local/client-only behavior until a later wiring slice (`DECISIONS.md` D055) |

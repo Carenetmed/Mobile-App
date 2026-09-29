@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 
-/// Color tokens from blueprint `screens/color-palette/screen.json`.
-///
-/// Primary scale: `primary/100`–`primary/700` (brand at 500 = `#7000DA`).
-/// Neutral scale: blueprint `grey/100`–`grey/700` (documented as neutral in design docs).
+/// Shared CareNet marketplace colors.
 abstract final class CarenetColors {
-  // --- Primary (purple) ---
+  // --- Primary (healthcare green) ---
 
-  static const Color primary100 = Color(0xFFEBE5FF);
-  static const Color primary200 = Color(0xFFCAB6FF);
-  static const Color primary300 = Color(0xFFAB84FF);
-  static const Color primary400 = Color(0xFF9148FF);
-  static const Color primary500 = Color(0xFF7000DA);
-  static const Color primary600 = Color(0xFF46008C);
-  static const Color primary700 = Color(0xFF1F0045);
+  static const Color primary100 = Color(0xFFE7F3EC);
+  static const Color primary200 = Color(0xFFC4E2D0);
+  static const Color primary300 = Color(0xFF92C9AA);
+  static const Color primary400 = Color(0xFF4D9A70);
+  static const Color primary500 = Color(0xFF054F31);
+  static const Color primary600 = Color(0xFF043F27);
+  static const Color primary700 = Color(0xFF022D1B);
 
-  /// Brand purple — alias for [primary500].
+  /// Brand green — alias for [primary500].
   static const Color brand = primary500;
 
   // --- Neutral (blueprint "grey") ---
@@ -30,12 +27,12 @@ abstract final class CarenetColors {
 
   // --- Semantic ---
 
-  static const Color success100 = Color(0xFF03A900);
-  static const Color success200 = Color(0xFFEAFFF3);
-  static const Color error100 = Color(0xFFE62F2F);
-  static const Color error200 = Color(0xFFFFE3E0);
-  static const Color info100 = Color(0xFF0FC2FB);
-  static const Color info200 = Color(0xFFC7F1FF);
+  static const Color success100 = Color(0xFF176B45);
+  static const Color success200 = Color(0xFFE7F3EC);
+  static const Color error100 = Color(0xFFB3261E);
+  static const Color error200 = Color(0xFFFCE8E6);
+  static const Color info100 = Color(0xFF155E75);
+  static const Color info200 = Color(0xFFE6F4F6);
 
   // --- Base ---
 

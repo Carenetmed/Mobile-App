@@ -1,6 +1,6 @@
 # Documentation sync index
 
-**Last audited:** 2026-07-29
+**Last audited:** 2026-09-29
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 ---
@@ -12,6 +12,7 @@
 | What to do **right now** | `AI_HANDOFF.md` (task marked **NEXT**) |
 | Phase 1 product scope and approved navigation | `PHASE_1_MARKETPLACE_BOUNDARY.md` |
 | Route/screen KEEP-ADAPT-DEFER-DELETE status | `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
+| Active route UX/accessibility audit | `PHASE_1_UX_ACCESSIBILITY.md` |
 | Deferred/shared dependency ownership | `PHASE_1_DEPENDENCY_IMPACT_MAP.md` |
 | Phase 1 slice order, gates, and stop conditions | `PHASE_1_IMPLEMENTATION_PLAN.md` |
 | Strict completion rules | `WORKING_AGREEMENT.md` + `DEFINITION_OF_DONE.md` |
@@ -57,11 +58,11 @@
 | Phase 22 | **In progress** |
 | Product direction | **Phase 1 consultation marketplace** - broad social/content/readings/emergency/creator modules leave the active mainline in ordered slices |
 | Archive checkpoint | **APP-P1-001A complete** - branch `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` resolve to `3e04d6e` |
-| NEXT task | **Not selected** - no later capability starts automatically after PAY-P1-008 |
-| Last completed | **PAY-P1-008** - backend financial authority plus Flutter payment, price, bank, balance, ledger, and payout experience |
+| NEXT task | **APP-P1-021** - continue active-route UX/accessibility closure after the shared foundation and route inventory update |
+| Last completed | **APP-P1-021 shared foundation** - green theme tokens, contrast/button semantics and enlarged-text tests, Schedule copy, and 79/78 route inventory reconciliation |
 | Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, patient-device proof through real Search/public availability/appointment request plus own-list rendering, and professional-device proof through role-aware appointment accept/decline/reschedule plus terminal-row behavior; Android backup is disabled, own-list parses the backend `appointments` envelope, secure session writes are ordered, and professional Account now exposes Manage Profile/Verification documents. Verification upload route access is proven, but upload-init returns staging HTTP 500; separate appointment-detail, optional fresh completion, successful upload after backend fix, and cleanup phone smoke remain open |
 | Product interruption | **APP-63** - Google first-time signup now runs through explicit patient/professional role selection with a real Google ID token before backend account creation. Email/password signup remains aligned to the staging contract. Facebook/Apple signup, Google unlink, iOS/release OAuth proof, production OAuth consent/app verification, phone/OTP, MFA, and broader profile trust rules remain deferred |
-| Registered routes | Baseline has **74 router cases** plus the reserved unused `login` constant; Phase 1 classifications are in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
+| Registered routes | Live inventory has **79 constants and 78 router cases**; `login` is reserved and unwired. Phase 1 classifications are in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
 | Pre-existing stubs | `CODEBASE_STATUS.md` - fix only in the phase column listed |
 
 ---

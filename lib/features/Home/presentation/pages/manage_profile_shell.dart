@@ -370,8 +370,8 @@ class _Section extends StatelessWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.primaryBlue5,
                     padding: EdgeInsets.zero,
-                    minimumSize: Size(48.w, 32.h),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    minimumSize: Size(48.w, 48.h),
+                    tapTargetSize: MaterialTapTargetSize.padded,
                   ),
                   child: Text(
                     actionLabel!,
@@ -549,38 +549,68 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compactText =
+        MediaQuery.textScalerOf(context).scale(1) > 1.5 ||
+        MediaQuery.sizeOf(context).width < 340;
     return Padding(
       padding: REdgeInsets.only(bottom: 12.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: FontSizes.footer3,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w600,
-                color: AppColors.kBlack,
+      child:
+          compactText
+              ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: FontSizes.footer4,
+                      fontFamily: AppFonts.montserrat,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.primaryBlue11,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    value,
+                    softWrap: true,
+                    style: TextStyle(
+                      fontSize: FontSizes.footer3,
+                      fontFamily: AppFonts.montserrat,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.kBlack,
+                    ),
+                  ),
+                ],
+              )
+              : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: FontSizes.footer3,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.kBlack,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  SizedBox(
+                    width: 112.w,
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: FontSizes.footer4,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryBlue11,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ),
-          SizedBox(width: 12.w),
-          SizedBox(
-            width: 112.w,
-            child: Text(
-              label,
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                fontSize: FontSizes.footer4,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w500,
-                color: AppColors.primaryBlue11,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -599,9 +629,9 @@ class _InlineActionRow extends StatelessWidget {
         onPressed: onPressed,
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primaryBlue5,
-          padding: REdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          padding: REdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          minimumSize: Size(48.w, 48.h),
+          tapTargetSize: MaterialTapTargetSize.padded,
         ),
         child: Text(
           label,

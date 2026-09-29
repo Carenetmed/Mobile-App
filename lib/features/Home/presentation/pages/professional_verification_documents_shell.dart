@@ -536,6 +536,7 @@ class _UploadCard extends StatelessWidget {
                 SizedBox(height: 12.h),
                 DropdownButtonFormField<String>(
                   initialValue: selectedDocumentType,
+                  isExpanded: true,
                   decoration: const InputDecoration(
                     labelText: 'Document type',
                     border: OutlineInputBorder(),
@@ -945,38 +946,68 @@ class _MetaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compactText =
+        MediaQuery.textScalerOf(context).scale(1) > 1.5 ||
+        MediaQuery.sizeOf(context).width < 340;
     return Padding(
       padding: REdgeInsets.only(bottom: 8.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: FontSizes.footer4,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w600,
-                color: AppColors.kBlack,
+      child:
+          compactText
+              ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: FontSizes.footer4,
+                      fontFamily: AppFonts.montserrat,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.primaryBlue11,
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    value,
+                    softWrap: true,
+                    style: TextStyle(
+                      fontSize: FontSizes.footer4,
+                      fontFamily: AppFonts.montserrat,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.kBlack,
+                    ),
+                  ),
+                ],
+              )
+              : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: FontSizes.footer4,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.kBlack,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  SizedBox(
+                    width: 104.w,
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: FontSizes.footer4,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.primaryBlue11,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ),
-          SizedBox(width: 12.w),
-          SizedBox(
-            width: 104.w,
-            child: Text(
-              label,
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                fontSize: FontSizes.footer4,
-                fontFamily: AppFonts.montserrat,
-                fontWeight: FontWeight.w500,
-                color: AppColors.primaryBlue11,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

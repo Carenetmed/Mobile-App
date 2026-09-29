@@ -19,8 +19,10 @@ Future<void> _pumpWithRoutes(
   WidgetTester tester, {
   required String initialRoute,
   _FakeAuthRepository? repository,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
-  tester.view.physicalSize = _phoneSize;
+  tester.view.physicalSize = screenSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
@@ -28,7 +30,12 @@ Future<void> _pumpWithRoutes(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder:
-          (_, __) => MaterialApp(
+          (context, _) => MaterialApp(
+            builder:
+                (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+                  child: child!,
+                ),
             initialRoute: initialRoute,
             routes: {
               RouteName.signInPhone:
@@ -51,6 +58,33 @@ Future<void> _pumpWithRoutes(
 
 void main() {
   group('Password recovery flow', () {
+    testWidgets('enter-email recovery remains reachable with 2x text', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        initialRoute: RouteName.enterEmail,
+        repository: _FakeAuthRepository(),
+        screenSize: const Size(320, 568),
+        textScaler: const TextScaler.linear(2),
+      );
+
+      expect(find.text('Enter email'), findsOneWidget);
+      expect(find.byType(EditableText), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      final continueButton = find.text('Continue');
+      await tester.ensureVisible(continueButton);
+      await tester.pumpAndSettle();
+      expect(continueButton, findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await tester.tap(continueButton);
+      await tester.pumpAndSettle();
+      expect(find.text('Email Address is required'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('sign in phone forgot password routes to enter email', (
       tester,
     ) async {
@@ -158,7 +192,7 @@ void main() {
     testWidgets(
       'enter password validates and stops before fake reset success',
       (tester) async {
-        tester.view.physicalSize = _phoneSize;
+        tester.view.physicalSize = const Size(320, 568);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(tester.view.reset);
 
@@ -166,7 +200,14 @@ void main() {
           ScreenUtilInit(
             designSize: _phoneSize,
             builder:
-                (_, __) => MaterialApp(
+                (context, _) => MaterialApp(
+                  builder:
+                      (context, child) => MediaQuery(
+                        data: MediaQuery.of(
+                          context,
+                        ).copyWith(textScaler: const TextScaler.linear(2)),
+                        child: child!,
+                      ),
                   initialRoute: RouteName.enterPassword,
                   onGenerateRoute: (settings) {
                     if (settings.name == RouteName.enterPassword) {
@@ -191,19 +232,31 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.text('Review reset token requirement'));
+        expect(find.text('Enter password'), findsOneWidget);
+        expect(find.byType(EditableText), findsNWidgets(2));
+        expect(tester.takeException(), isNull);
+
+        final review = find.text('Review reset token requirement');
+        await tester.ensureVisible(review);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await tester.tap(review);
         await tester.pump();
         expect(find.text('Please enter your password'), findsNWidgets(2));
 
         final fields = find.byType(EditableText);
         await tester.enterText(fields.at(0), 'StrongPassword1!');
         await tester.enterText(fields.at(1), 'MismatchPassword1!');
-        await tester.tap(find.text('Review reset token requirement'));
+        await tester.ensureVisible(review);
+        await tester.pumpAndSettle();
+        await tester.tap(review);
         await tester.pump();
         expect(find.text('Passwords do not match'), findsOneWidget);
 
         await tester.enterText(fields.at(1), 'StrongPassword1!');
-        await tester.tap(find.text('Review reset token requirement'));
+        await tester.ensureVisible(review);
+        await tester.pumpAndSettle();
+        await tester.tap(review);
         await tester.pump();
 
         expect(

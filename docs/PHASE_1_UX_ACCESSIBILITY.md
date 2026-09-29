@@ -88,7 +88,7 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 | `signUpPhone`, `signUpEmail` | SignUpEmail | `sign_up_flow_test.dart` | Email signup has 320x568 / 2x-text required-field and sign-in handoff coverage, with green heading hierarchy; physical screen-reader/keyboard proof remains open. |
 | `signInPhone`, `signInEmail` | SignInEmail | `sign_in_flow_test.dart` | Password/recovery/provider semantics and 320x568 at 2x text covered. |
 | `enterEmail`, `enterPassword` | Password recovery forms | `password_recovery_flow_test.dart` | Email entry and new-password validation are exercised at 320x568 / 2x text, including scroll access to the primary action; labelled Back remains covered. Token confirmation is a separate route and large-text coverage remains open there. |
-| `resetPasswordConfirm`, `emailVerificationConfirm` | Token confirmation pages | `password_recovery_flow_test.dart`, `auth_route_authority_test.dart` | Token and safe-error behavior covered; device accessibility not certified. |
+| `resetPasswordConfirm`, `emailVerificationConfirm` | Token confirmation pages | `password_recovery_flow_test.dart`, `auth_route_authority_test.dart`, `account_flow_test.dart` | Password-reset and email-verification success flows are exercised at 320x568 / 2x text, with confirmation actions scroll-accessible and no layout exceptions. Screen-reader/device proof remains open. |
 | `medicalEdit` | UserEdit | No focused route widget test identified | Accessibility/task-flow evidence gap. |
 | `dashboard` | Dashboard | `dashboard_shell_test.dart` | Role destinations, header actions, tab persistence and Android back covered; selected brand accent asserted. Large-text layout not checked. |
 | `search`, `findMentor`, `bookAppointment`, `publicProfile` | SearchShellPage | `search_flow_test.dart`, `find_mentor_flow_test.dart`, `public_profile_flow_test.dart` | Canonical discovery and legacy alias behavior covered; large-text/keyboard search not certified. |
@@ -155,8 +155,8 @@ acceptance is still required before release.
   remains open.
 - Password-recovery email entry and new-password validation have compact-width,
   2x-text coverage for scrolling to the primary action without layout
-  exceptions. Reset/email-verification token confirmation routes remain
-  unverified at enlarged text.
+  exceptions. Password-reset and email-verification token success flows are
+  also exercised at 320x568 / 2x text with their confirmation actions reachable.
 
 These repairs are bounded findings, not a claim that all active routes have
 passed every contrast, keyboard, focus-order, or largest-text criterion. The

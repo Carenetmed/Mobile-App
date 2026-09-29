@@ -970,14 +970,20 @@ void main() {
         emailVerified: true,
       ),
     );
-    tester.view.physicalSize = _phoneSize;
+    tester.view.physicalSize = const Size(320, 568);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(
       ScreenUtilInit(
         designSize: _phoneSize,
-        builder: (_, __) => MaterialApp(
+        builder: (context, _) => MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: const TextScaler.linear(2),
+            ),
+            child: child!,
+          ),
           home: EmailVerificationConfirmPage(
             token: 'opaque-verification-token',
             accountRepository: repository,
@@ -990,7 +996,18 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Confirm verification'));
+    expect(find.text('Verify email'), findsOneWidget);
+    expect(find.text('Confirm your email address'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    final confirmVerification = find.text('Confirm verification');
+    await tester.scrollUntilVisible(
+      confirmVerification,
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(tester.takeException(), isNull);
+    await tester.tap(confirmVerification);
     await tester.pumpAndSettle();
 
     expect(repository.confirmEmailVerificationCalls, 1);
@@ -998,7 +1015,13 @@ void main() {
     expect(repository.currentAccountCalls, 1);
     expect(find.textContaining('Email verified'), findsOneWidget);
 
-    await tester.tap(find.text('Back to account'));
+    final backToAccount = find.text('Back to account');
+    await tester.scrollUntilVisible(
+      backToAccount,
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.tap(backToAccount);
     await tester.pumpAndSettle();
 
     expect(find.text('account'), findsOneWidget);

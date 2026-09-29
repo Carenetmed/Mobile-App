@@ -67,7 +67,7 @@ or accessibility conformance.
 | Patient onboarding and readiness | `onboarding_gateway_test.dart`, `profile_setup_test.dart`, `onboarding_readiness_route_resolver_test.dart` | Flow and failure states are covered; this pass does not claim largest-text or screen-reader coverage for every form state. |
 | Dashboard, role navigation, Home, Find Care, profile detail, booking | `dashboard_shell_test.dart`, `home_tab_shell_test.dart`, `search_flow_test.dart`, `specialist_details_flow_test.dart`, and `booking_intent_and_controller_test.dart` | Navigation, routing, loading and error contracts are tested. Added a regression for the selected navigation accent token; large-text coverage is not universal. |
 | Appointments and professional Schedule | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart`, `professional_schedule_test.dart`, and `scheduling_repository_test.dart` | Lifecycle, ownership, and availability behavior are covered; physical keyboard/TalkBack and all enlarged-text states remain open. The active appointment-list back control now has a tooltip. |
-| Account, profile management, verification, finance | `account_flow_test.dart`, `manage_profile_flow_test.dart`, `financial_flow_test.dart`, and `financial_contract_test.dart` | Authority and API states are covered. Account/Profile/Settings/Delete back controls are now labelled; layout and assistive-technology acceptance still need device verification. |
+| Account, profile management, verification, finance | `account_flow_test.dart`, `manage_profile_flow_test.dart`, `financial_flow_test.dart`, and `financial_contract_test.dart` | Finance now has 320x568 / 2x-text coverage through populated financial activity and payout-bank/account entry. Account/Profile/Settings/Delete back controls are labelled; screen-reader, focus-order, and device acceptance remain open. |
 | Messages, notifications, consultation | `messaging_flow_test.dart`, `messaging_controller_test.dart`, `notification_inbox_test.dart`, `notification_coordinator_test.dart`, and consultation controller tests | Honest-state, routing, and provider/controller behavior are covered. Real screen-reader, focus-order, and hardware permission behavior are not established by these tests. |
 | Deferred route aliases | `auth_route_authority_test.dart`, `account_flow_test.dart`, and route registration tests | Several old identifiers intentionally render `DeferredFeaturePage` or a canonical screen. Their legacy source screens are not represented as active routes in this accessibility sweep. |
 
@@ -98,7 +98,7 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 | `consultation` | ConsultationShellPage | `consultation_controller_test.dart` | Controller/authorization behavior covered; physical permission/accessibility proof open. |
 | `account`, `deleteAccount` | AccountShellPage | `account_flow_test.dart` | Authority, legal, account and deletion paths covered; back controls labelled; large-text layout not checked. |
 | `professionalVerificationDocuments` | ProfessionalVerificationDocumentsShellPage | `manage_profile_flow_test.dart` | Upload/list states covered; accessibility layout not certified. |
-| `professionalFinance` | ProfessionalFinanceShellPage | `financial_flow_test.dart`, `financial_contract_test.dart` | Contract/form behavior covered; enlarged-text layout remains open. |
+| `professionalFinance` | ProfessionalFinanceShellPage | `financial_flow_test.dart`, `financial_contract_test.dart` | 320x568 / 2x-text populated full-scroll and payout-account entry are covered; platform screen-reader, focus-order, and device acceptance remain open. |
 | `editYourName`, `editProfessionalDetails`, `addDescription` | Professional profile editor shells | `manage_profile_flow_test.dart` | Backend-field behavior covered; accessibility layout not certified. |
 | `messages` | MessagesPage | `messaging_flow_test.dart`, `messaging_controller_test.dart` | Honest inbox/route states covered; keyboard/screen-reader conversation task open. |
 | `chat`, `message` | ChatPage | `chat_route_structure_test.dart`, `messaging_flow_test.dart` | Authority and composer states covered; keyboard focus order not certified. |
@@ -123,6 +123,10 @@ acceptance is still required before release.
   appointment-list screens now expose a Back label (or the more specific
   Change account type label when appropriate).
 - The dashboard's selected navigation item now uses `CarenetColors.brand`.
+- Professional Finance summary/activity rows and payout-confirmation actions
+  stack at constrained widths; section headings wrap within their surfaces. A
+  320x568, 2x-text widget test traverses populated activity and enters the
+  payout-bank/account flow without layout exceptions.
 
 These repairs are bounded findings, not a claim that all active routes have
 passed every contrast, keyboard, focus-order, or largest-text criterion. The

@@ -109,6 +109,64 @@ void main() {
     },
   );
 
+  testWidgets('professional finance fits a compact screen with 2x text', (
+    tester,
+  ) async {
+    final controller = ProfessionalFinanceController(
+      repository: _FinanceRepository(
+        hasPayoutProfile: false,
+        includeActivity: true,
+      ),
+    );
+
+    await _pump(
+      tester,
+      ProfessionalFinanceShellPage(controller: controller),
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+    );
+
+    expect(find.text('Payments & payouts'), findsOneWidget);
+    expect(find.text('Your consultation finances'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    for (var i = 0; i < 8; i++) {
+      await tester.drag(find.byType(ListView), const Offset(0, -500));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+
+    for (var i = 0; i < 8; i++) {
+      await tester.drag(find.byType(ListView), const Offset(0, 500));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+    for (var i = 0; i < 8; i++) {
+      if (find.byKey(const Key('payout-bank-selector')).evaluate().isNotEmpty) {
+        break;
+      }
+      await tester.drag(find.byType(ListView), const Offset(0, -400));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+    expect(find.byKey(const Key('payout-bank-selector')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('payout-bank-selector')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('payout-bank-selector')));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.ensureVisible(find.text('Care Bank').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Care Bank').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('payout-account-number')),
+      '0123456789',
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('bank details become resolvable only after valid input', (
     tester,
   ) async {
@@ -142,14 +200,25 @@ void main() {
   });
 }
 
-Future<void> _pump(WidgetTester tester, Widget home) async {
-  tester.view.physicalSize = _phoneSize;
+Future<void> _pump(
+  WidgetTester tester,
+  Widget home, {
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
+}) async {
+  tester.view.physicalSize = screenSize;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
-      builder: (_, __) => MaterialApp(home: home),
+      builder:
+          (context, _) => MaterialApp(
+            home: MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+              child: home,
+            ),
+          ),
     ),
   );
   await tester.pumpAndSettle();
@@ -185,9 +254,13 @@ class _SchedulingRepository implements SchedulingRepository {
 }
 
 class _FinanceRepository implements FinancialRepository {
-  _FinanceRepository({this.hasPayoutProfile = true});
+  _FinanceRepository({
+    this.hasPayoutProfile = true,
+    this.includeActivity = false,
+  });
 
   final bool hasPayoutProfile;
+  final bool includeActivity;
 
   @override
   Future<AppointmentPaymentView> appointmentPayment(
@@ -218,7 +291,7 @@ class _FinanceRepository implements FinancialRepository {
 
   @override
   Future<ProfessionalFinanceSummary> financeSummary() async {
-    return const ProfessionalFinanceSummary(
+    return ProfessionalFinanceSummary(
       currency: 'NGN',
       heldMinor: 1275000,
       eligibleMinor: 0,
@@ -227,8 +300,37 @@ class _FinanceRepository implements FinancialRepository {
       paidMinor: 0,
       negativeBalanceMinor: 0,
       payoutPaused: false,
-      recentLedger: <ProfessionalLedgerEntry>[],
-      payouts: <ProfessionalPayout>[],
+      recentLedger:
+          includeActivity
+              ? <ProfessionalLedgerEntry>[
+                ProfessionalLedgerEntry(
+                  id: 'ledger-1',
+                  type: 'CONSULTATION_EARNING',
+                  amountMinor: 1275000,
+                  currency: 'NGN',
+                  eligibleAt: DateTime.parse('2026-08-01T10:00:00Z'),
+                  descriptionCode: 'CONSULTATION_EARNING',
+                  createdAt: DateTime.parse('2026-07-29T10:00:00Z'),
+                  reserved: false,
+                ),
+              ]
+              : <ProfessionalLedgerEntry>[],
+      payouts:
+          includeActivity
+              ? <ProfessionalPayout>[
+                ProfessionalPayout(
+                  id: 'payout-1',
+                  status: 'FAILED',
+                  mode: 'MANUAL',
+                  amountMinor: 1275000,
+                  currency: 'NGN',
+                  bankName: 'Care Bank',
+                  maskedAccountNumber: '******1234',
+                  failureCode: 'BENEFICIARY_ACCOUNT_UNAVAILABLE',
+                  createdAt: DateTime.parse('2026-07-29T10:00:00Z'),
+                ),
+              ]
+              : <ProfessionalPayout>[],
     );
   }
 

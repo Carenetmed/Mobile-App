@@ -23,10 +23,12 @@ Future<void> _pumpSplash(
   WidgetTester tester, {
   required _FakeAuthRepository repository,
   BookingResumeService? bookingResumeService,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
   Duration refreshTimeout = const Duration(seconds: 10),
   Duration bookingResumeTimeout = const Duration(seconds: 10),
 }) async {
-  tester.view.physicalSize = _phoneSize;
+  tester.view.physicalSize = screenSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
@@ -34,7 +36,12 @@ Future<void> _pumpSplash(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder:
-          (_, __) => MaterialApp(
+          (context, _) => MaterialApp(
+            builder:
+                (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+                  child: child!,
+                ),
             home: SplashScreen(
               authRepository: repository,
               bookingResumeService: bookingResumeService,
@@ -62,6 +69,36 @@ Future<void> _pumpSplash(
 
 void main() {
   group('Session restore launch guard', () {
+    testWidgets('splash remains readable at compact width with 2x text', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pumpSplash(
+          tester,
+          repository: _FakeAuthRepository(),
+          screenSize: const Size(320, 568),
+          textScaler: const TextScaler.linear(2),
+        );
+
+        expect(find.byType(SplashScreen), findsOneWidget);
+        expect(find.text('CARENET'), findsOneWidget);
+        expect(find.text('HEALTH SERVICES'), findsOneWidget);
+        expect(tester.getSemantics(find.text('CARENET')).label, 'CARENET');
+        expect(
+          tester.getSemantics(find.text('HEALTH SERVICES')).label,
+          'HEALTH SERVICES',
+        );
+      } finally {
+        semantics.dispose();
+      }
+      expect(tester.takeException(), isNull);
+
+      await tester.pump(const Duration(milliseconds: 801));
+      await tester.pumpAndSettle();
+      expect(find.text('onboarding'), findsOneWidget);
+    });
+
     testWidgets('routes authenticated users to dashboard', (tester) async {
       final repository = _FakeAuthRepository(session: _session());
 

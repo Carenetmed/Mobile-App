@@ -87,7 +87,7 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 | `medicalAgreement`, `medicalProfessional`, `manageProfile` | ProfessionalOnboardingSetupPage | `profile_setup_test.dart`, `manage_profile_flow_test.dart` | Professional setup is exercised at 320x568 / 2x text through identity, credential, and practice fields, required catalog choices, save, and verification-document handoff. Screen-reader/keyboard and device proof remain open. |
 | `signUpPhone`, `signUpEmail` | SignUpEmail | `sign_up_flow_test.dart` | Email signup has 320x568 / 2x-text required-field and sign-in handoff coverage, with green heading hierarchy; physical screen-reader/keyboard proof remains open. |
 | `signInPhone`, `signInEmail` | SignInEmail | `sign_in_flow_test.dart` | Password/recovery/provider semantics and 320x568 at 2x text covered. |
-| `enterEmail`, `enterPassword` | Password recovery forms | `password_recovery_flow_test.dart` | Validation/routing and labelled Back covered; large-text layout not checked. |
+| `enterEmail`, `enterPassword` | Password recovery forms | `password_recovery_flow_test.dart` | Email entry and new-password validation are exercised at 320x568 / 2x text, including scroll access to the primary action; labelled Back remains covered. Token confirmation is a separate route and large-text coverage remains open there. |
 | `resetPasswordConfirm`, `emailVerificationConfirm` | Token confirmation pages | `password_recovery_flow_test.dart`, `auth_route_authority_test.dart` | Token and safe-error behavior covered; device accessibility not certified. |
 | `medicalEdit` | UserEdit | No focused route widget test identified | Accessibility/task-flow evidence gap. |
 | `dashboard` | Dashboard | `dashboard_shell_test.dart` | Role destinations, header actions, tab persistence and Android back covered; selected brand accent asserted. Large-text layout not checked. |
@@ -153,6 +153,10 @@ acceptance is still required before release.
   named brand text, no layout exceptions, and the existing onboarding startup
   handoff. The tested layout required no application change; device proof
   remains open.
+- Password-recovery email entry and new-password validation have compact-width,
+  2x-text coverage for scrolling to the primary action without layout
+  exceptions. Reset/email-verification token confirmation routes remain
+  unverified at enlarged text.
 
 These repairs are bounded findings, not a claim that all active routes have
 passed every contrast, keyboard, focus-order, or largest-text criterion. The

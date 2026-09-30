@@ -61,6 +61,29 @@ class InMemoryNotificationSessionStore implements SessionStore {
 
   @override
   Future<void> save(AuthSessionModel value) async => session = value;
+
+  @override
+  Future<bool> replaceIfCurrent(
+    AuthSessionModel expected,
+    AuthSessionModel replacement,
+  ) async {
+    if (session?.user.id != expected.user.id ||
+        session?.refreshToken != expected.refreshToken) {
+      return false;
+    }
+    session = replacement;
+    return true;
+  }
+
+  @override
+  Future<bool> clearIfCurrent(AuthSessionModel expected) async {
+    if (session?.user.id != expected.user.id ||
+        session?.refreshToken != expected.refreshToken) {
+      return false;
+    }
+    session = null;
+    return true;
+  }
 }
 
 class FakeNotificationRepository implements NotificationRepository {

@@ -41,8 +41,10 @@ Future<void> _pumpManageProfile(
   VerificationRepository? verificationRepository,
   OnboardingRepository? onboardingRepository,
   VerificationDocumentPicker? verificationDocumentPicker,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
 }) async {
-  tester.view.physicalSize = _phoneSize;
+  tester.view.physicalSize = screenSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
@@ -51,6 +53,11 @@ Future<void> _pumpManageProfile(
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
+            builder:
+                (context, child) => MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+                  child: child!,
+                ),
             home: ManageProfileShellPage(
               profileRepository: profileRepository ?? _FakeProfileRepository(),
             ),
@@ -530,6 +537,74 @@ void main() {
     expect(
       find.text('Professional profile has not been created yet.'),
       findsNothing,
+    );
+  });
+
+  testWidgets('manage profile remains usable at compact width and large text', (
+    tester,
+  ) async {
+    await _pumpManageProfile(
+      tester,
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+      profileRepository: _FakeProfileRepository(
+        professionalProfile: const ProfessionalProfile(
+          id: 'pro-large-text',
+          displayName: 'Dr. A Very Long Professional Display Name',
+          category: 'Specialist healthcare consultation category',
+          specialty: 'Long specialty label for accessibility testing',
+          bio:
+              'A backend-owned professional biography with enough text to verify that the profile remains scrollable at enlarged text.',
+          verificationStatus: 'VERIFIED',
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    for (var i = 0; i < 10; i++) {
+      await tester.drag(find.byType(ListView).first, const Offset(0, -260));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+    expect(find.text('Business'), findsOneWidget);
+    expect(find.text('Edit hours'), findsOneWidget);
+  });
+
+  testWidgets('verification metadata remains usable at compact large text', (
+    tester,
+  ) async {
+    await _pumpManageProfile(
+      tester,
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+      verificationRepository: _FakeVerificationRepository(
+        documentsResult: <VerificationDocument>[
+          VerificationDocument(
+            id: 'document-with-a-long-backend-owned-identifier',
+            documentType: 'license',
+            status: 'PENDING',
+            storageProvider: 'gcs',
+            mimeType: 'application/octet-stream-with-extra-metadata',
+            fileSizeBytes: 2048,
+            checksumProvided: true,
+            uploadedAt: DateTime.utc(2026, 7, 15),
+          ),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text('Verification'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    for (var i = 0; i < 10; i++) {
+      await tester.drag(find.byType(ListView).last, const Offset(0, -260));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+    expect(find.text('Verification documents'), findsOneWidget);
+    expect(
+      find.text('document-with-a-long-backend-owned-identifier'),
+      findsOneWidget,
     );
   });
 

@@ -67,7 +67,7 @@ or accessibility conformance.
 | Patient onboarding and readiness | `onboarding_gateway_test.dart`, `profile_setup_test.dart`, `onboarding_readiness_route_resolver_test.dart` | Welcome choices and patient/professional profile setup have 320x568 / 2x-text coverage; setup flows include required catalogs and save handoffs. Screen-reader/keyboard and physical-device proof remain open. |
 | Dashboard, role navigation, Home, Find Care, profile detail, booking | `dashboard_shell_test.dart`, `home_tab_shell_test.dart`, `search_flow_test.dart`, `specialist_details_flow_test.dart`, and `booking_intent_and_controller_test.dart` | Patient dashboard destinations, Find Care query/profile handoff, and professional-detail booking confirmation/success are exercised at 320x568 / 2x text; other booking and role states remain to be checked. |
 | Appointments and professional Schedule | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart`, `professional_schedule_test.dart`, and `scheduling_repository_test.dart` | Patient and professional appointment list/detail behavior now includes a 320x568 / 2x-text flow through an authorized professional action. Physical keyboard/TalkBack, Schedule enlarged-text coverage, and device proof remain open. The appointment-list back control has a tooltip. |
-| Account, profile management, verification, finance | `account_flow_test.dart`, `manage_profile_flow_test.dart`, `financial_flow_test.dart`, and `financial_contract_test.dart` | Finance now has 320x568 / 2x-text coverage through populated financial activity and payout-bank/account entry. Account/Profile/Settings/Delete back controls are labelled; screen-reader, focus-order, and device acceptance remain open. |
+| Account, profile management, verification, finance | `account_flow_test.dart`, `manage_profile_flow_test.dart`, `financial_flow_test.dart`, and `financial_contract_test.dart` | Finance has 320x568 / 2x-text coverage through populated financial activity and payout-bank/account entry. Manage Profile and verification documents now have compact 2x-text scroll coverage with responsive metadata and 48dp actions. Account/Profile/Settings/Delete screen-reader, focus-order, and device acceptance remain open. |
 | Messages, notifications, consultation | `messaging_flow_test.dart`, `messaging_controller_test.dart`, `notification_inbox_test.dart`, `notification_coordinator_test.dart`, and consultation controller tests | Honest-state, routing, and provider/controller behavior are covered. Real screen-reader, focus-order, and hardware permission behavior are not established by these tests. |
 | Deferred route aliases | `auth_route_authority_test.dart`, `account_flow_test.dart`, and route registration tests | Several old identifiers intentionally render `DeferredFeaturePage` or a canonical screen. Their legacy source screens are not represented as active routes in this accessibility sweep. |
 
@@ -97,7 +97,7 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 | `appointmentDetail` | AppointmentDetailShellPage | `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart` | At 320x568 / 2x text, the canonical detail status and authorized Accept action remain reachable by scrolling. Other role/status, screen-reader, and device states are not certified by that flow. |
 | `consultation` | ConsultationShellPage | `consultation_controller_test.dart` | Controller/authorization behavior covered; physical permission/accessibility proof open. |
 | `account`, `deleteAccount` | AccountShellPage | `account_flow_test.dart` | Authority, legal, account and deletion paths covered; back controls labelled; large-text layout not checked. |
-| `professionalVerificationDocuments` | ProfessionalVerificationDocumentsShellPage | `manage_profile_flow_test.dart` | Upload/list states covered; accessibility layout not certified. |
+| `professionalVerificationDocuments` | ProfessionalVerificationDocumentsShellPage | `manage_profile_flow_test.dart` | Verification readiness, upload/list states, and long metadata now have 320x568 / 2x-text scroll coverage; screen-reader and device proof remain open. |
 | `professionalFinance` | ProfessionalFinanceShellPage | `financial_flow_test.dart`, `financial_contract_test.dart` | 320x568 / 2x-text populated full-scroll and payout-account entry are covered; platform screen-reader, focus-order, and device acceptance remain open. |
 | `editYourName`, `editProfessionalDetails`, `addDescription` | Professional profile editor shells | `manage_profile_flow_test.dart` | Backend-field behavior covered; accessibility layout not certified. |
 | `messages` | MessagesPage | `messaging_flow_test.dart`, `messaging_controller_test.dart` | Honest inbox/route states covered; keyboard/screen-reader conversation task open. |
@@ -132,6 +132,10 @@ acceptance is still required before release.
   the date in the vertically flowing subtitle; the chevron remains trailing.
   A compact large-text test scrolls from the professional appointment list into
   detail and verifies the authorized Accept action remains reachable.
+- Manage Profile and verification metadata now stack labels above long values
+  at compact widths or enlarged text. Profile inline actions preserve a 48dp
+  target, and the verification document type field expands to keep its selected
+  label readable. Compact 2x-text tests cover both flows.
 - Professional Finance summary/activity rows and payout-confirmation actions
   stack at constrained widths; section headings wrap within their surfaces. A
   320x568, 2x-text widget test traverses populated activity and enters the

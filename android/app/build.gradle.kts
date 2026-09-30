@@ -1,8 +1,58 @@
+import java.io.File
+import java.security.KeyStore
+import java.security.MessageDigest
+import java.security.cert.X509Certificate
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val uploadStorePath = providers.environmentVariable("CARENET_UPLOAD_KEYSTORE_PATH").orNull
+val uploadStorePassword = providers.environmentVariable("CARENET_UPLOAD_STORE_PASSWORD").orNull
+val uploadKeyAlias = providers.environmentVariable("CARENET_UPLOAD_KEY_ALIAS").orNull
+val uploadKeyPassword = providers.environmentVariable("CARENET_UPLOAD_KEY_PASSWORD").orNull
+val uploadCertificateSha256 = providers.environmentVariable("CARENET_UPLOAD_CERT_SHA256").orNull
+val uploadSigningConfigured = listOf(uploadStorePath, uploadStorePassword,
+    uploadKeyAlias, uploadKeyPassword, uploadCertificateSha256).all { !it.isNullOrBlank() }
+
+val validateReleaseSigning = tasks.register("validateReleaseSigning") {
+    doLast {
+        check(uploadSigningConfigured) {
+            "Release signing is not configured. Supply the protected CARENET_UPLOAD_* environment values."
+        }
+        val store = file(uploadStorePath!!).canonicalFile
+        check(File(uploadStorePath).isAbsolute && store.isFile &&
+            !store.toPath().startsWith(rootProject.projectDir.parentFile.canonicalFile.toPath())) {
+            "The upload keystore must exist outside the repository."
+        }
+        try {
+            val keyStore = KeyStore.getInstance(store, uploadStorePassword!!.toCharArray())
+            check(keyStore.isKeyEntry(uploadKeyAlias)) { "Upload signing alias is not a private key." }
+            val certificate = keyStore.getCertificate(uploadKeyAlias) as X509Certificate
+            check(!certificate.subjectX500Principal.name.contains("CN=Android Debug", ignoreCase = true)) {
+                "Android debug certificates are not allowed for release signing."
+            }
+            val actual = MessageDigest.getInstance("SHA-256")
+                .digest(certificate.encoded).joinToString("") { "%02X".format(it) }
+            val expected = uploadCertificateSha256!!.replace(":", "").uppercase()
+            check(expected.matches(Regex("[A-F0-9]{64}")) && actual == expected) {
+                "Upload signing certificate does not match the approved SHA-256 fingerprint."
+            }
+        } catch (error: Exception) {
+            throw GradleException("Protected release signing validation failed; check the keystore and approved certificate.")
+        }
+    }
+}
+
+// Packaging must fail closed; debug builds and release lint need no signing secrets.
+tasks.configureEach {
+    if ((name.endsWith("Release") && listOf("assemble", "bundle", "package")
+        .any { name.startsWith(it) }) || (name.startsWith("sign") && name.contains("Release"))) {
+        dependsOn(validateReleaseSigning)
+    }
 }
 
 android {
@@ -45,10 +95,14 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
-
+            if (uploadSigningConfigured) {
+                signingConfig = signingConfigs.create("protectedUpload") {
+                    storeFile = file(uploadStorePath!!)
+                    storePassword = uploadStorePassword
+                    keyAlias = uploadKeyAlias
+                    keyPassword = uploadKeyPassword
+                }
+            }
         }
     }
 }

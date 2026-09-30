@@ -10,10 +10,13 @@
 - Local `lintStagingRelease` completed with zero errors and five warnings.
   The warnings include Android app-link data-tag structure and backup-policy
   configuration; a passing lint task is not a release-security sign-off.
-- AGP 8.7.0 still warns that compileSdk 36 is above its tested maximum. The
-  AGP/Gradle upgrade and signed release artifact need separate verification;
-  an attempted local upgrade was not accepted because this machine ran out of
-  disk space while preparing Gradle 8.13 caches.
+- Android uses AGP 8.11.1 with Gradle 8.13 and Java 17, a toolchain supporting
+  compileSdk 36. The staging debug APK and analyzer pass with this pair, and
+  the full Flutter suite remains at 527 passing tests with no test changes.
+- Release lint passes with zero errors and six warnings. Local Windows SDK
+  paths in ignored `local.properties` require escaped drive-letter colons;
+  Flutter may regenerate that file, so check its paths before local lint.
+  Signed release artifacts still require separate signing and release proof.
 
 ## APP-P1-021 shared UX/accessibility foundation
 

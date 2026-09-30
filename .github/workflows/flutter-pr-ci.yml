@@ -61,6 +61,10 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      - name: Android backup privacy policy
+        shell: pwsh
+        run: ./tool/check_android_backup_policy.ps1
+
       - name: Test
         run: flutter test
 

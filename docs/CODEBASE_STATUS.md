@@ -6,8 +6,9 @@ Release packaging no longer falls back to the Android debug key. The protected
 environment contract, certificate validation, and remaining upload/Play proof
 are documented in `ANDROID_RELEASE_SIGNING.md`. CI uses disposable signing
 fixtures only. Local analyzer, all 527 unchanged Flutter tests, staging debug
-APK, and executable signing regressions pass. Upload-key provisioning, signed
-distribution artifacts, certificate registration, release configuration,
+APK, and executable signing regressions pass. Separate upload keys, protected
+backups, and Firebase upload-certificate registration are verified. Signed
+distribution artifacts, Play certificate registration, release configuration,
 physical acceptance, and production promotion remain explicit open gates.
 
 **Last updated:** 2026-09-29 APP-P1-021 shared UX/accessibility foundation.

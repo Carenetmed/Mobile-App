@@ -41,13 +41,17 @@ class SessionRefreshCoordinator {
       final session = await _apiClient.refresh(
         refreshToken: current.refreshToken,
       );
-      await _sessionStore.save(session);
+      if (session.user.id != current.user.id ||
+          !await _sessionStore.replaceIfCurrent(current, session)) {
+        throw _signedOutFailure;
+      }
       await _notifyAuthenticated(session);
       return session;
     } on AuthFailure catch (failure) {
       if (failure.shouldClearSession) {
-        await _notifyClearing(current);
-        await _sessionStore.clear();
+        if (await _sessionStore.clearIfCurrent(current)) {
+          await _notifyClearing(current);
+        }
       }
       rethrow;
     }

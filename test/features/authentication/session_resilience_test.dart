@@ -45,6 +45,21 @@ void main() {
     },
   );
 
+  test('secure session rejects a stale conditional replacement', () async {
+    final store = SecureSessionStore();
+    final previous = _session('old-access', 'old-refresh');
+    final replacement = _session('new-access', 'new-refresh');
+    await store.save(previous);
+    await store.clear();
+
+    expect(await store.replaceIfCurrent(previous, replacement), isFalse);
+    expect(await store.read(), isNull);
+
+    await store.save(replacement);
+    expect(await store.clearIfCurrent(previous), isFalse);
+    expect((await store.read())?.accessToken, 'new-access');
+  });
+
   test(
     'corrupt or incomplete session record fails closed and clears',
     () async {

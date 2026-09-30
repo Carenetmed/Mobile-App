@@ -167,6 +167,74 @@ void main() {
       expect(adapter.fetchCalls, 1);
     });
 
+    test('late refresh cannot restore a cleared session', () async {
+      final store = InMemorySessionStore();
+      await store.save(_session(accessToken: 'old', refreshToken: 'old-key'));
+      final response = Completer<ResponseBody>();
+      final adapter = _FakeAdapter(
+        responseJson: const <String, dynamic>{},
+        responseCompleter: response,
+      );
+      final repository = AuthRepository(
+        apiClient: AuthApiClient(
+          config: const CareNetApiConfig(baseUrl: 'http://127.0.0.1:8080'),
+          dio: Dio()..httpClientAdapter = adapter,
+        ),
+        sessionStore: store,
+      );
+
+      final refresh = repository.refresh();
+      while (adapter.fetchCalls == 0) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      await store.clear();
+      response.complete(
+        _responseBody(
+          _sessionJson(accessToken: 'late', refreshToken: 'rotated'),
+        ),
+      );
+
+      await expectLater(refresh, throwsA(isA<AuthFailure>()));
+      expect(await store.read(), isNull);
+    });
+
+    test('late rejected refresh cannot clear a replacement account', () async {
+      final store = InMemorySessionStore();
+      await store.save(_session(accessToken: 'old', refreshToken: 'old-key'));
+      final response = Completer<ResponseBody>();
+      final adapter = _FakeAdapter(
+        responseJson: const <String, dynamic>{},
+        responseCompleter: response,
+      );
+      final repository = AuthRepository(
+        apiClient: AuthApiClient(
+          config: const CareNetApiConfig(baseUrl: 'http://127.0.0.1:8080'),
+          dio: Dio()..httpClientAdapter = adapter,
+        ),
+        sessionStore: store,
+      );
+
+      final refresh = repository.refresh();
+      while (adapter.fetchCalls == 0) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      final replacement = AuthSessionModel.fromJson({
+        ..._sessionJson(accessToken: 'new', refreshToken: 'new-key'),
+        'user': {
+          ..._sessionJson(accessToken: 'new', refreshToken: 'new-key')['user']
+              as Map<String, dynamic>,
+          'id': 'user-2',
+        },
+      });
+      await store.save(replacement);
+      response.complete(
+        _responseBody(<String, dynamic>{'message': 'Unauthorized'}, 401),
+      );
+
+      await expectLater(refresh, throwsA(isA<AuthFailure>()));
+      expect((await store.read())?.user.id, 'user-2');
+    });
+
     test(
       'account repository clears session on unauthorized current account',
       () async {
@@ -374,3 +442,12 @@ class _FakeAdapter implements HttpClientAdapter {
     );
   }
 }
+
+ResponseBody _responseBody(Map<String, dynamic> body, [int status = 200]) =>
+    ResponseBody.fromString(
+      jsonEncode(body),
+      status,
+      headers: <String, List<String>>{
+        Headers.contentTypeHeader: <String>[Headers.jsonContentType],
+      },
+    );

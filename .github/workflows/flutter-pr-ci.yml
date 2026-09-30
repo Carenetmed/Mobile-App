@@ -75,6 +75,11 @@ jobs:
         working-directory: android
         run: bash gradlew lintStagingRelease --console=plain
 
+      - name: Protected release signing regression
+        # Disposable certificates only; no distribution signing secrets in PR CI.
+        shell: pwsh
+        run: ./tool/check_android_release_signing.ps1
+
       - name: Release transient build output
         if: always()
         run: rm -rf build

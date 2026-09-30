@@ -2,6 +2,19 @@
 
 **Last updated:** 2026-09-29 APP-P1-021 shared UX/accessibility foundation.
 
+## Android Release Lint Gate
+
+- Staging release lint now runs in Flutter PR/push CI after the debug APK build.
+  Jetifier remains enabled; only the Byte Buddy test artifact is excluded from
+  transformation because Jetifier cannot parse its newer class-file version.
+- Local `lintStagingRelease` completed with zero errors and five warnings.
+  The warnings include Android app-link data-tag structure and backup-policy
+  configuration; a passing lint task is not a release-security sign-off.
+- AGP 8.7.0 still warns that compileSdk 36 is above its tested maximum. The
+  AGP/Gradle upgrade and signed release artifact need separate verification;
+  an attempted local upgrade was not accepted because this machine ran out of
+  disk space while preparing Gradle 8.13 caches.
+
 ## APP-P1-021 shared UX/accessibility foundation
 
 - Shared marketplace tokens and active Material color schemes use the CareNet

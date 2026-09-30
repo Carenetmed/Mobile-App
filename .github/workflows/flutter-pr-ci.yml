@@ -18,9 +18,9 @@ concurrency:
 
 jobs:
   verify:
-    name: Analyze, test, and build
+    name: Analyze, test, build, and lint
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - name: Check out triggering commit
@@ -66,6 +66,10 @@ jobs:
 
       - name: Build debug APK
         run: flutter build apk --debug --flavor staging
+
+      - name: Android release lint
+        working-directory: android
+        run: bash gradlew lintStagingRelease --console=plain
 
       - name: Release transient build output
         if: always()

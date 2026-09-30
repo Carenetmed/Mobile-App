@@ -1,5 +1,13 @@
 # Codebase status
 
+## Google Provider Recovery (APP-READY-038)
+
+Google SDK initialization can retry after rejection, concurrent sign-in taps
+share one operation, and initialization waits are bounded without duplicating
+a timed-out SDK operation. `GOOGLE_PROVIDER_RECOVERY.md` records the contract
+and 19 focused regression assertions. Signed-device OAuth/provider proof is
+still a separate release requirement; no backend/session authority changed.
+
 ## Protected Release Signing (APP-READY-037)
 
 Release packaging no longer falls back to the Android debug key. The protected

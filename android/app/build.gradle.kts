@@ -1,7 +1,9 @@
 import java.io.File
+import java.net.URI
 import java.security.KeyStore
 import java.security.MessageDigest
 import java.security.cert.X509Certificate
+import java.util.Base64
 
 plugins {
     id("com.android.application")
@@ -17,6 +19,67 @@ val uploadKeyPassword = providers.environmentVariable("CARENET_UPLOAD_KEY_PASSWO
 val uploadCertificateSha256 = providers.environmentVariable("CARENET_UPLOAD_CERT_SHA256").orNull
 val uploadSigningConfigured = listOf(uploadStorePath, uploadStorePassword,
     uploadKeyAlias, uploadKeyPassword, uploadCertificateSha256).all { !it.isNullOrBlank() }
+
+fun releaseEnvironmentGate(environment: String, firebaseAppId: String) =
+    tasks.register("validate${environment.replaceFirstChar { it.uppercase() }}ReleaseEnvironment") {
+        doLast {
+            val encoded = providers.gradleProperty("dart-defines").orNull
+            check(!encoded.isNullOrBlank()) { "Release runtime configuration is required." }
+            val values = mutableMapOf<String, String>()
+            try {
+                for (entry in encoded.split(',')) {
+                    val decoded = String(Base64.getDecoder().decode(entry), Charsets.UTF_8)
+                    val separator = decoded.indexOf('=')
+                    check(separator > 0) { "Malformed release configuration." }
+                    val key = decoded.substring(0, separator)
+                    check(!values.containsKey(key)) { "Duplicate release configuration." }
+                    values[key] = decoded.substring(separator + 1)
+                }
+            } catch (error: Exception) {
+                throw GradleException("Release runtime configuration encoding is invalid or ambiguous.")
+            }
+            val required = listOf("CARENET_ENVIRONMENT", "CARENET_API_BASE_URL",
+                "CARENET_FIREBASE_PROJECT_ID", "CARENET_FIREBASE_APP_ID",
+                "CARENET_FIREBASE_MESSAGING_SENDER_ID", "CARENET_FIREBASE_API_KEY",
+                "GOOGLE_SIGN_IN_SERVER_CLIENT_ID")
+            for (key in required) {
+                val value = values[key]
+                check(!value.isNullOrBlank() && value == value.trim()) {
+                    "Release configuration requires a nonblank, trimmed $key."
+                }
+            }
+            check(values["CARENET_ENVIRONMENT"] == environment) { "Release environment does not match the Android flavor." }
+            check(values["CARENET_FIREBASE_PROJECT_ID"] == "project-a96784ee-811c-46ab-a7b" &&
+                values["CARENET_FIREBASE_APP_ID"] == firebaseAppId &&
+                values["CARENET_FIREBASE_MESSAGING_SENDER_ID"] == "599365440227") {
+                "Release Firebase identity does not match the canonical flavor."
+            }
+            check(values["CARENET_FIREBASE_API_KEY"]!!.matches(Regex("AIza[A-Za-z0-9_-]{35}")) &&
+                values["GOOGLE_SIGN_IN_SERVER_CLIENT_ID"]!!.matches(Regex("[0-9]+-[A-Za-z0-9_-]+\\.apps\\.googleusercontent\\.com"))) {
+                "Release provider configuration has an invalid format."
+            }
+            val api = try { URI(values["CARENET_API_BASE_URL"]!!) } catch (error: Exception) {
+                throw GradleException("Release API URL is invalid.")
+            }
+            check(api.scheme == "https" && !api.host.isNullOrBlank() &&
+                api.userInfo == null && api.query == null && api.fragment == null) {
+                "Release API URL must be HTTPS without credentials, query, or fragment."
+            }
+            if (environment == "production") {
+                val host = api.host.lowercase()
+                check(!host.contains("staging") && host != "localhost" &&
+                    host != "127.0.0.1" && host != "0.0.0.0" && host != "::1" &&
+                    host != "[::1]" && !host.endsWith(".local")) {
+                    "Production cannot use a staging or local API endpoint."
+                }
+            }
+        }
+    }
+
+val releaseEnvironmentGates = mapOf(
+    "StagingRelease" to releaseEnvironmentGate("staging", "1:599365440227:android:fb589a833cd2e8b251abd6"),
+    "ProductionRelease" to releaseEnvironmentGate("production", "1:599365440227:android:7fbb7d5e3784327751abd6"),
+)
 
 val validateReleaseSigning = tasks.register("validateReleaseSigning") {
     doLast {
@@ -50,8 +113,16 @@ val validateReleaseSigning = tasks.register("validateReleaseSigning") {
 // Packaging must fail closed; debug builds and release lint need no signing secrets.
 tasks.configureEach {
     if ((name.endsWith("Release") && listOf("assemble", "bundle", "package")
-        .any { name.startsWith(it) }) || (name.startsWith("sign") && name.contains("Release"))) {
+        .any { name.startsWith(it) }) ||
+        (name.startsWith("package") && name.endsWith("ReleaseBundle")) ||
+        (name.startsWith("sign") && name.contains("Release"))) {
         dependsOn(validateReleaseSigning)
+        for ((variant, gate) in releaseEnvironmentGates) {
+            if (name.contains(variant)) dependsOn(gate)
+        }
+    }
+    for ((variant, gate) in releaseEnvironmentGates) {
+        if (name == "compileFlutterBuild$variant") mustRunAfter(gate)
     }
 }
 

@@ -96,6 +96,10 @@ jobs:
         shell: pwsh
         run: ./tool/check_android_release_signing.ps1
 
+      - name: Release environment regression
+        shell: pwsh
+        run: ./tool/check_android_release_environment.ps1
+
       - name: Release transient build output
         if: always()
         run: rm -rf build

@@ -1,5 +1,13 @@
 # Codebase status
 
+## Android Release Environment Gate (APP-READY-039)
+
+Release packaging requires flavor-specific runtime configuration alongside
+protected signing. `ANDROID_RELEASE_CONFIGURATION.md` records required values,
+canonical Firebase identity, HTTPS restrictions, regression probes, and the
+separate provider/production/device acceptance boundaries. Debug and lint stay
+credential-free. No application or dependency contract changed.
+
 ## Google Provider Recovery (APP-READY-038)
 
 Google SDK initialization can retry after rejection, concurrent sign-in taps

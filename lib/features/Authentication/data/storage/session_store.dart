@@ -17,6 +17,9 @@ abstract class SessionStore {
   );
 
   Future<bool> clearIfCurrent(AuthSessionModel expected);
+
+  // Explicit account exit must also clear tokens rotated during that exit.
+  Future<bool> clearAccountIfCurrent(String userId);
 }
 
 class SecureSessionStore implements SessionStore {
@@ -152,6 +155,14 @@ class SecureSessionStore implements SessionStore {
         return true;
       });
 
+  @override
+  Future<bool> clearAccountIfCurrent(String userId) => _serialize(() async {
+    final current = await _readUnlocked();
+    if (current == null || current.user.id != userId) return false;
+    await _clearUnlocked();
+    return true;
+  });
+
   Future<void> _clearLegacy() async {
     await Future.wait(<Future<void>>[
       _storage.delete(key: _accessTokenKey),
@@ -207,6 +218,13 @@ class InMemorySessionStore implements SessionStore {
   @override
   Future<bool> clearIfCurrent(AuthSessionModel expected) async {
     if (!_sameSession(_session, expected)) return false;
+    _session = null;
+    return true;
+  }
+
+  @override
+  Future<bool> clearAccountIfCurrent(String userId) async {
+    if (_session == null || _session!.user.id != userId) return false;
     _session = null;
     return true;
   }

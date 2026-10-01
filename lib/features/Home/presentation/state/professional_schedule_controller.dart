@@ -260,6 +260,8 @@ class ProfessionalScheduleController extends ChangeNotifier {
           'Backend is not configured yet.',
         AuthFailureType.unauthorized =>
           'Your session has expired. Please sign in again.',
+        AuthFailureType.forbidden =>
+          'This account is not allowed to manage availability.',
         AuthFailureType.validation =>
           'Please check the availability and try again.',
         AuthFailureType.server || AuthFailureType.network =>

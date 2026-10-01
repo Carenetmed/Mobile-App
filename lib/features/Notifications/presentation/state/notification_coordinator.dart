@@ -64,8 +64,19 @@ class NotificationCoordinator extends ChangeNotifier
   bool _observingLifecycle = false;
   AuthSessionModel? _session;
   Future<void>? _activeRegistration;
+  String? _activeRegistrationUserId;
   Future<void>? _activeTap;
   bool _navigationReady = false;
+  Future<void> _bindingTransition = Future<void>.value();
+
+  Future<T> _serializeBinding<T>(Future<T> Function() operation) {
+    final result = _bindingTransition.then((_) => operation());
+    _bindingTransition = result.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace __) {},
+    );
+    return result;
+  }
 
   bool get pushConfigured => _transport.isConfigured;
 
@@ -100,15 +111,22 @@ class NotificationCoordinator extends ChangeNotifier
 
   @override
   Future<void> onAuthenticatedSession(AuthSessionModel session) async {
-    final previousUser = await _installationStore.boundUserId();
-    _debug(
-      'authenticated session; previous owner matches=${previousUser == null || previousUser == session.user.id}.',
-    );
-    if (previousUser != null && previousUser != session.user.id) {
-      await _installationStore.clearPendingNotificationId();
-      unreadCount = 0;
-    }
-    _session = session;
+    final accepted = await _serializeBinding(() async {
+      if (_disposed) return false;
+      final current = await _repository.requireSession();
+      if (_disposed || current.user.id != session.user.id) return false;
+      final previousUser = await _installationStore.boundUserId();
+      if (_disposed) return false;
+      if ((previousUser != null && previousUser != session.user.id) ||
+          (_session != null && _session!.user.id != session.user.id)) {
+        await _installationStore.clearPendingNotificationId();
+        unreadCount = 0;
+      }
+      if (_disposed) return false;
+      _session = session;
+      return true;
+    });
+    if (!accepted) return;
     await _registerCurrentInstallation();
     await refreshUnreadCount();
     if (_navigationReady) await _resolvePendingTap();
@@ -120,14 +138,30 @@ class NotificationCoordinator extends ChangeNotifier
     await _resolvePendingTap();
   }
 
-  Future<void> _registerCurrentInstallation() {
+  Future<void> _registerCurrentInstallation() async {
+    final userId = _session?.user.id;
+    if (userId == null || _disposed) return;
     final active = _activeRegistration;
-    if (active != null) return active;
-    final future = _register();
-    _activeRegistration = future;
-    return future.whenComplete(() {
-      if (identical(_activeRegistration, future)) _activeRegistration = null;
+    if (active != null) {
+      if (_activeRegistrationUserId == userId) return active;
+      try {
+        await active;
+      } catch (_) {
+        // A prior account's provider failure must not block the current owner.
+      }
+      if (_disposed || _session?.user.id != userId) return;
+      return _registerCurrentInstallation();
+    }
+    late final Future<void> future;
+    future = _register().whenComplete(() {
+      if (identical(_activeRegistration, future)) {
+        _activeRegistration = null;
+        _activeRegistrationUserId = null;
+      }
     });
+    _activeRegistrationUserId = userId;
+    _activeRegistration = future;
+    return future;
   }
 
   Future<void> _register() async {
@@ -137,6 +171,7 @@ class NotificationCoordinator extends ChangeNotifier
     if (endpoint == null || endpoint.trim().isEmpty) return;
     final metadata = await _metadataLoader();
     final installationId = await _installationStore.installationId();
+    if (_disposed || _session?.user.id != session.user.id) return;
     await _repository.registerInstallation(
       session: session,
       payload: <String, dynamic>{
@@ -150,7 +185,10 @@ class NotificationCoordinator extends ChangeNotifier
         'permissionState': _permissionWire(permission),
       },
     );
-    await _installationStore.bindUser(session.user.id);
+    await _serializeBinding(() async {
+      if (_disposed || _session?.user.id != session.user.id) return;
+      await _installationStore.bindUser(session.user.id);
+    });
   }
 
   static Future<NotificationDeviceMetadata> _loadDeviceMetadata() async {
@@ -203,27 +241,43 @@ class NotificationCoordinator extends ChangeNotifier
     } catch (_) {
       // Backend logout also invalidates all active installations for the user.
     } finally {
-      _session = null;
-      unreadCount = 0;
-      await _installationStore.clearBinding();
-      await _installationStore.clearPendingNotificationId();
-      _notify();
+      await _clearAccountBinding(session);
     }
   }
 
   @override
   Future<void> afterAccountDeletion(AuthSessionModel session) async {
-    _session = null;
-    unreadCount = 0;
-    await _installationStore.clearBinding();
-    await _installationStore.clearPendingNotificationId();
-    _notify();
+    await _clearAccountBinding(session);
   }
 
+  Future<void> _clearAccountBinding(AuthSessionModel session) =>
+      _serializeBinding(() async {
+        if (_disposed ||
+            (_session != null && _session!.user.id != session.user.id)) {
+          return;
+        }
+        final boundUser = await _installationStore.boundUserId();
+        if (boundUser != null && boundUser != session.user.id) return;
+        _session = null;
+        unreadCount = 0;
+        await _installationStore.clearBinding();
+        await _installationStore.clearPendingNotificationId();
+        _notify();
+      });
+
   Future<void> refreshUnreadCount() async {
-    if (_session == null) return;
+    final session = _session;
+    if (session == null || _disposed) return;
     try {
-      unreadCount = await _repository.unreadCount();
+      final count = await _repository.unreadCount();
+      if (_disposed || _session?.user.id != session.user.id) return;
+      final current = await _repository.requireSession();
+      if (_disposed ||
+          _session?.user.id != session.user.id ||
+          current.user.id != session.user.id) {
+        return;
+      }
+      unreadCount = count;
       _notify();
     } catch (_) {
       return;

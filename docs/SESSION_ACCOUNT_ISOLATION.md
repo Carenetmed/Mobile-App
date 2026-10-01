@@ -24,6 +24,10 @@ Notification registration sharing is account-scoped. Local binding changes
 are serialized with account cleanup; delayed logout or deletion for one
 account cannot erase a different account's binding or pending notification.
 Late unread responses are ignored after account change or disposal.
+Tap lookups recheck account and navigator identity after asynchronous work;
+stale completions neither mark another account's notification nor navigate.
+Resolved-tap cleanup clears only the matching pending ID under the binding
+transition queue.
 
 Focused regression inventory is in `account_session_isolation_test.dart`,
 `session_request_context_test.dart`, and

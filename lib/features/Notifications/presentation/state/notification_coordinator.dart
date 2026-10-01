@@ -314,24 +314,61 @@ class NotificationCoordinator extends ChangeNotifier
     _debug('pending tap available=${id != null}.');
     if (navigator == null || session == null || id == null) return;
     try {
+      if (!await _hasCurrentSession(session)) return;
       final notification = await _repository.notification(id);
+      if (!await _hasCurrentSession(session)) return;
       if (!notification.isRead) await _repository.markRead(id);
-      await _installationStore.clearPendingNotificationId();
+      if (!await _clearResolvedTap(session, id)) return;
       await refreshUnreadCount();
+      if (!await _hasCurrentSession(session) ||
+          !navigator.mounted ||
+          _navigatorKey.currentState != navigator) {
+        return;
+      }
       _debug('owned tap resolved to ${notification.routeCode ?? 'INBOX'}.');
       _openOwnedDestination(navigator, notification);
     } on AuthFailure catch (failure) {
+      if (!await _hasCurrentSession(session)) return;
       if (_isRecoverableTapFailure(failure)) {
         _debug('owned tap deferred after recoverable ${failure.type.name}.');
         return;
       }
-      await _installationStore.clearPendingNotificationId();
-      navigator.pushNamed(RouteName.notification);
+      if (await _clearResolvedTap(session, id) &&
+          await _hasCurrentSession(session) &&
+          navigator.mounted &&
+          _navigatorKey.currentState == navigator) {
+        navigator.pushNamed(RouteName.notification);
+      }
     } catch (_) {
-      await _installationStore.clearPendingNotificationId();
-      navigator.pushNamed(RouteName.notification);
+      if (await _clearResolvedTap(session, id) &&
+          await _hasCurrentSession(session) &&
+          navigator.mounted &&
+          _navigatorKey.currentState == navigator) {
+        navigator.pushNamed(RouteName.notification);
+      }
     }
   }
+
+  Future<bool> _hasCurrentSession(AuthSessionModel expected) async {
+    if (_disposed || _session?.user.id != expected.user.id) return false;
+    try {
+      final current = await _repository.requireSession();
+      return !_disposed &&
+          _session?.user.id == expected.user.id &&
+          current.user.id == expected.user.id;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> _clearResolvedTap(AuthSessionModel session, String id) =>
+      _serializeBinding(() async {
+        if (!await _hasCurrentSession(session)) return false;
+        final pending = await _installationStore.pendingNotificationId();
+        if (pending != id || !await _hasCurrentSession(session)) return false;
+        await _installationStore.clearPendingNotificationId();
+        return true;
+      });
 
   bool _isRecoverableTapFailure(AuthFailure failure) {
     return failure.type == AuthFailureType.unauthorized ||

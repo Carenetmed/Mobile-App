@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
+import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Notifications/domain/entities/notification_models.dart';
 import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +10,43 @@ import 'package:flutter_test/flutter_test.dart';
 import 'notification_test_fakes.dart';
 
 void main() {
+  testWidgets('late tap cannot open the previous account destination', (
+    tester,
+  ) async {
+    final repository = _HeldTapRepository();
+    final navigatorKey = GlobalKey<NavigatorState>();
+    final coordinator = NotificationCoordinator(
+      repository: repository,
+      installationStore: FakeNotificationInstallationStore(),
+      transport: FakeNotificationTransport(configured: false),
+      navigatorKey: navigatorKey,
+    );
+    addTearDown(coordinator.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        navigatorKey: navigatorKey,
+        home: const Scaffold(body: Text('Home')),
+        onGenerateRoute:
+            (settings) => MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => Scaffold(body: Text(settings.name ?? 'Other')),
+            ),
+      ),
+    );
+    await coordinator.onAuthenticatedSession(repository.session);
+    await coordinator.markNavigationReady();
+    final tap = coordinator.handleTap('old-notification');
+    await repository.started.future;
+    repository.session = notificationTestSession(userId: 'user-2');
+    await coordinator.onAuthenticatedSession(repository.session);
+    repository.result.complete(notificationTestItem(id: 'old-notification'));
+    await tap;
+    await tester.pumpAndSettle();
+    expect(repository.markedRead, isEmpty);
+    expect(find.text(RouteName.appointmentDetail), findsNothing);
+    expect(find.text('Home'), findsOneWidget);
+  });
+
   test('late logout cleanup preserves the new account binding', () async {
     final repository = _HeldRemovalRepository();
     final store = FakeNotificationInstallationStore();
@@ -151,6 +190,17 @@ class _HeldRemovalRepository extends FakeNotificationRepository {
   }) async {
     started.complete();
     await release.future;
+  }
+}
+
+class _HeldTapRepository extends FakeNotificationRepository {
+  final started = Completer<void>();
+  final result = Completer<CareNotification>();
+
+  @override
+  Future<CareNotification> notification(String id) {
+    if (!started.isCompleted) started.complete();
+    return result.future;
   }
 }
 

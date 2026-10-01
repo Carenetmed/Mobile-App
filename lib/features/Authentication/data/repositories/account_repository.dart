@@ -22,15 +22,23 @@ class AccountRepository {
   Future<AuthUser> currentAccount() async {
     final current = await _requireSession();
     try {
-      return await _apiClient.me(accessToken: current.accessToken);
+      final account = await _apiClient.me(accessToken: current.accessToken);
+      final latest = await _sessionStore.read();
+      if (latest?.user.id != current.user.id || account.id != current.user.id) {
+        throw const AuthFailure(
+          type: AuthFailureType.unknown,
+          message: 'Your account changed. Please try again.',
+        );
+      }
+      return account;
     } on AuthFailure catch (failure) {
-      if (failure.shouldClearSession) {
+      if (failure.shouldClearSession &&
+          await _sessionStore.clearIfCurrent(current)) {
         try {
           await _notificationLifecycle?.beforeLogout(current);
         } catch (_) {
           // Session invalidation remains authoritative if cleanup is unavailable.
         }
-        await _sessionStore.clear();
       }
       rethrow;
     }
@@ -57,12 +65,19 @@ class AccountRepository {
       password: password,
       googleIdToken: googleIdToken,
     );
-    try {
-      await _notificationLifecycle?.afterAccountDeletion(current);
-    } catch (_) {
-      // Session removal remains authoritative if local cleanup fails.
-    } finally {
-      await _sessionStore.clear();
+    if (await _sessionStore.clearAccountIfCurrent(current.user.id)) {
+      try {
+        await _notificationLifecycle?.afterAccountDeletion(current);
+      } catch (_) {
+        // Session removal remains authoritative if local cleanup fails.
+      }
+    }
+    final latest = await _sessionStore.read();
+    if (latest != null && latest.user.id != current.user.id) {
+      throw const AuthFailure(
+        type: AuthFailureType.unknown,
+        message: 'Your account changed. Please try again.',
+      );
     }
     return receipt;
   }

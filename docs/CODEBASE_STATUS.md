@@ -1,5 +1,13 @@
 # Codebase status
 
+## Session Account Isolation (APP-READY-040)
+
+Protected requests, refresh sharing, account reads, explicit session exits,
+and notification bindings reject stale cross-account work. Permission errors
+are distinct from authentication expiry. `SESSION_ACCOUNT_ISOLATION.md`
+documents the authority and atomic-clear contract. Existing tests remain
+enabled; provider and physical-device acceptance remain separate gates.
+
 ## Android Release Environment Gate (APP-READY-039)
 
 Release packaging requires flavor-specific runtime configuration alongside

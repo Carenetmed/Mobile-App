@@ -28,6 +28,8 @@ String safeAppointmentFailure(Object error) {
       AuthFailureType.missingConfiguration => 'Backend is not configured yet.',
       AuthFailureType.unauthorized =>
         'Your session has expired. Please sign in again.',
+      AuthFailureType.forbidden =>
+        'This account is not allowed to perform that action.',
       AuthFailureType.validation =>
         'The appointment could not be updated. Refresh and try again.',
       AuthFailureType.server || AuthFailureType.network =>

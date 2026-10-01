@@ -84,6 +84,13 @@ class InMemoryNotificationSessionStore implements SessionStore {
     session = null;
     return true;
   }
+
+  @override
+  Future<bool> clearAccountIfCurrent(String userId) async {
+    if (session == null || session!.user.id != userId) return false;
+    session = null;
+    return true;
+  }
 }
 
 class FakeNotificationRepository implements NotificationRepository {

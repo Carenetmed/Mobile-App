@@ -84,6 +84,7 @@ class _ManageProfileShellPageState extends State<ManageProfileShellPage> {
     return switch (failure.type) {
       AuthFailureType.missingConfiguration => 'Backend is not configured yet.',
       AuthFailureType.unauthorized => 'Please sign in again.',
+      AuthFailureType.forbidden => 'This account cannot manage this profile.',
       AuthFailureType.validation => 'Please check the details and try again.',
       AuthFailureType.server ||
       AuthFailureType.network => 'Service is unavailable. Please try again.',

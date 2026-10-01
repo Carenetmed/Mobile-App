@@ -3,6 +3,7 @@ enum AuthFailureType {
   invalidCredentials,
   validation,
   unauthorized,
+  forbidden,
   network,
   server,
   unknown,
@@ -19,9 +20,7 @@ class AuthFailure implements Exception {
   final String message;
   final int? statusCode;
 
-  bool get shouldClearSession =>
-      type == AuthFailureType.unauthorized ||
-      type == AuthFailureType.missingConfiguration;
+  bool get shouldClearSession => type == AuthFailureType.unauthorized;
 
   @override
   String toString() => message;

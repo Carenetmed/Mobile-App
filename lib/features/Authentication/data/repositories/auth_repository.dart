@@ -71,7 +71,9 @@ class AuthRepository {
         await _apiClient.logout(refreshToken: current.refreshToken);
       }
     } finally {
-      await _sessionStore.clear();
+      if (current != null) {
+        await _sessionStore.clearAccountIfCurrent(current.user.id);
+      }
     }
   }
 
@@ -83,10 +85,11 @@ class AuthRepository {
     required String token,
     required String password,
   }) async {
-    await _apiClient.confirmPasswordReset(token: token, password: password);
     final current = await _sessionStore.read();
-    if (current != null) await _notifyBeforeClear(current);
-    await _sessionStore.clear();
+    await _apiClient.confirmPasswordReset(token: token, password: password);
+    if (current != null && await _sessionStore.clearIfCurrent(current)) {
+      await _notifyBeforeClear(current);
+    }
   }
 
   Future<AuthSession> googleSignIn({

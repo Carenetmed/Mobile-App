@@ -226,6 +226,8 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
           'Backend is not configured yet.',
         AuthFailureType.unauthorized => 'Please sign in again.',
         AuthFailureType.validation => 'Please check the details and try again.',
+        AuthFailureType.forbidden =>
+          'This account cannot access these appointments.',
         AuthFailureType.server ||
         AuthFailureType.network => 'Service is unavailable. Please try again.',
         AuthFailureType.invalidCredentials ||
@@ -996,6 +998,8 @@ class _AppointmentCardState extends State<_AppointmentCard> {
         AuthFailureType.unauthorized => 'Please sign in again.',
         AuthFailureType.validation =>
           'Please choose an available time and try again.',
+        AuthFailureType.forbidden =>
+          'This account cannot change this appointment.',
         AuthFailureType.server ||
         AuthFailureType.network => 'Service is unavailable. Please try again.',
         AuthFailureType.invalidCredentials ||

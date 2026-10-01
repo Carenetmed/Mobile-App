@@ -285,6 +285,8 @@ class _AccountShellPageState extends State<AccountShellPage> {
             'Your recent authentication was not accepted. Try again.',
           AuthFailureType.validation =>
             'Check the confirmation details and try again.',
+          AuthFailureType.forbidden =>
+            'This account cannot perform that action.',
           AuthFailureType.missingConfiguration =>
             'Account deletion is not available right now.',
           AuthFailureType.network ||
@@ -306,6 +308,8 @@ class _AccountShellPageState extends State<AccountShellPage> {
 
   String _safeGoogleProviderError(AuthFailure failure) {
     switch (failure.type) {
+      case AuthFailureType.forbidden:
+        return 'This account cannot link Google identity.';
       case AuthFailureType.missingConfiguration:
         return 'Google account linking is not configured yet.';
       case AuthFailureType.unauthorized:
@@ -321,6 +325,8 @@ class _AccountShellPageState extends State<AccountShellPage> {
 
   String _safeGoogleBackendLinkError(AuthFailure failure) {
     switch (failure.type) {
+      case AuthFailureType.forbidden:
+        return 'This account cannot link Google identity.';
       case AuthFailureType.missingConfiguration:
         return 'Google account linking is not configured yet.';
       case AuthFailureType.unauthorized:

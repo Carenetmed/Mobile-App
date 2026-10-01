@@ -610,7 +610,6 @@ void main() {
 
   test('dispose waits for an in-flight revocation release', () async {
     final h = _authorityHarness();
-    addTearDown(h.controller.dispose);
     await h.controller.initialize();
     await h.controller.prepareMedia();
     final held = Completer<void>();

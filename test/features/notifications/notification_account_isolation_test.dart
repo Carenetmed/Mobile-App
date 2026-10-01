@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Notifications/data/services/firebase_notification_transport.dart';
 import 'package:app_t/features/Notifications/domain/entities/notification_models.dart';
 import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'notification_test_fakes.dart';
 
 void main() {
+  testWidgets('disposed initialization cannot attach provider lifecycle', (
+    tester,
+  ) async {
+    final transport = _HeldInitializationTransport();
+    final coordinator = NotificationCoordinator(
+      repository: FakeNotificationRepository(),
+      installationStore: FakeNotificationInstallationStore(),
+      transport: transport,
+      navigatorKey: GlobalKey<NavigatorState>(),
+    );
+    final initialization = coordinator.initialize();
+    await transport.started.future;
+    coordinator.dispose();
+    transport.release.complete();
+    await initialization;
+    expect(transport.permissionCalls, 0);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    expect(transport.permissionCalls, 0);
+  });
+
   testWidgets('late tap cannot open the previous account destination', (
     tester,
   ) async {
@@ -154,6 +176,28 @@ void main() {
     await oldRefresh;
     expect(coordinator.unreadCount, 2);
   });
+}
+
+class _HeldInitializationTransport extends FakeNotificationTransport {
+  final started = Completer<void>();
+  final release = Completer<void>();
+  int permissionCalls = 0;
+
+  @override
+  Future<void> initialize({
+    required Future<void> Function() onForegroundMessage,
+    required NotificationTapCallback onTap,
+    required Future<void> Function() onTokenRefresh,
+  }) async {
+    started.complete();
+    await release.future;
+  }
+
+  @override
+  Future<NotificationPermissionValue> permission() async {
+    permissionCalls++;
+    return super.permission();
+  }
 }
 
 class _HeldUnreadRepository extends FakeNotificationRepository {

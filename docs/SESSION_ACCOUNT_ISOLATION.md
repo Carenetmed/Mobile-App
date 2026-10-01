@@ -26,6 +26,8 @@ account cannot erase a different account's binding or pending notification.
 Late unread responses are ignored after account change or disposal.
 Tap lookups recheck account and navigator identity after asynchronous work;
 stale completions neither mark another account's notification nor navigate.
+Provider initialization also stops after disposal, without attaching a late
+lifecycle observer or accepting a late permission result.
 Resolved-tap cleanup clears only the matching pending ID under the binding
 transition queue.
 

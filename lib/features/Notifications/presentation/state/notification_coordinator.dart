@@ -81,7 +81,7 @@ class NotificationCoordinator extends ChangeNotifier
   bool get pushConfigured => _transport.isConfigured;
 
   Future<void> initialize() async {
-    if (initialized) return;
+    if (initialized || _disposed) return;
     initialized = true;
     try {
       await _transport
@@ -91,10 +91,16 @@ class NotificationCoordinator extends ChangeNotifier
             onTokenRefresh: _registerCurrentInstallation,
           )
           .timeout(_providerTimeout);
+      if (_disposed) return;
       WidgetsBinding.instance.addObserver(this);
       _observingLifecycle = true;
-      permission = await _transport.permission().timeout(_providerTimeout);
+      final currentPermission = await _transport.permission().timeout(
+        _providerTimeout,
+      );
+      if (_disposed) return;
+      permission = currentPermission;
     } catch (error) {
+      if (_disposed) return;
       _debug('transport initialization failed (${error.runtimeType}).');
       permission = NotificationPermissionValue.notDetermined;
     }

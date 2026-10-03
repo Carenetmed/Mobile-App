@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show SemanticsAction;
 
 import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
 import 'package:app_t/features/Notifications/domain/entities/notification_models.dart';
@@ -132,6 +133,7 @@ void main() {
   testWidgets('inbox renders backend fields and marks a row read', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     final repository = FakeNotificationRepository(
       items: [notificationTestItem(title: 'Appointment accepted')],
     )..unread = 1;
@@ -149,9 +151,16 @@ void main() {
 
     expect(find.text('Appointment accepted'), findsOneWidget);
     expect(find.textContaining('Open CareNet'), findsOneWidget);
+    final unreadLabel = find.byWidgetPredicate(
+      (widget) => widget is Semantics && widget.properties.label == 'Unread',
+    );
+    expect(unreadLabel, findsOneWidget);
+    expect(tester.getSemantics(unreadLabel).label, contains('Unread'));
     await tester.tap(find.text('Appointment accepted'));
     await tester.pumpAndSettle();
     expect(repository.markedRead, ['notification-1']);
+    expect(unreadLabel, findsNothing);
+    semantics.dispose();
   });
 
   testWidgets('denied push permission links to system settings', (
@@ -198,6 +207,55 @@ void main() {
     expect(find.text('Appointments'), findsOneWidget);
     expect(find.text('Push'), findsWidgets);
     expect(find.text('Email'), findsWidgets);
+  });
+
+  testWidgets('preferences remain reachable at compact width with 2x text', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(2),
+          ),
+          child: child!,
+        ),
+        home: NotificationPreferencesPage(
+          repository: FakeNotificationRepository(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+
+    for (final category in NotificationCategory.values) {
+      await tester.scrollUntilVisible(
+        find.text(category.label),
+        140,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.text(category.label), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
+
+    final lastSwitch = find.byType(SwitchListTile).last;
+    expect(find.text('Push'), findsWidgets);
+    expect(find.text('Email'), findsWidgets);
+    expect(tester.getSize(lastSwitch).height, greaterThanOrEqualTo(48));
+    expect(
+      tester.getSemantics(lastSwitch).getSemanticsData().hasAction(
+        SemanticsAction.tap,
+      ),
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+    semantics.dispose();
   });
 }
 

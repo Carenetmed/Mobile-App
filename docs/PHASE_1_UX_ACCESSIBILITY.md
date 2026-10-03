@@ -17,8 +17,9 @@ The active navigation remains:
 APP-P1-021A merged in PR #172. It aligns the shared `CarenetColors`
 healthcare-green scale and active Material color schemes, improves the shared
 `CarenetButton` semantic tap target and enlarged-text behavior, corrects
-Schedule wording, and reconciles the live route inventory. APP-P1-021B is now
-auditing the active routes individually.
+Schedule wording, and reconciles the live route inventory. APP-P1-021B has
+applied a bounded set of active-route accessibility repairs; this is not a
+whole-app accessibility sign-off.
 
 This foundation does not certify every screen. Active screens still need
 route-by-route checks for contrast, semantics, focus order, keyboard operation,
@@ -65,8 +66,8 @@ or accessibility conformance.
 | --- | --- | --- |
 | Authentication, recovery, signup, session restore | `sign_in_flow_test.dart`, `sign_up_flow_test.dart`, `booking_signup_boundary_test.dart`, `finish_sign_up_test.dart`, `password_recovery_flow_test.dart`, `session_restore_guard_test.dart`, and `session_resilience_test.dart` | Sign-in, email signup, role selection, and finish-signup form have 320x568 / 2x-text flow coverage; password visibility, recovery action sizing, and recovery back controls are labelled. Screen-reader/keyboard and physical-device proof remain open. |
 | Patient onboarding and readiness | `onboarding_gateway_test.dart`, `profile_setup_test.dart`, `onboarding_readiness_route_resolver_test.dart` | Welcome choices and patient/professional profile setup have 320x568 / 2x-text coverage; setup flows include required catalogs and save handoffs. Screen-reader/keyboard and physical-device proof remain open. |
-| Dashboard, role navigation, Home, Find Care, profile detail, booking | `dashboard_shell_test.dart`, `home_tab_shell_test.dart`, `search_flow_test.dart`, `specialist_details_flow_test.dart`, and `booking_intent_and_controller_test.dart` | Patient dashboard destinations, Find Care query/profile handoff, and professional-detail booking confirmation/success are exercised at 320x568 / 2x text; other booking and role states remain to be checked. |
-| Appointments and professional Schedule | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart`, `professional_schedule_test.dart`, and `scheduling_repository_test.dart` | Patient and professional appointment list/detail behavior now includes a 320x568 / 2x-text flow through an authorized professional action. Physical keyboard/TalkBack, Schedule enlarged-text coverage, and device proof remain open. The appointment-list back control has a tooltip. |
+| Dashboard, role navigation, Home, Find Care, profile detail, booking | `dashboard_shell_test.dart`, `home_tab_shell_test.dart`, `search_flow_test.dart`, `specialist_details_flow_test.dart`, and `booking_intent_and_controller_test.dart` | Patient dashboard destinations, Find Care query/profile handoff, and professional-detail booking confirmation/success are exercised at 320x568 / 2x text. Find Care category chips and booking date chips have at least 48dp targets; selected requestable times expose radio-group and selected semantics. Keyboard, TalkBack, and remaining booking states are not certified. |
+| Appointments and professional Schedule | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart`, `professional_schedule_test.dart`, and `scheduling_repository_test.dart` | Patient and professional appointment list/detail behavior includes a 320x568 / 2x-text flow through an authorized professional action. Schedule availability rows distinguish Active and Inactive from backend state. Physical keyboard/TalkBack, full Schedule enlarged-text coverage, and device proof remain open. The appointment-list back control has a tooltip. |
 | Account, profile management, verification, finance | `account_flow_test.dart`, `manage_profile_flow_test.dart`, `financial_flow_test.dart`, and `financial_contract_test.dart` | Finance has 320x568 / 2x-text coverage through populated financial activity and payout-bank/account entry. Manage Profile and verification documents now have compact 2x-text scroll coverage with responsive metadata and 48dp actions. Account/Profile/Settings/Delete screen-reader, focus-order, and device acceptance remain open. |
 | Messages, notifications, consultation | `messaging_flow_test.dart`, `messaging_controller_test.dart`, `notification_inbox_test.dart`, `notification_coordinator_test.dart`, and consultation controller tests | Honest-state, routing, and provider/controller behavior are covered. Real screen-reader, focus-order, and hardware permission behavior are not established by these tests. |
 | Deferred route aliases | `auth_route_authority_test.dart`, `account_flow_test.dart`, and route registration tests | Several old identifiers intentionally render `DeferredFeaturePage` or a canonical screen. Their legacy source screens are not represented as active routes in this accessibility sweep. |
@@ -87,24 +88,24 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 | `medicalAgreement`, `medicalProfessional`, `manageProfile` | ProfessionalOnboardingSetupPage | `profile_setup_test.dart`, `manage_profile_flow_test.dart` | Professional setup is exercised at 320x568 / 2x text through identity, credential, and practice fields, required catalog choices, save, and verification-document handoff. Screen-reader/keyboard and device proof remain open. |
 | `signUpPhone`, `signUpEmail` | SignUpEmail | `sign_up_flow_test.dart` | Email signup has 320x568 / 2x-text required-field and sign-in handoff coverage, with green heading hierarchy; physical screen-reader/keyboard proof remains open. |
 | `signInPhone`, `signInEmail` | SignInEmail | `sign_in_flow_test.dart` | Password/recovery/provider semantics and 320x568 at 2x text covered. |
-| `enterEmail`, `enterPassword` | Password recovery forms | `password_recovery_flow_test.dart` | Email entry and new-password validation are exercised at 320x568 / 2x text, including scroll access to the primary action; labelled Back remains covered. Token confirmation is a separate route and large-text coverage remains open there. |
+| `enterEmail`, `enterPassword` | Password recovery request and legacy tokenless alias | `password_recovery_flow_test.dart` | A successful reset request stays on email entry and gives generic account-enumeration-safe guidance; the legacy tokenless route fails closed to the missing-token confirmation state. Only the reset-link token route accepts a new password. Compact request and token confirmation flows are covered; physical screen-reader/keyboard proof remains open. |
 | `resetPasswordConfirm`, `emailVerificationConfirm` | Token confirmation pages | `password_recovery_flow_test.dart`, `auth_route_authority_test.dart`, `account_flow_test.dart` | Password-reset and email-verification success flows are exercised at 320x568 / 2x text, with confirmation actions scroll-accessible and no layout exceptions. Screen-reader/device proof remains open. |
 | `medicalEdit` | UserEdit | No focused route widget test identified | Accessibility/task-flow evidence gap. |
 | `dashboard` | Dashboard | `dashboard_shell_test.dart` | Role destinations, header actions, tab persistence and Android back covered; patient destination switching is checked at 320x568 / 2x text. Professional large-text layout and physical accessibility remain open. |
-| `search`, `findMentor`, `bookAppointment`, `publicProfile` | SearchShellPage | `search_flow_test.dart`, `find_mentor_flow_test.dart`, `public_profile_flow_test.dart` | Canonical discovery and legacy alias behavior covered; patient name query, clear, scroll, and profile handoff are checked at 320x568 / 2x text. Keyboard, TalkBack, and wider discovery states remain uncertified. |
-| `specialistDetails` | SpecialistDetailsShellPage | `specialist_details_flow_test.dart` | Patient detail, backend time selection, confirmation, request-sent result, and Appointments handoff are checked at 320x568 / 2x text. Dialog content scrolls while actions remain usable; professional, error, and screen-reader states remain open. |
-| `appointments` | AppointmentsShellPage | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart` | At 320x568 / 2x text, a professional can scroll to an appointment card and open its canonical detail; the card status remains readable below the date. Screen-reader, keyboard, and device proof remain open. |
-| `appointmentDetail` | AppointmentDetailShellPage | `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart` | At 320x568 / 2x text, the canonical detail status and authorized Accept action remain reachable by scrolling. Other role/status, screen-reader, and device states are not certified by that flow. |
-| `consultation` | ConsultationShellPage | `consultation_controller_test.dart` | Controller/authorization behavior covered; physical permission/accessibility proof open. |
-| `account`, `deleteAccount` | AccountShellPage | `account_flow_test.dart` | Authority, legal, account and deletion paths covered; back controls labelled; large-text layout not checked. |
+| `search`, `findMentor`, `bookAppointment`, `publicProfile` | SearchShellPage | `search_flow_test.dart`, `find_mentor_flow_test.dart`, `public_profile_flow_test.dart` | Canonical discovery and legacy alias behavior covered; patient name query, clear, scroll, and profile handoff are checked at 320x568 / 2x text. Category-chip targets are at least 48dp and remain horizontally reachable at compact width. Keyboard, TalkBack, and wider discovery states remain uncertified. |
+| `specialistDetails` | SpecialistDetailsShellPage | `specialist_details_flow_test.dart` | Patient detail, backend time selection, confirmation, request-sent result, and Appointments handoff are checked at 320x568 / 2x text. Date choices have 48dp targets; time options announce their professional-time label and selected radio state. Dialog content scrolls while actions remain usable; other screen-reader states remain open. |
+| `appointments` | AppointmentsShellPage | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart` | Cards label displayed appointment instants as viewer-local time; at 320x568 / 2x text, a professional can scroll to a card and open canonical detail. Screen-reader, keyboard, and device proof remain open. |
+| `appointmentDetail` | AppointmentDetailShellPage | `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart` | Date and requested timestamps explicitly identify viewer-local time. At 320x568 / 2x text, the status and authorized Accept action remain reachable by scrolling. Other role/status, screen-reader, and device states are not certified by that flow. |
+| `consultation` | ConsultationShellPage | `consultation_controller_test.dart` | Pre-join countdown remains labelled for navigation but is not a live region, avoiding per-second screen-reader announcements; actual device permission/accessibility proof remains open. |
+| `account`, `deleteAccount` | AccountShellPage | `account_flow_test.dart` | Account tiles remain scroll-reachable at 320x568 / 2x text, including the final deletion action; screen-reader, focus-order, and device acceptance remain open. |
 | `professionalVerificationDocuments` | ProfessionalVerificationDocumentsShellPage | `manage_profile_flow_test.dart` | Verification readiness, upload/list states, and long metadata now have 320x568 / 2x-text scroll coverage; screen-reader and device proof remain open. |
 | `professionalFinance` | ProfessionalFinanceShellPage | `financial_flow_test.dart`, `financial_contract_test.dart` | 320x568 / 2x-text populated full-scroll and payout-account entry are covered; platform screen-reader, focus-order, and device acceptance remain open. |
 | `editYourName`, `editProfessionalDetails`, `addDescription` | Professional profile editor shells | `manage_profile_flow_test.dart` | Backend-field behavior covered; accessibility layout not certified. |
 | `messages` | MessagesPage | `messaging_flow_test.dart`, `messaging_controller_test.dart` | Honest inbox/route states covered; keyboard/screen-reader conversation task open. |
-| `chat`, `message` | ChatPage | `chat_route_structure_test.dart`, `messaging_flow_test.dart` | Authority and composer states covered; keyboard focus order not certified. |
-| `notification` | NotificationsPage | `notification_inbox_test.dart`, `dashboard_shell_test.dart` | Inbox/header path covered; large-text and screen-reader announcement order open. |
-| `notificationPreferences` | NotificationPreferencesPage | `account_flow_test.dart`, `notification_coordinator_test.dart` | Preference/provider behavior covered; accessibility layout not certified. |
-| `reminder`, `schedules`, `selectedDates` | ReminderShellPage, SchedulesShellPage, SelectedDatesShellPage | `professional_schedule_test.dart`, `manage_profile_flow_test.dart` | Professional recurring availability behavior covered; reminder/schedules direct-route accessibility evidence is incomplete. |
+| `chat`, `message` | ChatPage | `chat_route_structure_test.dart`, `messaging_flow_test.dart` | Failed-message retry now retains a 48dp action target; keyboard focus order and physical screen-reader use remain uncertified. |
+| `notification` | NotificationsPage | `notification_inbox_test.dart`, `dashboard_shell_test.dart` | Unread state is included in row semantics and removed after read; broad large-text and physical screen-reader announcement order remain open. |
+| `notificationPreferences` | NotificationPreferencesPage | `account_flow_test.dart`, `notification_inbox_test.dart`, `notification_coordinator_test.dart` | At 320x568 / 2x text, all seven preference sections remain scroll-reachable, the last section's Push/Email switches remain available with at least 48dp height, and no layout exception occurs; screen-reader and device acceptance remain open. |
+| `reminder`, `schedules`, `selectedDates` | ReminderShellPage, SchedulesShellPage, SelectedDatesShellPage | `professional_schedule_test.dart`, `manage_profile_flow_test.dart` | Schedule labels each backend recurring window Active or Inactive, including row semantics. Reminder/schedules direct-route accessibility evidence remains incomplete. |
 | Deferred aliases | DeferredFeaturePage | `auth_route_authority_test.dart`, route classification/registration tests | Deferred screen behavior is intentionally not treated as active feature accessibility coverage. |
 
 Every row without an explicit accessibility check remains **not certified**;
@@ -170,6 +171,39 @@ acceptance is still required before release.
   2x-text coverage for scrolling to the primary action without layout
   exceptions. Password-reset and email-verification token success flows are
   also exercised at 320x568 / 2x text with their confirmation actions reachable.
+- The Account screen now has a 320x568 / 2x-text regression that scrolls through
+  the account options to the final deletion action and checks the tile retains
+  a 48dp minimum height. Screen-reader, keyboard-focus, and device proof remain
+  open.
+- Notification preferences now have a 320x568 / 2x-text regression covering
+  reachability of all seven category sections, the final Push/Email controls,
+  a 48dp minimum switch-row height, and absence of layout exceptions.
+  Screen-reader and device proof remain open.
+- Failed Chat sends now offer a retry target with a 48dp minimum height; a
+  widget regression drives an actual send failure and measures that action.
+- Unread notifications now expose an explicit `Unread` semantics label on the
+  row's visual indicator; the inbox regression confirms the label disappears
+  after the authoritative read action.
+- Consultation countdown text remains navigable but is no longer a live region,
+  preventing its one-second display refresh from repeatedly interrupting a
+  screen reader. A semantics regression asserts that it is not announced live.
+- Password-reset requests now remain on email entry and show generic guidance
+  that does not confirm whether an account exists. The legacy tokenless password
+  route fails closed; only the reset-link confirmation route exposes password
+  fields. Tests cover request success, pending state, and missing-token routing.
+- Appointment list and detail dates are explicitly labelled "Local time" so a
+  viewer does not mistake device-local rendering for a professional timezone.
+  A flow regression checks both surfaces.
+- Find Care category choices and professional-detail date choices retain at
+  least 48 logical pixels of height at compact widths. A requestable-time option
+  exposes a single-select radio group and its selected state to assistive
+  technology.
+- Professional Schedule labels each persisted window Active or Inactive; it
+  does not infer activity from a weekday or time range. Its regression checks
+  the inactive row's semantic label.
+- `RouteName.manageProfile` currently opens `ProfessionalOnboardingSetupPage`;
+  the legacy `ManageProfileShellPage` is not registered as the account
+  destination. This pass does not reactivate that legacy social-era source.
 
 These repairs are bounded findings, not a claim that all active routes have
 passed every contrast, keyboard, focus-order, or largest-text criterion. The

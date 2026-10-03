@@ -257,12 +257,16 @@ class _NotificationRow extends StatelessWidget {
                           ),
                         ),
                         if (!notification.isRead)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.primaryBlue11,
-                              shape: BoxShape.circle,
+                          Semantics(
+                            label: 'Unread',
+                            excludeSemantics: true,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primaryBlue11,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
                       ],

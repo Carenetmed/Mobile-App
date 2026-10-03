@@ -1283,7 +1283,7 @@ String _appointmentDate(DateTime value) {
   if (value.millisecondsSinceEpoch <= 0) {
     return 'Time unavailable';
   }
-  return DateFormat('EEE, d MMM y, h:mm a').format(value.toLocal());
+  return 'Local time: ${DateFormat('EEE, d MMM y, h:mm a').format(value.toLocal())}';
 }
 
 String _requestableTimeLabel(RequestableTime value, String timezone) {

@@ -33,6 +33,7 @@ void main() {
     expect(find.text('Upcoming'), findsOneWidget);
     expect(find.text('REQUEST SENT'), findsOneWidget);
     expect(find.text('Appointment with Dr Care'), findsNWidgets(2));
+    expect(find.textContaining('Local time:'), findsNWidgets(2));
     expect(find.textContaining('confirmed'), findsNothing);
     expect(find.textContaining('payment'), findsNothing);
 
@@ -41,6 +42,7 @@ void main() {
 
     expect(find.text('Appointment details'), findsOneWidget);
     expect(find.text('REQUEST SENT'), findsOneWidget);
+    expect(find.textContaining('Local time:'), findsNWidgets(2));
     expect(repository.listCalls, 2);
   });
 
@@ -71,7 +73,10 @@ void main() {
     await tester.scrollUntilVisible(
       row,
       180,
-      scrollable: find.byType(Scrollable).first,
+      scrollable: find.descendant(
+        of: find.byKey(const Key('appointments-list')),
+        matching: find.byType(Scrollable),
+      ),
     );
     await tester.pumpAndSettle();
     expect(row.hitTestable(), findsOneWidget);

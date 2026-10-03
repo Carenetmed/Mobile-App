@@ -356,8 +356,9 @@ class _CategorySelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 38.h,
+      height: 48,
       child: ListView.separated(
+        key: const ValueKey<String>('find-care-category-list'),
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
         separatorBuilder: (_, __) => SizedBox(width: 8.w),

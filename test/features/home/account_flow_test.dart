@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:app_t/core/constants/navigators/router.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/config/carenet_public_links.dart';
@@ -83,6 +85,8 @@ Future<void> _openAccount(WidgetTester tester) async {
 Future<void> _pumpAccount(
   WidgetTester tester, {
   required _FakeAuthRepository repository,
+  Size screenSize = _phoneSize,
+  TextScaler textScaler = TextScaler.noScaling,
   _FakeAccountRepository? accountRepository,
   GoogleIdTokenProvider? googleIdTokenProvider,
   BookingIntentStore? bookingIntentStore,
@@ -90,7 +94,7 @@ Future<void> _pumpAccount(
   PublicLinkLauncher? publicLinkLauncher,
 }) async {
   AccountLocalStore.reset();
-  tester.view.physicalSize = _phoneSize;
+  tester.view.physicalSize = screenSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 
@@ -98,6 +102,10 @@ Future<void> _pumpAccount(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder: (_, __) => MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+          child: child!,
+        ),
         home: AccountShellPage(
           authRepository: repository,
           accountRepository: accountRepository,
@@ -170,6 +178,40 @@ Future<void> _pumpSettingsProfile(
 }
 
 void main() {
+  testWidgets('account tiles remain reachable at compact width with 2x text', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(),
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+    );
+
+    expect(find.text('Account security'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.scrollUntilVisible(
+      find.text('Delete account'),
+      160,
+      scrollable: find.byType(Scrollable).last,
+    );
+
+    final deleteTile = find.ancestor(
+      of: find.text('Delete account'),
+      matching: find.byType(ListTile),
+    );
+    expect(deleteTile, findsOneWidget);
+    expect(tester.getSize(deleteTile).height, greaterThanOrEqualTo(48));
+    final node = tester.getSemantics(deleteTile);
+    expect(node.label, contains('Delete account'));
+    expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+    expect(tester.takeException(), isNull);
+    semantics.dispose();
+  });
+
   testWidgets('header avatar opens the account page', (tester) async {
     await _pumpDashboard(tester);
 

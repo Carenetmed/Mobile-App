@@ -7,7 +7,6 @@ import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.d
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_role_selection.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_email.dart';
-import 'package:app_t/features/Authentication/presentation/pages/enter_password.dart';
 import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/reset_password_confirm_page.dart';
 import 'package:app_t/features/Consultation/presentation/pages/consultation_shell.dart';
@@ -111,7 +110,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.enterEmail:
       return _page(settings, const EnterEmailPage());
     case RouteName.enterPassword:
-      return _page(settings, const EnterPasswordPage());
+      return _page(settings, const ResetPasswordConfirmPage(token: null));
     case RouteName.resetPasswordConfirm:
       final args = settings.arguments;
       return _page(

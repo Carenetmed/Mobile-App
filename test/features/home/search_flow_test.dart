@@ -319,6 +319,58 @@ void main() {
     expect(repository.publicListingCalls, 1);
   });
 
+  testWidgets(
+    'category chips keep 48dp targets and horizontal scrolling at compact 2x text',
+    (tester) async {
+      final professionals = List<PublicProfessional>.generate(
+        6,
+        (index) => PublicProfessional(
+          id: 'professional_$index',
+          displayName: 'Professional $index',
+          category: 'Care $index',
+          verified: true,
+        ),
+      );
+      await _pumpSearch(
+        tester,
+        profileRepository: _FakeProfileRepository.results(professionals),
+        screenSize: const Size(320, 568),
+        textScaler: const TextScaler.linear(2),
+      );
+
+      final categoryList = find.byKey(
+        const ValueKey<String>('find-care-category-list'),
+      );
+      expect(categoryList, findsOneWidget);
+      expect(tester.getSize(categoryList).width, lessThanOrEqualTo(320));
+
+      final firstChip = find.widgetWithText(ChoiceChip, 'Care 0');
+      expect(tester.getSize(firstChip).height, greaterThanOrEqualTo(48));
+
+      final scrollable =
+          find
+              .descendant(of: categoryList, matching: find.byType(Scrollable))
+              .first;
+      final scrollPosition = tester.state<ScrollableState>(scrollable).position;
+      expect(scrollPosition.maxScrollExtent, greaterThan(0));
+      scrollPosition.jumpTo(scrollPosition.maxScrollExtent);
+      await tester.pumpAndSettle();
+
+      final lastChip = find.widgetWithText(ChoiceChip, 'Care 5');
+      expect(lastChip, findsOneWidget);
+      expect(tester.getSize(lastChip).height, greaterThanOrEqualTo(48));
+      final categoryViewport = tester.getRect(categoryList);
+      final lastChipBounds = tester.getRect(lastChip);
+      expect(lastChipBounds.left, greaterThanOrEqualTo(categoryViewport.left));
+      expect(lastChipBounds.right, lessThanOrEqualTo(categoryViewport.right));
+      await tester.tap(lastChip);
+      await tester.pump();
+
+      expect(find.text('1 found'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('backend-empty listing has a dedicated honest state', (
     tester,
   ) async {

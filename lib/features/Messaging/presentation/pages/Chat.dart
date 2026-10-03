@@ -354,9 +354,8 @@ class _TextBubble extends StatelessWidget {
               TextButton(
                 onPressed: onRetry,
                 style: TextButton.styleFrom(
-                  minimumSize: Size.zero,
-                  padding: const EdgeInsets.only(top: 3),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  minimumSize: const Size(48, 48),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
                 child: Text(statusLabel, style: const TextStyle(fontSize: 11)),
               ),

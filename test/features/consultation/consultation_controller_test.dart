@@ -14,6 +14,724 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test(
+    'refresh cannot rebind an open consultation to another account',
+    () async {
+      final h = _authorityHarness();
+      addTearDown(h.controller.dispose);
+      await h.controller.initialize();
+      await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+      await h.controller.refresh();
+      expect(h.gateway.projectionCalls, 1);
+      expect(h.controller.projection, isNull);
+      expect(h.room.releaseCalls, greaterThan(0));
+      expect(h.controller.errorMessage, contains('cannot access'));
+    },
+  );
+
+  test(
+    'permission completion after account change cannot start preview',
+    () async {
+      final h = _authorityHarness();
+      addTearDown(h.controller.dispose);
+      await h.controller.initialize();
+      final held = Completer<ConsultationPermissionResult>();
+      h.permissions.requestCompleter = held;
+      final preparation = h.controller.prepareMedia();
+      await Future<void>.delayed(Duration.zero);
+      await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+      held.complete(_grantedPermissions);
+      await preparation;
+      expect(h.room.previewCalls, 0);
+      expect(h.controller.permissions, isNull);
+      expect(h.controller.projection, isNull);
+    },
+  );
+
+  test(
+    'join grant completion after account change cannot connect media',
+    () async {
+      final h = _authorityHarness();
+      addTearDown(h.controller.dispose);
+      await h.controller.initialize();
+      await h.controller.prepareMedia();
+      final held = Completer<void>();
+      h.gateway.joinHold = held;
+      final join = h.controller.join();
+      await Future<void>.delayed(Duration.zero);
+      expect(h.gateway.joinCalls, 1);
+      await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+      held.complete();
+      await join;
+      expect(h.room.connectCalls, 0);
+      expect(h.controller.projection, isNull);
+      expect(h.room.releaseCalls, greaterThan(0));
+    },
+  );
+
+  test(
+    'late waiting-room response cannot restore prior account state',
+    () async {
+      final h = _authorityHarness();
+      addTearDown(h.controller.dispose);
+      await h.controller.initialize();
+      final held = Completer<ConsultationProjection>();
+      h.gateway.waitingCompleter = held;
+      final waiting = h.controller.enterWaitingRoom();
+      await Future<void>.delayed(Duration.zero);
+      await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+      held.complete(_projection(patientWaiting: true));
+      await waiting;
+      expect(h.controller.projection, isNull);
+      expect(h.controller.actionMessage, isNull);
+    },
+  );
+
+  test(
+    'media control after account change releases rather than enabling media',
+    () async {
+      final h = _authorityHarness();
+      addTearDown(h.controller.dispose);
+      await h.controller.initialize();
+      await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+      await h.controller.setMicrophoneEnabled(false);
+      expect(h.room.microphoneEnabled, isTrue);
+      expect(h.room.releaseCalls, greaterThan(0));
+      expect(h.controller.projection, isNull);
+    },
+  );
+
+  for (final changesAccount in <bool>[false, true]) {
+    test(
+      'failed delayed permission request ${changesAccount ? 'revokes changed authority' : 'preserves same-account error'}',
+      () async {
+        final h = _authorityHarness();
+        addTearDown(h.controller.dispose);
+        await h.controller.initialize();
+        await h.controller.prepareMedia();
+        final held = Completer<ConsultationPermissionResult>();
+        h.permissions.requestCompleter = held;
+        final preparation = h.controller.prepareMedia();
+        await Future<void>.delayed(Duration.zero);
+        if (changesAccount) {
+          await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+        }
+        held.completeError(
+          const AuthFailure(
+            type: AuthFailureType.network,
+            message: 'internal permission failure',
+          ),
+        );
+        await preparation;
+        expect(h.room.previewCalls, 1);
+        expect(h.room.releaseCalls, changesAccount ? 1 : 0);
+        expect(h.controller.projection, changesAccount ? isNull : isNotNull);
+        expect(h.controller.permissions, changesAccount ? isNull : isNotNull);
+        expect(
+          h.controller.errorMessage,
+          changesAccount
+              ? 'This account cannot access this consultation.'
+              : 'Network error. Check your connection and try again.',
+        );
+      },
+    );
+
+    test(
+      'failed delayed join grant ${changesAccount ? 'revokes changed authority' : 'preserves same-account error'}',
+      () async {
+        final h = _authorityHarness();
+        addTearDown(h.controller.dispose);
+        await h.controller.initialize();
+        await h.controller.prepareMedia();
+        final held = Completer<void>();
+        h.gateway.joinHold = held;
+        final join = h.controller.join();
+        await Future<void>.delayed(Duration.zero);
+        expect(h.gateway.joinCalls, 1);
+        if (changesAccount) {
+          await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+        }
+        held.completeError(
+          const AuthFailure(
+            type: AuthFailureType.server,
+            message: 'internal grant failure',
+          ),
+        );
+        await join;
+        expect(h.room.connectCalls, 0);
+        expect(h.room.releaseCalls, changesAccount ? 1 : 0);
+        expect(h.controller.projection, changesAccount ? isNull : isNotNull);
+        expect(h.controller.permissions, changesAccount ? isNull : isNotNull);
+        expect(
+          h.controller.errorMessage,
+          changesAccount
+              ? 'This account cannot access this consultation.'
+              : 'Consultation service is temporarily unavailable.',
+        );
+      },
+    );
+  }
+
+  test('end disconnect cannot restore state after revocation', () async {
+    final h = _authorityHarness();
+    addTearDown(h.controller.dispose);
+    await h.controller.initialize();
+    final held = Completer<void>();
+    h.room.disconnectHold = held;
+    final ending = h.controller.endConsultation();
+    await h.room.disconnectStarted.future;
+    await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+    await h.controller.refresh();
+    expect(h.controller.projection, isNull);
+    held.complete();
+    await ending;
+    expect(h.gateway.endCalls, 1);
+    expect(h.room.releaseCalls, 1);
+    expect(h.controller.projection, isNull);
+    expect(h.controller.actionMessage, isNull);
+    expect(h.controller.errorMessage, contains('cannot access'));
+  });
+
+  test('pending session read cannot bypass a later revocation', () async {
+    final h = _authorityHarness();
+    addTearDown(h.controller.dispose);
+    await h.controller.initialize();
+    final waitingResponse = Completer<ConsultationProjection>();
+    h.gateway.waitingCompleter = waitingResponse;
+    final waiting = h.controller.enterWaitingRoom();
+    await Future<void>.delayed(Duration.zero);
+    expect(h.gateway.waitingCalls, 1);
+    final heldRead = Completer<AuthSessionModel?>();
+    h.store.nextRead = heldRead;
+    waitingResponse.complete(_projection(patientWaiting: true));
+    await h.store.heldReadStarted.future;
+    await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+    await h.controller.refresh();
+    await h.store.save(_session(role: 'PATIENT'));
+    heldRead.complete(_session(role: 'PATIENT'));
+    await waiting;
+    expect(h.controller.projection, isNull);
+    expect(h.controller.actionMessage, isNull);
+    expect(h.room.releaseCalls, 1);
+    expect(h.controller.errorMessage, contains('cannot access'));
+  });
+
+  for (final signsOut in <bool>[true, false]) {
+    test(
+      '${signsOut ? 'signout' : 'same-account role change'} revokes prepared media',
+      () async {
+        final h = _authorityHarness();
+        addTearDown(h.controller.dispose);
+        await h.controller.initialize();
+        await h.controller.prepareMedia();
+        if (signsOut) {
+          await h.store.clear();
+        } else {
+          await h.store.save(_session(role: 'PROFESSIONAL'));
+        }
+        await h.controller.refresh();
+        expect(h.gateway.projectionCalls, 1);
+        expect(h.controller.viewerRole, ConsultationParticipantRole.patient);
+        expect(h.controller.projection, isNull);
+        expect(h.controller.permissions, isNull);
+        expect(h.room.releaseCalls, 1);
+        expect(h.controller.isConnected, isFalse);
+        expect(
+          h.controller.errorMessage,
+          signsOut
+              ? 'Your session has expired. Please sign in again.'
+              : 'This account cannot access this consultation.',
+        );
+      },
+    );
+  }
+
+  test('returning to the original account cannot reset revocation', () async {
+    final h = _authorityHarness();
+    addTearDown(h.controller.dispose);
+    await h.controller.initialize();
+    await h.controller.prepareMedia();
+    await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+    await h.controller.refresh();
+    await h.store.save(_session(role: 'PATIENT'));
+    await h.controller.refresh();
+    await h.controller.prepareMedia();
+    await h.controller.join();
+    expect(h.gateway.projectionCalls, 1);
+    expect(h.gateway.joinCalls, 0);
+    expect(h.room.previewCalls, 1);
+    expect(h.room.connectCalls, 0);
+    expect(h.room.releaseCalls, 1);
+    expect(h.controller.projection, isNull);
+    expect(h.controller.permissions, isNull);
+    expect(h.controller.errorMessage, contains('cannot access'));
+  });
+
+  test('concurrent authority failures share pending media cleanup', () async {
+    final h = _authorityHarness();
+    addTearDown(h.controller.dispose);
+    await h.controller.initialize();
+    await h.controller.prepareMedia();
+    final held = Completer<void>();
+    h.room.releaseHold = held;
+    await h.store.clear();
+    var refreshCompleted = false;
+    var controlCompleted = false;
+    final refresh = h.controller.refresh().then((_) {
+      refreshCompleted = true;
+    });
+    await h.room.releaseStarted.future;
+    final control = h.controller.setSpeakerEnabled(false).then((_) {
+      controlCompleted = true;
+    });
+    await Future<void>.delayed(Duration.zero);
+    expect(h.room.releaseCalls, 1);
+    expect(refreshCompleted, isFalse);
+    expect(controlCompleted, isFalse);
+    expect(h.controller.projection, isNull);
+    expect(h.controller.permissions, isNull);
+    held.complete();
+    await Future.wait(<Future<void>>[refresh, control]);
+    expect(h.room.releaseCalls, 1);
+    expect(h.room.speakerEnabled, isTrue);
+    expect(refreshCompleted, isTrue);
+    expect(controlCompleted, isTrue);
+  });
+
+  test('stale account cannot enable a muted microphone', () async {
+    final h = _authorityHarness();
+    addTearDown(h.controller.dispose);
+    await h.controller.initialize();
+    await h.controller.setMicrophoneEnabled(false);
+    expect(h.room.microphoneEnabled, isFalse);
+    expect(h.controller.microphoneEnabled, isFalse);
+    await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+    await h.controller.setMicrophoneEnabled(true);
+    expect(h.room.microphoneEnabled, isFalse);
+    expect(h.controller.microphoneEnabled, isFalse);
+    expect(h.room.releaseCalls, 1);
+    expect(h.controller.projection, isNull);
+  });
+
+  for (final operation in <String>[
+    'resume camera disable',
+    'resume microphone disconnect',
+    'leave disconnect',
+  ]) {
+    for (final fails in <bool>[false, true]) {
+      for (final changesAccount in <bool>[false, true]) {
+        test(
+          '$operation held ${fails ? 'error' : 'success'} ${changesAccount ? 'revokes changed authority' : 'preserves same-account outcome'}',
+          () async {
+            final h = _authorityHarness();
+            addTearDown(h.controller.dispose);
+            await h.controller.initialize();
+            await h.controller.prepareMedia();
+            await h.controller.join();
+            expect(h.controller.isConnected, isTrue);
+            final held = Completer<void>();
+            if (operation == 'resume camera disable') {
+              h.permissions.checkResult = const ConsultationPermissionResult(
+                microphone: ConsultationPermissionState.granted,
+                camera: ConsultationPermissionState.denied,
+              );
+              h.room.cameraHold = held;
+            } else {
+              h.room.disconnectHold = held;
+              if (operation == 'resume microphone disconnect') {
+                h.permissions.checkResult = const ConsultationPermissionResult(
+                  microphone: ConsultationPermissionState.denied,
+                  camera: ConsultationPermissionState.granted,
+                );
+              }
+            }
+            final completion =
+                operation == 'leave disconnect'
+                    ? h.controller.leave()
+                    : h.controller.onAppResumed();
+            await (operation == 'resume camera disable'
+                ? h.room.cameraStarted.future
+                : h.room.disconnectStarted.future);
+            if (changesAccount) {
+              await h.store.save(
+                _session(role: 'PATIENT', userId: 'other-user'),
+              );
+            }
+            if (fails) {
+              held.completeError(
+                const AuthFailure(
+                  type: AuthFailureType.network,
+                  message: 'internal media failure',
+                ),
+              );
+            } else {
+              held.complete();
+            }
+            await completion;
+            expect(h.room.releaseCalls, changesAccount ? 1 : 0);
+            expect(
+              h.controller.projection,
+              changesAccount ? isNull : isNotNull,
+            );
+            expect(
+              h.controller.permissions,
+              changesAccount ? isNull : isNotNull,
+            );
+            expect(h.gateway.projectionCalls, changesAccount || fails ? 2 : 3);
+            if (changesAccount) {
+              expect(h.controller.actionMessage, isNull);
+              expect(
+                h.controller.errorMessage,
+                'This account cannot access this consultation.',
+              );
+              expect(h.controller.isConnected, isFalse);
+            } else if (fails) {
+              expect(h.controller.actionMessage, isNull);
+              expect(
+                h.controller.errorMessage,
+                'Network error. Check your connection and try again.',
+              );
+              expect(h.controller.isConnected, isTrue);
+            } else if (operation == 'resume camera disable') {
+              expect(h.controller.cameraEnabled, isFalse);
+              expect(h.room.cameraEnabled, isFalse);
+              expect(h.controller.actionMessage, contains('Camera access'));
+              expect(h.controller.errorMessage, isNull);
+            } else if (operation == 'resume microphone disconnect') {
+              expect(h.controller.isConnected, isFalse);
+              expect(
+                h.controller.errorMessage,
+                contains('Microphone access was removed'),
+              );
+            } else {
+              expect(h.controller.isConnected, isFalse);
+              expect(h.controller.actionMessage, 'You left the consultation.');
+              expect(h.controller.errorMessage, isNull);
+            }
+            if (operation == 'resume camera disable' &&
+                (changesAccount || fails)) {
+              expect(h.controller.cameraEnabled, isTrue);
+            }
+          },
+        );
+      }
+    }
+  }
+
+  for (final initiallyBound in <bool>[false, true]) {
+    test(
+      '${initiallyBound ? 'bound' : 'initial'} session read failure blocks refresh and permits retry',
+      () async {
+        final h = _authorityHarness();
+        addTearDown(h.controller.dispose);
+        if (initiallyBound) {
+          await h.controller.initialize();
+          await h.controller.prepareMedia();
+        }
+        final held = Completer<AuthSessionModel?>();
+        h.store.nextRead = held;
+        final refresh = h.controller.refresh();
+        await h.store.heldReadStarted.future;
+        held.completeError(
+          const AuthFailure(
+            type: AuthFailureType.network,
+            message: 'internal session read failure',
+          ),
+        );
+        await refresh;
+        expect(h.gateway.projectionCalls, initiallyBound ? 1 : 0);
+        expect(h.room.releaseCalls, 0);
+        expect(h.controller.projection, initiallyBound ? isNotNull : isNull);
+        expect(
+          h.controller.errorMessage,
+          'Network error. Check your connection and try again.',
+        );
+        await h.controller.refresh();
+        expect(h.gateway.projectionCalls, initiallyBound ? 2 : 1);
+        expect(h.controller.viewerRole, ConsultationParticipantRole.patient);
+        expect(h.controller.projection, isNotNull);
+        expect(h.controller.errorMessage, isNull);
+      },
+    );
+  }
+
+  test('late session read failure cannot deliver waiting state', () async {
+    final h = _authorityHarness();
+    addTearDown(h.controller.dispose);
+    await h.controller.initialize();
+    final response = Completer<ConsultationProjection>();
+    h.gateway.waitingCompleter = response;
+    final waiting = h.controller.enterWaitingRoom();
+    await Future<void>.delayed(Duration.zero);
+    expect(h.gateway.waitingCalls, 1);
+    final held = Completer<AuthSessionModel?>();
+    h.store.nextRead = held;
+    response.complete(_projection(patientWaiting: true));
+    await h.store.heldReadStarted.future;
+    held.completeError(
+      const AuthFailure(
+        type: AuthFailureType.network,
+        message: 'internal late read failure',
+      ),
+    );
+    await waiting;
+    expect(h.controller.projection?.patientWaiting, isFalse);
+    expect(h.controller.actionMessage, isNull);
+    expect(h.room.releaseCalls, 0);
+    expect(
+      h.controller.errorMessage,
+      'Network error. Check your connection and try again.',
+    );
+    await h.controller.enterWaitingRoom();
+    expect(h.controller.projection?.patientWaiting, isTrue);
+    expect(h.controller.actionMessage, 'You are in the waiting room.');
+  });
+
+  test('resume refresh cannot overwrite an authority error', () async {
+    final h = _authorityHarness();
+    addTearDown(h.controller.dispose);
+    await h.controller.initialize();
+    await h.controller.prepareMedia();
+    await h.controller.join();
+    h.permissions.checkResult = const ConsultationPermissionResult(
+      microphone: ConsultationPermissionState.denied,
+      camera: ConsultationPermissionState.granted,
+    );
+    final held = Completer<ConsultationProjection>();
+    h.gateway.projectionCompleter = held;
+    final resume = h.controller.onAppResumed();
+    await h.gateway.heldProjectionStarted.future;
+    await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+    held.complete(_projection(canJoin: true));
+    await resume;
+    expect(h.room.releaseCalls, 1);
+    expect(h.controller.projection, isNull);
+    expect(h.controller.permissions, isNull);
+    expect(
+      h.controller.errorMessage,
+      'This account cannot access this consultation.',
+    );
+  });
+
+  test('resume catches failed authority cleanup without escaping', () async {
+    final h = _authorityHarness();
+    addTearDown(h.controller.dispose);
+    await h.controller.initialize();
+    await h.controller.prepareMedia();
+    final held = Completer<void>();
+    h.room.releaseHold = held;
+    await h.store.clear();
+    final resume = h.controller.onAppResumed();
+    await h.room.releaseStarted.future;
+    held.completeError(StateError('internal cleanup failure'));
+    await resume;
+    expect(h.controller.projection, isNull);
+    expect(h.controller.permissions, isNull);
+    expect(
+      h.controller.errorMessage,
+      'Something went wrong. Please try again.',
+    );
+    h.room.releaseHold = null;
+  });
+
+  test('dispose contains a held late async release failure', () async {
+    final reports = _captureDisposalReports();
+    final h = _authorityHarness();
+    await h.controller.initialize();
+    await h.controller.prepareMedia();
+    final projection = h.controller.projection;
+    final permissions = h.controller.permissions;
+    var notifications = 0;
+    h.controller.addListener(() => notifications++);
+    final held = Completer<void>();
+    h.room.releaseHold = held;
+    expect(h.controller.dispose, returnsNormally);
+    await h.room.releaseStarted.future;
+    expect(reports.errors, isEmpty);
+    held.completeError(
+      StateError(_unsafeCleanupDetails),
+      StackTrace.fromString(_unsafeCleanupDetails),
+    );
+    await reports.reported;
+    _expectRedactedDisposalFailure(reports.errors.single);
+    expect(h.room.releaseCalls, 1);
+    expect(h.room.connectionState, RtcConnectionState.previewing);
+    expect(h.controller.projection, same(projection));
+    expect(h.controller.permissions, same(permissions));
+    await h.controller.refresh();
+    await h.controller.prepareMedia();
+    expect(h.gateway.projectionCalls, 1);
+    expect(h.room.previewCalls, 1);
+    expect(notifications, 0);
+  });
+
+  test('dispose contains a synchronous release failure', () async {
+    final reports = _captureDisposalReports();
+    final h = _authorityHarness(roomOverride: _SynchronouslyFailingRoom());
+    await h.controller.initialize();
+    var notifications = 0;
+    h.controller.addListener(() => notifications++);
+    expect(h.controller.dispose, returnsNormally);
+    await reports.reported;
+    _expectRedactedDisposalFailure(reports.errors.single);
+    expect(h.room.releaseCalls, 1);
+    await h.controller.refresh();
+    expect(h.gateway.projectionCalls, 1);
+    expect(notifications, 0);
+  });
+
+  test('dispose contains repeated release after failed revocation', () async {
+    final reports = _captureDisposalReports();
+    final h = _authorityHarness();
+    await h.controller.initialize();
+    await h.controller.prepareMedia();
+    final held = Completer<void>();
+    h.room.releaseHold = held;
+    await h.store.clear();
+    final resume = h.controller.onAppResumed();
+    await h.room.releaseStarted.future;
+    held.completeError(StateError(_unsafeCleanupDetails));
+    await resume;
+    expect(h.room.releaseCalls, 1);
+    expect(h.controller.projection, isNull);
+    expect(h.controller.permissions, isNull);
+    expect(reports.errors, isEmpty);
+    var notifications = 0;
+    h.controller.addListener(() => notifications++);
+    expect(h.controller.dispose, returnsNormally);
+    await reports.reported;
+    _expectRedactedDisposalFailure(reports.errors.single);
+    expect(h.room.releaseCalls, 2);
+    expect(h.room.connectionState, RtcConnectionState.previewing);
+    expect(h.controller.projection, isNull);
+    expect(h.controller.permissions, isNull);
+    expect(notifications, 0);
+  });
+
+  test('dispose waits for an in-flight revocation release', () async {
+    final h = _authorityHarness();
+    await h.controller.initialize();
+    await h.controller.prepareMedia();
+    final held = Completer<void>();
+    h.room.releaseHold = held;
+    await h.store.clear();
+    final resume = h.controller.onAppResumed();
+    await h.room.releaseStarted.future;
+
+    h.controller.dispose();
+    await Future<void>.delayed(Duration.zero);
+    expect(h.room.releaseCalls, 1);
+
+    held.complete();
+    await resume;
+    await Future<void>.delayed(Duration.zero);
+    expect(h.room.releaseCalls, 1);
+  });
+
+  test(
+    'synchronous revocation failure remains latched after account return',
+    () async {
+      final reports = _captureDisposalReports();
+      final h = _authorityHarness(roomOverride: _SynchronouslyFailingRoom());
+      await h.controller.initialize();
+      await h.controller.prepareMedia();
+      await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+      await h.controller.refresh();
+      expect(h.controller.projection, isNull);
+      expect(h.controller.permissions, isNull);
+      expect(h.room.releaseCalls, 1);
+      await h.store.save(_session(role: 'PATIENT'));
+      await h.controller.refresh();
+      await h.controller.prepareMedia();
+      await h.controller.join();
+      expect(h.gateway.projectionCalls, 1);
+      expect(h.gateway.joinCalls, 0);
+      expect(h.room.previewCalls, 1);
+      expect(h.room.connectCalls, 0);
+      expect(h.room.releaseCalls, 1);
+      expect(h.controller.projection, isNull);
+      expect(h.controller.permissions, isNull);
+      expect(
+        h.controller.errorMessage,
+        'Something went wrong. Please try again.',
+      );
+      h.controller.dispose();
+      await reports.reported;
+      _expectRedactedDisposalFailure(reports.errors.single);
+    },
+  );
+
+  test('cleanup reentry observes the latch before adapter execution', () async {
+    final reports = _captureDisposalReports();
+    final room = _ReentrantReleaseRoom();
+    final h = _authorityHarness(roomOverride: room);
+    await h.controller.initialize();
+    final held = Completer<void>();
+    room.releaseHold = held;
+    late final Future<void> reentry;
+    var readsDuringReentry = -1;
+    var reentryCompleted = false;
+    room.onRelease = () {
+      final readsBefore = h.store.readCalls;
+      reentry = h.controller.setSpeakerEnabled(false).then((_) {
+        reentryCompleted = true;
+      });
+      readsDuringReentry = h.store.readCalls - readsBefore;
+    };
+    await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+    final refresh = h.controller.refresh();
+    await room.releaseStarted.future;
+    expect(readsDuringReentry, 0);
+    expect(reentryCompleted, isFalse);
+    expect(room.releaseCalls, 1);
+    expect(h.controller.projection, isNull);
+    held.completeError(StateError(_unsafeCleanupDetails));
+    await Future.wait(<Future<void>>[refresh, reentry]);
+    expect(reentryCompleted, isTrue);
+    expect(room.releaseCalls, 1);
+    expect(room.speakerEnabled, isTrue);
+    expect(h.controller.projection, isNull);
+    h.controller.dispose();
+    await reports.reported;
+    _expectRedactedDisposalFailure(reports.errors.single);
+  });
+
+  test(
+    'async revocation failure remains latched after account return',
+    () async {
+      final reports = _captureDisposalReports();
+      final h = _authorityHarness();
+      await h.controller.initialize();
+      await h.controller.prepareMedia();
+      final held = Completer<void>();
+      h.room.releaseHold = held;
+      await h.store.save(_session(role: 'PATIENT', userId: 'other-user'));
+      final refresh = h.controller.refresh();
+      await h.room.releaseStarted.future;
+      held.completeError(StateError(_unsafeCleanupDetails));
+      await refresh;
+      await h.store.save(_session(role: 'PATIENT'));
+      await h.controller.refresh();
+      await h.controller.prepareMedia();
+      await h.controller.join();
+      expect(h.gateway.projectionCalls, 1);
+      expect(h.gateway.joinCalls, 0);
+      expect(h.room.previewCalls, 1);
+      expect(h.room.connectCalls, 0);
+      expect(h.room.releaseCalls, 1);
+      expect(h.room.connectionState, RtcConnectionState.previewing);
+      expect(h.controller.projection, isNull);
+      expect(h.controller.permissions, isNull);
+      expect(
+        h.controller.errorMessage,
+        'Something went wrong. Please try again.',
+      );
+      h.controller.dispose();
+      await reports.reported;
+      _expectRedactedDisposalFailure(reports.errors.single);
+    },
+  );
+
   test('consultation failures never expose unclassified backend details', () {
     expect(
       safeConsultationFailure(
@@ -243,7 +961,10 @@ class _Gateway implements ConsultationGateway {
   _Gateway(this.value);
 
   ConsultationProjection value;
+  Completer<ConsultationProjection>? projectionCompleter;
+  final heldProjectionStarted = Completer<void>();
   Completer<ConsultationProjection>? waitingCompleter;
+  Completer<void>? joinHold;
   int projectionCalls = 0;
   int waitingCalls = 0;
   int admitCalls = 0;
@@ -259,6 +980,12 @@ class _Gateway implements ConsultationGateway {
     required String appointmentId,
   }) async {
     projectionCalls++;
+    final held = projectionCompleter;
+    if (held != null) {
+      projectionCompleter = null;
+      heldProjectionStarted.complete();
+      return held.future;
+    }
     return value;
   }
 
@@ -291,6 +1018,7 @@ class _Gateway implements ConsultationGateway {
     required bool cameraEnabled,
   }) async {
     joinCalls++;
+    await joinHold?.future;
     deviceSessionIds.add(deviceSessionId);
     return ConsultationJoinGrant(
       provider: 'LIVEKIT',
@@ -336,6 +1064,7 @@ class _Permissions implements ConsultationPermissionService {
        checkResult = checkResult ?? requestResult ?? _grantedPermissions;
 
   ConsultationPermissionResult requestResult;
+  Completer<ConsultationPermissionResult>? requestCompleter;
   ConsultationPermissionResult checkResult;
 
   @override
@@ -348,6 +1077,7 @@ class _Permissions implements ConsultationPermissionService {
 
   @override
   Future<ConsultationPermissionResult> request(ConsultationMode mode) async {
+    if (requestCompleter != null) return requestCompleter!.future;
     return requestResult;
   }
 }
@@ -380,7 +1110,14 @@ class _Room extends RtcRoomAdapter {
   String? safeFailureMessage;
 
   int previewCalls = 0;
+  int releaseCalls = 0;
   int connectCalls = 0;
+  Completer<void>? disconnectHold;
+  Completer<void>? releaseHold;
+  Completer<void>? cameraHold;
+  final disconnectStarted = Completer<void>();
+  final releaseStarted = Completer<void>();
+  final cameraStarted = Completer<void>();
   ConsultationJoinGrant? lastGrant;
 
   @override
@@ -407,15 +1144,24 @@ class _Room extends RtcRoomAdapter {
 
   @override
   Future<void> disconnect() async {
+    if (!disconnectStarted.isCompleted) disconnectStarted.complete();
+    await disconnectHold?.future;
     connectionState = RtcConnectionState.disconnected;
     notifyListeners();
   }
 
   @override
-  Future<void> release() async {}
+  Future<void> release() async {
+    releaseCalls++;
+    if (!releaseStarted.isCompleted) releaseStarted.complete();
+    await releaseHold?.future;
+    connectionState = RtcConnectionState.disconnected;
+  }
 
   @override
   Future<void> setCameraEnabled(bool enabled) async {
+    if (!cameraStarted.isCompleted) cameraStarted.complete();
+    await cameraHold?.future;
     cameraEnabled = enabled;
     notifyListeners();
   }
@@ -434,6 +1180,110 @@ class _Room extends RtcRoomAdapter {
 
   @override
   Future<void> switchCamera() async {}
+}
+
+const _unsafeCleanupDetails =
+    'raw SDK cleanup test-jwt-sensitive wss://private-room.example.test';
+
+({List<FlutterErrorDetails> errors, Future<void> reported})
+_captureDisposalReports() {
+  final previous = FlutterError.onError;
+  final errors = <FlutterErrorDetails>[];
+  final reported = Completer<void>();
+  FlutterError.onError = (details) {
+    errors.add(details);
+    if (!reported.isCompleted) reported.complete();
+  };
+  addTearDown(() => FlutterError.onError = previous);
+  return (errors: errors, reported: reported.future);
+}
+
+void _expectRedactedDisposalFailure(FlutterErrorDetails details) {
+  expect(details.exception, isA<StateError>());
+  expect(
+    details.exceptionAsString(),
+    'Bad state: Consultation media cleanup failed; resource release is unverified.',
+  );
+  expect(details.library, 'consultation');
+  expect(
+    details.context.toString(),
+    'while disposing a consultation controller',
+  );
+  expect(details.stack, isNull);
+  expect(details.informationCollector, isNull);
+  expect(details.toString(), isNot(contains('raw SDK')));
+  expect(details.toString(), isNot(contains('test-jwt-sensitive')));
+  expect(details.toString(), isNot(contains('wss://')));
+}
+
+class _SynchronouslyFailingRoom extends _Room {
+  @override
+  Future<void> release() {
+    releaseCalls++;
+    throw StateError(_unsafeCleanupDetails);
+  }
+}
+
+class _ReentrantReleaseRoom extends _Room {
+  void Function()? onRelease;
+
+  @override
+  Future<void> release() {
+    releaseCalls++;
+    final callback = onRelease;
+    onRelease = null;
+    callback?.call();
+    if (!releaseStarted.isCompleted) releaseStarted.complete();
+    return releaseHold!.future;
+  }
+}
+
+class _AuthoritySessionStore extends InMemorySessionStore {
+  int readCalls = 0;
+  Completer<AuthSessionModel?>? nextRead;
+  final heldReadStarted = Completer<void>();
+
+  @override
+  Future<AuthSessionModel?> read() {
+    readCalls++;
+    final held = nextRead;
+    if (held == null) return super.read();
+    nextRead = null;
+    heldReadStarted.complete();
+    return held.future;
+  }
+}
+
+({
+  ConsultationController controller,
+  _AuthoritySessionStore store,
+  _Gateway gateway,
+  _Room room,
+  _Permissions permissions,
+})
+_authorityHarness({_Room? roomOverride}) {
+  final store = _AuthoritySessionStore()..save(_session(role: 'PATIENT'));
+  final gateway = _Gateway(
+    _projection(canJoin: true, canEnterWaitingRoom: true),
+  );
+  final room = roomOverride ?? _Room();
+  final permissions = _Permissions();
+  final controller = ConsultationController(
+    appointmentId: 'appointment-1',
+    repository: gateway,
+    sessionStore: store,
+    permissionService: permissions,
+    room: room,
+    pollingInterval: const Duration(days: 1),
+    now: () => DateTime.utc(2026, 7, 30, 10),
+  );
+  return (
+    controller: controller,
+    store: store,
+    gateway: gateway,
+    room: room,
+    permissions: permissions,
+  );
 }
 
 AuthSessionModel _session({required String role, String userId = 'user-1'}) {

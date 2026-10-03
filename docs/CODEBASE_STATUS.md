@@ -1,5 +1,15 @@
 # Codebase status
 
+## Consultation Account Authority (APP-READY-041)
+
+Open consultation controllers remain bound to their original account. Async
+permission/grant/result delivery and media controls recheck persisted identity;
+detected authority loss clears state and releases media. The thirty-nine new
+regression cases and remaining SDK/provider/device gates are recorded in
+`CONSULTATION_ACCOUNT_AUTHORITY.md`. All 48 targeted controller tests and the
+613-test complete suite pass; analysis is clean. Signed staging APK/AAB and
+Android release lint pass. PR verification remains pending.
+
 ## Session Account Isolation (APP-READY-040)
 
 Protected requests, refresh sharing, account reads, explicit session exits,

@@ -1,5 +1,8 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/constants/navigators/router.dart';
+import 'package:app_t/core/routing/deferred_feature_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
@@ -38,7 +41,89 @@ void main() {
       _pageFor(context, RouteName.medicalAgreement),
       isA<ProfessionalOnboardingSetupPage>(),
     );
+    expect(
+      _pageFor(context, RouteName.medicalProfessional),
+      isA<ProfessionalOnboardingSetupPage>(),
+    );
+    expect(
+      _pageFor(context, RouteName.medicalEdit),
+      isA<DeferredFeaturePage>(),
+    );
   });
+
+  testWidgets(
+    'obsolete medicalEdit route fails closed and offers accessible return home',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      late BuildContext context;
+      await tester.pumpWidget(
+        MaterialApp(
+          builder:
+              (context, child) => MediaQuery(
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: const TextScaler.linear(2)),
+                child: child!,
+              ),
+          home: Builder(
+            builder: (value) {
+              context = value;
+              return const SizedBox.shrink();
+            },
+          ),
+          onGenerateRoute: (settings) {
+            if (settings.name == RouteName.dashboard) {
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => const Scaffold(body: Text('Dashboard home')),
+              );
+            }
+            return generateRoute(settings);
+          },
+        ),
+      );
+
+      final page = _pageFor(context, RouteName.medicalEdit);
+      Navigator.of(
+        context,
+      ).push<void>(MaterialPageRoute<void>(builder: (_) => page));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.byType(DeferredFeaturePage), findsOneWidget);
+      expect(
+        find.text('This feature is not available in CareNet Phase 1.'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+
+      final returnHome = find.ancestor(
+        of: find.text('Return home'),
+        matching: find.byType(FilledButton),
+      );
+      expect(returnHome, findsOneWidget);
+      expect(tester.getSize(returnHome).height, greaterThanOrEqualTo(48));
+      expect(
+        tester
+            .getSemantics(returnHome)
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isTrue,
+      );
+      await tester.ensureVisible(find.text('Return home'));
+      await tester.pump();
+      await tester.tap(find.text('Return home'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Dashboard home'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      semantics.dispose();
+    },
+  );
 
   testWidgets('canonical HTTPS auth links preserve their token', (
     tester,

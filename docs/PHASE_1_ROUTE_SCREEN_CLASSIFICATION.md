@@ -43,7 +43,7 @@ classification below.
 | `notificationAgreement` | `NotificationScreen` | DELETE | Obsolete chained permission screen; later permission request must be contextual | `/notification-agreement` |
 | `medicalAgreement` | `MedicalAgreement` | DELETE | Superseded professional onboarding chain | Existing blueprint agreement frame |
 | `medicalProfessional` | `ProfessionalOnboardingSetupPage` | KEEP | Backend-catalog professional application/setup | New backend-driven setup |
-| `medicalEdit` | `UserEdit` | DELETE | Obsolete pre-catalog professional/profile editor | Legacy profile setup reference |
+| `medicalEdit` | `DeferredFeaturePage` | DEFER | Legacy local-only profile editor is disconnected until a backend-owned edit flow exists | `UserEdit` source retained for later cleanup |
 | `signInPhone` | `SignInPhone` | DEFER | Hide until real phone/OTP sign-in exists | Blueprint phone sign-in family |
 | `signInEmail` | `SignInEmail` | KEEP | Email/password and Google sign-in entry | Existing sign-in reference |
 | `enterEmail` | `EnterEmailPage` | KEEP | Password-reset request | `/enter-email` |

@@ -69,7 +69,7 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `notificationAgreement` | `notificationAgreement` | `PatientOnboardingSetupPage` (legacy compatibility alias) | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
 | `medicalAgreement` | `medicalAgreement` | `ProfessionalOnboardingSetupPage` (legacy compatibility alias) | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
 | `medicalProfessional` | `medicalProfessional` | `ProfessionalOnboardingSetupPage` | `lib/features/Onboarding/presentation/pages/profile_setup.dart` |
-| `medicalEdit` | `medicalEdit` | `UserEdit` | `lib/features/Onboarding/presentation/pages/user_edit.dart` |
+| `medicalEdit` | `medicalEdit` | `DeferredFeaturePage` (legacy local editor disconnected) | `lib/core/routing/deferred_feature_page.dart` |
 | `signInPhone` | `signInPhone` | `SignInEmail` (unsupported phone-auth compatibility alias) | `lib/features/Authentication/presentation/pages/sign_in_email.dart` |
 | `signInEmail` | `signInEmail` | `SignInEmail` | `lib/features/Authentication/presentation/pages/sign_in_email.dart` |
 | `enterEmail` | `enterEmail` | `EnterEmailPage` | `lib/features/Authentication/presentation/pages/enter_email.dart` |

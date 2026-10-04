@@ -45,7 +45,7 @@ backups, and Firebase upload-certificate registration are verified. Signed
 distribution artifacts, Play certificate registration, release configuration,
 physical acceptance, and production promotion remain explicit open gates.
 
-**Last updated:** 2026-09-29 APP-P1-021 shared UX/accessibility foundation.
+**Last updated:** 2026-10-04 APP-P1-021B active-route audit in progress.
 
 ## Android Release Lint Gate
 
@@ -79,6 +79,18 @@ physical acceptance, and production promotion remain explicit open gates.
 - This is a shared foundation only, not an accessibility sign-off for every
   active route. Per-screen contrast, focus order, TalkBack, keyboard, and largest
   text checks remain in the APP-P1-021 follow-up sweep.
+- APP-P1-021B adds compact 320x568 / 2x-text regressions for Account,
+  Notification Preferences, failed-chat retry, Find Care categories, and
+  professional booking date/time selection. It labels unread notifications and
+  Schedule active state, prevents repeated live announcements from the
+  consultation countdown, makes password-reset guidance account-safe, and
+  identifies appointment timestamps as viewer-local. Local verification now
+  passes: 619 Flutter tests and `flutter analyze` reports no issues. A cold
+  all-flavor/all-ABI APK build and a staging ARM64-only retry were stopped
+  after local Gradle native-library packaging remained exceptionally slow on
+  the redirected F: build volume; no APK result is claimed. CI/device
+  packaging proof remains open, as do screen-reader and keyboard-focus
+  acceptance.
 
 ## Verification upload integrity
 

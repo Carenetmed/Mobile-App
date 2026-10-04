@@ -621,7 +621,7 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
               Text('Choose a date', style: _labelStyle()),
               SizedBox(height: 8.h),
               SizedBox(
-                height: 42.h,
+                height: 48,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: _days.length,
@@ -631,6 +631,7 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
                     return ChoiceChip(
                       label: Text(day.label),
                       selected: day.label == _selectedDay,
+                      materialTapTargetSize: MaterialTapTargetSize.padded,
                       onSelected:
                           controller.isSubmitting
                               ? null
@@ -833,57 +834,75 @@ class _TimeOption extends StatelessWidget {
         message: 'This appointment time cannot be displayed safely.',
       );
     }
-    return Material(
-      color: selected ? const Color(0xFFE5F4F1) : Colors.white,
-      borderRadius: BorderRadius.circular(8.r),
-      child: InkWell(
-        onTap: enabled ? onTap : null,
-        borderRadius: BorderRadius.circular(8.r),
-        child: Ink(
-          padding: REdgeInsets.symmetric(horizontal: 13, vertical: 12),
-          decoration: BoxDecoration(
+    final localTime = labels.patientLocalTime;
+    final semanticLabel =
+        '${labels.professionalDate}, ${labels.professionalTime} $timezone, '
+        '30 minutes${localTime == null ? '' : ', $localTime'}';
+    return Semantics(
+      container: true,
+      label: semanticLabel,
+      inMutuallyExclusiveGroup: true,
+      selected: selected,
+      enabled: enabled,
+      onTap: enabled ? onTap : null,
+      child: ExcludeSemantics(
+        child: Material(
+          color: selected ? const Color(0xFFE5F4F1) : Colors.white,
+          borderRadius: BorderRadius.circular(8.r),
+          child: InkWell(
+            onTap: enabled ? onTap : null,
             borderRadius: BorderRadius.circular(8.r),
-            border: Border.all(
-              color:
-                  selected ? const Color(0xFF155E63) : const Color(0xFFD8E9E6),
-              width: selected ? 1.5 : 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                selected ? Icons.radio_button_checked : Icons.radio_button_off,
-                color: const Color(0xFF155E63),
-              ),
-              SizedBox(width: 11.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      labels.professionalDate,
-                      style: _valueStyle().copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 3.h),
-                    Text(
-                      '${labels.professionalTime} $timezone - 30 min',
-                      style: _supportStyle(),
-                    ),
-                    if (labels.patientLocalTime != null) ...[
-                      SizedBox(height: 3.h),
-                      Text(
-                        labels.patientLocalTime!,
-                        style: _supportStyle().copyWith(
-                          color: const Color(0xFF155E63),
-                        ),
-                      ),
-                    ],
-                  ],
+            child: Ink(
+              padding: REdgeInsets.symmetric(horizontal: 13, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(
+                  color:
+                      selected
+                          ? const Color(0xFF155E63)
+                          : const Color(0xFFD8E9E6),
+                  width: selected ? 1.5 : 1,
                 ),
               ),
-            ],
+              child: Row(
+                children: [
+                  Icon(
+                    selected
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_off,
+                    color: const Color(0xFF155E63),
+                  ),
+                  SizedBox(width: 11.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          labels.professionalDate,
+                          style: _valueStyle().copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 3.h),
+                        Text(
+                          '${labels.professionalTime} $timezone - 30 min',
+                          style: _supportStyle(),
+                        ),
+                        if (localTime != null) ...[
+                          SizedBox(height: 3.h),
+                          Text(
+                            localTime,
+                            style: _supportStyle().copyWith(
+                              color: const Color(0xFF155E63),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

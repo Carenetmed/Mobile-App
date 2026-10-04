@@ -844,6 +844,7 @@ void main() {
   testWidgets('prejoin exposes only backend-authorized waiting action', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     await tester.binding.setSurfaceSize(const Size(800, 1200));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final store = InMemorySessionStore()..save(_session(role: 'PATIENT'));
@@ -871,9 +872,25 @@ void main() {
     expect(find.byKey(const Key('consultation-enter-waiting')), findsOneWidget);
     expect(find.byKey(const Key('consultation-join')), findsNothing);
     expect(find.textContaining('payment', findRichText: true), findsNothing);
+    final countdown = find.byWidgetPredicate(
+      (widget) =>
+          widget is Semantics &&
+          widget.properties.label ==
+              'The scheduled join opening time has arrived.',
+    );
+    expect(countdown, findsOneWidget);
+    expect(
+      tester
+          .getSemantics(countdown)
+          .getSemanticsData()
+          .flagsCollection
+          .isLiveRegion,
+      isFalse,
+    );
 
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
+    semantics.dispose();
   });
 
   test('expired join grant never reaches the RTC provider', () async {

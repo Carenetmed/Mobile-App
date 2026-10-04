@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction, Tristate;
+
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
@@ -189,6 +191,8 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
+    final dateChoice = find.byType(ChoiceChip).first;
+    expect(tester.getSize(dateChoice).height, greaterThanOrEqualTo(48));
     expect(find.text('Professional timezone: Africa/Lagos'), findsOneWidget);
     await tester.tap(availableTime);
     await tester.pumpAndSettle();
@@ -219,6 +223,43 @@ void main() {
     await tester.tap(find.text('View appointments'));
     await tester.pumpAndSettle();
     expect(find.text('appointments-dashboard'), findsOneWidget);
+  });
+
+  testWidgets('requestable time exposes radio selection semantics', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await _pumpDetails(tester);
+
+    try {
+      final timeOption = find.bySemanticsLabel(RegExp('9:00 AM Africa/Lagos'));
+      final initialData = tester.getSemantics(timeOption).getSemanticsData();
+      expect(
+        initialData.flagsCollection.isInMutuallyExclusiveGroup,
+        isTrue,
+      );
+      expect(
+        initialData.flagsCollection.isSelected,
+        Tristate.isFalse,
+      );
+
+      await tester.ensureVisible(find.textContaining('9:00 AM Africa/Lagos'));
+      await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+      await tester.pumpAndSettle();
+
+      final selectedData = tester.getSemantics(timeOption).getSemanticsData();
+      expect(
+        selectedData.flagsCollection.isInMutuallyExclusiveGroup,
+        isTrue,
+      );
+      expect(
+        selectedData.flagsCollection.isSelected,
+        Tristate.isTrue,
+      );
+      expect(selectedData.hasAction(SemanticsAction.tap), isTrue);
+    } finally {
+      semantics.dispose();
+    }
   });
 
   testWidgets('empty bounded range offers later backend times', (tester) async {

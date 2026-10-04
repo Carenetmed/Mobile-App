@@ -5,7 +5,6 @@ import 'package:app_t/features/Authentication/data/repositories/auth_repository.
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_email.dart';
-import 'package:app_t/features/Authentication/presentation/pages/enter_password.dart';
 import 'package:app_t/features/Authentication/presentation/pages/reset_password_confirm_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
@@ -48,7 +47,10 @@ Future<void> _pumpWithRoutes(
                   ),
               RouteName.enterEmail:
                   (_) => EnterEmailPage(authRepository: repository),
-              RouteName.enterPassword: (_) => const EnterPasswordPage(),
+              RouteName.enterPassword: (_) => ResetPasswordConfirmPage(
+                token: null,
+                authRepository: repository,
+              ),
             },
           ),
     ),
@@ -73,7 +75,7 @@ void main() {
       expect(find.byType(EditableText), findsOneWidget);
       expect(tester.takeException(), isNull);
 
-      final continueButton = find.text('Continue');
+      final continueButton = find.text('Send reset link');
       await tester.ensureVisible(continueButton);
       await tester.pumpAndSettle();
       expect(continueButton, findsOneWidget);
@@ -108,7 +110,7 @@ void main() {
       expect(find.byTooltip('Back'), findsOneWidget);
     });
 
-    testWidgets('enter email validates and requests password reset', (
+    testWidgets('enter email requests reset without claiming delivery', (
       tester,
     ) async {
       final repository = _FakeAuthRepository();
@@ -118,7 +120,7 @@ void main() {
         repository: repository,
       );
 
-      await tester.tap(find.text('Continue'));
+      await tester.tap(find.text('Send reset link'));
       await tester.pump();
       expect(find.text('Email Address is required'), findsOneWidget);
 
@@ -126,16 +128,17 @@ void main() {
         find.byType(EditableText).first,
         'hello@example.com',
       );
-      await tester.tap(find.text('Continue'));
+      await tester.tap(find.text('Send reset link'));
       await tester.pumpAndSettle();
 
       expect(repository.requestPasswordResetCalls, 1);
       expect(repository.lastResetEmail, 'hello@example.com');
-      expect(find.text('Enter password'), findsOneWidget);
       expect(
-        find.text('We sent reset instructions to hello@example.com'),
+        find.textContaining('If an account exists for that email'),
         findsOneWidget,
       );
+      expect(find.text('Enter email'), findsOneWidget);
+      expect(find.byType(EditableText), findsOneWidget);
     });
 
     testWidgets('enter email shows backend error without navigation', (
@@ -156,7 +159,7 @@ void main() {
         find.byType(EditableText).first,
         'hello@example.com',
       );
-      await tester.tap(find.text('Continue'));
+      await tester.tap(find.text('Send reset link'));
       await tester.pumpAndSettle();
 
       expect(find.text('Backend is not configured yet.'), findsOneWidget);
@@ -177,7 +180,7 @@ void main() {
         find.byType(EditableText).first,
         'hello@example.com',
       );
-      await tester.tap(find.text('Continue'));
+      await tester.tap(find.text('Send reset link'));
       await tester.pump();
 
       expect(find.text('Sending reset link...'), findsOneWidget);
@@ -186,12 +189,13 @@ void main() {
       completer.complete();
       await tester.pumpAndSettle();
 
-      expect(find.text('Enter password'), findsOneWidget);
+      expect(find.text('Enter email'), findsOneWidget);
+      expect(find.textContaining('Open the link in the email'), findsOneWidget);
     });
 
-    testWidgets(
-      'enter password validates and stops before fake reset success',
-      (tester) async {
+    testWidgets('legacy tokenless password route fails closed', (
+      tester,
+    ) async {
         tester.view.physicalSize = const Size(320, 568);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(tester.view.reset);
@@ -212,17 +216,11 @@ void main() {
                   onGenerateRoute: (settings) {
                     if (settings.name == RouteName.enterPassword) {
                       return MaterialPageRoute<void>(
-                        settings: RouteSettings(
-                          name: settings.name,
-                          arguments: 'hello@example.com',
+                        settings: RouteSettings(name: settings.name),
+                        builder: (_) => ResetPasswordConfirmPage(
+                          token: null,
+                          authRepository: _FakeAuthRepository(),
                         ),
-                        builder: (_) => const EnterPasswordPage(),
-                      );
-                    }
-                    if (settings.name == RouteName.signInEmail) {
-                      return MaterialPageRoute<void>(
-                        builder:
-                            (_) => const Scaffold(body: Text('sign-in-email')),
                       );
                     }
                     return null;
@@ -232,40 +230,11 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Enter password'), findsOneWidget);
-        expect(find.byType(EditableText), findsNWidgets(2));
+        expect(find.text('Reset password'), findsOneWidget);
+        expect(find.byType(EditableText), findsNothing);
+        expect(find.textContaining('Reset link is missing'), findsOneWidget);
+        expect(find.text('Request new reset email'), findsOneWidget);
         expect(tester.takeException(), isNull);
-
-        final review = find.text('Review reset token requirement');
-        await tester.ensureVisible(review);
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-        await tester.tap(review);
-        await tester.pump();
-        expect(find.text('Please enter your password'), findsNWidgets(2));
-
-        final fields = find.byType(EditableText);
-        await tester.enterText(fields.at(0), 'StrongPassword1!');
-        await tester.enterText(fields.at(1), 'MismatchPassword1!');
-        await tester.ensureVisible(review);
-        await tester.pumpAndSettle();
-        await tester.tap(review);
-        await tester.pump();
-        expect(find.text('Passwords do not match'), findsOneWidget);
-
-        await tester.enterText(fields.at(1), 'StrongPassword1!');
-        await tester.ensureVisible(review);
-        await tester.pumpAndSettle();
-        await tester.tap(review);
-        await tester.pump();
-
-        expect(
-          find.textContaining(
-            'Password reset confirmation needs the secure token',
-          ),
-          findsOneWidget,
-        );
-        expect(find.text('sign-in-email'), findsNothing);
       },
     );
 

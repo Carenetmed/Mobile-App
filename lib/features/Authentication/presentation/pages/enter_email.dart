@@ -1,6 +1,5 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
-import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
 import 'package:app_t/core/theme/textStyle.dart';
@@ -24,6 +23,7 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
   late final TextEditingController _emailController;
   bool _attemptedSubmit = false;
   bool _isSubmitting = false;
+  bool _resetRequested = false;
   String? _authError;
 
   AuthRepository get _authRepository =>
@@ -45,7 +45,9 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
 
   void _handleInputChanged() {
     if (mounted) {
-      setState(() {});
+      setState(() {
+        _resetRequested = false;
+      });
     }
   }
 
@@ -79,7 +81,10 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
       final email = _emailController.text.trim();
       await _authRepository.requestPasswordReset(email: email);
       if (!mounted) return;
-      Navigator.pushNamed(context, RouteName.enterPassword, arguments: email);
+      setState(() {
+        _isSubmitting = false;
+        _resetRequested = true;
+      });
     } on AuthFailure catch (failure) {
       if (!mounted) return;
       setState(() {
@@ -123,7 +128,7 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
               ),
               SizedBox(height: 8.h),
               Text(
-                'Enter your email address to continue',
+                'Enter your email address to request a password reset link',
                 style: TextStyle(
                   fontSize: FontSizes.footer2,
                   fontFamily: AppFonts.montserrat,
@@ -152,8 +157,22 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
                 ),
                 SizedBox(height: 12.h),
               ],
+              if (_resetRequested) ...[
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    'If an account exists for that email, reset instructions will arrive shortly. Open the link in the email to choose a new password.',
+                  ),
+                ),
+                SizedBox(height: 12.h),
+              ],
               CarenetButton(
-                label: _isSubmitting ? 'Sending reset link...' : 'Continue',
+                label:
+                    _isSubmitting
+                        ? 'Sending reset link...'
+                        : _resetRequested
+                        ? 'Send another reset link'
+                        : 'Send reset link',
                 onPressed: _isSubmitting ? null : _onContinue,
               ),
             ],

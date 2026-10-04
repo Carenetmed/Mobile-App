@@ -983,7 +983,7 @@ class _ConsultationCountdownState extends State<_ConsultationCountdown> {
             ? 'The scheduled join opening time has arrived.'
             : 'Waiting room opens in $value';
     return Semantics(
-      liveRegion: true,
+      liveRegion: false,
       label: text,
       child: DecoratedBox(
         decoration: BoxDecoration(

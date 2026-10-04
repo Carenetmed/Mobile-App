@@ -561,11 +561,12 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
-    for (var i = 0; i < 10; i++) {
-      await tester.drag(find.byType(ListView).first, const Offset(0, -260));
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-    }
+    await tester.scrollUntilVisible(
+      find.text('Business'),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(tester.takeException(), isNull);
     expect(find.text('Business'), findsOneWidget);
     expect(find.text('Edit hours'), findsOneWidget);
   });
@@ -984,7 +985,7 @@ void main() {
 
     expect(find.text('Schedule'), findsOneWidget);
     expect(find.text('Weekly availability'), findsOneWidget);
-    expect(find.text('Monday'), findsOneWidget);
+    expect(find.text('Monday - Active'), findsOneWidget);
     expect(find.textContaining('09:00 - 17:00'), findsOneWidget);
     expect(find.text('Payment'), findsNothing);
     expect(find.text('Notification'), findsNothing);

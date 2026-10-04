@@ -175,7 +175,9 @@ class _SelectedDatesShellPageState extends State<SelectedDatesShellPage> {
           backgroundColor: CarenetColors.primary100,
           child: Text(_weekdayShort(window.weekday)),
         ),
-        title: Text(_weekdayLabel(window.weekday)),
+        title: Text(
+          '${_weekdayLabel(window.weekday)} - ${window.active ? 'Active' : 'Inactive'}',
+        ),
         subtitle: Text(
           '${_timeLabel(window.startMinute)} - ${_timeLabel(window.endMinute)}\n${window.timezone}',
         ),

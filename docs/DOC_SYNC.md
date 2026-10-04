@@ -1,6 +1,6 @@
 # Documentation sync index
 
-**Last audited:** 2026-09-29
+**Last audited:** 2026-10-04
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 ---
@@ -107,6 +107,8 @@ Do not use old chat history. Do not start the next task without my approval.
 ---
 
 ## Audit log
+
+| 2026-10-04 | APP-P1-021B in progress - added compact Account/Notification Preferences, failed-chat retry, Find Care category, booking-date and selected-time semantics coverage; unread, Schedule Active/Inactive, countdown, password-reset, and viewer-local-time states are clearer. Full Flutter suite passes 619 and analyzer is clean. Full and staging ARM64 debug APK attempts were stopped after unusually slow local Gradle native-library packaging on the redirected F: volume; no APK result is claimed and CI/device packaging proof remains open. Screen-reader and keyboard-focus acceptance remain open. Legacy `ManageProfileShellPage` is not the registered account route and was not reactivated |
 
 | 2026-07-22 | APP-P1-002 DONE - replaced broad dashboard navigation with backend-session-owned patient/professional four-tab shells, moved Notifications and Account/Profile to the header, removed the active drawer and retained-screen deferred entry points, replaced seeded message/notification data with honest empty states, and routed patient setup through backend readiness; DOC_SYNC NEXT -> APP-P1-003 |
 

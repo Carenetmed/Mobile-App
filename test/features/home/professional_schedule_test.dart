@@ -179,7 +179,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Weekly availability'), findsOneWidget);
-    expect(find.text('Sunday'), findsOneWidget);
+    expect(find.text('Sunday - Active'), findsOneWidget);
     expect(
       find.textContaining('Africa/Lagos', skipOffstage: false),
       findsOneWidget,
@@ -193,6 +193,36 @@ void main() {
     );
     expect(find.textContaining('backend-generated'), findsNothing);
     expect(find.textContaining('Generated slot'), findsNothing);
+  });
+
+  testWidgets('inactive backend availability is labeled in row semantics', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(430, 932),
+        builder:
+            (_, __) => MaterialApp(
+              home: SelectedDatesShellPage(
+                schedulingRepository: _ScheduleRepository(
+                  windows: <AvailabilityWindow>[
+                    _window(id: 'inactive-window', active: false),
+                  ],
+                ),
+                sessionStore: _sessionStore('PROFESSIONAL'),
+              ),
+            ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Monday - Inactive'), findsOneWidget);
+    final rowSemantics = tester.getSemantics(
+      find.byKey(const Key('availability-inactive-window')),
+    );
+    expect(rowSemantics.label, contains('Inactive'));
+    semantics.dispose();
   });
 
   testWidgets('patient cannot access professional Schedule authority', (
@@ -235,14 +265,18 @@ InMemorySessionStore _sessionStore(String role) {
   );
 }
 
-AvailabilityWindow _window({String id = 'window-1', int weekday = 1}) {
+AvailabilityWindow _window({
+  String id = 'window-1',
+  int weekday = 1,
+  bool active = true,
+}) {
   return AvailabilityWindow(
     id: id,
     weekday: weekday,
     startMinute: 540,
     endMinute: 600,
     timezone: 'Africa/Lagos',
-    active: true,
+    active: active,
   );
 }
 

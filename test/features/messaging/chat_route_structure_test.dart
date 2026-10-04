@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/constants/navigators/router.dart';
 import 'package:app_t/features/Messaging/presentation/pages/Chat.dart';
@@ -61,6 +63,46 @@ void main() {
     expect(find.text('Please arrive a few minutes early.'), findsOneWidget);
     expect(find.text('Message about this appointment'), findsOneWidget);
     expect(repository.markReadCalls, 1);
+  });
+
+  testWidgets('failed message retry exposes a 48dp action target', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final repository = FakeMessagingRepository(
+      conversations: <dynamic>[conversationSummary()].cast(),
+      messages: <dynamic>[careMessage()].cast(),
+    )..sendError = StateError('offline');
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ChatPage(
+          arguments: const AppointmentConversationRouteArgs(
+            conversationId: 'conversation-1',
+          ),
+          repository: repository,
+          realtime: FakeRealtimeConnection(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final composer = find.byType(TextField).last;
+    await tester.enterText(composer, 'A consultation question');
+    await tester.testTextInput.receiveAction(TextInputAction.send);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
+
+    final retry = find.ancestor(
+      of: find.text('Not sent'),
+      matching: find.byType(TextButton),
+    );
+    expect(retry, findsOneWidget);
+    expect(tester.getSize(retry).height, greaterThanOrEqualTo(48));
+    final node = tester.getSemantics(retry);
+    expect(node.label, contains('Not sent'));
+    expect(node.getSemanticsData().hasAction(SemanticsAction.tap), isTrue);
+    semantics.dispose();
   });
 
   testWidgets('read-only lifecycle disables composer with honest reason', (

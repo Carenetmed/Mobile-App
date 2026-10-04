@@ -57,6 +57,12 @@ events, boosts, health readings, emergency flows, generic messaging, reminders,
 or the local draft booking route. Route constants and deferred source remain for
 the later dependency-proven cleanup slices.
 
+APP-P1-021C disconnects the legacy `medicalEdit` route from its local-only
+`UserEdit` screen. The route now resolves to `DeferredFeaturePage`; the route
+constant and `UserEdit`/`ProfessionScreen` sources remain recoverable. Do not
+present the seeded identity or local image/field edits as persisted profile
+management. Use the registered backend-backed account/profile flows instead.
+
 The complete ownership/removal map is
 `PHASE_1_DEPENDENCY_IMPACT_MAP.md`. Core payment, appointment messaging,
 consultation calls, and transactional notification delivery are implemented.

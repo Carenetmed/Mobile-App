@@ -45,7 +45,7 @@ backups, and Firebase upload-certificate registration are verified. Signed
 distribution artifacts, Play certificate registration, release configuration,
 physical acceptance, and production promotion remain explicit open gates.
 
-**Last updated:** 2026-10-04 APP-P1-021B active-route audit in progress.
+**Last updated:** 2026-10-04 APP-P1-021C legacy medicalEdit route disconnection in progress.
 
 ## Android Release Lint Gate
 
@@ -84,13 +84,13 @@ physical acceptance, and production promotion remain explicit open gates.
   professional booking date/time selection. It labels unread notifications and
   Schedule active state, prevents repeated live announcements from the
   consultation countdown, makes password-reset guidance account-safe, and
-  identifies appointment timestamps as viewer-local. Local verification now
-  passes: 619 Flutter tests and `flutter analyze` reports no issues. A cold
-  all-flavor/all-ABI APK build and a staging ARM64-only retry were stopped
-  after local Gradle native-library packaging remained exceptionally slow on
-  the redirected F: build volume; no APK result is claimed. CI/device
-  packaging proof remains open, as do screen-reader and keyboard-focus
-  acceptance.
+  identifies appointment timestamps as viewer-local. PR #201 merged at
+  `e36c5c8`; its Ubuntu CI passed 619 Flutter tests, analysis, debug APK,
+  release lint, and release-configuration regressions. Local Windows APK
+  packaging remained unusually slow and was stopped; hosted CI is the verified
+  build evidence. Screen-reader, keyboard-focus, and device acceptance remain
+  open. APP-P1-021C routes legacy `medicalEdit` to the honest deferred page and
+  retains `UserEdit` source for later cleanup.
 
 ## Verification upload integrity
 

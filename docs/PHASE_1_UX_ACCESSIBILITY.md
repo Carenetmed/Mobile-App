@@ -17,9 +17,11 @@ The active navigation remains:
 APP-P1-021A merged in PR #172. It aligns the shared `CarenetColors`
 healthcare-green scale and active Material color schemes, improves the shared
 `CarenetButton` semantic tap target and enlarged-text behavior, corrects
-Schedule wording, and reconciles the live route inventory. APP-P1-021B has
-applied a bounded set of active-route accessibility repairs; this is not a
-whole-app accessibility sign-off.
+Schedule wording, and reconciles the live route inventory. APP-P1-021B merged
+in PR #201 with 619 passing tests and green GitHub analyze/test/debug-APK/
+release-lint checks. APP-P1-021C is disconnecting the obsolete `medicalEdit`
+route from its seeded local editor. These bounded changes are not a whole-app
+accessibility sign-off.
 
 This foundation does not certify every screen. Active screens still need
 route-by-route checks for contrast, semantics, focus order, keyboard operation,
@@ -90,7 +92,7 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 | `signInPhone`, `signInEmail` | SignInEmail | `sign_in_flow_test.dart` | Password/recovery/provider semantics and 320x568 at 2x text covered. |
 | `enterEmail`, `enterPassword` | Password recovery request and legacy tokenless alias | `password_recovery_flow_test.dart` | A successful reset request stays on email entry and gives generic account-enumeration-safe guidance; the legacy tokenless route fails closed to the missing-token confirmation state. Only the reset-link token route accepts a new password. Compact request and token confirmation flows are covered; physical screen-reader/keyboard proof remains open. |
 | `resetPasswordConfirm`, `emailVerificationConfirm` | Token confirmation pages | `password_recovery_flow_test.dart`, `auth_route_authority_test.dart`, `account_flow_test.dart` | Password-reset and email-verification success flows are exercised at 320x568 / 2x text, with confirmation actions scroll-accessible and no layout exceptions. Screen-reader/device proof remains open. |
-| `medicalEdit` | UserEdit | No focused route widget test identified | Accessibility/task-flow evidence gap. |
+| `medicalEdit` | DeferredFeaturePage (legacy `UserEdit` source retained) | `auth_route_authority_test.dart` | Direct legacy route fails closed; compact 320x568 / 2x-text test checks the explanation and accessible Return home action. Authoritative broad profile editing remains deferred. |
 | `dashboard` | Dashboard | `dashboard_shell_test.dart` | Role destinations, header actions, tab persistence and Android back covered; patient destination switching is checked at 320x568 / 2x text. Professional large-text layout and physical accessibility remain open. |
 | `search`, `findMentor`, `bookAppointment`, `publicProfile` | SearchShellPage | `search_flow_test.dart`, `find_mentor_flow_test.dart`, `public_profile_flow_test.dart` | Canonical discovery and legacy alias behavior covered; patient name query, clear, scroll, and profile handoff are checked at 320x568 / 2x text. Category-chip targets are at least 48dp and remain horizontally reachable at compact width. Keyboard, TalkBack, and wider discovery states remain uncertified. |
 | `specialistDetails` | SpecialistDetailsShellPage | `specialist_details_flow_test.dart` | Patient detail, backend time selection, confirmation, request-sent result, and Appointments handoff are checked at 320x568 / 2x text. Date choices have 48dp targets; time options announce their professional-time label and selected radio state. Dialog content scrolls while actions remain usable; other screen-reader states remain open. |

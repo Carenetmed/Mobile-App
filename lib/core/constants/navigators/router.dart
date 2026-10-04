@@ -31,7 +31,6 @@ import 'package:app_t/features/Messaging/presentation/state/messaging_controller
 import 'package:app_t/features/Notifications/presentation/pages/notification_preferences_page.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/onboarding.dart';
 import 'package:app_t/features/Onboarding/presentation/pages/profile_setup.dart';
-import 'package:app_t/features/Onboarding/presentation/pages/user_edit.dart';
 import 'package:app_t/features/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -124,7 +123,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         EmailVerificationConfirmPage(token: args is String ? args : null),
       );
     case RouteName.medicalEdit:
-      return _page(settings, UserEdit());
+      return _page(settings, const DeferredFeaturePage());
     case RouteName.dashboard:
       final initialIndex = settings.arguments;
       return _page(

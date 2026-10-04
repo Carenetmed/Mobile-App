@@ -184,9 +184,19 @@ class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
       appBar: AppBar(
         backgroundColor: AppColors.kWhite,
         elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+        leading: Semantics(
+          label: 'Back',
+          button: true,
+          onTap: () {
+            Navigator.of(context).maybePop();
+          },
+          child: ExcludeSemantics(
+            child: IconButton(
+              tooltip: 'Back',
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+            ),
+          ),
         ),
         centerTitle: true,
         title: Text(

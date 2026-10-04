@@ -19,9 +19,13 @@ healthcare-green scale and active Material color schemes, improves the shared
 `CarenetButton` semantic tap target and enlarged-text behavior, corrects
 Schedule wording, and reconciles the live route inventory. APP-P1-021B merged
 in PR #201 with 619 passing tests and green GitHub analyze/test/debug-APK/
-release-lint checks. APP-P1-021C is disconnecting the obsolete `medicalEdit`
-route from its seeded local editor. These bounded changes are not a whole-app
-accessibility sign-off.
+release-lint checks. APP-P1-021C merged in PR #202, routing obsolete
+`medicalEdit` to the deferred page; its CI passed 620 tests, analysis, debug
+APK, and Android release checks. APP-P1-021D adds accessible Back semantics to
+the active professional profile editors; its 621-test suite and analyzer pass
+locally. Local Windows APK packaging is blocked by a cross-drive Kotlin/Gradle
+cache issue, so hosted CI must supply the Android build proof. These bounded
+changes are not a whole-app accessibility sign-off.
 
 This foundation does not certify every screen. Active screens still need
 route-by-route checks for contrast, semantics, focus order, keyboard operation,
@@ -102,7 +106,7 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 | `account`, `deleteAccount` | AccountShellPage | `account_flow_test.dart` | Account tiles remain scroll-reachable at 320x568 / 2x text, including the final deletion action; screen-reader, focus-order, and device acceptance remain open. |
 | `professionalVerificationDocuments` | ProfessionalVerificationDocumentsShellPage | `manage_profile_flow_test.dart` | Verification readiness, upload/list states, and long metadata now have 320x568 / 2x-text scroll coverage; screen-reader and device proof remain open. |
 | `professionalFinance` | ProfessionalFinanceShellPage | `financial_flow_test.dart`, `financial_contract_test.dart` | 320x568 / 2x-text populated full-scroll and payout-account entry are covered; platform screen-reader, focus-order, and device acceptance remain open. |
-| `editYourName`, `editProfessionalDetails`, `addDescription` | Professional profile editor shells | `manage_profile_flow_test.dart` | Backend-field behavior covered; accessibility layout not certified. |
+| `editYourName`, `editProfessionalDetails`, `addDescription` | Professional profile editor shells | `manage_profile_flow_test.dart` | At 320x568 / 2x text, the labelled Back control exposes a button/tap semantic and returns to Manage Profile from all three editors. Other screen-reader, focus-order, and device behavior remain open. |
 | `messages` | MessagesPage | `messaging_flow_test.dart`, `messaging_controller_test.dart` | Honest inbox/route states covered; keyboard/screen-reader conversation task open. |
 | `chat`, `message` | ChatPage | `chat_route_structure_test.dart`, `messaging_flow_test.dart` | Failed-message retry now retains a 48dp action target; keyboard focus order and physical screen-reader use remain uncertified. |
 | `notification` | NotificationsPage | `notification_inbox_test.dart`, `dashboard_shell_test.dart` | Unread state is included in row semantics and removed after read; broad large-text and physical screen-reader announcement order remain open. |

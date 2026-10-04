@@ -45,7 +45,7 @@ backups, and Firebase upload-certificate registration are verified. Signed
 distribution artifacts, Play certificate registration, release configuration,
 physical acceptance, and production promotion remain explicit open gates.
 
-**Last updated:** 2026-10-04 APP-P1-021C legacy medicalEdit route disconnection in progress.
+**Last updated:** 2026-10-05 APP-P1-021D professional editor Back accessibility in progress.
 
 ## Android Release Lint Gate
 
@@ -90,7 +90,16 @@ physical acceptance, and production promotion remain explicit open gates.
   packaging remained unusually slow and was stopped; hosted CI is the verified
   build evidence. Screen-reader, keyboard-focus, and device acceptance remain
   open. APP-P1-021C routes legacy `medicalEdit` to the honest deferred page and
-  retains `UserEdit` source for later cleanup.
+  retains `UserEdit` source for later cleanup. PR #202 merged at
+  `50924eb`; GitHub CI passed 620 tests, analysis, debug APK, release lint, and
+  release configuration/signing regressions. The local Windows debug build for
+  that slice was blocked by a full C: drive; hosted CI supplied the build proof.
+  APP-P1-021D adds explicit accessible Back semantics to the three active
+  professional profile editors. The focused profile-flow tests, full 621-test
+  suite, and `flutter analyze` pass locally. Local Windows APK packaging is
+  blocked by Kotlin incremental-cache cross-drive path conversion between the
+  F: worktree and C: Pub cache; a no-incremental retry stalled in Gradle. CI
+  Android build remains required before merge.
 
 ## Verification upload integrity
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show SemanticsAction;
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
@@ -570,6 +571,68 @@ void main() {
     expect(find.text('Business'), findsOneWidget);
     expect(find.text('Edit hours'), findsOneWidget);
   });
+
+  testWidgets(
+    'professional profile editors have accessible back actions at compact large text',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pumpManageProfile(
+          tester,
+          screenSize: const Size(320, 568),
+          textScaler: const TextScaler.linear(2),
+          profileRepository: _FakeProfileRepository(
+            professionalProfile: const ProfessionalProfile(
+              id: 'pro_accessibility',
+              displayName: 'Dr. Accessible Profile',
+              category: 'Primary care',
+              specialty: 'Family medicine',
+              bio: 'Backend-owned profile summary.',
+              verificationStatus: 'VERIFIED',
+            ),
+          ),
+        );
+
+        const editors = <(String, String)>[
+          ('Edit', 'Edit your name'),
+          ('Edit category', 'Professional details'),
+          ('Edit description', 'Add description'),
+        ];
+
+        for (final (entryAction, editorTitle) in editors) {
+          final action = find.text(entryAction).last;
+          await tester.scrollUntilVisible(
+            action,
+            160,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(action);
+          await tester.pumpAndSettle();
+
+          expect(find.text(editorTitle), findsOneWidget);
+          expect(find.byTooltip('Back'), findsOneWidget);
+          final backButton = find.widgetWithIcon(IconButton, Icons.arrow_back);
+          expect(backButton, findsOneWidget);
+          final backSemantics = find.bySemanticsLabel('Back');
+          expect(backSemantics, findsOneWidget);
+          final semanticsData =
+              tester.getSemantics(backSemantics).getSemanticsData();
+          expect(semanticsData.hasAction(SemanticsAction.tap), isTrue);
+          expect(tester.getSize(backButton).width, greaterThanOrEqualTo(48));
+          expect(tester.getSize(backButton).height, greaterThanOrEqualTo(48));
+          expect(tester.takeException(), isNull);
+
+          await tester.tap(backButton);
+          await tester.pumpAndSettle();
+          expect(find.text('Manage Profile'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        }
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
 
   testWidgets('verification metadata remains usable at compact large text', (
     tester,

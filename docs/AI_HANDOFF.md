@@ -24,10 +24,12 @@ remain the final gated activity and require one explicit user confirmation
 before any Paystack-side or payment deployment mutation. Physical-device
 acceptance remains after the automated and cloud gates.
 
-Current slice: `APP-P1-021C`, disconnect the obsolete local-only `medicalEdit`
-route while preserving its source and the backend-owned onboarding path.
-`APP-P1-021A` merged in PR #172 and `APP-P1-021B` merged in PR #201. Scope and
-limitations:
+Current slice: `APP-P1-021D`, add accessible Back semantics to the active
+professional profile editors without changing profile behavior. The focused
+profile-flow tests, 621-test suite, and analyzer pass locally. The local Windows
+APK build is blocked by a Kotlin/Gradle cross-drive cache issue; hosted CI must
+prove the Android build before merge. `APP-P1-021A` merged in PR #172,
+`APP-P1-021B` in PR #201, and `APP-P1-021C` in PR #202. Scope and limitations:
 `PHASE_1_UX_ACCESSIBILITY.md`.
 
 ---
@@ -294,7 +296,8 @@ limitations:
 | APP-P1-020 | Verification upload integrity | M | **DONE** |
 | APP-P1-021A | Shared marketplace theme/accessibility foundation and route inventory | S | **DONE** |
 | APP-P1-021B | Bounded active-route UX/accessibility repairs, focused regression tests, and recorded remaining audit limits | M+ | **DONE** |
-| APP-P1-021C | Disconnect the obsolete `medicalEdit` route from seeded `UserEdit`; preserve source and prove fail-closed route plus canonical professional onboarding | S | **IN PROGRESS** |
+| APP-P1-021C | Disconnect the obsolete `medicalEdit` route from seeded `UserEdit`; preserve source and prove fail-closed route plus canonical professional onboarding | S | **DONE** |
+| APP-P1-021D | Add accessible Back semantics to professional name, details, and description editors with compact enlarged-text regression coverage | S | **IN PROGRESS** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 

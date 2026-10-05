@@ -299,6 +299,7 @@ class _AvailabilityEditorState extends State<_AvailabilityEditor> {
           children: [
             DropdownButtonFormField<int>(
               initialValue: _weekday,
+              isExpanded: true,
               decoration: const InputDecoration(labelText: 'Weekday'),
               items: List<DropdownMenuItem<int>>.generate(
                 7,
@@ -314,22 +315,45 @@ class _AvailabilityEditorState extends State<_AvailabilityEditor> {
               },
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => _pickTime(start: true),
-                    child: Text('Start ${_start.format(context)}'),
+            Builder(
+              builder: (context) {
+                final stackButtons =
+                    MediaQuery.sizeOf(context).width < 388 ||
+                    MediaQuery.textScalerOf(context).scale(16) > 20;
+                final startButton = OutlinedButton(
+                  onPressed: () => _pickTime(start: true),
+                  child: Text(
+                    'Start ${_start.format(context)}',
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => _pickTime(start: false),
-                    child: Text('End ${_end.format(context)}'),
+                );
+                final endButton = OutlinedButton(
+                  onPressed: () => _pickTime(start: false),
+                  child: Text(
+                    'End ${_end.format(context)}',
+                    textAlign: TextAlign.center,
                   ),
-                ),
-              ],
+                );
+
+                if (stackButtons) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      startButton,
+                      const SizedBox(height: 8),
+                      endButton,
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(child: startButton),
+                    const SizedBox(width: 8),
+                    Expanded(child: endButton),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 12),
             TextField(

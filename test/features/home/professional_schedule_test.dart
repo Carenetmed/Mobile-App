@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show SemanticsAction;
 
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
@@ -224,6 +225,167 @@ void main() {
     expect(rowSemantics.label, contains('Inactive'));
     semantics.dispose();
   });
+
+  testWidgets(
+    'availability editor remains usable at compact width and enlarged text',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      final repository = _ScheduleRepository();
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      try {
+        await tester.pumpWidget(
+          ScreenUtilInit(
+            designSize: const Size(430, 932),
+            builder:
+                (_, __) => MaterialApp(
+                  builder:
+                      (context, child) => MediaQuery(
+                        data: MediaQuery.of(
+                          context,
+                        ).copyWith(textScaler: const TextScaler.linear(2)),
+                        child: child!,
+                      ),
+                  home: SelectedDatesShellPage(
+                    schedulingRepository: repository,
+                    sessionStore: _sessionStore('PROFESSIONAL'),
+                  ),
+                ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Weekly availability'), findsOneWidget);
+        expect(find.text('Schedule unavailable'), findsNothing);
+        final addAvailability = find.bySemanticsLabel(
+          'Add availability window',
+        );
+        await tester.scrollUntilVisible(
+          addAvailability,
+          120,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+        expect(addAvailability, findsOneWidget);
+        expect(
+          tester
+              .getSemantics(addAvailability)
+              .getSemanticsData()
+              .hasAction(SemanticsAction.tap),
+          isTrue,
+        );
+        expect(tester.takeException(), isNull, reason: 'Schedule page layout');
+        await tester.tap(addAvailability);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Add availability'), findsOneWidget);
+        expect(find.text('Weekday'), findsOneWidget);
+        expect(find.textContaining('Start '), findsOneWidget);
+        expect(find.textContaining('End '), findsOneWidget);
+        expect(find.text('IANA timezone'), findsOneWidget);
+        expect(find.text('Active'), findsOneWidget);
+        expect(find.text('Cancel'), findsOneWidget);
+        expect(find.text('Save'), findsOneWidget);
+        final dialogContext = tester.element(find.byType(AlertDialog));
+        expect(MediaQuery.textScalerOf(dialogContext).scale(16), 32);
+        for (final label in ['Weekday', 'IANA timezone', 'Active']) {
+          final control = find.bySemanticsLabel(RegExp(label));
+          expect(control, findsWidgets, reason: '$label is exposed to semantics');
+          expect(
+            tester
+                .getSemantics(control.first)
+                .getSemanticsData()
+                .hasAction(SemanticsAction.tap),
+            isTrue,
+            reason: '$label can be operated through semantics',
+          );
+        }
+        for (final label in ['Cancel', 'Save']) {
+          final control = find.bySemanticsLabel(label);
+          expect(control, findsOneWidget);
+          expect(
+            tester
+                .getSemantics(control)
+                .getSemanticsData()
+                .hasAction(SemanticsAction.tap),
+            isTrue,
+            reason: '$label is an accessible action',
+          );
+          expect(tester.getSize(control).height, greaterThanOrEqualTo(48));
+        }
+        final startControl = find.ancestor(
+          of: find.textContaining('Start '),
+          matching: find.byType(OutlinedButton),
+        );
+        final endControl = find.ancestor(
+          of: find.textContaining('End '),
+          matching: find.byType(OutlinedButton),
+        );
+        expect(
+          tester.getTopLeft(endControl).dy,
+          greaterThan(tester.getTopLeft(startControl).dy),
+        );
+        expect(tester.takeException(), isNull);
+
+        final startButton = find.ancestor(
+          of: find.textContaining('Start '),
+          matching: find.byType(OutlinedButton),
+        );
+        final startSemantics = tester.getSemantics(
+          find.bySemanticsLabel(RegExp('Start .*')),
+        );
+        expect(
+          startSemantics.getSemanticsData().hasAction(SemanticsAction.tap),
+          isTrue,
+        );
+        expect(tester.getSize(startButton).width, greaterThanOrEqualTo(48));
+        expect(tester.getSize(startButton).height, greaterThanOrEqualTo(48));
+        expect(tester.getSize(endControl).width, greaterThanOrEqualTo(48));
+        expect(tester.getSize(endControl).height, greaterThanOrEqualTo(48));
+        final endSemantics = tester.getSemantics(
+          find.bySemanticsLabel(RegExp('End .*')),
+        );
+        expect(
+          endSemantics.getSemanticsData().hasAction(SemanticsAction.tap),
+          isTrue,
+        );
+
+        await tester.ensureVisible(find.textContaining('Start '));
+        await tester.pumpAndSettle();
+        await tester.tap(find.textContaining('Start '));
+        await tester.pumpAndSettle();
+        expect(find.byType(TimePickerDialog), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.text('Cancel').last);
+        await tester.pumpAndSettle();
+
+        await tester.ensureVisible(find.textContaining('End '));
+        await tester.pumpAndSettle();
+        await tester.tap(find.textContaining('End '));
+        await tester.pumpAndSettle();
+        expect(find.byType(TimePickerDialog), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.text('Cancel').last);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Save'));
+        await tester.pumpAndSettle();
+        expect(repository.replaceCalls, 1);
+        expect(repository.readCalls, 2);
+        await tester.scrollUntilVisible(
+          find.text('Monday - Active'),
+          120,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(find.text('Monday - Active'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
 
   testWidgets('patient cannot access professional Schedule authority', (
     tester,

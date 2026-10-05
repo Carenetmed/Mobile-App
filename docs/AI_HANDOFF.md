@@ -25,12 +25,12 @@ before any Paystack-side or payment deployment mutation. Physical-device
 acceptance remains after the automated and cloud gates.
 
 `APP-P1-021D` merged in PR #203 at
-`5be33cbec2ebdb9a2b0036ad879a68cacd6395ba`. Current slice: `APP-P1-021E`, a
-compact-width and enlarged-text regression for the professional Schedule
-editor. The focused Schedule/profile-management suites (44), complete suite
-(622; +1 test from the 621-test baseline), and analyzer pass locally. The local
-Windows debug APK build remained in Gradle without task progress for over ten
-minutes and was stopped; hosted CI must prove packaging. Scope and limitations:
+`5be33cbec2ebdb9a2b0036ad879a68cacd6395ba`; `APP-P1-021E` merged in PR #204 at
+`010547811430a80bc15e72c6c34d2ae223457106`. Current slice: `APP-P1-021F`,
+Account feedback announcements and action semantics. The 021E suite passed 622
+tests, analyzer, Ubuntu debug APK, Android release lint, and release
+configuration checks in CI. The focused Account test and broader verification
+for 021F are in progress. Scope and limitations:
 `PHASE_1_UX_ACCESSIBILITY.md`.
 
 ---
@@ -299,7 +299,8 @@ minutes and was stopped; hosted CI must prove packaging. Scope and limitations:
 | APP-P1-021B | Bounded active-route UX/accessibility repairs, focused regression tests, and recorded remaining audit limits | M+ | **DONE** |
 | APP-P1-021C | Disconnect the obsolete `medicalEdit` route from seeded `UserEdit`; preserve source and prove fail-closed route plus canonical professional onboarding | S | **DONE** |
 | APP-P1-021D | Add accessible Back semantics to professional name, details, and description editors with compact enlarged-text regression coverage | S | **DONE** - PR #203 merged at `5be33cb` |
-| APP-P1-021E | Keep the professional Schedule editor operable at compact width and enlarged text, with semantic control regression coverage | S | **IN PROGRESS** |
+| APP-P1-021E | Keep the professional Schedule editor operable at compact width and enlarged text, with semantic control regression coverage | S | **DONE** - PR #204 merged at `0105478` |
+| APP-P1-021F | Announce changing Account status/error feedback and verify accessible Account actions without altering account authority | S | **IN PROGRESS** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 

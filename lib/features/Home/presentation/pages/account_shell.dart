@@ -350,6 +350,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
         elevation: 0,
         leading: IconButton(
           tooltip: 'Back',
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const Icon(Icons.arrow_back, color: Colors.black),
         ),
@@ -376,6 +377,10 @@ class _AccountShellPageState extends State<AccountShellPage> {
                 : '${_currentAccount!.role} account - ${_currentAccount!.status.toLowerCase()}';
             final googleProvider = _googleIdTokenProvider;
             final isGoogleConfigured = googleProvider?.isConfigured ?? false;
+            final isGoogleLinkStatusLive =
+                _isLinkingGoogle ||
+                _googleLinkMessage != null ||
+                _googleLinkError != null;
             final googleLinkSubtitle = _isLinkingGoogle
                 ? 'Linking Google account...'
                 : _googleLinkMessage ??
@@ -405,14 +410,17 @@ class _AccountShellPageState extends State<AccountShellPage> {
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(color: AppColors.white04),
                     ),
-                    child: Text(
-                      _currentAccountError!,
-                      style: TextStyle(
-                        fontSize: FontSizes.footer3,
-                        fontFamily: AppFonts.montserrat,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.primaryBlue5,
-                        height: 1.4,
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        _currentAccountError!,
+                        style: TextStyle(
+                          fontSize: FontSizes.footer3,
+                          fontFamily: AppFonts.montserrat,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.primaryBlue5,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ),
@@ -421,12 +429,14 @@ class _AccountShellPageState extends State<AccountShellPage> {
                   icon: Icons.lock_outline,
                   title: 'Account security',
                   subtitle: authenticationLabel,
+                  subtitleLiveRegion: true,
                   onTap: null,
                 ),
                 _AccountTile(
                   icon: Icons.link_outlined,
                   title: 'Google account',
                   subtitle: googleLinkSubtitle,
+                  subtitleLiveRegion: isGoogleLinkStatusLive,
                   onTap: canLinkGoogle ? _linkGoogleAccount : null,
                 ),
                 if (isProfessionalAccount)
@@ -522,13 +532,16 @@ class _AccountShellPageState extends State<AccountShellPage> {
                   SizedBox(height: 2.h),
                   Padding(
                     padding: REdgeInsets.only(bottom: 14.h),
-                    child: Text(
-                      _logoutError!,
-                      style: TextStyle(
-                        fontSize: FontSizes.footer4,
-                        fontFamily: AppFonts.montserrat,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.redAccent,
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        _logoutError!,
+                        style: TextStyle(
+                          fontSize: FontSizes.footer4,
+                          fontFamily: AppFonts.montserrat,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.redAccent,
+                        ),
                       ),
                     ),
                   ),
@@ -545,13 +558,16 @@ class _AccountShellPageState extends State<AccountShellPage> {
                 if (_accountDeletionError != null)
                   Padding(
                     padding: REdgeInsets.only(bottom: 14.h),
-                    child: Text(
-                      _accountDeletionError!,
-                      style: TextStyle(
-                        fontSize: FontSizes.footer4,
-                        fontFamily: AppFonts.montserrat,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.redAccent,
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        _accountDeletionError!,
+                        style: TextStyle(
+                          fontSize: FontSizes.footer4,
+                          fontFamily: AppFonts.montserrat,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.redAccent,
+                        ),
                       ),
                     ),
                   ),
@@ -597,6 +613,7 @@ class _AccountDeletionDialogState extends State<_AccountDeletionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: const Text('Delete your CareNet account?'),
       content: SingleChildScrollView(
         child: Column(
@@ -1356,12 +1373,14 @@ class _AccountTile extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.subtitleLiveRegion = false,
     required this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
+  final bool subtitleLiveRegion;
   final VoidCallback? onTap;
 
   @override
@@ -1384,13 +1403,16 @@ class _AccountTile extends StatelessWidget {
             color: AppColors.kBlack,
           ),
         ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: FontSizes.footer4,
-            fontFamily: AppFonts.montserrat,
-            fontWeight: FontWeight.w400,
-            color: AppColors.primaryBlue11,
+        subtitle: Semantics(
+          liveRegion: subtitleLiveRegion,
+          child: Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: FontSizes.footer4,
+              fontFamily: AppFonts.montserrat,
+              fontWeight: FontWeight.w400,
+              color: AppColors.primaryBlue11,
+            ),
           ),
         ),
         trailing: onTap == null

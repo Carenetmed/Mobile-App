@@ -212,6 +212,157 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets(
+    'account status and actions are announced and operable with large text',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pumpAccount(
+          tester,
+          repository: _FakeAuthRepository(
+            failure: const AuthFailure(
+              type: AuthFailureType.server,
+              message: 'Could not log out. Please try again.',
+            ),
+          ),
+          accountRepository: _FakeAccountRepository(
+            failure: const AuthFailure(
+              type: AuthFailureType.unauthorized,
+              message: 'Please sign in again.',
+            ),
+          ),
+          screenSize: const Size(320, 568),
+          textScaler: const TextScaler.linear(2),
+        );
+
+        expect(tester.takeException(), isNull);
+        final back = find.byTooltip('Back');
+        expect(
+          tester.getSemantics(back).getSemanticsData().hasAction(
+                SemanticsAction.tap,
+              ),
+          isTrue,
+        );
+        expect(tester.getSize(back).height, greaterThanOrEqualTo(48));
+
+        final securityTile = find.ancestor(
+          of: find.text('Account security'),
+          matching: find.byType(ListTile),
+        );
+        expect(securityTile, findsOneWidget);
+        expect(
+          tester
+              .getSemantics(securityTile)
+              .getSemanticsData()
+              .hasAction(SemanticsAction.tap),
+          isFalse,
+        );
+        final accountStatus = tester.getSemantics(
+          find.text('Account details unavailable'),
+        );
+        expect(
+          accountStatus.getSemanticsData().flagsCollection.isLiveRegion,
+          isTrue,
+        );
+        expect(
+          tester
+              .getSemantics(find.text('Please sign in again.'))
+              .getSemanticsData()
+              .flagsCollection
+              .isLiveRegion,
+          isTrue,
+        );
+
+        await tester.scrollUntilVisible(
+          find.text('Notification preferences'),
+          120,
+          scrollable: find.byType(Scrollable).last,
+        );
+        final preferencesTile = find.ancestor(
+          of: find.text('Notification preferences'),
+          matching: find.byType(ListTile),
+        );
+        expect(
+          tester
+              .getSemantics(preferencesTile)
+              .getSemanticsData()
+              .hasAction(SemanticsAction.tap),
+          isTrue,
+        );
+        expect(
+          tester.getSize(preferencesTile).height,
+          greaterThanOrEqualTo(48),
+        );
+
+        await tester.scrollUntilVisible(
+          find.text('Log out'),
+          120,
+          scrollable: find.byType(Scrollable).last,
+        );
+        await tester.drag(
+          find.byType(Scrollable).last,
+          const Offset(0, -140),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Log out'));
+        await tester.pumpAndSettle();
+        expect(find.text('Could not log out. Please try again.'), findsOneWidget);
+        expect(
+          tester
+              .getSemantics(
+                find.text('Could not log out. Please try again.'),
+              )
+              .getSemanticsData()
+              .flagsCollection
+              .isLiveRegion,
+          isTrue,
+        );
+        expect(find.text('Account'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+
+        await tester.scrollUntilVisible(
+          find.text('Delete account'),
+          120,
+          scrollable: find.byType(Scrollable).last,
+        );
+        await tester.drag(
+          find.byType(Scrollable).last,
+          const Offset(0, -140),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Delete account'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Type DELETE to confirm'),
+          'DELETE',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextField, 'Current password'),
+          'CareNet@123',
+        );
+        await tester.pump();
+        final confirmDeletion = find.widgetWithText(
+          FilledButton,
+          'Delete account',
+        );
+        await tester.ensureVisible(confirmDeletion);
+        await tester.pumpAndSettle();
+        await tester.tap(confirmDeletion);
+        await tester.pumpAndSettle();
+        final deletionError = tester.getSemantics(
+          find.text('Your recent authentication was not accepted. Try again.'),
+        );
+        expect(
+          deletionError.getSemanticsData().flagsCollection.isLiveRegion,
+          isTrue,
+        );
+        expect(tester.takeException(), isNull);
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
+
   testWidgets('header avatar opens the account page', (tester) async {
     await _pumpDashboard(tester);
 
@@ -493,6 +644,7 @@ void main() {
   testWidgets('Google link sends real provider token to repository', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     final authRepository = _FakeAuthRepository();
     final accountRepository = _FakeAccountRepository(
       user: const AuthUser(
@@ -518,12 +670,21 @@ void main() {
     expect(authRepository.googleLinkCalls, 1);
     expect(authRepository.lastGoogleLinkIdToken, 'link-id-token');
     expect(find.text('Google account linked.'), findsOneWidget);
+    expect(
+      tester
+          .getSemantics(find.text('Google account linked.'))
+          .getSemanticsData()
+          .flagsCollection
+          .isLiveRegion,
+      isTrue,
+    );
     expect(find.text('backend-patient@carenet.app'), findsOneWidget);
     expect(find.text('PATIENT account - active'), findsOneWidget);
     expect(find.text('link-id-token'), findsNothing);
     expect(find.text('Google sign-up'), findsNothing);
     expect(find.text('Unlink Google'), findsNothing);
     expect(find.text('Production OAuth'), findsNothing);
+    semantics.dispose();
   });
 
   testWidgets('Google provider failure shows safe copy without link call', (

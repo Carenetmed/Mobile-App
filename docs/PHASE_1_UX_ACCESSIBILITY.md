@@ -23,12 +23,13 @@ release-lint checks. APP-P1-021C merged in PR #202, routing obsolete
 `medicalEdit` to the deferred page; its CI passed 620 tests, analysis, debug
 APK, and Android release checks. APP-P1-021D merged in PR #203 at
 `5be33cbec2ebdb9a2b0036ad879a68cacd6395ba`, adding accessible Back semantics
-to the active professional profile editors. APP-P1-021E is in progress: its
-compact 320dp / 2x-text regression covers responsive Schedule editor controls,
-including the weekday selector and both time buttons. The 622-test suite and
-analyzer pass locally; local Windows APK packaging stalled in Gradle, so hosted
-CI remains the Android build gate. These bounded changes are not a whole-app
-accessibility sign-off.
+to the active professional profile editors. APP-P1-021E merged in PR #204 at
+`010547811430a80bc15e72c6c34d2ae223457106`; its 622-test suite, analyzer,
+Ubuntu debug APK, Android release lint, and release configuration regressions
+passed in CI. It covers the professional Schedule editor at compact width and
+2x text. APP-P1-021F is in progress: it adds accessible announcements for
+changing Account feedback and regression coverage for Account actions. These
+bounded changes are not a whole-app accessibility sign-off.
 
 This foundation does not certify every screen. Active screens still need
 route-by-route checks for contrast, semantics, focus order, keyboard operation,
@@ -76,8 +77,8 @@ or accessibility conformance.
 | Authentication, recovery, signup, session restore | `sign_in_flow_test.dart`, `sign_up_flow_test.dart`, `booking_signup_boundary_test.dart`, `finish_sign_up_test.dart`, `password_recovery_flow_test.dart`, `session_restore_guard_test.dart`, and `session_resilience_test.dart` | Sign-in, email signup, role selection, and finish-signup form have 320x568 / 2x-text flow coverage; password visibility, recovery action sizing, and recovery back controls are labelled. Screen-reader/keyboard and physical-device proof remain open. |
 | Patient onboarding and readiness | `onboarding_gateway_test.dart`, `profile_setup_test.dart`, `onboarding_readiness_route_resolver_test.dart` | Welcome choices and patient/professional profile setup have 320x568 / 2x-text coverage; setup flows include required catalogs and save handoffs. Screen-reader/keyboard and physical-device proof remain open. |
 | Dashboard, role navigation, Home, Find Care, profile detail, booking | `dashboard_shell_test.dart`, `home_tab_shell_test.dart`, `search_flow_test.dart`, `specialist_details_flow_test.dart`, and `booking_intent_and_controller_test.dart` | Patient dashboard destinations, Find Care query/profile handoff, and professional-detail booking confirmation/success are exercised at 320x568 / 2x text. Find Care category chips and booking date chips have at least 48dp targets; selected requestable times expose radio-group and selected semantics. Keyboard, TalkBack, and remaining booking states are not certified. |
-| Appointments and professional Schedule | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart`, `professional_schedule_test.dart`, and `scheduling_repository_test.dart` | Patient and professional appointment list/detail behavior includes a 320x568 / 2x-text flow through an authorized professional action. Schedule availability rows distinguish Active and Inactive from backend state. Physical keyboard/TalkBack, full Schedule enlarged-text coverage, and device proof remain open. The appointment-list back control has a tooltip. |
-| Account, profile management, verification, finance | `account_flow_test.dart`, `manage_profile_flow_test.dart`, `financial_flow_test.dart`, and `financial_contract_test.dart` | Finance has 320x568 / 2x-text coverage through populated financial activity and payout-bank/account entry. Manage Profile and verification documents now have compact 2x-text scroll coverage with responsive metadata and 48dp actions. Account/Profile/Settings/Delete screen-reader, focus-order, and device acceptance remain open. |
+| Appointments and professional Schedule | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart`, `appointment_experience_policy_test.dart`, `professional_schedule_test.dart`, and `scheduling_repository_test.dart` | Patient and professional appointment list/detail behavior includes a 320x568 / 2x-text flow through an authorized professional action. Schedule availability rows distinguish Active and Inactive from backend state; the editor's weekday and start/end controls remain operable at 320dp / 2x text. Physical keyboard/TalkBack and device proof remain open. The appointment-list back control has a tooltip. |
+| Account, profile management, verification, finance | `account_flow_test.dart`, `manage_profile_flow_test.dart`, `financial_flow_test.dart`, and `financial_contract_test.dart` | Finance has 320x568 / 2x-text coverage through populated financial activity and payout-bank/account entry. Manage Profile and verification documents now have compact 2x-text scroll coverage with responsive metadata and 48dp actions. APP-P1-021F covers Account feedback live regions, 48dp Back action, and a scrollable deletion confirmation at compact width / 2x text; keyboard-focus and device acceptance remain open. |
 | Messages, notifications, consultation | `messaging_flow_test.dart`, `messaging_controller_test.dart`, `notification_inbox_test.dart`, `notification_coordinator_test.dart`, and consultation controller tests | Honest-state, routing, and provider/controller behavior are covered. Real screen-reader, focus-order, and hardware permission behavior are not established by these tests. |
 | Deferred route aliases | `auth_route_authority_test.dart`, `account_flow_test.dart`, and route registration tests | Several old identifiers intentionally render `DeferredFeaturePage` or a canonical screen. Their legacy source screens are not represented as active routes in this accessibility sweep. |
 

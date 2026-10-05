@@ -45,7 +45,7 @@ backups, and Firebase upload-certificate registration are verified. Signed
 distribution artifacts, Play certificate registration, release configuration,
 physical acceptance, and production promotion remain explicit open gates.
 
-**Last updated:** 2026-10-05 APP-P1-021E professional Schedule accessibility in progress.
+**Last updated:** 2026-10-05 APP-P1-021F Account accessibility in progress.
 
 ## Android Release Lint Gate
 
@@ -96,14 +96,12 @@ physical acceptance, and production promotion remain explicit open gates.
   that slice was blocked by a full C: drive; hosted CI supplied the build proof.
   APP-P1-021D adds explicit accessible Back semantics to the three active
   professional profile editors. PR #203 merged at
-  `5be33cbec2ebdb9a2b0036ad879a68cacd6395ba`; CI verification is recorded in
-  that PR. APP-P1-021E adds compact-width / enlarged-text Schedule editor
-  coverage. The regression caught and fixes a horizontal overflow in the time
-  controls and selected-weekday overflow in the dropdown. The focused Schedule
-  and profile-management suites pass (44 tests), as do all 622 Flutter tests
-  and `flutter analyze` (the previous baseline was 621 tests). Local Windows
-  debug APK packaging stayed in Gradle without task progress for over ten
-  minutes and was stopped; hosted CI remains required for Android build proof.
+  `5be33cbec2ebdb9a2b0036ad879a68cacd6395ba`. APP-P1-021E improved compact
+  Schedule editing; PR #204 merged at
+  `010547811430a80bc15e72c6c34d2ae223457106`. The 622-test suite, analysis,
+  Ubuntu debug APK, release lint, and release configuration regressions passed
+  in CI. APP-P1-021F covers Account status announcements and key action
+  semantics; no account authority or navigation behavior is changing.
 
 ## Verification upload integrity
 

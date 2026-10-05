@@ -24,12 +24,13 @@ remain the final gated activity and require one explicit user confirmation
 before any Paystack-side or payment deployment mutation. Physical-device
 acceptance remains after the automated and cloud gates.
 
-Current slice: `APP-P1-021D`, add accessible Back semantics to the active
-professional profile editors without changing profile behavior. The focused
-profile-flow tests, 621-test suite, and analyzer pass locally. The local Windows
-APK build is blocked by a Kotlin/Gradle cross-drive cache issue; hosted CI must
-prove the Android build before merge. `APP-P1-021A` merged in PR #172,
-`APP-P1-021B` in PR #201, and `APP-P1-021C` in PR #202. Scope and limitations:
+`APP-P1-021D` merged in PR #203 at
+`5be33cbec2ebdb9a2b0036ad879a68cacd6395ba`. Current slice: `APP-P1-021E`, a
+compact-width and enlarged-text regression for the professional Schedule
+editor. The focused Schedule/profile-management suites (44), complete suite
+(622; +1 test from the 621-test baseline), and analyzer pass locally. The local
+Windows debug APK build remained in Gradle without task progress for over ten
+minutes and was stopped; hosted CI must prove packaging. Scope and limitations:
 `PHASE_1_UX_ACCESSIBILITY.md`.
 
 ---
@@ -297,7 +298,8 @@ prove the Android build before merge. `APP-P1-021A` merged in PR #172,
 | APP-P1-021A | Shared marketplace theme/accessibility foundation and route inventory | S | **DONE** |
 | APP-P1-021B | Bounded active-route UX/accessibility repairs, focused regression tests, and recorded remaining audit limits | M+ | **DONE** |
 | APP-P1-021C | Disconnect the obsolete `medicalEdit` route from seeded `UserEdit`; preserve source and prove fail-closed route plus canonical professional onboarding | S | **DONE** |
-| APP-P1-021D | Add accessible Back semantics to professional name, details, and description editors with compact enlarged-text regression coverage | S | **IN PROGRESS** |
+| APP-P1-021D | Add accessible Back semantics to professional name, details, and description editors with compact enlarged-text regression coverage | S | **DONE** - PR #203 merged at `5be33cb` |
+| APP-P1-021E | Keep the professional Schedule editor operable at compact width and enlarged text, with semantic control regression coverage | S | **IN PROGRESS** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 

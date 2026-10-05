@@ -21,11 +21,14 @@ Schedule wording, and reconciles the live route inventory. APP-P1-021B merged
 in PR #201 with 619 passing tests and green GitHub analyze/test/debug-APK/
 release-lint checks. APP-P1-021C merged in PR #202, routing obsolete
 `medicalEdit` to the deferred page; its CI passed 620 tests, analysis, debug
-APK, and Android release checks. APP-P1-021D adds accessible Back semantics to
-the active professional profile editors; its 621-test suite and analyzer pass
-locally. Local Windows APK packaging is blocked by a cross-drive Kotlin/Gradle
-cache issue, so hosted CI must supply the Android build proof. These bounded
-changes are not a whole-app accessibility sign-off.
+APK, and Android release checks. APP-P1-021D merged in PR #203 at
+`5be33cbec2ebdb9a2b0036ad879a68cacd6395ba`, adding accessible Back semantics
+to the active professional profile editors. APP-P1-021E is in progress: its
+compact 320dp / 2x-text regression covers responsive Schedule editor controls,
+including the weekday selector and both time buttons. The 622-test suite and
+analyzer pass locally; local Windows APK packaging stalled in Gradle, so hosted
+CI remains the Android build gate. These bounded changes are not a whole-app
+accessibility sign-off.
 
 This foundation does not certify every screen. Active screens still need
 route-by-route checks for contrast, semantics, focus order, keyboard operation,

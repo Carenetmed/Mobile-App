@@ -19,6 +19,8 @@ val uploadKeyPassword = providers.environmentVariable("CARENET_UPLOAD_KEY_PASSWO
 val uploadCertificateSha256 = providers.environmentVariable("CARENET_UPLOAD_CERT_SHA256").orNull
 val uploadSigningConfigured = listOf(uploadStorePath, uploadStorePassword,
     uploadKeyAlias, uploadKeyPassword, uploadCertificateSha256).all { !it.isNullOrBlank() }
+val canonicalStagingApiHost = "carenet-staging-mobile-gateway-7ncephib.uc.gateway.dev"
+val canonicalProductionApiHost: String? = null
 
 fun releaseEnvironmentGate(environment: String, firebaseAppId: String) =
     tasks.register("validate${environment.replaceFirstChar { it.uppercase() }}ReleaseEnvironment") {
@@ -66,11 +68,13 @@ fun releaseEnvironmentGate(environment: String, firebaseAppId: String) =
                 "Release API URL must be HTTPS without credentials, query, or fragment."
             }
             if (environment == "production") {
-                val host = api.host.lowercase()
-                check(!host.contains("staging") && host != "localhost" &&
-                    host != "127.0.0.1" && host != "0.0.0.0" && host != "::1" &&
-                    host != "[::1]" && !host.endsWith(".local")) {
-                    "Production cannot use a staging or local API endpoint."
+                check(canonicalProductionApiHost != null &&
+                    api.host.equals(canonicalProductionApiHost, ignoreCase = true)) {
+                    "Production API host is not registered as canonical."
+                }
+            } else {
+                check(api.host.equals(canonicalStagingApiHost, ignoreCase = true)) {
+                    "Staging API host is not the registered CareNet gateway."
                 }
             }
         }

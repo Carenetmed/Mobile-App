@@ -1,4 +1,5 @@
 import 'package:app_t/core/config/app_environment.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -6,7 +7,7 @@ void main() {
     test('accepts canonical staging configuration', () {
       const config = AppEnvironmentConfig(
         environment: CareNetEnvironment.staging,
-        apiBaseUrl: 'https://staging.example.com',
+        apiBaseUrl: 'https://${AppEnvironmentConfig.canonicalStagingApiHost}',
         firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
         firebaseAppId: 'staging-firebase-app-id',
         googleServerClientId: 'web-client-id',
@@ -18,7 +19,7 @@ void main() {
     test('rejects the discarded Firebase project', () {
       const config = AppEnvironmentConfig(
         environment: CareNetEnvironment.staging,
-        apiBaseUrl: 'https://staging.example.com',
+        apiBaseUrl: 'https://${AppEnvironmentConfig.canonicalStagingApiHost}',
         firebaseProjectId: 'carenet-175b7',
         firebaseAppId: 'wrong-project-app-id',
         googleServerClientId: 'web-client-id',
@@ -30,7 +31,7 @@ void main() {
       );
     });
 
-    test('production requires HTTPS and configured providers', () {
+    test('production requires HTTPS, a canonical host, and providers', () {
       const config = AppEnvironmentConfig(
         environment: CareNetEnvironment.production,
         apiBaseUrl: 'http://production.example.com',
@@ -39,7 +40,246 @@ void main() {
         googleServerClientId: '',
       );
 
-      expect(config.validationErrors(requireProviders: true), hasLength(2));
+      expect(
+        config.validationErrors(requireProviders: true),
+        contains('Production API host is not registered as canonical.'),
+      );
+    });
+
+    test('startup accepts the registered app for the selected flavor', () {
+      const config = AppEnvironmentConfig(
+        environment: CareNetEnvironment.staging,
+        apiBaseUrl: 'https://${AppEnvironmentConfig.canonicalStagingApiHost}',
+        firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
+        firebaseAppId: AppEnvironmentConfig.stagingAndroidFirebaseAppId,
+        googleServerClientId: '',
+      );
+
+      expect(
+        config.startupValidationErrors(
+          selectedFlavor: 'staging',
+          platform: TargetPlatform.android,
+          requireProviders: false,
+        ),
+        isEmpty,
+      );
+    });
+
+    test('startup recognizes registered Android and iOS flavor app IDs', () {
+      final cases = [
+        (
+          CareNetEnvironment.staging,
+          'staging',
+          TargetPlatform.android,
+          AppEnvironmentConfig.stagingAndroidFirebaseAppId,
+        ),
+        (
+          CareNetEnvironment.production,
+          'production',
+          TargetPlatform.android,
+          AppEnvironmentConfig.productionAndroidFirebaseAppId,
+        ),
+        (
+          CareNetEnvironment.staging,
+          'staging',
+          TargetPlatform.iOS,
+          AppEnvironmentConfig.stagingIosFirebaseAppId,
+        ),
+        (
+          CareNetEnvironment.production,
+          'production',
+          TargetPlatform.iOS,
+          AppEnvironmentConfig.productionIosFirebaseAppId,
+        ),
+      ];
+
+      for (final (environment, flavor, platform, appId) in cases) {
+        final config = AppEnvironmentConfig(
+          environment: environment,
+          apiBaseUrl: 'https://${AppEnvironmentConfig.canonicalStagingApiHost}',
+          firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
+          firebaseAppId: appId,
+          googleServerClientId: '',
+        );
+
+        final errors = config.startupValidationErrors(
+          selectedFlavor: flavor,
+          platform: platform,
+          requireProviders: false,
+        );
+        expect(
+          errors,
+          isNot(
+            contains('Firebase app ID does not match the selected flavor.'),
+          ),
+        );
+        if (environment == CareNetEnvironment.production) {
+          expect(
+            errors,
+            contains('Production API host is not registered as canonical.'),
+          );
+        } else {
+          expect(errors, isEmpty);
+        }
+      }
+    });
+
+    test('startup rejects environment and flavor mismatch', () {
+      const config = AppEnvironmentConfig(
+        environment: CareNetEnvironment.staging,
+        apiBaseUrl: 'https://${AppEnvironmentConfig.canonicalStagingApiHost}',
+        firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
+        firebaseAppId: AppEnvironmentConfig.stagingAndroidFirebaseAppId,
+        googleServerClientId: '',
+      );
+
+      expect(
+        config.startupValidationErrors(
+          selectedFlavor: 'production',
+          platform: TargetPlatform.android,
+          requireProviders: false,
+        ),
+        contains('CARENET_ENVIRONMENT must match the selected build flavor.'),
+      );
+    });
+
+    test(
+      'startup rejects Firebase app IDs from another flavor or platform',
+      () {
+        const config = AppEnvironmentConfig(
+          environment: CareNetEnvironment.staging,
+          apiBaseUrl: 'https://${AppEnvironmentConfig.canonicalStagingApiHost}',
+          firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
+          firebaseAppId: AppEnvironmentConfig.productionAndroidFirebaseAppId,
+          googleServerClientId: '',
+        );
+
+        expect(
+          config.startupValidationErrors(
+            selectedFlavor: 'staging',
+            platform: TargetPlatform.android,
+            requireProviders: false,
+          ),
+          contains('Firebase app ID does not match the selected flavor.'),
+        );
+        expect(
+          config.startupValidationErrors(
+            selectedFlavor: 'staging',
+            platform: TargetPlatform.iOS,
+            requireProviders: false,
+          ),
+          contains('Firebase app ID does not match the selected flavor.'),
+        );
+      },
+    );
+
+    test('startup rejects missing or unsupported flavor', () {
+      const config = AppEnvironmentConfig(
+        environment: CareNetEnvironment.staging,
+        apiBaseUrl: 'https://${AppEnvironmentConfig.canonicalStagingApiHost}',
+        firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
+        firebaseAppId: AppEnvironmentConfig.stagingAndroidFirebaseAppId,
+        googleServerClientId: '',
+      );
+
+      expect(
+        config.startupValidationErrors(
+          selectedFlavor: null,
+          platform: TargetPlatform.android,
+          requireProviders: false,
+        ),
+        contains('A supported staging or production build flavor is required.'),
+      );
+    });
+
+    test('production startup fails closed without its canonical API host', () {
+      for (final apiBaseUrl in [
+        'https://${AppEnvironmentConfig.canonicalStagingApiHost}',
+        'http://localhost:8080',
+      ]) {
+        final config = AppEnvironmentConfig(
+          environment: CareNetEnvironment.production,
+          apiBaseUrl: apiBaseUrl,
+          firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
+          firebaseAppId: AppEnvironmentConfig.productionAndroidFirebaseAppId,
+          googleServerClientId: '',
+        );
+
+        expect(
+          config.startupValidationErrors(
+            selectedFlavor: 'production',
+            platform: TargetPlatform.android,
+            requireProviders: false,
+          ),
+          contains('Production API host is not registered as canonical.'),
+        );
+      }
+    });
+
+    test('staging startup rejects a production API host', () {
+      const config = AppEnvironmentConfig(
+        environment: CareNetEnvironment.staging,
+        apiBaseUrl: 'https://api.carenet.app',
+        firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
+        firebaseAppId: AppEnvironmentConfig.stagingAndroidFirebaseAppId,
+        googleServerClientId: '',
+      );
+
+      expect(
+        config.startupValidationErrors(
+          selectedFlavor: 'staging',
+          platform: TargetPlatform.android,
+          requireProviders: false,
+        ),
+        contains('Staging API host is not the registered CareNet gateway.'),
+      );
+    });
+
+    test('staging requires HTTPS and the exact registered gateway host', () {
+      for (final url in [
+        'http://${AppEnvironmentConfig.canonicalStagingApiHost}',
+        'https://staging.attacker.example',
+      ]) {
+        final config = AppEnvironmentConfig(
+          environment: CareNetEnvironment.staging,
+          apiBaseUrl: url,
+          firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
+          firebaseAppId: AppEnvironmentConfig.stagingAndroidFirebaseAppId,
+          googleServerClientId: '',
+        );
+
+        final errors = config.validationErrors(requireProviders: false);
+        if (url.startsWith('http:')) {
+          expect(errors, contains('CARENET_API_BASE_URL must use HTTPS.'));
+        } else {
+          expect(
+            errors,
+            contains('Staging API host is not the registered CareNet gateway.'),
+          );
+        }
+      }
+    });
+
+    test('startup rejects API URLs with credentials, query, or fragment', () {
+      const config = AppEnvironmentConfig(
+        environment: CareNetEnvironment.staging,
+        apiBaseUrl:
+            'https://user:password@${AppEnvironmentConfig.canonicalStagingApiHost}/api?key=x#part',
+        firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
+        firebaseAppId: AppEnvironmentConfig.stagingAndroidFirebaseAppId,
+        googleServerClientId: '',
+      );
+
+      expect(
+        config.startupValidationErrors(
+          selectedFlavor: 'staging',
+          platform: TargetPlatform.android,
+          requireProviders: false,
+        ),
+        contains(
+          'CARENET_API_BASE_URL cannot contain credentials, a query, or a fragment.',
+        ),
+      );
     });
   });
 }

@@ -5,7 +5,7 @@ $stagingApp = '1:599365440227:android:fb589a833cd2e8b251abd6'
 $productionApp = '1:599365440227:android:7fbb7d5e3784327751abd6'
 $valid = @{
     CARENET_ENVIRONMENT = 'staging'
-    CARENET_API_BASE_URL = 'https://staging.example.invalid'
+    CARENET_API_BASE_URL = 'https://carenet-staging-mobile-gateway-7ncephib.uc.gateway.dev'
     CARENET_FIREBASE_PROJECT_ID = 'project-a96784ee-811c-46ab-a7b'
     CARENET_FIREBASE_APP_ID = $stagingApp
     CARENET_FIREBASE_MESSAGING_SENDER_ID = '599365440227'
@@ -29,7 +29,7 @@ function Assert-Configuration([string]$Encoded, [bool]$Success, [string]$Label, 
     $arguments = @("validate${Flavor}ReleaseEnvironment", '--console=plain', "-Pdart-defines=$Encoded")
     $result = Invoke-Gradle $arguments
     if (($result.Code -eq 0) -ne $Success) { throw "Release environment regression failed: $Label" }
-    if (-not $Success -and $result.Output -notmatch 'Release runtime configuration|Release configuration|Release environment|Release Firebase|Release provider|Release API|Production cannot') {
+    if (-not $Success -and $result.Output -notmatch 'Release runtime configuration|Release configuration|Release environment|Release Firebase|Release provider|Release API|Production API host|Staging API host|Production cannot') {
         throw "Configuration probe missed the expected validator: $Label"
     }
     $script:count++
@@ -71,11 +71,16 @@ $production = $valid.Clone()
 $production.CARENET_ENVIRONMENT = 'production'
 $production.CARENET_FIREBASE_APP_ID = $productionApp
 $production.CARENET_API_BASE_URL = 'https://api.example.invalid'
-Assert-Configuration (Encode-Defines $production) $true 'canonical production fixture' 'Production'
+Assert-Configuration (Encode-Defines $production) $false 'production blocked until canonical host is registered' 'Production'
+foreach ($url in @('http://carenet-staging-mobile-gateway-7ncephib.uc.gateway.dev', 'https://staging.attacker.example')) {
+    $wrong = $valid.Clone()
+    $wrong.CARENET_API_BASE_URL = $url
+    Assert-Configuration (Encode-Defines $wrong) $false 'staging rejects untrusted API host' 'Staging'
+}
 foreach ($url in @('https://carenet-staging-mobile-gateway-7ncephib.uc.gateway.dev', 'https://localhost', 'https://127.0.0.1', 'https://[::1]', 'https://api.local')) {
     $wrong = $production.Clone()
     $wrong.CARENET_API_BASE_URL = $url
-    Assert-Configuration (Encode-Defines $wrong) $false 'production rejects staging/local' 'Production'
+    Assert-Configuration (Encode-Defines $wrong) $false 'production rejects unregistered API host' 'Production'
 }
 foreach ($flavor in @('Staging', 'Production')) {
     foreach ($task in @("assemble${flavor}Release", "bundle${flavor}Release", "package${flavor}Release", "package${flavor}ReleaseBundle")) {

@@ -31,12 +31,14 @@ The application validates its selected flavor and core runtime values before
 Firebase initialization, including in debug builds. The environment, API URL,
 canonical project ID, and flavor-specific Firebase app ID must be supplied at
 launch/build time; a missing or mismatched value shows a safe configuration
-error instead of starting against an ambiguous backend. Production also
-requires HTTPS and rejects staging/local API hosts. Staging requires a
-`staging` marker in the API hostname; this is a fail-closed guard, not a
-replacement for reconciling and allowlisting the canonical live staging host.
-The Google server client ID is optional for local debug startup but required
-by the Android release configuration gate.
+error instead of starting against an ambiguous backend. Staging requires HTTPS
+and the exact registered gateway host
+`carenet-staging-mobile-gateway-7ncephib.uc.gateway.dev`. No production API
+host is currently registered, so production startup and release configuration
+fail closed until the deployed production hostname is verified and added to
+both runtime and Android release allowlists. The Google server client ID is
+optional for local debug startup but required by the Android release
+configuration gate.
 
 Keep local runtime configuration files outside Git and pass them with
 `--dart-define-from-file`. Debug APK compilation can succeed without those

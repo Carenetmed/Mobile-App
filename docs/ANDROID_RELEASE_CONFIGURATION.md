@@ -18,9 +18,11 @@ printing their values.
 The environment must match the Android flavor. Firebase uses the canonical
 project, sender number, and registered Android app ID for that flavor.
 Provider key/client formats are checked. API URLs require HTTPS and cannot
-contain credentials, query parameters, or fragments. Production rejects the
-staging gateway and staging/local hostnames; staging values are not promoted
-implicitly. Keep the configuration file outside Git and supply it using
+contain credentials, query parameters, or fragments. Staging accepts only the
+registered CareNet gateway hostname. No production API hostname is currently
+registered, so production runtime configuration fails closed until its
+deployed hostname is verified and explicitly allowlisted. Keep the
+configuration file outside Git and supply it using
 `--dart-define-from-file`.
 
 `tool/check_android_release_environment.ps1` exercises positive and negative

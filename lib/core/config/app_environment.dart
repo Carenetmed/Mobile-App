@@ -13,6 +13,9 @@ class AppEnvironmentConfig {
 
   static const String canonicalFirebaseProjectId =
       'project-a96784ee-811c-46ab-a7b';
+  static const String canonicalStagingApiHost =
+      'carenet-staging-mobile-gateway-7ncephib.uc.gateway.dev';
+  static const String? canonicalProductionApiHost = null;
   static const String stagingAndroidApplicationId = 'com.carenet.app.staging';
   static const String productionAndroidApplicationId = 'com.carenet.app';
   static const String stagingAndroidFirebaseAppId =
@@ -62,27 +65,22 @@ class AppEnvironmentConfig {
         (apiUri.scheme != 'http' && apiUri.scheme != 'https')) {
       errors.add('CARENET_API_BASE_URL must be an absolute URL.');
     } else {
+      if (apiUri.scheme != 'https') {
+        errors.add('CARENET_API_BASE_URL must use HTTPS.');
+      }
       if (apiUri.userInfo.isNotEmpty || apiUri.hasQuery || apiUri.hasFragment) {
         errors.add(
           'CARENET_API_BASE_URL cannot contain credentials, a query, or a fragment.',
         );
       }
       if (environment == CareNetEnvironment.production) {
-        if (apiUri.scheme != 'https') {
-          errors.add('Production API traffic must use HTTPS.');
-        }
         final host = apiUri.host.toLowerCase();
-        if (host.contains('staging') ||
-            host == 'localhost' ||
-            host == '127.0.0.1' ||
-            host == '0.0.0.0' ||
-            host == '::1' ||
-            host == '[::1]' ||
-            host.endsWith('.local')) {
-          errors.add('Production cannot use a staging or local API endpoint.');
+        final productionHost = canonicalProductionApiHost;
+        if (productionHost == null || host != productionHost) {
+          errors.add('Production API host is not registered as canonical.');
         }
-      } else if (!apiUri.host.toLowerCase().contains('staging')) {
-        errors.add('Staging must use a staging API endpoint.');
+      } else if (apiUri.host.toLowerCase() != canonicalStagingApiHost) {
+        errors.add('Staging API host is not the registered CareNet gateway.');
       }
     }
     if (firebaseProjectId.trim() != canonicalFirebaseProjectId) {

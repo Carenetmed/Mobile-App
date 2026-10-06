@@ -10,16 +10,45 @@ $temporary = Join-Path ([IO.Path]::GetTempPath()) ('carenet-signing-test-' + [Gu
 $keytool = if ($env:JAVA_HOME) { Join-Path $env:JAVA_HOME 'bin/keytool' } else { 'keytool' }
 if ($IsWindows -and $env:JAVA_HOME) { $keytool += '.exe' }
 
-function Invoke-Gradle([string[]]$Arguments) {
-    Push-Location (Join-Path $RepositoryRoot 'android')
+function Invoke-Gradle([string[]]$Arguments, [string]$Label) {
+    $androidDirectory = Join-Path $RepositoryRoot 'android'
+    $startInfo = [Diagnostics.ProcessStartInfo]::new()
+    $startInfo.FileName = if ($IsWindows) { 'cmd.exe' } else { '/bin/bash' }
+    $startInfo.WorkingDirectory = $androidDirectory
+    $startInfo.UseShellExecute = $false
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    if ($IsWindows) {
+        [void]$startInfo.ArgumentList.Add('/c')
+        [void]$startInfo.ArgumentList.Add('.\gradlew.bat')
+    } else {
+        [void]$startInfo.ArgumentList.Add('./gradlew')
+    }
+    foreach ($argument in $Arguments) { [void]$startInfo.ArgumentList.Add($argument) }
+
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    Write-Host "Starting Gradle probe '$Label' (120-second limit)."
     try {
-        $output = if ($IsWindows) { & .\gradlew.bat @Arguments 2>&1 } else { & bash ./gradlew @Arguments 2>&1 }
-        return @{ Code = $LASTEXITCODE; Output = ($output -join "`n") }
-    } finally { Pop-Location }
+        if (-not $process.Start()) { throw "Could not start Gradle probe '$Label'." }
+        $stdout = $process.StandardOutput.ReadToEndAsync()
+        $stderr = $process.StandardError.ReadToEndAsync()
+        if (-not $process.WaitForExit(120000)) {
+            $process.Kill($true)
+            $process.WaitForExit()
+            throw "Gradle probe '$Label' exceeded its 120-second limit."
+        }
+        $process.WaitForExit()
+        $output = @($stdout.GetAwaiter().GetResult(), $stderr.GetAwaiter().GetResult()) -join "`n"
+        Write-Host "Finished Gradle probe '$Label' with exit code $($process.ExitCode)."
+        return @{ Code = $process.ExitCode; Output = $output }
+    } finally {
+        $process.Dispose()
+    }
 }
 
 function Assert-Gate([bool]$Success, [string]$Label) {
-    $result = Invoke-Gradle @('validateReleaseSigning', '--console=plain', '--no-daemon')
+    $result = Invoke-Gradle @('validateReleaseSigning', '--console=plain', '--no-daemon') "signing gate: $Label"
     if (($result.Code -eq 0) -ne $Success) { throw "Release signing regression failed: $Label" }
     if (-not $Success -and $result.Output -notmatch 'Release signing is not configured|Protected release signing validation failed|upload keystore must exist outside') {
         throw "Signing probe did not reach the expected validator: $Label"
@@ -56,12 +85,12 @@ try {
     }
     foreach ($name in $names) { [Environment]::SetEnvironmentVariable($name, $null) }
     foreach ($task in @('assembleStagingRelease', 'bundleStagingRelease', 'assembleProductionRelease', 'bundleProductionRelease')) {
-        $result = Invoke-Gradle @($task, '--dry-run', '--console=plain')
+        $result = Invoke-Gradle @($task, '--dry-run', '--console=plain', '--no-daemon') "release graph: $task"
         if ($result.Code -ne 0 -or $result.Output -notmatch ':app:validateReleaseSigning') {
             throw "Signing validation is absent from $task."
         }
     }
-    $lint = Invoke-Gradle @('lintStagingRelease', '--dry-run', '--console=plain')
+    $lint = Invoke-Gradle @('lintStagingRelease', '--dry-run', '--console=plain', '--no-daemon') 'lint graph: lintStagingRelease'
     if ($lint.Code -ne 0 -or $lint.Output -match ':app:validateReleaseSigning') {
         throw 'Release lint unexpectedly requires signing credentials.'
     }

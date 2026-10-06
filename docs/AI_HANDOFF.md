@@ -19,19 +19,26 @@
 ## Current production-readiness continuation
 
 The user approved the multi-slice Production-Readiness Completion Program.
-Current work is `APP-P1-021` (active-route UX/accessibility closure). Payments
-remain the final gated activity and require one explicit user confirmation
-before any Paystack-side or payment deployment mutation. Physical-device
-acceptance remains after the automated and cloud gates.
+Continue it as ordered, reviewable slices. Payments remain the final gated
+activity and require one explicit user confirmation before any Paystack-side
+or payment deployment mutation. Physical-device acceptance remains after the
+automated and cloud gates.
 
-`APP-P1-021D` merged in PR #203 at
-`5be33cbec2ebdb9a2b0036ad879a68cacd6395ba`; `APP-P1-021E` merged in PR #204 at
-`010547811430a80bc15e72c6c34d2ae223457106`. Current slice: `APP-P1-021F`,
-Account feedback announcements and action semantics. The 021E suite passed 622
-tests, analyzer, Ubuntu debug APK, Android release lint, and release
-configuration checks in CI. The focused Account test and broader verification
-for 021F are in progress. Scope and limitations:
-`PHASE_1_UX_ACCESSIBILITY.md`.
+`APP-P1-021F` merged through PR #205. The current integration base is
+`ebe50184dcd3063ec9c138e2b6b127cc08bab8a0`; its CI passed 623 tests, analysis,
+debug APK, Android release lint, and release signing/configuration regressions.
+Current readiness slice: `APP-READY-042`, LiveKit adapter resource safety,
+being verified from an isolated worktree at that base. It currently has 51
+focused tests, 674 full-suite tests, and clean analysis; debug APK, CI,
+signed-native, and physical-device proof remain open. The earlier dirty
+in-progress worktree is preserved and is not the integration source. See
+`RTC_ADAPTER_RESOURCE_SAFETY.md` for exact guarantees and limitations.
+
+Manual acceptance remains for the final device session: join a consultation
+with camera or microphone disabled by the backend grant, confirm its control
+cannot enable that media, test disconnect during a pending connection and
+rejoin, then verify logout/account change stops active capture. Automated fakes
+do not prove native hardware shutdown or SDK-internal reconnect republishing.
 
 ---
 
@@ -300,7 +307,8 @@ for 021F are in progress. Scope and limitations:
 | APP-P1-021C | Disconnect the obsolete `medicalEdit` route from seeded `UserEdit`; preserve source and prove fail-closed route plus canonical professional onboarding | S | **DONE** |
 | APP-P1-021D | Add accessible Back semantics to professional name, details, and description editors with compact enlarged-text regression coverage | S | **DONE** - PR #203 merged at `5be33cb` |
 | APP-P1-021E | Keep the professional Schedule editor operable at compact width and enlarged text, with semantic control regression coverage | S | **DONE** - PR #204 merged at `0105478` |
-| APP-P1-021F | Announce changing Account status/error feedback and verify accessible Account actions without altering account authority | S | **IN PROGRESS** |
+| APP-P1-021F | Announce changing Account status/error feedback and verify accessible Account actions without altering account authority | S | **DONE** - PR #205 merged |
+| APP-READY-042 | Harden LiveKit adapter room/track ownership, join-grant limits, and cleanup race behavior | M | **NEXT** |
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 

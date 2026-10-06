@@ -1,5 +1,17 @@
 # Codebase status
 
+## RTC Adapter Resource Safety (APP-READY-042)
+
+The LiveKit adapter owns each room and captured track through completion or
+release, serializes replacement behind room cleanup, and rejects media toggles
+outside the join grant. Cleanup attempts continue after individual SDK errors;
+release reports failure when media shutdown cannot be verified. The focused
+adapter regression suite contains 51 passing tests. The full suite has 674
+passing tests against the 623-test integration baseline, exactly 51 additions;
+no existing test was removed or weakened. Analysis is clean.
+Debug APK, CI, signed-native, and device gates remain pending; exact limits and
+proof are recorded in `RTC_ADAPTER_RESOURCE_SAFETY.md`.
+
 ## Consultation Account Authority (APP-READY-041)
 
 Open consultation controllers remain bound to their original account. Async
@@ -7,8 +19,9 @@ permission/grant/result delivery and media controls recheck persisted identity;
 detected authority loss clears state and releases media. The thirty-nine new
 regression cases and remaining SDK/provider/device gates are recorded in
 `CONSULTATION_ACCOUNT_AUTHORITY.md`. All 48 targeted controller tests and the
-613-test complete suite pass; analysis is clean. Signed staging APK/AAB and
-Android release lint pass. PR verification remains pending.
+613-test complete suite passed with analysis, signed staging APK/AAB, and
+Android release lint before integration. The account-authority controller
+changes are present in the current integration base.
 
 ## Session Account Isolation (APP-READY-040)
 
@@ -45,7 +58,7 @@ backups, and Firebase upload-certificate registration are verified. Signed
 distribution artifacts, Play certificate registration, release configuration,
 physical acceptance, and production promotion remain explicit open gates.
 
-**Last updated:** 2026-10-05 APP-P1-021F Account accessibility in progress.
+**Last updated:** 2026-10-05 APP-READY-042 RTC adapter safety verification.
 
 ## Android Release Lint Gate
 
@@ -101,7 +114,9 @@ physical acceptance, and production promotion remain explicit open gates.
   `010547811430a80bc15e72c6c34d2ae223457106`. The 622-test suite, analysis,
   Ubuntu debug APK, release lint, and release configuration regressions passed
   in CI. APP-P1-021F covers Account status announcements and key action
-  semantics; no account authority or navigation behavior is changing.
+  semantics; PR #205 merged at `ebe50184dcd3063ec9c138e2b6b127cc08bab8a0`.
+  Its GitHub workflow passed the 623-test suite, analysis, debug APK, Android
+  release lint, and release signing/configuration regressions.
 
 ## Verification upload integrity
 

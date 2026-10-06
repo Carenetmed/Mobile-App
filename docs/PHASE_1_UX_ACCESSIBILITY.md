@@ -27,8 +27,9 @@ to the active professional profile editors. APP-P1-021E merged in PR #204 at
 `010547811430a80bc15e72c6c34d2ae223457106`; its 622-test suite, analyzer,
 Ubuntu debug APK, Android release lint, and release configuration regressions
 passed in CI. It covers the professional Schedule editor at compact width and
-2x text. APP-P1-021F is in progress: it adds accessible announcements for
-changing Account feedback and regression coverage for Account actions. These
+2x text. APP-P1-021F added accessible announcements for changing Account
+feedback and regression coverage for Account actions; PR #205 merged at
+`ebe50184dcd3063ec9c138e2b6b127cc08bab8a0`, with 623 CI-passing tests. These
 bounded changes are not a whole-app accessibility sign-off.
 
 This foundation does not certify every screen. Active screens still need

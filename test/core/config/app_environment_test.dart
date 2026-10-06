@@ -205,6 +205,25 @@ void main() {
       }
     });
 
+    test('staging startup rejects a production API host', () {
+      const config = AppEnvironmentConfig(
+        environment: CareNetEnvironment.staging,
+        apiBaseUrl: 'https://api.carenet.app',
+        firebaseProjectId: AppEnvironmentConfig.canonicalFirebaseProjectId,
+        firebaseAppId: AppEnvironmentConfig.stagingAndroidFirebaseAppId,
+        googleServerClientId: '',
+      );
+
+      expect(
+        config.startupValidationErrors(
+          selectedFlavor: 'staging',
+          platform: TargetPlatform.android,
+          requireProviders: false,
+        ),
+        contains('Staging must use a staging API endpoint.'),
+      );
+    });
+
     test('startup rejects API URLs with credentials, query, or fragment', () {
       const config = AppEnvironmentConfig(
         environment: CareNetEnvironment.staging,

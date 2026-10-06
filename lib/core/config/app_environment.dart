@@ -81,6 +81,8 @@ class AppEnvironmentConfig {
             host.endsWith('.local')) {
           errors.add('Production cannot use a staging or local API endpoint.');
         }
+      } else if (!apiUri.host.toLowerCase().contains('staging')) {
+        errors.add('Staging must use a staging API endpoint.');
       }
     }
     if (firebaseProjectId.trim() != canonicalFirebaseProjectId) {

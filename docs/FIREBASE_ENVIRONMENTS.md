@@ -27,7 +27,21 @@ Runtime values remain explicit `--dart-define` inputs:
 - `CARENET_FIREBASE_API_KEY`
 - `GOOGLE_SIGN_IN_SERVER_CLIENT_ID`
 
-`AppEnvironmentConfig` rejects a noncanonical Firebase project. Production configuration also requires HTTPS and configured identity providers.
+The application validates its selected flavor and core runtime values before
+Firebase initialization, including in debug builds. The environment, API URL,
+canonical project ID, and flavor-specific Firebase app ID must be supplied at
+launch/build time; a missing or mismatched value shows a safe configuration
+error instead of starting against an ambiguous backend. Production also
+requires HTTPS and rejects staging/local API hosts. Staging requires a
+`staging` marker in the API hostname; this is a fail-closed guard, not a
+replacement for reconciling and allowlisting the canonical live staging host.
+The Google server client ID is optional for local debug startup but required
+by the Android release configuration gate.
+
+Keep local runtime configuration files outside Git and pass them with
+`--dart-define-from-file`. Debug APK compilation can succeed without those
+values, but the resulting app will intentionally stop at the configuration
+error screen until launched with matching runtime defines.
 
 ## iOS boundary
 

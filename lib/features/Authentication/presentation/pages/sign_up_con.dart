@@ -97,15 +97,28 @@ class _FinSignUpState extends State<FinSignUp> {
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),
               ),
-              SizedBox(height: 20.h),
+              SizedBox(height: 8.h),
               Text(
-                'Secure your ${widget.selectedRole.title.toLowerCase()} account',
+                'SECURE ACCOUNT',
                 style: TextStyle(
                   fontFamily: AppFonts.montserrat,
-                  fontSize: 26.sp,
-                  height: 1.2,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w800,
-                  color: const Color(0xFF102A2A),
+                  color: CarenetColors.primary500,
+                ),
+              ),
+              SizedBox(height: 8.h),
+              Semantics(
+                header: true,
+                child: Text(
+                  'Secure your ${widget.selectedRole.title.toLowerCase()} account',
+                  style: TextStyle(
+                    fontFamily: AppFonts.montserrat,
+                    fontSize: 26.sp,
+                    height: 1.2,
+                    fontWeight: FontWeight.w800,
+                    color: CarenetColors.primary700,
+                  ),
                 ),
               ),
               SizedBox(height: 10.h),
@@ -187,34 +200,58 @@ class _FinSignUpState extends State<FinSignUp> {
                   ],
                 ),
               ),
-              SizedBox(height: 3.h),
-              Text(
-                'Account type: ${widget.selectedRole.title}',
-                style: TextStyle(
-                  fontFamily: AppFonts.montserrat,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF155E63),
+              SizedBox(height: 12.h),
+              Container(
+                width: double.infinity,
+                padding: REdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: CarenetColors.primary100,
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  'Account type: ${widget.selectedRole.title}',
+                  style: TextStyle(
+                    fontFamily: AppFonts.montserrat,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: CarenetColors.primary700,
+                  ),
                 ),
               ),
-              SizedBox(height: 8.h),
+              SizedBox(height: 10.h),
               Text(
                 'Use 15 to 128 characters. Longer passphrases are supported.',
                 style: TextStyle(
                   fontFamily: AppFonts.montserrat,
-                  fontSize: 12.sp,
+                  fontSize: 13.sp,
+                  height: 1.45,
                   fontWeight: FontWeight.w400,
+                  color: CarenetColors.neutral500,
                 ),
               ),
-              SizedBox(height: 50.h),
+              SizedBox(height: 24.h),
               if (_authError != null) ...[
-                Text(
-                  _authError!,
-                  style: TextStyle(
-                    fontFamily: AppFonts.montserrat,
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.red.shade700,
+                Semantics(
+                  liveRegion: true,
+                  label: _authError,
+                  excludeSemantics: true,
+                  child: Container(
+                    width: double.infinity,
+                    padding: REdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: CarenetColors.error200,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      _authError!,
+                      style: TextStyle(
+                        fontFamily: AppFonts.montserrat,
+                        fontSize: 13.sp,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                        color: CarenetColors.error100,
+                      ),
+                    ),
                   ),
                 ),
                 SizedBox(height: 12.h),

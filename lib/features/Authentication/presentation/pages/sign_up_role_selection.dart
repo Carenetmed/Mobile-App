@@ -256,7 +256,10 @@ class _PatientBookingRoleStep extends StatelessWidget {
       children: [
         const _SmallLabel(label: 'Appointment request'),
         SizedBox(height: 10.h),
-        Text('Create a patient account', style: _titleStyle()),
+        Semantics(
+          header: true,
+          child: Text('Create a patient account', style: _titleStyle()),
+        ),
         SizedBox(height: 10.h),
         Text(
           'Appointment requests require a patient account. Your selected '
@@ -301,7 +304,10 @@ class _RoleStep extends StatelessWidget {
       children: [
         const _SmallLabel(label: 'Create account'),
         SizedBox(height: 10.h),
-        Text('How will you use CareNet?', style: _titleStyle()),
+        Semantics(
+          header: true,
+          child: Text('How will you use CareNet?', style: _titleStyle()),
+        ),
         SizedBox(height: 10.h),
         Text(
           googleSignUp
@@ -371,9 +377,12 @@ class _MethodStep extends StatelessWidget {
       children: [
         const _SmallLabel(label: 'Signup method'),
         SizedBox(height: 10.h),
-        Text(
-          'Create your ${role.title.toLowerCase()} account',
-          style: _titleStyle(),
+        Semantics(
+          header: true,
+          child: Text(
+            'Create your ${role.title.toLowerCase()} account',
+            style: _titleStyle(),
+          ),
         ),
         SizedBox(height: 12.h),
         _SelectedRolePill(role: role, onChangeRole: onChangeRole),
@@ -426,39 +435,47 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _BaseCard(
+    return Semantics(
+      container: true,
+      button: true,
       enabled: onTap != null,
+      label: '$title. $subtitle Badge: $badge.',
       onTap: onTap,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _IconTile(icon: icon),
-          SizedBox(width: 13.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 8.w,
-                  runSpacing: 6.h,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(title, style: _cardTitleStyle()),
-                    _Badge(label: badge),
-                  ],
-                ),
-                SizedBox(height: 8.h),
-                Text(subtitle, style: _cardBodyStyle()),
-              ],
+      excludeSemantics: true,
+      child: _BaseCard(
+        enabled: onTap != null,
+        onTap: onTap,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _IconTile(icon: icon),
+            SizedBox(width: 13.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 6.h,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(title, style: _cardTitleStyle()),
+                      _Badge(label: badge),
+                    ],
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(subtitle, style: _cardBodyStyle()),
+                ],
+              ),
             ),
-          ),
-          SizedBox(width: 8.w),
-          Icon(
-            Icons.chevron_right_rounded,
-            color: const Color(0xFF155E63),
-            size: 24.sp,
-          ),
-        ],
+            SizedBox(width: 8.w),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: CarenetColors.primary500,
+              size: 24.sp,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -483,41 +500,49 @@ class _MethodCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onTap != null;
 
-    return _BaseCard(
+    return Semantics(
+      container: true,
+      button: true,
       enabled: enabled,
+      label: '$title. $subtitle',
       onTap: onTap,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _MethodIcon(icon: icon, assetPath: assetPath, enabled: enabled),
-          SizedBox(width: 13.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: _cardTitleStyle().copyWith(
-                    color:
-                        enabled
-                            ? const Color(0xFF102A2A)
-                            : CarenetColors.neutral400,
+      excludeSemantics: true,
+      child: _BaseCard(
+        enabled: enabled,
+        onTap: onTap,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _MethodIcon(icon: icon, assetPath: assetPath, enabled: enabled),
+            SizedBox(width: 13.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: _cardTitleStyle().copyWith(
+                      color:
+                          enabled
+                              ? CarenetColors.primary700
+                              : CarenetColors.neutral400,
+                    ),
                   ),
-                ),
-                SizedBox(height: 7.h),
-                Text(
-                  subtitle,
-                  style: _cardBodyStyle().copyWith(
-                    color:
-                        enabled
-                            ? CarenetColors.neutral500
-                            : CarenetColors.neutral400,
+                  SizedBox(height: 7.h),
+                  Text(
+                    subtitle,
+                    style: _cardBodyStyle().copyWith(
+                      color:
+                          enabled
+                              ? CarenetColors.neutral500
+                              : CarenetColors.neutral400,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -584,10 +609,10 @@ class _IconTile extends StatelessWidget {
       width: 42.w,
       height: 42.w,
       decoration: BoxDecoration(
-        color: const Color(0xFFE5F4F1),
+        color: CarenetColors.primary100,
         borderRadius: BorderRadius.circular(8.r),
       ),
-      child: Icon(icon, color: const Color(0xFF155E63), size: 22.sp),
+      child: Icon(icon, color: CarenetColors.primary500, size: 22.sp),
     );
   }
 }
@@ -607,7 +632,7 @@ class _MethodIcon extends StatelessWidget {
             : Icon(
               icon,
               color:
-                  enabled ? const Color(0xFF155E63) : CarenetColors.neutral400,
+                  enabled ? CarenetColors.primary500 : CarenetColors.neutral400,
               size: 21.sp,
             );
 
@@ -615,7 +640,7 @@ class _MethodIcon extends StatelessWidget {
       width: 38.w,
       height: 38.w,
       decoration: BoxDecoration(
-        color: enabled ? const Color(0xFFE5F4F1) : CarenetColors.neutral100,
+        color: enabled ? CarenetColors.primary100 : CarenetColors.neutral100,
         borderRadius: BorderRadius.circular(8.r),
       ),
       padding: REdgeInsets.all(assetPath != null ? 9 : 0),
@@ -635,7 +660,7 @@ class _SelectedRolePill extends StatelessWidget {
     return Container(
       padding: REdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: const Color(0xFFE5F4F1),
+        color: CarenetColors.primary100,
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Row(
@@ -644,7 +669,7 @@ class _SelectedRolePill extends StatelessWidget {
             role == SignUpRole.professional
                 ? Icons.medical_services_outlined
                 : Icons.favorite_border_rounded,
-            color: const Color(0xFF155E63),
+            color: CarenetColors.primary500,
             size: 18.sp,
           ),
           SizedBox(width: 8.w),
@@ -655,7 +680,7 @@ class _SelectedRolePill extends StatelessWidget {
                 fontFamily: AppFonts.montserrat,
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w800,
-                color: const Color(0xFF155E63),
+                color: CarenetColors.primary500,
               ),
             ),
           ),
@@ -667,7 +692,7 @@ class _SelectedRolePill extends StatelessWidget {
                 fontFamily: AppFonts.montserrat,
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w800,
-                color: const Color(0xFF155E63),
+                color: CarenetColors.primary500,
               ),
             ),
           ),
@@ -690,7 +715,7 @@ class _SmallLabel extends StatelessWidget {
         fontFamily: AppFonts.montserrat,
         fontSize: 11.sp,
         fontWeight: FontWeight.w800,
-        color: const Color(0xFF155E63),
+        color: CarenetColors.primary500,
       ),
     );
   }
@@ -706,7 +731,7 @@ class _Badge extends StatelessWidget {
     return Container(
       padding: REdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF7EF),
+        color: CarenetColors.success200,
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: Text(
@@ -715,7 +740,7 @@ class _Badge extends StatelessWidget {
           fontFamily: AppFonts.montserrat,
           fontSize: 10.sp,
           fontWeight: FontWeight.w800,
-          color: const Color(0xFF18794E),
+          color: CarenetColors.success100,
         ),
       ),
     );
@@ -729,20 +754,25 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: REdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: CarenetColors.error200,
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(
-          fontFamily: AppFonts.montserrat,
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w700,
-          color: CarenetColors.error100,
+    return Semantics(
+      liveRegion: true,
+      label: message,
+      excludeSemantics: true,
+      child: Container(
+        width: double.infinity,
+        padding: REdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: CarenetColors.error200,
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: Text(
+          message,
+          style: TextStyle(
+            fontFamily: AppFonts.montserrat,
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w700,
+            color: CarenetColors.error100,
+          ),
         ),
       ),
     );
@@ -755,7 +785,7 @@ TextStyle _titleStyle() {
     fontSize: 27.sp,
     height: 1.16,
     fontWeight: FontWeight.w800,
-    color: const Color(0xFF102A2A),
+    color: CarenetColors.primary700,
   );
 }
 
@@ -774,7 +804,7 @@ TextStyle _cardTitleStyle() {
     fontFamily: AppFonts.montserrat,
     fontSize: 15.sp,
     fontWeight: FontWeight.w800,
-    color: const Color(0xFF102A2A),
+    color: CarenetColors.primary700,
   );
 }
 

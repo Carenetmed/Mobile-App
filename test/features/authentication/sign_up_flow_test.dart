@@ -6,6 +6,7 @@ import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart'
 import 'package:app_t/features/Authentication/domain/entities/auth_session.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_arguments.dart';
+import 'package:app_t/features/Authentication/presentation/pages/sign_up_con.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_phone.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_up_role_selection.dart';
@@ -112,7 +113,7 @@ void main() {
         find.text('Create your CareNet account'),
       );
       expect(heading.style?.fontSize, greaterThan(16));
-      expect(heading.style?.fontWeight, FontWeight.w700);
+      expect(heading.style?.fontWeight, FontWeight.w800);
       expect(heading.style?.color, CarenetColors.primary700);
       expect(find.byType(EditableText), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -166,7 +167,93 @@ void main() {
       );
     });
 
-    testWidgets('sign up phone validates fields before navigation', (
+    testWidgets('role choices expose a single descriptive button label', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        home: SignUpRoleSelectionPage(
+          googleIdTokenProvider: _disabledGoogleProvider,
+        ),
+      );
+
+      expect(
+        find.bySemanticsLabel(
+          'Patient. Find verified care, book appointments, and manage your care profile when needed. Badge: Fast setup.',
+        ),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+      'legacy phone signup exposes only supported auth at compact width',
+      (tester) async {
+        await _pumpWithRoutes(
+          tester,
+          home: SignUpPhone(googleIdTokenProvider: _disabledGoogleProvider),
+          screenSize: const Size(320, 568),
+          textScaler: const TextScaler.linear(2),
+        );
+
+        expect(find.text('Create your CareNet account'), findsOneWidget);
+        expect(find.text('Email address'), findsOneWidget);
+        expect(find.text('Phone number'), findsNothing);
+        expect(find.textContaining('SMS'), findsNothing);
+        expect(find.textContaining('call or text'), findsNothing);
+        expect(find.text('Continue with Google'), findsOneWidget);
+        expect(find.text('Continue with Facebook'), findsNothing);
+        expect(find.text('Continue with Apple'), findsNothing);
+        expect(tester.takeException(), isNull);
+
+        await tester.ensureVisible(find.text('Continue'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Continue'));
+        await tester.pump();
+        expect(find.text('Email Address is required'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+
+        await tester.enterText(
+          find.byType(EditableText).first,
+          'legacy@example.com',
+        );
+        await tester.tap(find.text('Continue'));
+        await tester.pumpAndSettle();
+        expect(find.text('How will you use CareNet?'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets('password signup stays usable at compact width with 2x text', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        home: FinSignUp(
+          initialEmail: 'hello@example.com',
+          authRepository: _FakeAuthRepository(),
+          onboardingRepository: _FakeOnboardingRepository(),
+        ),
+        screenSize: const Size(320, 568),
+        textScaler: const TextScaler.linear(2),
+      );
+
+      expect(find.text('Secure your patient account'), findsOneWidget);
+      expect(find.text('Email address'), findsOneWidget);
+      expect(find.text('Password'), findsOneWidget);
+      expect(find.text('Confirm password'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      final continueButton = find.text(' Agree & continue');
+      await tester.ensureVisible(continueButton);
+      await tester.pumpAndSettle();
+      expect(continueButton, findsOneWidget);
+      expect(find.byKey(const Key('sign-up-terms-link')), findsOneWidget);
+      expect(find.byKey(const Key('sign-up-privacy-link')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('legacy signup entry routes to supported email sign in', (
       tester,
     ) async {
       await _pumpWithRoutes(
@@ -174,40 +261,13 @@ void main() {
         home: SignUpPhone(googleIdTokenProvider: _disabledGoogleProvider),
       );
 
-      await tester.tap(find.text('Continue'));
-      await tester.pump();
-      expect(find.text('Country/Region is required'), findsOneWidget);
-      expect(find.text('Phone number is required'), findsOneWidget);
-
-      final fields = find.byType(EditableText);
-      await tester.enterText(fields.at(0), 'United States');
-      await tester.enterText(fields.at(1), '123');
-      await tester.tap(find.text('Continue'));
-      await tester.pump();
-      expect(find.text('Invalid phone number'), findsOneWidget);
-
-      await tester.enterText(fields.at(1), '+1 202 555 0199');
-      await tester.tap(find.text('Continue'));
+      final signInLink = find.text('Already have an account? Sign in');
+      await tester.ensureVisible(signInLink);
+      await tester.pumpAndSettle();
+      await tester.tap(signInLink);
       await tester.pumpAndSettle();
 
-      expect(find.text('How will you use CareNet?'), findsOneWidget);
-
-      await tester.tap(find.text('Medical professional'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('finish-sign-up-PROFESSIONAL-no-email'), findsOneWidget);
-    });
-
-    testWidgets('sign up phone routes to sign in phone entry', (tester) async {
-      await _pumpWithRoutes(
-        tester,
-        home: SignUpPhone(googleIdTokenProvider: _disabledGoogleProvider),
-      );
-
-      await tester.tap(find.text('Already have an account? Sign in'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('sign-in-phone'), findsOneWidget);
+      expect(find.text('sign-in-email'), findsOneWidget);
     });
 
     testWidgets('sign up email routes to sign in email entry', (tester) async {
@@ -253,7 +313,7 @@ void main() {
     );
 
     testWidgets(
-      'sign up phone Google creates professional account after role pick',
+      'legacy signup entry preserves configured Google role selection',
       (tester) async {
         final repository = _FakeAuthRepository();
         final onboardingRepository = _FakeOnboardingRepository(
@@ -338,6 +398,10 @@ void main() {
 
       expect(
         find.text('Google sign-in failed. Please try again.'),
+        findsOneWidget,
+      );
+      expect(
+        find.bySemanticsLabel('Google sign-in failed. Please try again.'),
         findsOneWidget,
       );
 

@@ -3,7 +3,6 @@ import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
-import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
@@ -108,76 +107,93 @@ class _SignUpEmailState extends State<SignUpEmail> {
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: REdgeInsets.only(left: 15.w, right: 15.w, top: .04.sh),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Align(
-                alignment: Alignment.topCenter,
-                child: Text(
-                  'Create your CareNet account',
-                  style: TextStyle(
-                    fontSize: FontSizes.body1,
-                    fontFamily: AppFonts.montserrat,
-                    fontWeight: FontWeight.w700,
-                    color: CarenetColors.primary700,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Center(
-                child: Text(
-                  'Enter your email to continue.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: FontSizes.footer1,
-                    fontFamily: AppFonts.montserrat,
-                    color: CarenetColors.neutral600,
-                  ),
-                ),
-              ),
-              SizedBox(height: .04.sh),
-              CarenetTextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                hintText: 'Email',
-                validationState: _emailValidationState,
-                errorText: _emailError,
-              ),
-              SizedBox(height: 15.h),
-              CarenetButton(label: 'Continue', onPressed: _onContinue),
-              Padding(
-                padding: REdgeInsets.only(bottom: 12.h, top: 32.h),
-                child: Center(
-                  child: Text(
-                    'or',
+          padding: REdgeInsets.fromLTRB(20, 24, 20, 32),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'CREATE ACCOUNT',
                     style: TextStyle(
-                      fontSize: FontSizes.body3,
+                      fontSize: 12.sp,
                       fontFamily: AppFonts.montserrat,
-                      fontWeight: FontWeight.w500,
-                      color: CarenetColors.neutral700,
+                      fontWeight: FontWeight.w800,
+                      color: CarenetColors.primary500,
                     ),
                   ),
-                ),
+                  SizedBox(height: 10.h),
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      'Create your CareNet account',
+                      style: TextStyle(
+                        fontSize: 26.sp,
+                        height: 1.2,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w800,
+                        color: CarenetColors.primary700,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10.h),
+                  Text(
+                    'Enter your email to continue.',
+                    style: TextStyle(
+                      fontSize: 15.sp,
+                      height: 1.45,
+                      fontFamily: AppFonts.montserrat,
+                      color: CarenetColors.neutral500,
+                    ),
+                  ),
+                  SizedBox(height: 28.h),
+                  CarenetTextField(
+                    label: 'Email address',
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    hintText: 'you@example.com',
+                    validationState: _emailValidationState,
+                    errorText: _emailError,
+                  ),
+                  SizedBox(height: 18.h),
+                  CarenetButton(label: 'Continue', onPressed: _onContinue),
+                  Padding(
+                    padding: REdgeInsets.only(bottom: 12.h, top: 28.h),
+                    child: Center(
+                      child: Text(
+                        'Or continue securely with',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          height: 1.4,
+                          fontFamily: AppFonts.montserrat,
+                          fontWeight: FontWeight.w500,
+                          color: CarenetColors.neutral500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  AuthWidget(
+                    btnAction:
+                        _googleIdTokenProvider.isConfigured
+                            ? _onGoogleSignUp
+                            : null,
+                    assetPath: AssetsIcon.google,
+                    title: 'Continue with Google',
+                  ),
+                  SizedBox(height: 28.h),
+                  CarenetButton(
+                    label: 'Already have an account? Sign in',
+                    onPressed: () {
+                      Navigator.pushNamed(context, RouteName.signInEmail);
+                    },
+                    type: CarenetButtonType.outline,
+                  ),
+                ],
               ),
-              AuthWidget(
-                btnAction:
-                    _googleIdTokenProvider.isConfigured
-                        ? _onGoogleSignUp
-                        : null,
-                assetPath: AssetsIcon.google,
-                title: 'Continue with Google',
-              ),
-              SizedBox(height: 28.h),
-              CarenetButton(
-                label: 'Already have an account? Sign in',
-                onPressed: () {
-                  Navigator.pushNamed(context, RouteName.signInEmail);
-                },
-                type: CarenetButtonType.outline,
-              ),
-            ],
+            ),
           ),
         ),
       ),

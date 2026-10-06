@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/core/constants/navigators/router.dart';
+import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
@@ -27,31 +29,50 @@ Future<void> _pumpWithRoutes(
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
-      builder:
-          (context, _) => MaterialApp(
-            home: MediaQuery(
-              data: MediaQuery.of(context).copyWith(textScaler: textScaler),
-              child: home,
-            ),
-            routes: {
-              RouteName.dashboard:
-                  (_) => const Scaffold(body: Text('dashboard')),
-              RouteName.enterEmail:
-                  (_) => const Scaffold(body: Text('Enter email')),
-              RouteName.signInPhone:
-                  (_) => SignInPhone(
-                    googleIdTokenProvider: _disabledGoogleProvider,
-                  ),
-              RouteName.signInEmail:
-                  (_) => SignInEmail(
-                    googleIdTokenProvider: _disabledGoogleProvider,
-                  ),
-              RouteName.signUpPhone:
-                  (_) => const Scaffold(body: Text('sign-up-phone')),
-              RouteName.signUpEmail:
-                  (_) => const Scaffold(body: Text('sign-up-email')),
-            },
-          ),
+      builder: (context, _) => MaterialApp(
+        home: MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+          child: home,
+        ),
+        routes: {
+          RouteName.dashboard: (_) => const Scaffold(body: Text('dashboard')),
+          RouteName.enterEmail: (_) =>
+              const Scaffold(body: Text('Enter email')),
+          RouteName.signInPhone: (_) =>
+              SignInPhone(googleIdTokenProvider: _disabledGoogleProvider),
+          RouteName.signInEmail: (_) =>
+              SignInEmail(googleIdTokenProvider: _disabledGoogleProvider),
+          RouteName.signUpPhone: (_) =>
+              const Scaffold(body: Text('sign-up-phone')),
+          RouteName.signUpEmail: (_) =>
+              const Scaffold(body: Text('sign-up-email')),
+        },
+      ),
+    ),
+  );
+  await tester.pump();
+}
+
+Future<void> _pumpProductionRoute(
+  WidgetTester tester, {
+  required String initialRoute,
+}) async {
+  await sl.reset();
+  sl.registerSingleton<AuthRepository>(_FakeAuthRepository());
+  sl.registerSingleton<GoogleIdTokenProvider>(_disabledGoogleProvider);
+  addTearDown(() async => sl.reset());
+
+  tester.view.physicalSize = _phoneSize;
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(
+    ScreenUtilInit(
+      designSize: _phoneSize,
+      builder: (context, _) => MaterialApp(
+        initialRoute: initialRoute,
+        onGenerateRoute: generateRoute,
+      ),
     ),
   );
   await tester.pump();
@@ -271,58 +292,33 @@ void main() {
       expect(find.text('dashboard'), findsNothing);
     });
 
-    testWidgets('sign in phone validates fields before navigation', (
+    testWidgets('legacy phone route opens canonical email sign-in', (
       tester,
     ) async {
-      await _pumpWithRoutes(
-        tester,
-        home: SignInPhone(googleIdTokenProvider: _disabledGoogleProvider),
-      );
+      await _pumpProductionRoute(tester, initialRoute: RouteName.signInPhone);
 
-      await tester.tap(find.text('Continue'));
-      await tester.pump();
-
-      expect(find.text('Country/Region is required'), findsOneWidget);
-      expect(find.text('Phone number is required'), findsOneWidget);
-      expect(find.text('Password is required'), findsOneWidget);
-
-      final fields = find.byType(EditableText);
-      await tester.enterText(fields.at(0), 'United States');
-      await tester.enterText(fields.at(1), '123');
-      await tester.enterText(fields.at(2), 'secret123');
-      await tester.tap(find.text('Continue'));
-      await tester.pump();
-
-      expect(find.text('Invalid phone number'), findsOneWidget);
-      expect(find.text('dashboard'), findsNothing);
-
-      await tester.enterText(fields.at(1), '+1 202 555 0199');
-      await tester.tap(find.text('Continue'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('dashboard'), findsOneWidget);
+      expect(find.byType(SignInEmail), findsOneWidget);
+      expect(find.text('Welcome back'), findsOneWidget);
+      expect(find.text('Continue with Phone'), findsNothing);
+      expect(find.text('Phone Number'), findsNothing);
+      expect(find.text('Continue with Facebook'), findsNothing);
+      expect(find.text('Continue with Apple'), findsNothing);
+      expect(find.text('Continue with Google'), findsOneWidget);
     });
 
-    testWidgets('sign in phone Google button uses backend Google sign-in', (
+    testWidgets('direct legacy widget construction uses email sign-in', (
       tester,
     ) async {
-      final repository = _FakeAuthRepository();
       await _pumpWithRoutes(
         tester,
-        home: SignInPhone(
-          authRepository: repository,
-          googleIdTokenProvider: _FakeGoogleIdTokenProvider(
-            idToken: 'phone-id',
-          ),
-        ),
+        home: const SignInPhone(googleIdTokenProvider: _disabledGoogleProvider),
       );
 
-      await tester.tap(find.text('Continue with Google'));
-      await tester.pumpAndSettle();
-
-      expect(repository.googleSignInCalls, 1);
-      expect(repository.lastGoogleIdToken, 'phone-id');
-      expect(find.text('dashboard'), findsOneWidget);
+      expect(find.byType(SignInEmail), findsOneWidget);
+      expect(find.text('Welcome back'), findsOneWidget);
+      expect(find.text('Phone Number'), findsNothing);
+      expect(find.text('Continue with Facebook'), findsNothing);
+      expect(find.text('Continue with Apple'), findsNothing);
     });
 
     testWidgets('sign in email routes to sign up email entry', (tester) async {
@@ -335,18 +331,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('sign-up-email'), findsOneWidget);
-    });
-
-    testWidgets('sign in phone routes to sign up phone entry', (tester) async {
-      await _pumpWithRoutes(
-        tester,
-        home: SignInPhone(googleIdTokenProvider: _disabledGoogleProvider),
-      );
-
-      await tester.tap(find.text('Don\'t have an account? Sign up'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('sign-up-phone'), findsOneWidget);
     });
   });
 }

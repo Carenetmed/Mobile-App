@@ -1,10 +1,13 @@
 import 'dart:async';
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
+import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/enter_email.dart';
+import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/reset_password_confirm_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
@@ -47,10 +50,11 @@ Future<void> _pumpWithRoutes(
                   ),
               RouteName.enterEmail:
                   (_) => EnterEmailPage(authRepository: repository),
-              RouteName.enterPassword: (_) => ResetPasswordConfirmPage(
-                token: null,
-                authRepository: repository,
-              ),
+              RouteName.enterPassword:
+                  (_) => ResetPasswordConfirmPage(
+                    token: null,
+                    authRepository: repository,
+                  ),
             },
           ),
     ),
@@ -71,7 +75,7 @@ void main() {
         textScaler: const TextScaler.linear(2),
       );
 
-      expect(find.text('Enter email'), findsOneWidget);
+      expect(find.text('Reset your password'), findsOneWidget);
       expect(find.byType(EditableText), findsOneWidget);
       expect(tester.takeException(), isNull);
 
@@ -95,7 +99,7 @@ void main() {
       await tester.tap(find.text('Forgot Password?'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Enter email'), findsOneWidget);
+      expect(find.text('Reset your password'), findsOneWidget);
     });
 
     testWidgets('sign in email forgot password routes to enter email', (
@@ -106,7 +110,7 @@ void main() {
       await tester.tap(find.text('Forgot Password?'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Enter email'), findsOneWidget);
+      expect(find.text('Reset your password'), findsOneWidget);
       expect(find.byTooltip('Back'), findsOneWidget);
     });
 
@@ -137,7 +141,7 @@ void main() {
         find.textContaining('If an account exists for that email'),
         findsOneWidget,
       );
-      expect(find.text('Enter email'), findsOneWidget);
+      expect(find.text('Reset your password'), findsOneWidget);
       expect(find.byType(EditableText), findsOneWidget);
     });
 
@@ -189,54 +193,52 @@ void main() {
       completer.complete();
       await tester.pumpAndSettle();
 
-      expect(find.text('Enter email'), findsOneWidget);
+      expect(find.text('Reset your password'), findsOneWidget);
       expect(find.textContaining('Open the link in the email'), findsOneWidget);
     });
 
-    testWidgets('legacy tokenless password route fails closed', (
-      tester,
-    ) async {
-        tester.view.physicalSize = const Size(320, 568);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(tester.view.reset);
+    testWidgets('legacy tokenless password route fails closed', (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
 
-        await tester.pumpWidget(
-          ScreenUtilInit(
-            designSize: _phoneSize,
-            builder:
-                (context, _) => MaterialApp(
-                  builder:
-                      (context, child) => MediaQuery(
-                        data: MediaQuery.of(
-                          context,
-                        ).copyWith(textScaler: const TextScaler.linear(2)),
-                        child: child!,
-                      ),
-                  initialRoute: RouteName.enterPassword,
-                  onGenerateRoute: (settings) {
-                    if (settings.name == RouteName.enterPassword) {
-                      return MaterialPageRoute<void>(
-                        settings: RouteSettings(name: settings.name),
-                        builder: (_) => ResetPasswordConfirmPage(
-                          token: null,
-                          authRepository: _FakeAuthRepository(),
-                        ),
-                      );
-                    }
-                    return null;
-                  },
-                ),
-          ),
-        );
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: _phoneSize,
+          builder:
+              (context, _) => MaterialApp(
+                builder:
+                    (context, child) => MediaQuery(
+                      data: MediaQuery.of(
+                        context,
+                      ).copyWith(textScaler: const TextScaler.linear(2)),
+                      child: child!,
+                    ),
+                initialRoute: RouteName.enterPassword,
+                onGenerateRoute: (settings) {
+                  if (settings.name == RouteName.enterPassword) {
+                    return MaterialPageRoute<void>(
+                      settings: RouteSettings(name: settings.name),
+                      builder:
+                          (_) => ResetPasswordConfirmPage(
+                            token: null,
+                            authRepository: _FakeAuthRepository(),
+                          ),
+                    );
+                  }
+                  return null;
+                },
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-        expect(find.text('Reset password'), findsOneWidget);
-        expect(find.byType(EditableText), findsNothing);
-        expect(find.textContaining('Reset link is missing'), findsOneWidget);
-        expect(find.text('Request new reset email'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      },
-    );
+      expect(find.text('Reset password'), findsOneWidget);
+      expect(find.byType(EditableText), findsNothing);
+      expect(find.textContaining('Reset link is missing'), findsOneWidget);
+      expect(find.text('Request new reset email'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets('reset confirmation requires token before calling backend', (
       tester,
@@ -314,6 +316,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
+      await tester.ensureVisible(updatePassword);
       await tester.tap(find.text('Update password'));
       await tester.pump();
       expect(find.text('Please enter your password'), findsNWidgets(2));
@@ -321,11 +324,17 @@ void main() {
       final fields = find.byType(EditableText);
       await tester.enterText(fields.at(0), 'CareNetPassword@123');
       await tester.enterText(fields.at(1), 'MismatchPassword@123');
+      tester.binding.focusManager.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(updatePassword);
       await tester.tap(find.text('Update password'));
       await tester.pump();
       expect(find.text('Passwords do not match'), findsOneWidget);
 
       await tester.enterText(fields.at(1), 'CareNetPassword@123');
+      tester.binding.focusManager.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(updatePassword);
       await tester.tap(find.text('Update password'));
       await tester.pumpAndSettle();
 
@@ -340,6 +349,7 @@ void main() {
         200,
         scrollable: find.byType(Scrollable).last,
       );
+      await tester.ensureVisible(backToSignIn);
       await tester.tap(backToSignIn);
       await tester.pumpAndSettle();
 
@@ -381,6 +391,91 @@ void main() {
 
       expect(repository.confirmPasswordResetCalls, 1);
       expect(find.text('Reset link is invalid or expired.'), findsOneWidget);
+    });
+
+    testWidgets('verification confirmation remains usable at large text', (
+      tester,
+    ) async {
+      final completer = Completer<void>();
+      final repository = _FakeAccountRepository(completer: completer);
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: _phoneSize,
+          builder:
+              (context, _) => MaterialApp(
+                builder:
+                    (context, child) => MediaQuery(
+                      data: MediaQuery.of(
+                        context,
+                      ).copyWith(textScaler: const TextScaler.linear(2)),
+                      child: child!,
+                    ),
+                home: EmailVerificationConfirmPage(
+                  token: 'opaque-verification-token',
+                  accountRepository: repository,
+                ),
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Verify email'), findsOneWidget);
+      expect(find.text('Confirm your email address'), findsOneWidget);
+      final confirm = find.text('Confirm verification');
+      await tester.ensureVisible(confirm);
+      await tester.tap(confirm);
+      await tester.pump();
+
+      expect(find.text('Verifying email...'), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      completer.complete();
+      await tester.pumpAndSettle();
+
+      expect(repository.lastVerificationToken, 'opaque-verification-token');
+      expect(repository.currentAccountCalls, 1);
+      expect(find.textContaining('Email verified'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('verification missing-link state is clear and scrollable', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: _phoneSize,
+          builder:
+              (context, _) => MaterialApp(
+                builder:
+                    (context, child) => MediaQuery(
+                      data: MediaQuery.of(
+                        context,
+                      ).copyWith(textScaler: const TextScaler.linear(2)),
+                      child: child!,
+                    ),
+                home: EmailVerificationConfirmPage(token: null),
+              ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('Verification link is missing'),
+        findsOneWidget,
+      );
+      final backToEmail = find.text('Back to account email');
+      await tester.ensureVisible(backToEmail);
+      expect(backToEmail, findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }
@@ -435,6 +530,38 @@ class _FakeAuthRepository implements AuthRepository {
     if (failure != null) {
       throw failure;
     }
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeAccountRepository implements AccountRepository {
+  _FakeAccountRepository({this.completer});
+
+  final Completer<void>? completer;
+  String? lastVerificationToken;
+  int currentAccountCalls = 0;
+
+  @override
+  Future<void> confirmEmailVerification({required String token}) async {
+    lastVerificationToken = token;
+    final completer = this.completer;
+    if (completer != null) {
+      await completer.future;
+    }
+  }
+
+  @override
+  Future<AuthUser> currentAccount() async {
+    currentAccountCalls += 1;
+    return const AuthUser(
+      id: 'user-1',
+      email: 'person@example.com',
+      role: 'PATIENT',
+      status: 'ACTIVE',
+      emailVerified: true,
+    );
   }
 
   @override

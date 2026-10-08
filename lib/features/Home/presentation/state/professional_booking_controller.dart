@@ -77,9 +77,12 @@ class ProfessionalBookingController extends ChangeNotifier {
   bool isLoadingLaterTimes = false;
   bool isRefreshing = false;
   bool isSubmitting = false;
+  bool isPreparingBooking = false;
+  bool bookingReadinessFailed = false;
 
   Future<void>? _profileLoad;
   Future<void>? _timesLoad;
+  Future<BookingGateOutcome>? _bookingGateCheck;
   Future<BookingSubmissionOutcome>? _submission;
   int _profileGeneration = 0;
   int _timesGeneration = 0;
@@ -102,6 +105,8 @@ class ProfessionalBookingController extends ChangeNotifier {
 
   Future<void> refresh() async {
     if (isRefreshing ||
+        isPreparingBooking ||
+        isSubmitting ||
         isLoadingLaterTimes ||
         _profileLoad != null ||
         _timesLoad != null) {
@@ -288,7 +293,12 @@ class ProfessionalBookingController extends ChangeNotifier {
   }
 
   Future<void> loadLaterTimes() async {
-    if (!canLoadLaterTimes || _timesLoad != null) return;
+    if (isPreparingBooking ||
+        isSubmitting ||
+        !canLoadLaterTimes ||
+        _timesLoad != null) {
+      return;
+    }
     final current = requestableTimes!;
     final startAt = current.rangeEndAt!;
     final policyEndAt = _bookingWindowEndAt!;
@@ -379,6 +389,9 @@ class ProfessionalBookingController extends ChangeNotifier {
   }
 
   Future<void> selectTime(RequestableTime time) async {
+    if (isSubmitting || isPreparingBooking) {
+      return;
+    }
     final available = requestableTimes;
     if (available == null || !_containsTime(available, time.startAt)) {
       return;
@@ -386,6 +399,7 @@ class ProfessionalBookingController extends ChangeNotifier {
     final changed = selectedTime?.startAt.toUtc() != time.startAt.toUtc();
     selectedTime = time;
     bookingError = null;
+    bookingReadinessFailed = false;
     if (changed && bookingIntent != null) {
       bookingIntent = _newIntent(
         time,
@@ -397,11 +411,12 @@ class ProfessionalBookingController extends ChangeNotifier {
   }
 
   Future<void> selectMode(ConsultationMode mode) async {
-    if (selectedMode == mode || isSubmitting) {
+    if (selectedMode == mode || isSubmitting || isPreparingBooking) {
       return;
     }
     selectedMode = mode;
     bookingError = null;
+    bookingReadinessFailed = false;
     final time = selectedTime;
     if (time != null && bookingIntent != null) {
       bookingIntent = _newIntent(
@@ -414,14 +429,63 @@ class ProfessionalBookingController extends ChangeNotifier {
   }
 
   Future<void> cancelIntent() async {
+    if (isSubmitting || isPreparingBooking) {
+      return;
+    }
+    await _clearIntent();
+  }
+
+  Future<void> _clearIntent() async {
     selectedTime = null;
     bookingIntent = null;
     bookingError = null;
+    bookingReadinessFailed = false;
     await _bookingIntentStore.clear();
     _notify();
   }
 
-  Future<BookingGateOutcome> prepareBooking() async {
+  Future<BookingGateOutcome> prepareBooking() {
+    if (_disposed) {
+      return Future<BookingGateOutcome>.value(BookingGateOutcome.failure);
+    }
+    final active = _bookingGateCheck;
+    if (active != null) {
+      return active;
+    }
+
+    isPreparingBooking = true;
+    bookingReadinessFailed = false;
+    bookingError = null;
+    _notify();
+
+    final future = _runPrepareBooking();
+    late final Future<BookingGateOutcome> tracked;
+    tracked = future.whenComplete(() {
+      if (!_disposed && identical(_bookingGateCheck, tracked)) {
+        _bookingGateCheck = null;
+        isPreparingBooking = false;
+        _notify();
+      }
+    });
+    _bookingGateCheck = tracked;
+    return tracked;
+  }
+
+  Future<BookingGateOutcome> _runPrepareBooking() async {
+    try {
+      return await _prepareBooking();
+    } catch (_) {
+      if (_disposed) {
+        return BookingGateOutcome.failure;
+      }
+      bookingReadinessFailed = true;
+      bookingError = 'Could not verify patient readiness. Please try again.';
+      _notify();
+      return BookingGateOutcome.failure;
+    }
+  }
+
+  Future<BookingGateOutcome> _prepareBooking() async {
     final time = selectedTime;
     if (professional?.bookable != true ||
         professional?.consultationPrice?.isValidNgn != true) {
@@ -437,7 +501,13 @@ class ProfessionalBookingController extends ChangeNotifier {
     }
 
     final session = await _sessionStore.read();
+    if (_disposed) {
+      return BookingGateOutcome.failure;
+    }
     final existing = await _bookingIntentStore.read(now: _clock().toUtc());
+    if (_disposed) {
+      return BookingGateOutcome.failure;
+    }
     var intent =
         existing != null &&
                 existing.matches(
@@ -449,6 +519,9 @@ class ProfessionalBookingController extends ChangeNotifier {
             ? existing
             : _newIntent(time, accountUserId: session?.user.id);
     await _bookingIntentStore.save(intent);
+    if (_disposed) {
+      return BookingGateOutcome.failure;
+    }
     bookingIntent = intent;
 
     if (session == null) {
@@ -456,7 +529,7 @@ class ProfessionalBookingController extends ChangeNotifier {
       return BookingGateOutcome.authenticationRequired;
     }
     if (session.user.role.trim().toUpperCase() != 'PATIENT') {
-      await cancelIntent();
+      await _clearIntent();
       bookingError =
           'This account cannot request patient appointments. '
           'Use a patient account to continue.';
@@ -467,7 +540,7 @@ class ProfessionalBookingController extends ChangeNotifier {
     if (accountId.isEmpty ||
         (intent.accountUserId?.isNotEmpty == true &&
             intent.accountUserId != accountId)) {
-      await cancelIntent();
+      await _clearIntent();
       bookingError = 'The saved booking belongs to another account.';
       _notify();
       return BookingGateOutcome.incompatibleRole;
@@ -478,27 +551,26 @@ class ProfessionalBookingController extends ChangeNotifier {
       bookingIntent = intent;
     }
 
-    try {
-      final readiness = await _onboardingRepository.accountReadiness();
-      if (readiness.account.role.trim().toUpperCase() != 'PATIENT') {
-        await cancelIntent();
-        bookingError =
-            'This account cannot request patient appointments. '
-            'Use a patient account to continue.';
-        _notify();
-        return BookingGateOutcome.incompatibleRole;
-      }
-      final incomplete =
-          readiness.nextAction.trim().toUpperCase() == 'PATIENT_SETUP' ||
-          (readiness.patient?.requiredFields.isNotEmpty ?? true);
-      return incomplete
-          ? BookingGateOutcome.onboardingRequired
-          : BookingGateOutcome.ready;
-    } catch (_) {
-      bookingError = 'Could not verify patient readiness. Please try again.';
-      _notify();
+    final readiness = await _onboardingRepository.accountReadiness();
+    if (_disposed) {
       return BookingGateOutcome.failure;
     }
+    if (readiness.account.role.trim().toUpperCase() != 'PATIENT') {
+      selectedTime = null;
+      bookingIntent = null;
+      await _bookingIntentStore.clear();
+      bookingError =
+          'This account cannot request patient appointments. '
+          'Use a patient account to continue.';
+      _notify();
+      return BookingGateOutcome.incompatibleRole;
+    }
+    final incomplete =
+        readiness.nextAction.trim().toUpperCase() == 'PATIENT_SETUP' ||
+        (readiness.patient?.requiredFields.isNotEmpty ?? true);
+    return incomplete
+        ? BookingGateOutcome.onboardingRequired
+        : BookingGateOutcome.ready;
   }
 
   Future<BookingSubmissionOutcome> submit() {
@@ -527,7 +599,7 @@ class ProfessionalBookingController extends ChangeNotifier {
       await loadProfile(refresh: true);
       await loadTimes(refresh: true);
       if (professional == null || profileNotFound) {
-        await cancelIntent();
+        await _clearIntent();
         return BookingSubmissionOutcome.professionalUnavailable;
       }
       final selected = selectedTime;
@@ -538,7 +610,7 @@ class ProfessionalBookingController extends ChangeNotifier {
             startAt: selected.startAt,
             durationMinutes: 30,
           )) {
-        await cancelIntent();
+        await _clearIntent();
         bookingError =
             'The selected time is no longer available. Please choose another.';
         return BookingSubmissionOutcome.staleTime;
@@ -575,18 +647,18 @@ class ProfessionalBookingController extends ChangeNotifier {
         case 401:
           return BookingSubmissionOutcome.authenticationRequired;
         case 403:
-          await cancelIntent();
+          await _clearIntent();
           bookingError =
               'This account cannot request patient appointments. '
               'Use a patient account to continue.';
           return BookingSubmissionOutcome.incompatibleRole;
         case 404:
-          await cancelIntent();
+          await _clearIntent();
           professional = null;
           profileNotFound = true;
           return BookingSubmissionOutcome.professionalUnavailable;
         case 409:
-          await cancelIntent();
+          await _clearIntent();
           await loadTimes(refresh: true);
           bookingError =
               'That time is no longer available. Please choose another.';

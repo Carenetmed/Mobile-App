@@ -109,7 +109,12 @@ class _SpecialistDetailsShellPageState
           if (controller != null)
             IconButton(
               tooltip: 'Refresh',
-              onPressed: controller.isRefreshing ? null : controller.refresh,
+              onPressed:
+                  controller.isRefreshing ||
+                          controller.isPreparingBooking ||
+                          controller.isSubmitting
+                      ? null
+                      : controller.refresh,
               icon: const Icon(Icons.refresh_rounded, color: Color(0xFF155E63)),
             ),
           const SizedBox(width: 4),
@@ -196,6 +201,9 @@ class _SpecialistDetailsShellPageState
   Future<void> _requestAppointment(
     ProfessionalBookingController controller,
   ) async {
+    if (controller.isPreparingBooking || controller.isSubmitting) {
+      return;
+    }
     final gate = await controller.prepareBooking();
     if (!mounted) {
       return;
@@ -553,7 +561,7 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
               ],
               selected: <ConsultationMode>{controller.selectedMode},
               onSelectionChanged:
-                  controller.isSubmitting
+                  controller.isSubmitting || controller.isPreparingBooking
                       ? null
                       : (selection) => controller.selectMode(selection.first),
             ),
@@ -633,7 +641,8 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
                       selected: day.label == _selectedDay,
                       materialTapTargetSize: MaterialTapTargetSize.padded,
                       onSelected:
-                          controller.isSubmitting
+                          controller.isSubmitting ||
+                                  controller.isPreparingBooking
                               ? null
                               : (_) => setState(() {
                                 _selectedDay = day.label;
@@ -653,7 +662,9 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
                   selected:
                       controller.selectedTime?.startAt.toUtc() ==
                       time.startAt.toUtc(),
-                  enabled: !controller.isSubmitting,
+                  enabled:
+                      !controller.isSubmitting &&
+                      !controller.isPreparingBooking,
                   onTap: () => controller.selectTime(time),
                 ),
               ),
@@ -663,7 +674,9 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
                 padding: REdgeInsets.only(top: 4, bottom: 9),
                 child: OutlinedButton.icon(
                   onPressed:
-                      controller.isLoadingLaterTimes
+                      controller.isLoadingLaterTimes ||
+                              controller.isPreparingBooking ||
+                              controller.isSubmitting
                           ? null
                           : controller.loadLaterTimes,
                   icon:
@@ -689,8 +702,11 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
                 message:
                     'Your selected time was saved. Review it before sending '
                     'the appointment request.',
-                actionLabel: 'Cancel',
-                onAction: widget.onCancelIntent,
+                actionLabel: controller.isPreparingBooking ? null : 'Cancel',
+                onAction:
+                    controller.isPreparingBooking
+                        ? null
+                        : widget.onCancelIntent,
               ),
             ],
             if (controller.bookingError != null) ...[
@@ -705,8 +721,11 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
               _InlineNotice(
                 icon: Icons.sync_problem_outlined,
                 message: controller.timesError!,
-                actionLabel: 'Retry',
-                onAction: () => controller.loadTimes(refresh: true),
+                actionLabel: controller.isPreparingBooking ? null : 'Retry',
+                onAction:
+                    controller.isPreparingBooking
+                        ? null
+                        : () => controller.loadTimes(refresh: true),
               ),
             ],
             SizedBox(height: 14.h),
@@ -714,11 +733,13 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
               width: double.infinity,
               child: FilledButton.icon(
                 onPressed:
-                    controller.selectedTime == null || controller.isSubmitting
+                    controller.selectedTime == null ||
+                            controller.isSubmitting ||
+                            controller.isPreparingBooking
                         ? null
                         : widget.onRequest,
                 icon:
-                    controller.isSubmitting
+                    controller.isSubmitting || controller.isPreparingBooking
                         ? SizedBox.square(
                           dimension: 16.r,
                           child: const CircularProgressIndicator(
@@ -727,8 +748,12 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
                         )
                         : const Icon(Icons.send_outlined),
                 label: Text(
-                  controller.isSubmitting
+                  controller.isPreparingBooking
+                      ? 'Checking account...'
+                      : controller.isSubmitting
                       ? 'Sending request...'
+                      : controller.bookingReadinessFailed
+                      ? 'Retry account check'
                       : 'Request selected time',
                 ),
               ),

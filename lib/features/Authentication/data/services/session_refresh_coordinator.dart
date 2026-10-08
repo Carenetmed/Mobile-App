@@ -19,71 +19,78 @@ class SessionRefreshCoordinator {
   final AuthApiClient _apiClient;
   final SessionStore _sessionStore;
   Future<AuthSessionModel>? _refreshing;
-  AuthSessionModel? _refreshingSession;
+  SessionSnapshot? _refreshingSnapshot;
   SessionAuthenticatedCallback? onAuthenticated;
   SessionClearingCallback? onClearing;
 
-  Future<AuthSessionModel> refresh({AuthSessionModel? expected}) async {
-    final current = await requireSession();
+  Future<AuthSessionModel> refresh({
+    AuthSessionModel? expected,
+    SessionSnapshot? expectedSnapshot,
+  }) async {
+    final snapshot = await requireSnapshot();
+    final current = snapshot.session;
+    if (expectedSnapshot != null &&
+        !_sameGeneration(snapshot, expectedSnapshot)) {
+      throw _accountChangedFailure;
+    }
     if (expected != null) {
       if (current.user.id != expected.user.id) throw _accountChangedFailure;
       if (current.accessToken != expected.accessToken) return current;
     }
     final active = _refreshing;
     if (active != null) {
-      final owner = _refreshingSession;
-      if (owner?.user.id == current.user.id &&
-          owner?.refreshToken == current.refreshToken) {
+      final owner = _refreshingSnapshot;
+      if (owner != null && _sameGeneration(owner, snapshot)) {
         return active;
       }
       // A previous session's refresh cannot reject or rotate the new session.
       try {
         final completed = await active;
-        final latest = await _sessionStore.read();
-        if (completed.user.id == current.user.id &&
-            latest?.user.id == completed.user.id &&
-            latest?.accessToken == completed.accessToken &&
-            latest?.refreshToken == completed.refreshToken) {
+        final latest = await _sessionStore.capture();
+        if (latest != null &&
+            _sameGeneration(latest, snapshot) &&
+            latest.session.accessToken == completed.accessToken &&
+            latest.session.refreshToken == completed.refreshToken) {
           return completed;
         }
       } catch (_) {
         // The current session is validated independently below.
       }
-      return refresh(expected: current);
+      return refresh(expected: current, expectedSnapshot: snapshot);
     }
 
-    final future = _refresh(current);
+    final future = _refresh(snapshot);
     _refreshing = future;
-    _refreshingSession = current;
+    _refreshingSnapshot = snapshot;
     return future.whenComplete(() {
       if (identical(_refreshing, future)) {
         _refreshing = null;
-        _refreshingSession = null;
+        _refreshingSnapshot = null;
       }
     });
   }
 
-  Future<AuthSessionModel> _refresh(AuthSessionModel? expected) async {
-    final current = await _sessionStore.read();
-    if (current == null) throw _signedOutFailure;
-    if (expected != null) {
-      if (current.user.id != expected.user.id) throw _accountChangedFailure;
-      if (current.accessToken != expected.accessToken) return current;
+  Future<AuthSessionModel> _refresh(SessionSnapshot expected) async {
+    final latest = await requireSnapshot();
+    if (!_sameGeneration(latest, expected)) throw _accountChangedFailure;
+    if (latest.session.accessToken != expected.session.accessToken) {
+      return latest.session;
     }
+    final current = latest.session;
 
     try {
       final session = await _apiClient.refresh(
         refreshToken: current.refreshToken,
       );
       if (session.user.id != current.user.id ||
-          !await _sessionStore.replaceIfCurrent(current, session)) {
+          !await _sessionStore.replaceSnapshotIfCurrent(expected, session)) {
         throw _signedOutFailure;
       }
       await _notifyAuthenticated(session);
       return session;
     } on AuthFailure catch (failure) {
       if (failure.shouldClearSession || failure.statusCode == 403) {
-        if (await _sessionStore.clearIfCurrent(current)) {
+        if (await _sessionStore.clearSnapshotIfCurrent(expected)) {
           await _notifyClearing(current);
         }
         if (failure.statusCode == 403) throw _signedOutFailure;
@@ -93,46 +100,56 @@ class SessionRefreshCoordinator {
   }
 
   Future<AuthSessionModel> requireSession() async {
-    final current = await _sessionStore.read();
-    if (current == null) throw _signedOutFailure;
-    return current;
+    return (await requireSnapshot()).session;
+  }
+
+  Future<SessionSnapshot> requireSnapshot() async {
+    final snapshot = await _sessionStore.capture();
+    if (snapshot == null) throw _signedOutFailure;
+    return snapshot;
   }
 
   Future<T> execute<T>(Future<T> Function(String accessToken) request) async {
-    final current = await requireSession();
+    final snapshot = await requireSnapshot();
+    final current = snapshot.session;
     try {
       final result = await request(current.accessToken);
-      await _requireRequestAccount(current.user.id);
+      await _requireRequestSnapshot(snapshot);
       return result;
     } on AuthFailure catch (failure) {
       if (failure.statusCode != 401) rethrow;
-      final refreshed = await _refreshForRequest(
-        current.user.id,
-        current.accessToken,
-      );
+      final refreshed = await _refreshForRequest(snapshot, current.accessToken);
       final result = await request(refreshed.accessToken);
-      await _requireRequestAccount(current.user.id);
+      await _requireRequestSnapshot(snapshot);
       return result;
     }
   }
 
-  Future<AuthSessionModel> _requireRequestAccount(String expectedUserId) async {
-    final current = await _sessionStore.read();
-    if (current == null || current.user.id != expectedUserId) {
+  Future<SessionSnapshot> _requireRequestSnapshot(
+    SessionSnapshot expected,
+  ) async {
+    final current = await requireSnapshot();
+    if (!_sameGeneration(current, expected)) {
       throw _accountChangedFailure;
     }
     return current;
   }
 
   Future<AuthSessionModel> _refreshForRequest(
-    String expectedUserId,
+    SessionSnapshot expected,
     String expectedAccessToken,
   ) async {
-    final current = await _requireRequestAccount(expectedUserId);
-    if (current.accessToken != expectedAccessToken) return current;
-    await refresh(expected: current);
-    return _requireRequestAccount(expectedUserId);
+    final current = await _requireRequestSnapshot(expected);
+    if (current.session.accessToken != expectedAccessToken) {
+      return current.session;
+    }
+    await refresh(expected: current.session, expectedSnapshot: expected);
+    return (await _requireRequestSnapshot(expected)).session;
   }
+
+  static bool _sameGeneration(SessionSnapshot left, SessionSnapshot right) =>
+      left.generation == right.generation &&
+      left.session.user.id == right.session.user.id;
 
   Future<void> _notifyAuthenticated(AuthSessionModel session) async {
     try {
@@ -163,6 +180,7 @@ class SessionRefreshCoordinator {
 }
 
 class SessionRefreshInterceptor extends Interceptor {
+  static const String replaySafeExtraKey = 'carenet.authRefreshReplaySafe';
   SessionRefreshInterceptor({
     required Dio dio,
     required SessionRefreshCoordinator coordinator,
@@ -185,11 +203,11 @@ class SessionRefreshInterceptor extends Interceptor {
       return;
     }
     try {
-      final current = await _coordinator.requireSession();
-      if (authorization != 'Bearer ${current.accessToken}') {
+      final snapshot = await _coordinator.requireSnapshot();
+      if (authorization != 'Bearer ${snapshot.session.accessToken}') {
         throw SessionRefreshCoordinator._accountChangedFailure;
       }
-      options.extra[_sessionKey] = current.user.id;
+      options.extra[_sessionKey] = snapshot;
       handler.next(options);
     } on AuthFailure catch (failure) {
       handler.reject(_failure(options, failure));
@@ -202,12 +220,12 @@ class SessionRefreshInterceptor extends Interceptor {
     ResponseInterceptorHandler handler,
   ) async {
     final context = response.requestOptions.extra[_sessionKey];
-    if (context is! String) {
+    if (context is! SessionSnapshot) {
       handler.next(response);
       return;
     }
     try {
-      await _coordinator._requireRequestAccount(context);
+      await _coordinator._requireRequestSnapshot(context);
       handler.next(response);
     } on AuthFailure catch (failure) {
       handler.reject(_failure(response.requestOptions, failure));
@@ -226,7 +244,8 @@ class SessionRefreshInterceptor extends Interceptor {
         authorization is! String ||
         authorization.trim().isEmpty ||
         request.extra[_retriedKey] == true ||
-        context is! String) {
+        context is! SessionSnapshot ||
+        !_canReplay(request)) {
       handler.next(err);
       return;
     }
@@ -272,4 +291,46 @@ class SessionRefreshInterceptor extends Interceptor {
                   statusCode: failure.statusCode,
                 ),
       );
+
+  static bool _canReplay(RequestOptions request) {
+    if (!_isReplayableBody(request.data)) return false;
+
+    switch (request.method.toUpperCase()) {
+      case 'GET':
+      case 'HEAD':
+      case 'OPTIONS':
+        return true;
+      default:
+        return request.extra[replaySafeExtraKey] == true &&
+            _hasIdempotencyKey(request);
+    }
+  }
+
+  static bool _hasIdempotencyKey(RequestOptions request) {
+    for (final entry in request.headers.entries) {
+      if (entry.key.toLowerCase() == 'idempotency-key') {
+        return entry.value is String &&
+            (entry.value as String).trim().isNotEmpty;
+      }
+    }
+    return false;
+  }
+
+  static bool _isReplayableBody(Object? body) {
+    if (body == null || body is String || body is num || body is bool) {
+      return true;
+    }
+    if (body is FormData || body is MultipartFile || body is Stream) {
+      return false;
+    }
+    if (body is Map) {
+      return body.entries.every(
+        (entry) => entry.key is String && _isReplayableBody(entry.value),
+      );
+    }
+    if (body is List) {
+      return body.every(_isReplayableBody);
+    }
+    return false;
+  }
 }

@@ -33,6 +33,17 @@ look complete.
   dependency-proven deletion slice, not active authentication paths.
 - Firebase Hosting landing pages and Android app-link verification for email verification and password reset remain in the Firebase/environment slice.
 
+## Notification installation account fencing
+
+- Mobile notification registration is serialized and non-blocking for auth;
+  the client persists and advances a decimal-string generation per
+  installation. A request already sent may still complete after timeout or
+  process change, so the client counter is not authority by itself. The
+  backend must persist and transactionally compare the generation, with
+  PostgreSQL out-of-order/concurrency proof, before cross-account push-binding
+  safety can be claimed. Keep JWT-derived ownership authoritative and do not
+  rely on client timeouts to cancel server work.
+
 ---
 
 ## Phase 1 product deferrals

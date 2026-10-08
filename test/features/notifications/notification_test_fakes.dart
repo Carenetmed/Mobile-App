@@ -49,18 +49,36 @@ CareNotification notificationTestItem({
 }
 
 class InMemoryNotificationSessionStore implements SessionStore {
-  InMemoryNotificationSessionStore([this.session]);
+  InMemoryNotificationSessionStore([this.session]) {
+    if (session != null) _generation = '${++_generationCounter}';
+  }
 
   AuthSessionModel? session;
+  String? _generation;
+  int _generationCounter = 0;
 
   @override
-  Future<void> clear() async => session = null;
+  Future<void> clear() async {
+    session = null;
+    _generation = null;
+  }
 
   @override
   Future<AuthSessionModel?> read() async => session;
 
   @override
-  Future<void> save(AuthSessionModel value) async => session = value;
+  Future<SessionSnapshot?> capture() async {
+    final value = session;
+    final generation = _generation;
+    if (value == null || generation == null) return null;
+    return SessionSnapshot(session: value, generation: generation);
+  }
+
+  @override
+  Future<void> save(AuthSessionModel value) async {
+    session = value;
+    _generation = '${++_generationCounter}';
+  }
 
   @override
   Future<bool> replaceIfCurrent(
@@ -76,12 +94,28 @@ class InMemoryNotificationSessionStore implements SessionStore {
   }
 
   @override
+  Future<bool> replaceSnapshotIfCurrent(
+    SessionSnapshot expected,
+    AuthSessionModel replacement,
+  ) async {
+    if (_generation != expected.generation ||
+        session?.user.id != expected.session.user.id ||
+        session?.accessToken != expected.session.accessToken ||
+        session?.refreshToken != expected.session.refreshToken) {
+      return false;
+    }
+    session = replacement;
+    return true;
+  }
+
+  @override
   Future<bool> clearIfCurrent(AuthSessionModel expected) async {
     if (session?.user.id != expected.user.id ||
         session?.refreshToken != expected.refreshToken) {
       return false;
     }
     session = null;
+    _generation = null;
     return true;
   }
 
@@ -89,6 +123,18 @@ class InMemoryNotificationSessionStore implements SessionStore {
   Future<bool> clearAccountIfCurrent(String userId) async {
     if (session == null || session!.user.id != userId) return false;
     session = null;
+    _generation = null;
+    return true;
+  }
+
+  @override
+  Future<bool> clearSnapshotIfCurrent(SessionSnapshot snapshot) async {
+    if (_generation != snapshot.generation ||
+        session?.user.id != snapshot.session.user.id) {
+      return false;
+    }
+    session = null;
+    _generation = null;
     return true;
   }
 }
@@ -98,13 +144,19 @@ class FakeNotificationRepository implements NotificationRepository {
     AuthSessionModel? session,
     List<CareNotification>? items,
   }) : session = session ?? notificationTestSession(),
-       items = items ?? <CareNotification>[];
+       items = items ?? <CareNotification>[] {
+    sessionSnapshot = SessionSnapshot(
+      session: this.session,
+      generation: 'fake-${this.session.user.id}',
+    );
+  }
 
   AuthSessionModel session;
   List<CareNotification> items;
   Object? listFailure;
   Object? notificationFailure;
   Object? preferencesFailure;
+  SessionSnapshot? sessionSnapshot;
   Completer<NotificationPage>? listCompleter;
   int unread = 0;
   int listCalls = 0;
@@ -200,12 +252,16 @@ class FakeNotificationRepository implements NotificationRepository {
   }
 
   @override
+  Future<SessionSnapshot?> currentSessionSnapshot() async => sessionSnapshot;
+
+  @override
   Future<AuthSessionModel> requireSession() async => session;
 }
 
 class FakeNotificationInstallationStore
     implements NotificationInstallationStore {
   String id = 'installation-000000000000000000000001';
+  int bindingGeneration = 0;
   String? boundUser;
   String? pendingNotification;
 
@@ -225,6 +281,9 @@ class FakeNotificationInstallationStore
 
   @override
   Future<String> installationId() async => id;
+
+  @override
+  Future<String> nextBindingGeneration() async => '${++bindingGeneration}';
 
   @override
   Future<String?> pendingNotificationId() async => pendingNotification;

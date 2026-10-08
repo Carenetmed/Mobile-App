@@ -116,6 +116,20 @@ Use `flutter_secure_storage` for session secrets.
 
 Sign-out, refresh failure, account deletion/deactivation, or invalid-session responses must clear local tokens before routing the user back to auth.
 
+### Current mobile implementation note (APP-READY-045)
+
+The secure session envelope includes a random generation. Refresh replacement
+preserves that generation, while explicit authentication creates a new one.
+Logout and deletion clear only the captured generation so delayed completion
+cannot erase a newer same-account login. The envelope migration remains
+backward-compatible with the previous versioned record. Authenticated
+mutations are replayed after refresh only when the caller explicitly marks the
+operation replay-safe and supplies its backend-supported idempotency key; GET,
+HEAD, and OPTIONS requests are replayable only with a replayable body.
+Requests are also bound to the random login generation, so a late response or
+401 from a prior login cannot be accepted or replayed after the same account
+signs in again.
+
 ---
 
 ## Repository replacement plan

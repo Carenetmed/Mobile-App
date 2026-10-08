@@ -60,24 +60,26 @@ class AccountRepository {
     String? googleIdToken,
   }) async {
     final current = await _requireSession();
+    final snapshot = await _sessionStore.capture();
+    if (snapshot == null ||
+        snapshot.session.user.id != current.user.id ||
+        snapshot.session.refreshToken != current.refreshToken) {
+      throw const AuthFailure(
+        type: AuthFailureType.unknown,
+        message: 'Your account changed. Please try again.',
+      );
+    }
     final receipt = await _apiClient.requestAccountDeletion(
       accessToken: current.accessToken,
       password: password,
       googleIdToken: googleIdToken,
     );
-    if (await _sessionStore.clearAccountIfCurrent(current.user.id)) {
+    if (await _sessionStore.clearSnapshotIfCurrent(snapshot)) {
       try {
         await _notificationLifecycle?.afterAccountDeletion(current);
       } catch (_) {
         // Session removal remains authoritative if local cleanup fails.
       }
-    }
-    final latest = await _sessionStore.read();
-    if (latest != null && latest.user.id != current.user.id) {
-      throw const AuthFailure(
-        type: AuthFailureType.unknown,
-        message: 'Your account changed. Please try again.',
-      );
     }
     return receipt;
   }

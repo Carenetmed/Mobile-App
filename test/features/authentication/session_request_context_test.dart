@@ -211,7 +211,15 @@ void main() {
     });
     final request = harness.account.currentAccount();
     await started.future;
-    await harness.store.save(_session('first', rotated: true));
+    final snapshot = await harness.store.capture();
+    expect(snapshot, isNotNull);
+    expect(
+      await harness.store.replaceSnapshotIfCurrent(
+        snapshot!,
+        _session('first', rotated: true),
+      ),
+      isTrue,
+    );
     response.complete(_json({}, 401));
     expect((await request).id, 'first');
     expect(refreshCalls, 0);

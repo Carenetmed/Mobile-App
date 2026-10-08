@@ -25,6 +25,36 @@ void main() {
     },
   );
 
+  test(
+    'binding generation is serialized and survives store recreation',
+    () async {
+      final store = SecureNotificationInstallationStore();
+      final values = await Future.wait(<Future<String>>[
+        store.nextBindingGeneration(),
+        store.nextBindingGeneration(),
+      ]);
+
+      expect(values, ['1', '2']);
+      await store.bindUser('user-1');
+      await store.clearBinding();
+
+      expect(
+        await SecureNotificationInstallationStore().nextBindingGeneration(),
+        '3',
+      );
+    },
+  );
+
+  test('new installation identity resets an orphaned generation', () async {
+    FlutterSecureStorage.setMockInitialValues(<String, String>{
+      'carenet.notifications.bindingGeneration': '5000',
+    });
+    final store = SecureNotificationInstallationStore();
+
+    expect(await store.installationId(), hasLength(32));
+    expect(await store.nextBindingGeneration(), '1');
+  });
+
   test('account binding and pending tap are independently cleared', () async {
     final store = SecureNotificationInstallationStore();
     await store.bindUser('user-1');

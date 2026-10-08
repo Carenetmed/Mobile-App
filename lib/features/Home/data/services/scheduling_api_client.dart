@@ -1,6 +1,7 @@
 import 'package:app_t/core/config/carenet_api_config.dart';
 import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Authentication/data/services/session_refresh_coordinator.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:dio/dio.dart';
 
@@ -113,6 +114,9 @@ class SchedulingApiClient {
           headers: <String, String>{
             ..._bearerHeaders(accessToken),
             'Idempotency-Key': idempotencyKey,
+          },
+          extra: <String, dynamic>{
+            SessionRefreshInterceptor.replaySafeExtraKey: true,
           },
         ),
       ),

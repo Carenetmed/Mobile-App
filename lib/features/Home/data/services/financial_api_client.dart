@@ -1,6 +1,7 @@
 import 'package:app_t/core/config/carenet_api_config.dart';
 import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Authentication/data/services/session_refresh_coordinator.dart';
 import 'package:dio/dio.dart';
 
 import '../../domain/entities/consultation_price.dart';
@@ -52,6 +53,9 @@ class FinancialApiClient {
           headers: <String, String>{
             ..._bearer(accessToken),
             'Idempotency-Key': idempotencyKey,
+          },
+          extra: <String, dynamic>{
+            SessionRefreshInterceptor.replaySafeExtraKey: true,
           },
         ),
       ),
@@ -238,13 +242,14 @@ class FinancialApiClient {
       _ => 'Network error. Please try again.',
     };
     return AuthFailure(
-      type: code == 401 || code == 403
-          ? AuthFailureType.unauthorized
-          : code == 400 || code == 422 || code == 409
-          ? AuthFailureType.validation
-          : code != null && code >= 500
-          ? AuthFailureType.server
-          : AuthFailureType.network,
+      type:
+          code == 401 || code == 403
+              ? AuthFailureType.unauthorized
+              : code == 400 || code == 422 || code == 409
+              ? AuthFailureType.validation
+              : code != null && code >= 500
+              ? AuthFailureType.server
+              : AuthFailureType.network,
       message: message,
       statusCode: code,
     );

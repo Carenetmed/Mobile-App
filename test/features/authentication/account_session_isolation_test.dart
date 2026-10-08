@@ -34,12 +34,13 @@ void main() {
 
   test('explicit logout clears its account after token rotation', () async {
     final store = InMemorySessionStore();
-    await store.save(_session('first'));
+    final initial = _session('first');
+    await store.save(initial);
     final api = _PendingAccountClient();
     final repository = AuthRepository(apiClient: api, sessionStore: store);
     final request = repository.logout();
     await api.logoutStarted.future;
-    await store.save(_rotatedSession('first'));
+    await store.replaceIfCurrent(initial, _rotatedSession('first'));
     api.logoutResult.complete();
     await request;
     expect(await store.read(), isNull);
@@ -47,12 +48,13 @@ void main() {
 
   test('successful deletion clears its account after token rotation', () async {
     final store = InMemorySessionStore();
-    await store.save(_session('first'));
+    final initial = _session('first');
+    await store.save(initial);
     final api = _PendingAccountClient();
     final repository = AccountRepository(apiClient: api, sessionStore: store);
     final request = repository.requestAccountDeletion(password: 'test-only');
     await api.deletionStarted.future;
-    await store.save(_rotatedSession('first'));
+    await store.replaceIfCurrent(initial, _rotatedSession('first'));
     api.deletionResult.complete(
       AccountDeletionReceipt(
         accountStatus: 'DELETED',
@@ -78,26 +80,78 @@ void main() {
     expect((await store.read())?.user.id, 'second');
   });
 
-  test('delayed deletion cannot clear a newly authenticated account', () async {
-    final store = InMemorySessionStore();
-    await store.save(_session('first'));
-    final api = _PendingAccountClient();
-    final repository = AccountRepository(apiClient: api, sessionStore: store);
-    final request = repository.requestAccountDeletion(password: 'test-only');
-    final rejected = expectLater(request, throwsA(isA<AuthFailure>()));
-    await api.deletionStarted.future;
-    await store.save(_session('second'));
-    api.deletionResult.complete(
-      AccountDeletionReceipt(
-        accountStatus: 'DELETED',
-        deletionRequestedAt: DateTime.utc(2026, 10, 1),
-        retentionStatus: 'RETAINED_UNDER_POLICY',
-        sessionsRevoked: true,
-      ),
-    );
-    await rejected;
-    expect((await store.read())?.user.id, 'second');
-  });
+  test(
+    'delayed logout cannot clear a fresh login for the same account',
+    () async {
+      final store = InMemorySessionStore();
+      await store.save(_session('first'));
+      final api = _PendingAccountClient();
+      final repository = AuthRepository(apiClient: api, sessionStore: store);
+      final request = repository.logout();
+      await api.logoutStarted.future;
+      final newLogin = _session('first-new-login');
+      await store.save(newLogin);
+      api.logoutResult.complete();
+
+      await request;
+
+      expect((await store.read())?.accessToken, newLogin.accessToken);
+    },
+  );
+
+  test(
+    'delayed deletion cannot clear a fresh login for the same account',
+    () async {
+      final store = InMemorySessionStore();
+      await store.save(_session('first'));
+      final api = _PendingAccountClient();
+      final repository = AccountRepository(apiClient: api, sessionStore: store);
+      final request = repository.requestAccountDeletion(password: 'test-only');
+      await api.deletionStarted.future;
+      final newLogin = _session('first-new-login');
+      await store.save(newLogin);
+      api.deletionResult.complete(
+        AccountDeletionReceipt(
+          accountStatus: 'DELETED',
+          deletionRequestedAt: DateTime.utc(2026, 10, 1),
+          retentionStatus: 'RETAINED_UNDER_POLICY',
+          sessionsRevoked: true,
+        ),
+      );
+      final receipt = await request;
+      expect(receipt.accountStatus, 'DELETED');
+      expect((await store.read())?.accessToken, newLogin.accessToken);
+    },
+  );
+
+  test(
+    'delayed deletion cannot clear a different newly authenticated account',
+    () async {
+      final store = InMemorySessionStore();
+      await store.save(_session('first'));
+      final api = _PendingAccountClient();
+      final repository = AccountRepository(apiClient: api, sessionStore: store);
+      final request = repository.requestAccountDeletion(password: 'test-only');
+      await api.deletionStarted.future;
+      final newLogin = _session('second');
+      await store.save(newLogin);
+      api.deletionResult.complete(
+        AccountDeletionReceipt(
+          accountStatus: 'DELETED',
+          deletionRequestedAt: DateTime.utc(2026, 10, 1),
+          retentionStatus: 'RETAINED_UNDER_POLICY',
+          sessionsRevoked: true,
+        ),
+      );
+
+      final receipt = await request;
+
+      expect(receipt.accountStatus, 'DELETED');
+      expect((await store.read())?.user.id, 'second');
+      expect((await store.read())?.accessToken, newLogin.accessToken);
+    },
+  );
+
   test(
     'late account rejection cannot clear a different account session',
     () async {

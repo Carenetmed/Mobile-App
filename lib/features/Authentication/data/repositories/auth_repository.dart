@@ -64,15 +64,16 @@ class AuthRepository {
   Future<AuthSession> refresh() => _refreshCoordinator.refresh();
 
   Future<void> logout() async {
-    final current = await _sessionStore.read();
+    final snapshot = await _sessionStore.capture();
+    final current = snapshot?.session;
     try {
       if (current != null) {
         await _notifyBeforeClear(current);
         await _apiClient.logout(refreshToken: current.refreshToken);
       }
     } finally {
-      if (current != null) {
-        await _sessionStore.clearAccountIfCurrent(current.user.id);
+      if (snapshot != null) {
+        await _sessionStore.clearSnapshotIfCurrent(snapshot);
       }
     }
   }

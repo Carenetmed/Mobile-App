@@ -126,9 +126,9 @@ void main() {
     await repository.started.future;
     repository.session = notificationTestSession(userId: 'user-2');
     final second = coordinator.onAuthenticatedSession(repository.session);
-    await Future<void>.delayed(Duration.zero);
     repository.release.complete();
     await Future.wait([first, second]);
+    await _waitUntil(() => repository.owners.length == 2);
     expect(repository.owners, ['user-1', 'user-2']);
     expect(store.boundUser, 'user-2');
   });
@@ -170,12 +170,21 @@ void main() {
     final held = repository.pending!;
     repository.pending = null;
     await coordinator.onAuthenticatedSession(repository.session);
+    await _waitUntil(() => coordinator.unreadCount == 2);
     expect(coordinator.unreadCount, 2);
 
     held.complete(99);
     await oldRefresh;
     expect(coordinator.unreadCount, 2);
   });
+}
+
+Future<void> _waitUntil(bool Function() predicate) async {
+  final deadline = DateTime.now().add(const Duration(seconds: 2));
+  while (!predicate() && DateTime.now().isBefore(deadline)) {
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+  }
+  expect(predicate(), isTrue);
 }
 
 class _HeldInitializationTransport extends FakeNotificationTransport {

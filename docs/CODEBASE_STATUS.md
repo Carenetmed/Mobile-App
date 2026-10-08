@@ -1,5 +1,23 @@
 # Codebase status
 
+## Session and notification startup hardening (APP-READY-045)
+
+The secure session record carries a random generation so refresh-token
+rotation preserves the current login while a new login, including one for the
+same user, becomes a distinct session. Logout and account deletion clear only
+the captured generation; notification registration and unread refresh no
+longer block authentication callbacks. Authenticated mutation replay after a
+401 requires both a replay-safe client opt-in and a non-empty idempotency key;
+non-replayable bodies are not retried.
+
+Notification installation work is serialized client-side and logout cleanup is
+bounded. The mobile client also persists and advances a decimal-string
+`bindingGeneration` for each installation registration. This does not fully
+fence delayed registration requests across process/network failure until the
+backend persists and compares that generation transactionally. Track the
+backend fencing contract in `DEFERRED_WORK.md`; do not claim cross-account
+push-binding safety until both sides are merged and tested.
+
 ## RTC Adapter Resource Safety (APP-READY-042)
 
 The LiveKit adapter owns each room and captured track through completion or

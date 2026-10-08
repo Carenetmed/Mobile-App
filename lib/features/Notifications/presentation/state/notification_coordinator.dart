@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
+import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Messaging/presentation/state/messaging_controllers.dart';
 import 'package:flutter/foundation.dart';
@@ -64,9 +65,12 @@ class NotificationCoordinator extends ChangeNotifier
   bool _observingLifecycle = false;
   AuthSessionModel? _session;
   Future<void>? _activeRegistration;
-  String? _activeRegistrationUserId;
+  int? _activeRegistrationGeneration;
   Future<void>? _activeTap;
+  Future<void>? _activeTapResolution;
+  int? _activeTapResolutionGeneration;
   bool _navigationReady = false;
+  int _sessionGeneration = 0;
   Future<void> _bindingTransition = Future<void>.value();
 
   Future<T> _serializeBinding<T>(Future<T> Function() operation) {
@@ -117,71 +121,136 @@ class NotificationCoordinator extends ChangeNotifier
 
   @override
   Future<void> onAuthenticatedSession(AuthSessionModel session) async {
-    final accepted = await _serializeBinding(() async {
-      if (_disposed) return false;
-      final current = await _repository.requireSession();
-      if (_disposed || current.user.id != session.user.id) return false;
-      final previousUser = await _installationStore.boundUserId();
-      if (_disposed) return false;
-      if ((previousUser != null && previousUser != session.user.id) ||
-          (_session != null && _session!.user.id != session.user.id)) {
-        await _installationStore.clearPendingNotificationId();
-        unreadCount = 0;
-      }
-      if (_disposed) return false;
-      _session = session;
-      return true;
-    });
-    if (!accepted) return;
-    await _registerCurrentInstallation();
-    await refreshUnreadCount();
-    if (_navigationReady) await _resolvePendingTap();
+    int? generation;
+    try {
+      generation = await _serializeBinding<int?>(() async {
+        if (_disposed) return null;
+        final current = await _repository.requireSession().timeout(
+          _providerTimeout,
+        );
+        if (_disposed || current.user.id != session.user.id) return null;
+        final previousUser = await _installationStore.boundUserId().timeout(
+          _providerTimeout,
+        );
+        if (_disposed) return null;
+        if ((previousUser != null && previousUser != session.user.id) ||
+            (_session != null && _session!.user.id != session.user.id)) {
+          await _installationStore.clearPendingNotificationId().timeout(
+            _providerTimeout,
+          );
+          unreadCount = 0;
+        }
+        if (_disposed) return null;
+        _session = session;
+        _sessionGeneration++;
+        return _sessionGeneration;
+      });
+    } catch (error) {
+      _debug('session notification binding failed (${error.runtimeType}).');
+      return;
+    }
+    final acceptedGeneration = generation;
+    if (acceptedGeneration == null ||
+        !_isCurrentSession(session, acceptedGeneration)) {
+      return;
+    }
+
+    _scheduleNonFatal(
+      'installation registration',
+      () => _registerInstallationFor(session, acceptedGeneration),
+    );
+    _scheduleNonFatal(
+      'unread-count refresh',
+      () => _refreshUnreadCountFor(session, acceptedGeneration),
+    );
+    if (_navigationReady) {
+      _scheduleNonFatal(
+        'pending notification routing',
+        () => _resolvePendingTap(generation: acceptedGeneration),
+      );
+    }
   }
 
   Future<void> markNavigationReady() async {
     _navigationReady = true;
     _debug('navigation is ready.');
-    await _resolvePendingTap();
+    final generation = _sessionGeneration;
+    _scheduleNonFatal(
+      'pending notification routing',
+      () => _resolvePendingTap(generation: generation),
+    );
   }
 
   Future<void> _registerCurrentInstallation() async {
-    final userId = _session?.user.id;
-    if (userId == null || _disposed) return;
-    final active = _activeRegistration;
-    if (active != null) {
-      if (_activeRegistrationUserId == userId) return active;
-      try {
-        await active;
-      } catch (_) {
-        // A prior account's provider failure must not block the current owner.
-      }
-      if (_disposed || _session?.user.id != userId) return;
-      return _registerCurrentInstallation();
-    }
-    late final Future<void> future;
-    future = _register().whenComplete(() {
-      if (identical(_activeRegistration, future)) {
-        _activeRegistration = null;
-        _activeRegistrationUserId = null;
-      }
-    });
-    _activeRegistrationUserId = userId;
-    _activeRegistration = future;
-    return future;
+    final session = _session;
+    final generation = _sessionGeneration;
+    if (session == null || _disposed) return;
+    await _registerInstallationFor(session, generation);
   }
 
-  Future<void> _register() async {
-    final session = _session;
-    if (session == null || !_transport.isConfigured) return;
-    final endpoint = await _transport.endpoint();
+  Future<void> _registerInstallationFor(
+    AuthSessionModel session,
+    int generation,
+  ) async {
+    if (!_isCurrentSession(session, generation)) return;
+    final active = _activeRegistration;
+    if (active != null) {
+      if (_activeRegistrationGeneration == generation) {
+        try {
+          await active;
+        } catch (error) {
+          _debug('installation registration failed (${error.runtimeType}).');
+        }
+        return;
+      }
+      try {
+        // Serialize client calls; a backend generation fence is still needed
+        // because a timed-out request may commit after this future settles.
+        await active;
+      } catch (_) {
+        // The old operation settled; the current generation can now proceed.
+      }
+      if (!_isCurrentSession(session, generation)) return;
+      return _registerInstallationFor(session, generation);
+    }
+    late final Future<void> future;
+    future = _register(session, generation).whenComplete(() {
+      if (identical(_activeRegistration, future)) {
+        _activeRegistration = null;
+        _activeRegistrationGeneration = null;
+      }
+    });
+    _activeRegistrationGeneration = generation;
+    _activeRegistration = future;
+    try {
+      await future;
+    } catch (error) {
+      _debug('installation registration failed (${error.runtimeType}).');
+    }
+  }
+
+  Future<void> _register(AuthSessionModel session, int generation) async {
+    if (!_transport.isConfigured || !_isCurrentSession(session, generation)) {
+      return;
+    }
+    final endpoint = await _transport.endpoint().timeout(_providerTimeout);
+    if (!_isCurrentSession(session, generation)) return;
     if (endpoint == null || endpoint.trim().isEmpty) return;
-    final metadata = await _metadataLoader();
-    final installationId = await _installationStore.installationId();
-    if (_disposed || _session?.user.id != session.user.id) return;
+    final metadata = await _metadataLoader().timeout(_providerTimeout);
+    if (!_isCurrentSession(session, generation)) return;
+    final installationId = await _installationStore.installationId().timeout(
+      _providerTimeout,
+    );
+    if (!_isCurrentSession(session, generation)) return;
+    final bindingGeneration = await _installationStore
+        .nextBindingGeneration()
+        .timeout(_providerTimeout);
+    if (!_isCurrentSession(session, generation)) return;
     await _repository.registerInstallation(
       session: session,
       payload: <String, dynamic>{
         'installationId': installationId,
+        'bindingGeneration': bindingGeneration,
         'platform': metadata.platform,
         'endpoint': endpoint,
         'endpointKind': 'FCM_REGISTRATION_TOKEN',
@@ -191,9 +260,12 @@ class NotificationCoordinator extends ChangeNotifier
         'permissionState': _permissionWire(permission),
       },
     );
+    if (!_isCurrentSession(session, generation)) return;
     await _serializeBinding(() async {
-      if (_disposed || _session?.user.id != session.user.id) return;
-      await _installationStore.bindUser(session.user.id);
+      if (!_isCurrentSession(session, generation)) return;
+      await _installationStore
+          .bindUser(session.user.id)
+          .timeout(_providerTimeout);
     });
   }
 
@@ -208,9 +280,12 @@ class NotificationCoordinator extends ChangeNotifier
   }
 
   Future<NotificationPermissionValue> requestPermission() async {
-    permission = await _transport.requestPermission();
+    permission = await _transport.requestPermission().timeout(_providerTimeout);
     _notify();
-    await _registerCurrentInstallation();
+    _scheduleNonFatal(
+      'installation registration',
+      _registerCurrentInstallation,
+    );
     return permission;
   }
 
@@ -221,9 +296,12 @@ class NotificationCoordinator extends ChangeNotifier
   Future<void> synchronizePermission() async {
     if (!_transport.isConfigured) return;
     try {
-      permission = await _transport.permission();
+      permission = await _transport.permission().timeout(_providerTimeout);
       _notify();
-      await _registerCurrentInstallation();
+      _scheduleNonFatal(
+        'installation registration',
+        _registerCurrentInstallation,
+      );
     } catch (_) {
       return;
     }
@@ -238,49 +316,87 @@ class NotificationCoordinator extends ChangeNotifier
 
   @override
   Future<void> beforeLogout(AuthSessionModel session) async {
+    final bindingGeneration = _sessionGeneration;
+    SessionSnapshot? snapshot;
     try {
-      final installationId = await _installationStore.installationId();
-      await _repository.removeInstallation(
-        session: session,
-        installationId: installationId,
+      snapshot = await _repository.currentSessionSnapshot().timeout(
+        _providerTimeout,
       );
+      final installationId = await _installationStore.installationId().timeout(
+        _providerTimeout,
+      );
+      await _repository
+          .removeInstallation(session: session, installationId: installationId)
+          .timeout(_providerTimeout);
     } catch (_) {
       // Backend logout also invalidates all active installations for the user.
     } finally {
-      await _clearAccountBinding(session);
+      try {
+        await _clearAccountBinding(
+          session,
+          expectedBindingGeneration: bindingGeneration,
+          expectedStoreGeneration: snapshot?.generation,
+        ).timeout(_providerTimeout);
+      } catch (_) {
+        // Local sign-out remains bounded if notification storage is stalled.
+      }
     }
   }
 
   @override
   Future<void> afterAccountDeletion(AuthSessionModel session) async {
-    await _clearAccountBinding(session);
+    final bindingGeneration = _sessionGeneration;
+    await _clearAccountBinding(
+      session,
+      expectedBindingGeneration: bindingGeneration,
+      expectStoreEmpty: true,
+    );
   }
 
-  Future<void> _clearAccountBinding(AuthSessionModel session) =>
-      _serializeBinding(() async {
-        if (_disposed ||
-            (_session != null && _session!.user.id != session.user.id)) {
-          return;
-        }
-        final boundUser = await _installationStore.boundUserId();
-        if (boundUser != null && boundUser != session.user.id) return;
-        _session = null;
-        unreadCount = 0;
-        await _installationStore.clearBinding();
-        await _installationStore.clearPendingNotificationId();
-        _notify();
-      });
+  Future<void> _clearAccountBinding(
+    AuthSessionModel session, {
+    required int expectedBindingGeneration,
+    String? expectedStoreGeneration,
+    bool expectStoreEmpty = false,
+  }) => _serializeBinding(() async {
+    if (_disposed ||
+        _sessionGeneration != expectedBindingGeneration ||
+        (_session != null && _session!.user.id != session.user.id)) {
+      return;
+    }
+    final currentSnapshot = await _repository.currentSessionSnapshot().timeout(
+      _providerTimeout,
+    );
+    if (expectStoreEmpty) {
+      if (currentSnapshot != null) return;
+    } else if (currentSnapshot?.generation != expectedStoreGeneration) {
+      return;
+    }
+    final boundUser = await _installationStore.boundUserId();
+    if (boundUser != null && boundUser != session.user.id) return;
+    _session = null;
+    unreadCount = 0;
+    await _installationStore.clearBinding();
+    await _installationStore.clearPendingNotificationId();
+    _notify();
+  });
 
   Future<void> refreshUnreadCount() async {
     final session = _session;
+    final generation = _sessionGeneration;
     if (session == null || _disposed) return;
+    await _refreshUnreadCountFor(session, generation);
+  }
+
+  Future<void> _refreshUnreadCountFor(
+    AuthSessionModel session,
+    int generation,
+  ) async {
+    if (!_isCurrentSession(session, generation)) return;
     try {
-      final count = await _repository.unreadCount();
-      if (_disposed || _session?.user.id != session.user.id) return;
-      final current = await _repository.requireSession();
-      if (_disposed ||
-          _session?.user.id != session.user.id ||
-          current.user.id != session.user.id) {
+      final count = await _repository.unreadCount().timeout(_providerTimeout);
+      if (!_isCurrentSession(session, generation) ||
+          !await _hasCurrentSession(session, generation)) {
         return;
       }
       unreadCount = count;
@@ -295,7 +411,9 @@ class NotificationCoordinator extends ChangeNotifier
     if (id.isEmpty) return Future<void>.value();
     final active = _activeTap;
     if (active != null) return active;
-    final future = _handleTap(id);
+    final future = _handleTap(id).catchError((Object error) {
+      _debug('notification tap deferred (${error.runtimeType}).');
+    });
     _activeTap = future;
     return future.whenComplete(() {
       if (identical(_activeTap, future)) _activeTap = null;
@@ -303,30 +421,76 @@ class NotificationCoordinator extends ChangeNotifier
   }
 
   Future<void> _handleTap(String notificationId) async {
-    await _installationStore.savePendingNotificationId(notificationId);
+    await _installationStore
+        .savePendingNotificationId(notificationId)
+        .timeout(_providerTimeout);
     _debug('tap saved for owner validation.');
     if (!_navigationReady ||
         _session == null ||
         _navigatorKey.currentState == null) {
       return;
     }
-    await _resolvePendingTap();
+    await _resolvePendingTap(generation: _sessionGeneration);
   }
 
-  Future<void> _resolvePendingTap() async {
-    final navigator = _navigatorKey.currentState;
+  Future<void> _resolvePendingTap({required int generation}) async {
+    final active = _activeTapResolution;
+    if (active != null) {
+      if (_activeTapResolutionGeneration == generation) return active;
+      try {
+        await active.timeout(_providerTimeout);
+      } catch (_) {
+        // A stale resolver is bounded and cannot mutate a newer account.
+      }
+      if (_disposed || generation != _sessionGeneration) return;
+    }
     final session = _session;
-    final id = await _installationStore.pendingNotificationId();
-    _debug('pending tap available=${id != null}.');
-    if (navigator == null || session == null || id == null) return;
+    if (session == null || !_isCurrentSession(session, generation)) return;
+    late final Future<void> future;
+    future = _resolvePendingTapForSession(session, generation).whenComplete(() {
+      if (identical(_activeTapResolution, future)) {
+        _activeTapResolution = null;
+        _activeTapResolutionGeneration = null;
+      }
+    });
+    _activeTapResolution = future;
+    _activeTapResolutionGeneration = generation;
     try {
-      if (!await _hasCurrentSession(session)) return;
-      final notification = await _repository.notification(id);
-      if (!await _hasCurrentSession(session)) return;
-      if (!notification.isRead) await _repository.markRead(id);
-      if (!await _clearResolvedTap(session, id)) return;
-      await refreshUnreadCount();
-      if (!await _hasCurrentSession(session) ||
+      await future;
+    } catch (error) {
+      _debug('pending notification routing deferred (${error.runtimeType}).');
+    }
+  }
+
+  Future<void> _resolvePendingTapForSession(
+    AuthSessionModel session,
+    int generation,
+  ) async {
+    final navigator = _navigatorKey.currentState;
+    final id = await _installationStore.pendingNotificationId().timeout(
+      _providerTimeout,
+    );
+    _debug('pending tap available=${id != null}.');
+    if (navigator == null ||
+        id == null ||
+        !_isCurrentSession(session, generation)) {
+      return;
+    }
+    try {
+      if (!await _hasCurrentSession(session, generation)) return;
+      final notification = await _repository
+          .notification(id)
+          .timeout(_providerTimeout);
+      if (!await _hasCurrentSession(session, generation)) return;
+      if (!notification.isRead) {
+        await _repository.markRead(id).timeout(_providerTimeout);
+      }
+      if (!await _clearResolvedTap(session, generation, id)) return;
+      _scheduleNonFatal(
+        'unread-count refresh',
+        () => _refreshUnreadCountFor(session, generation),
+      );
+      if (!await _hasCurrentSession(session, generation) ||
           !navigator.mounted ||
           _navigatorKey.currentState != navigator) {
         return;
@@ -334,20 +498,22 @@ class NotificationCoordinator extends ChangeNotifier
       _debug('owned tap resolved to ${notification.routeCode ?? 'INBOX'}.');
       _openOwnedDestination(navigator, notification);
     } on AuthFailure catch (failure) {
-      if (!await _hasCurrentSession(session)) return;
+      if (!await _hasCurrentSession(session, generation)) return;
       if (_isRecoverableTapFailure(failure)) {
         _debug('owned tap deferred after recoverable ${failure.type.name}.');
         return;
       }
-      if (await _clearResolvedTap(session, id) &&
-          await _hasCurrentSession(session) &&
+      if (await _clearResolvedTap(session, generation, id) &&
+          await _hasCurrentSession(session, generation) &&
           navigator.mounted &&
           _navigatorKey.currentState == navigator) {
         navigator.pushNamed(RouteName.notification);
       }
+    } on TimeoutException {
+      _debug('owned tap deferred after a bounded request timeout.');
     } catch (_) {
-      if (await _clearResolvedTap(session, id) &&
-          await _hasCurrentSession(session) &&
+      if (await _clearResolvedTap(session, generation, id) &&
+          await _hasCurrentSession(session, generation) &&
           navigator.mounted &&
           _navigatorKey.currentState == navigator) {
         navigator.pushNamed(RouteName.notification);
@@ -355,26 +521,55 @@ class NotificationCoordinator extends ChangeNotifier
     }
   }
 
-  Future<bool> _hasCurrentSession(AuthSessionModel expected) async {
-    if (_disposed || _session?.user.id != expected.user.id) return false;
+  bool _isCurrentSession(AuthSessionModel expected, int generation) {
+    return !_disposed &&
+        _sessionGeneration == generation &&
+        _session?.user.id == expected.user.id;
+  }
+
+  Future<bool> _hasCurrentSession(
+    AuthSessionModel expected,
+    int generation,
+  ) async {
+    if (!_isCurrentSession(expected, generation)) return false;
     try {
-      final current = await _repository.requireSession();
-      return !_disposed &&
-          _session?.user.id == expected.user.id &&
+      final current = await _repository.requireSession().timeout(
+        _providerTimeout,
+      );
+      return _isCurrentSession(expected, generation) &&
           current.user.id == expected.user.id;
     } catch (_) {
       return false;
     }
   }
 
-  Future<bool> _clearResolvedTap(AuthSessionModel session, String id) =>
-      _serializeBinding(() async {
-        if (!await _hasCurrentSession(session)) return false;
-        final pending = await _installationStore.pendingNotificationId();
-        if (pending != id || !await _hasCurrentSession(session)) return false;
-        await _installationStore.clearPendingNotificationId();
-        return true;
-      });
+  Future<bool> _clearResolvedTap(
+    AuthSessionModel session,
+    int generation,
+    String id,
+  ) => _serializeBinding(() async {
+    if (!await _hasCurrentSession(session, generation)) return false;
+    final pending = await _installationStore.pendingNotificationId().timeout(
+      _providerTimeout,
+    );
+    if (pending != id || !await _hasCurrentSession(session, generation)) {
+      return false;
+    }
+    await _installationStore.clearPendingNotificationId().timeout(
+      _providerTimeout,
+    );
+    return true;
+  });
+
+  void _scheduleNonFatal(String label, Future<void> Function() operation) {
+    unawaited(() async {
+      try {
+        await operation();
+      } catch (error) {
+        _debug('$label failed (${error.runtimeType}).');
+      }
+    }());
+  }
 
   bool _isRecoverableTapFailure(AuthFailure failure) {
     return failure.type == AuthFailureType.unauthorized ||
@@ -439,6 +634,8 @@ class NotificationCoordinator extends ChangeNotifier
   @override
   void dispose() {
     _disposed = true;
+    _sessionGeneration++;
+    _session = null;
     if (_observingLifecycle) WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

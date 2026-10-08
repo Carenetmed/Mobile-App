@@ -27,7 +27,7 @@ void main() {
   });
 
   test(
-    'secure session persists one versioned record and restores it',
+    'secure session persists one versioned record with a generation',
     () async {
       const storage = FlutterSecureStorage();
       final store = SecureSessionStore(storage: storage);
@@ -37,13 +37,49 @@ void main() {
 
       final values = await storage.readAll();
       expect(values.keys, unorderedEquals(<String>['carenet.session.v1']));
-      expect(jsonDecode(values.values.single), <String, dynamic>{
-        'schemaVersion': 1,
-        'session': session.toJson(),
-      });
+      final record = jsonDecode(values.values.single) as Map<String, dynamic>;
+      expect(record['schemaVersion'], 2);
+      expect(record['generation'], isA<String>());
+      expect(record['session'], session.toJson());
       expect((await store.read())?.accessToken, 'access-1');
     },
   );
+
+  test('version one secure session migrates without losing authentication', () async {
+    final session = _session('legacy-access', 'legacy-refresh');
+    FlutterSecureStorage.setMockInitialValues(<String, String>{
+      'carenet.session.v1': jsonEncode(<String, dynamic>{
+        'schemaVersion': 1,
+        'session': session.toJson(),
+      }),
+    });
+    const storage = FlutterSecureStorage();
+    final store = SecureSessionStore(storage: storage);
+
+    final snapshot = await store.capture();
+    final migrated = jsonDecode(
+      (await storage.read(key: 'carenet.session.v1'))!,
+    ) as Map<String, dynamic>;
+
+    expect(snapshot?.session.accessToken, 'legacy-access');
+    expect(snapshot?.generation, isNotEmpty);
+    expect(migrated['schemaVersion'], 2);
+    expect(migrated['generation'], snapshot?.generation);
+  });
+
+  test('refresh replacement preserves session generation', () async {
+    final store = InMemorySessionStore();
+    final initial = _session('access-a', 'refresh-a');
+    final rotated = _session('access-b', 'refresh-b');
+    await store.save(initial);
+    final before = await store.capture();
+
+    expect(await store.replaceIfCurrent(initial, rotated), isTrue);
+
+    final after = await store.capture();
+    expect(after?.generation, before?.generation);
+    expect(after?.session.accessToken, 'access-b');
+  });
 
   test('secure session rejects a stale conditional replacement', () async {
     final store = SecureSessionStore();

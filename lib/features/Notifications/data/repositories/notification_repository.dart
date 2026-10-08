@@ -15,6 +15,8 @@ class NotificationRepository {
   final NotificationApiClient _apiClient;
   final SessionStore _sessionStore;
 
+  Future<SessionSnapshot?> currentSessionSnapshot() => _sessionStore.capture();
+
   Future<NotificationPage> notifications({
     String? cursor,
     NotificationCategory? category,

@@ -41,11 +41,18 @@ void main() {
 
     await coordinator.initialize();
     await coordinator.onAuthenticatedSession(notificationTestSession());
+    await _pumpUntil(
+      tester,
+      () =>
+          repository.registrationPayloads.length == 1 &&
+          coordinator.unreadCount == 4,
+    );
 
     expect(transport.initializeCalls, 1);
     expect(repository.registrationPayloads, hasLength(1));
     expect(repository.registrationPayloads.single, <String, dynamic>{
       'installationId': store.id,
+      'bindingGeneration': '1',
       'platform': 'ANDROID',
       'endpoint': 'fcm-token',
       'endpointKind': 'FCM_REGISTRATION_TOKEN',
@@ -75,6 +82,10 @@ void main() {
 
       repository.session = notificationTestSession(userId: 'user-2');
       await coordinator.onAuthenticatedSession(repository.session);
+      await _pumpUntil(
+        tester,
+        () => store.boundUser == 'user-2' && coordinator.unreadCount == 7,
+      );
 
       expect(store.pendingNotification, isNull);
       expect(store.boundUser, 'user-2');
@@ -302,4 +313,11 @@ Widget _routingApp(GlobalKey<NavigatorState> navigatorKey) {
               ),
         ),
   );
+}
+
+Future<void> _pumpUntil(WidgetTester tester, bool Function() predicate) async {
+  for (var attempt = 0; attempt < 400 && !predicate(); attempt++) {
+    await tester.pump(const Duration(milliseconds: 5));
+  }
+  expect(predicate(), isTrue);
 }

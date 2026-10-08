@@ -35,14 +35,19 @@ look complete.
 
 ## Notification installation account fencing
 
-- Mobile notification registration is serialized and non-blocking for auth;
-  the client persists and advances a decimal-string generation per
-  installation. A request already sent may still complete after timeout or
-  process change, so the client counter is not authority by itself. The
-  backend must persist and transactionally compare the generation, with
-  PostgreSQL out-of-order/concurrency proof, before cross-account push-binding
-  safety can be claimed. Keep JWT-derived ownership authoritative and do not
-  rely on client timeouts to cancel server work.
+- Complete across backend `NOTIF-P1-010B` (PR #134) and mobile
+  `NOTIF-P1-010C` (PR #209). The backend persists an account registration epoch
+  signed into access tokens and a monotonic per-installation binding generation;
+  registration compares both transactionally, while logout/account deletion
+  advance the epoch under the same account lock. The mobile stores and advances
+  the decimal-string generation, serializes registration, and never treats the
+  client counter as authorization. Stale in-flight registration is rejected
+  even if its HTTP response arrives after a later account binding.
+- Backend real-PostgreSQL concurrency tests and mobile session/notification
+  regression tests passed in CI. Keep JWT-derived ownership authoritative.
+  Remaining notification gates are provider-delivery reliability, iOS APNs,
+  physical-device acceptance, and production operational readiness; these are
+  not installation-binding gaps.
 
 ---
 

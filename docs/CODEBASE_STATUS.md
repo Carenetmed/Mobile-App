@@ -12,11 +12,15 @@ non-replayable bodies are not retried.
 
 Notification installation work is serialized client-side and logout cleanup is
 bounded. The mobile client also persists and advances a decimal-string
-`bindingGeneration` for each installation registration. This does not fully
-fence delayed registration requests across process/network failure until the
-backend persists and compares that generation transactionally. Track the
-backend fencing contract in `DEFERRED_WORK.md`; do not claim cross-account
-push-binding safety until both sides are merged and tested.
+`bindingGeneration` for each installation registration. Backend PR #134
+persists and transactionally compares that generation together with the
+account's signed registration epoch. Stale registrations are rejected, logout
+and account deletion advance the epoch, and PostgreSQL concurrency coverage
+passed in CI. Mobile PR #209 merged the matching client contract; its exact
+reviewed head passed the 707-test suite, analyzer, staging debug APK, Android
+release lint, and release-safety checks. Cross-account installation rebinding
+is fenced at both API boundaries; provider delivery, APNs production proof,
+and physical-device acceptance remain separate gates.
 
 ## RTC Adapter Resource Safety (APP-READY-042)
 

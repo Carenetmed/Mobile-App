@@ -42,8 +42,9 @@ class _PatientOnboardingSetupPageState
   OnboardingRegion? _selectedState;
   PatientHealthInterest? _selectedHealthInterest;
   AccountReadiness? _readiness;
-  bool _isLoadingCatalog = true;
+  bool _isLoadingCatalog = false;
   bool _isSaving = false;
+  bool _catalogLoadFailed = false;
   String? _message;
   DateTime? _dateOfBirth;
 
@@ -156,7 +157,12 @@ class _PatientOnboardingSetupPageState
               summary: _readinessSummary(_readiness, 'patient'),
               items: _readinessItems(_readiness, 'patient'),
             ),
-            _StatusText(message: _message),
+            _SetupLoadStatus(
+              message: _message,
+              isLoading: _isLoadingCatalog,
+              showRetry: _catalogLoadFailed,
+              onRetry: _loadCatalog,
+            ),
             SizedBox(height: 20.h),
             CarenetButton(
               label: _isSaving ? 'Saving profile...' : 'Save and continue',
@@ -171,6 +177,14 @@ class _PatientOnboardingSetupPageState
   bool get _isCatalogReady => !_isLoadingCatalog && _catalog != null;
 
   Future<void> _loadCatalog() async {
+    if (_isLoadingCatalog) {
+      return;
+    }
+    final preserveFormInput = _catalogLoadFailed;
+    setState(() {
+      _isLoadingCatalog = true;
+      _message = null;
+    });
     try {
       final results = await Future.wait<Object?>(<Future<Object?>>[
         _onboardingRepository.onboardingCatalog(),
@@ -185,15 +199,19 @@ class _PatientOnboardingSetupPageState
       }
       setState(() {
         _catalog = catalog;
-        _applyPatientProfile(profile, catalog);
+        if (!preserveFormInput) {
+          _applyPatientProfile(profile, catalog);
+        }
         _readiness = readiness;
         _isLoadingCatalog = false;
+        _catalogLoadFailed = false;
       });
     } on AuthFailure catch (failure) {
       if (mounted) {
         setState(() {
           _message = failure.message;
           _isLoadingCatalog = false;
+          _catalogLoadFailed = true;
         });
       }
     } catch (_) {
@@ -201,6 +219,7 @@ class _PatientOnboardingSetupPageState
         setState(() {
           _message = 'Could not load onboarding options. Please try again.';
           _isLoadingCatalog = false;
+          _catalogLoadFailed = true;
         });
       }
     }
@@ -337,8 +356,9 @@ class _ProfessionalOnboardingSetupPageState
   OnboardingRegion? _selectedState;
   ProfessionalCatalogItem? _selectedProfession;
   AccountReadiness? _readiness;
-  bool _isLoadingCatalog = true;
+  bool _isLoadingCatalog = false;
   bool _isSaving = false;
+  bool _catalogLoadFailed = false;
   String? _message;
 
   ProfileRepository get _profileRepository =>
@@ -528,7 +548,12 @@ class _ProfessionalOnboardingSetupPageState
               summary: _readinessSummary(_readiness, 'professional'),
               items: _readinessItems(_readiness, 'professional'),
             ),
-            _StatusText(message: _message),
+            _SetupLoadStatus(
+              message: _message,
+              isLoading: _isLoadingCatalog,
+              showRetry: _catalogLoadFailed,
+              onRetry: _loadCatalog,
+            ),
             SizedBox(height: 20.h),
             CarenetButton(
               label: _isSaving ? 'Saving profile...' : 'Save and verify',
@@ -543,6 +568,14 @@ class _ProfessionalOnboardingSetupPageState
   bool get _isCatalogReady => !_isLoadingCatalog && _catalog != null;
 
   Future<void> _loadCatalog() async {
+    if (_isLoadingCatalog) {
+      return;
+    }
+    final preserveFormInput = _catalogLoadFailed;
+    setState(() {
+      _isLoadingCatalog = true;
+      _message = null;
+    });
     try {
       final results = await Future.wait<Object?>(<Future<Object?>>[
         _onboardingRepository.onboardingCatalog(),
@@ -557,15 +590,19 @@ class _ProfessionalOnboardingSetupPageState
       }
       setState(() {
         _catalog = catalog;
-        _applyProfessionalProfile(profile, catalog);
+        if (!preserveFormInput) {
+          _applyProfessionalProfile(profile, catalog);
+        }
         _readiness = readiness;
         _isLoadingCatalog = false;
+        _catalogLoadFailed = false;
       });
     } on AuthFailure catch (failure) {
       if (mounted) {
         setState(() {
           _message = failure.message;
           _isLoadingCatalog = false;
+          _catalogLoadFailed = true;
         });
       }
     } catch (_) {
@@ -573,6 +610,7 @@ class _ProfessionalOnboardingSetupPageState
         setState(() {
           _message = 'Could not load onboarding options. Please try again.';
           _isLoadingCatalog = false;
+          _catalogLoadFailed = true;
         });
       }
     }
@@ -1019,26 +1057,55 @@ class _ReadOnlyValue extends StatelessWidget {
   }
 }
 
-class _StatusText extends StatelessWidget {
-  const _StatusText({required this.message});
+class _SetupLoadStatus extends StatelessWidget {
+  const _SetupLoadStatus({
+    required this.message,
+    required this.isLoading,
+    required this.showRetry,
+    required this.onRetry,
+  });
 
   final String? message;
+  final bool isLoading;
+  final bool showRetry;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
-    final text = message;
-    if (text == null) {
+    if (!isLoading && message == null) {
       return const SizedBox.shrink();
     }
     return Padding(
       padding: EdgeInsets.only(top: 14.h),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: CarenetColors.error100,
-          fontFamily: AppFonts.montserrat,
-          fontSize: 12.sp,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (isLoading)
+            Text(
+              'Loading your setup...',
+              style: TextStyle(
+                color: CarenetColors.neutral700,
+                fontFamily: AppFonts.montserrat,
+                fontSize: 12.sp,
+              ),
+            ),
+          if (message != null)
+            Text(
+              message!,
+              style: TextStyle(
+                color: CarenetColors.error100,
+                fontFamily: AppFonts.montserrat,
+                fontSize: 12.sp,
+              ),
+            ),
+          if (showRetry)
+            TextButton.icon(
+              key: const ValueKey('retry-onboarding-load'),
+              onPressed: isLoading ? null : onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry loading setup'),
+            ),
+        ],
       ),
     );
   }

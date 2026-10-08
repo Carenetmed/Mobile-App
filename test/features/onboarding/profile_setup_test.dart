@@ -289,6 +289,39 @@ void main() {
       );
     });
 
+    testWidgets('patient setup retries a failed load without losing input', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository();
+      final onboardingRepository = _FakeOnboardingRepository(
+        failure: const AuthFailure(
+          type: AuthFailureType.network,
+          message: 'Service is unavailable. Please try again.',
+        ),
+      );
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        child: PatientOnboardingSetupPage(
+          profileRepository: repository,
+          onboardingRepository: onboardingRepository,
+        ),
+      );
+
+      final nameField = find.byType(EditableText).first;
+      await tester.enterText(nameField, 'Ada Patient');
+      onboardingRepository.failure = null;
+      final retry = find.byKey(const ValueKey('retry-onboarding-load'));
+      await tester.ensureVisible(retry);
+      await tester.tap(retry);
+      await tester.pumpAndSettle();
+
+      expect(onboardingRepository.catalogCalls, 2);
+      expect(find.text('Ada Patient'), findsOneWidget);
+      expect(find.text('Retry loading setup'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('professional setup requires credential fields', (
       tester,
     ) async {
@@ -560,6 +593,43 @@ void main() {
       );
       expect(find.text('verification-documents'), findsNothing);
     });
+
+    testWidgets(
+      'professional setup retries a failed load without losing input',
+      (tester) async {
+        final repository = _FakeProfileRepository();
+        final onboardingRepository = _FakeOnboardingRepository(
+          failure: const AuthFailure(
+            type: AuthFailureType.network,
+            message: 'Service is unavailable. Please try again.',
+          ),
+        );
+        await _pumpSetup(
+          tester,
+          repository: repository,
+          child: ProfessionalOnboardingSetupPage(
+            profileRepository: repository,
+            onboardingRepository: onboardingRepository,
+          ),
+        );
+
+        final legalName = find.byType(EditableText).at(0);
+        final displayName = find.byType(EditableText).at(1);
+        await tester.enterText(legalName, 'Ada Okafor');
+        await tester.enterText(displayName, 'Dr. Ada Okafor');
+        onboardingRepository.failure = null;
+        final retry = find.byKey(const ValueKey('retry-onboarding-load'));
+        await tester.ensureVisible(retry);
+        await tester.tap(retry);
+        await tester.pumpAndSettle();
+
+        expect(onboardingRepository.catalogCalls, 2);
+        expect(find.text('Ada Okafor'), findsOneWidget);
+        expect(find.text('Dr. Ada Okafor'), findsNWidgets(2));
+        expect(find.text('Retry loading setup'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }
 
@@ -595,7 +665,7 @@ Future<void> _selectCatalogValue(
 class _FakeOnboardingRepository implements OnboardingRepository {
   _FakeOnboardingRepository({this.failure, this.readiness});
 
-  final AuthFailure? failure;
+  AuthFailure? failure;
   final AccountReadiness? readiness;
   int catalogCalls = 0;
   int readinessCalls = 0;

@@ -309,7 +309,7 @@ class _FinSignUpState extends State<FinSignUp> {
     });
 
     try {
-      await _authRepository.register(
+      final session = await _authRepository.register(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         role: widget.selectedRole.backendValue,
@@ -317,7 +317,7 @@ class _FinSignUpState extends State<FinSignUp> {
       if (!mounted) {
         return;
       }
-      final routeName = await _resolveNextRoute();
+      final routeName = await _resolveNextRoute(session.user.role);
       if (!mounted) {
         return;
       }
@@ -348,12 +348,12 @@ class _FinSignUpState extends State<FinSignUp> {
     }
   }
 
-  Future<String> _resolveNextRoute() async {
+  Future<String> _resolveNextRoute(String authenticatedRole) async {
     try {
       final readiness = await _onboardingRepository.accountReadiness();
       return _routeResolver.resolve(
         readiness: readiness,
-        fallbackRole: widget.selectedRole.backendValue,
+        fallbackRole: authenticatedRole,
       );
     } catch (_) {
       if (mounted) {
@@ -365,7 +365,7 @@ class _FinSignUpState extends State<FinSignUp> {
           ),
         );
       }
-      return _routeResolver.fallbackForRole(widget.selectedRole.backendValue);
+      return _routeResolver.fallbackForRole(authenticatedRole);
     }
   }
 }

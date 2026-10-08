@@ -118,14 +118,14 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
 
     try {
       final idToken = await _googleIdTokenProvider.signInIdToken();
-      await _authRepository.googleSignIn(
+      final session = await _authRepository.googleSignIn(
         idToken: idToken,
         role: role.backendValue,
       );
       if (!mounted) {
         return;
       }
-      final routeName = await _resolveNextRoute(role);
+      final routeName = await _resolveNextRoute(session.user.role);
       if (!mounted) {
         return;
       }
@@ -156,12 +156,12 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
     }
   }
 
-  Future<String> _resolveNextRoute(SignUpRole role) async {
+  Future<String> _resolveNextRoute(String authenticatedRole) async {
     try {
       final readiness = await _onboardingRepository.accountReadiness();
       return _routeResolver.resolve(
         readiness: readiness,
-        fallbackRole: role.backendValue,
+        fallbackRole: authenticatedRole,
       );
     } catch (_) {
       if (mounted) {
@@ -173,7 +173,7 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
           ),
         );
       }
-      return _routeResolver.fallbackForRole(role.backendValue);
+      return _routeResolver.fallbackForRole(authenticatedRole);
     }
   }
 

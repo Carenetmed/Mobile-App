@@ -1,5 +1,16 @@
 # Codebase status
 
+## Authentication Entry And Role Routing (APP-READY-048, in progress)
+
+The legacy email sign-in screen has been aligned with the current CareNet
+green design tokens and compact-screen accessibility. Signup route fallback
+now uses the role in the backend-issued authenticated session; readiness
+actions are ignored when their role conflicts with that session. This does not
+change backend auth, account roles, or normal signup choices. Targeted resolver
+tests and Flutter analysis pass; full auth-flow tests and PR CI remain pending.
+Cloud SQL and the notification scheduler remain stopped/paused, and no cloud
+service was started for this work.
+
 ## Session and notification startup hardening (APP-READY-045)
 
 The secure session record carries a random generation so refresh-token

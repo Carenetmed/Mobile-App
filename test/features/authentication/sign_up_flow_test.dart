@@ -374,6 +374,32 @@ void main() {
       },
     );
 
+    testWidgets(
+      'Google signup readiness failure follows backend session role',
+      (tester) async {
+        final repository = _FakeAuthRepository(sessionRole: 'PATIENT');
+        await _pumpWithRoutes(
+          tester,
+          home: SignUpEmail(
+            authRepository: repository,
+            googleIdTokenProvider: const _FakeGoogleIdTokenProvider(),
+            onboardingRepository: _FakeOnboardingRepository(
+              failReadiness: true,
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Continue with Google'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Medical professional'));
+        await tester.pumpAndSettle();
+
+        expect(repository.lastGoogleRole, 'PROFESSIONAL');
+        expect(find.text('patient-setup'), findsOneWidget);
+        expect(find.text('professional-setup'), findsNothing);
+      },
+    );
+
     testWidgets('sign up role change clears stale Google error', (
       tester,
     ) async {
@@ -442,7 +468,9 @@ void main() {
 const _disabledGoogleProvider = _FakeGoogleIdTokenProvider(isConfigured: false);
 
 class _FakeAuthRepository implements AuthRepository {
-  _FakeAuthRepository();
+  _FakeAuthRepository({this.sessionRole});
+
+  final String? sessionRole;
   int googleSignInCalls = 0;
   String? lastGoogleIdToken;
   String? lastGoogleRole;
@@ -455,7 +483,7 @@ class _FakeAuthRepository implements AuthRepository {
     googleSignInCalls += 1;
     lastGoogleIdToken = idToken;
     lastGoogleRole = role;
-    return _session(role: role ?? 'PATIENT');
+    return _session(role: sessionRole ?? role ?? 'PATIENT');
   }
 
   @override

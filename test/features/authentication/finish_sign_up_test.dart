@@ -284,7 +284,7 @@ void main() {
     });
 
     testWidgets(
-      'falls back to selected professional setup when readiness check fails',
+      'falls back to authenticated professional setup when readiness fails',
       (tester) async {
         await _pumpFinishSignUp(
           tester,
@@ -299,6 +299,25 @@ void main() {
 
         expect(find.text('professional-onboarding'), findsOneWidget);
         expect(find.text('patient-setup'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'readiness failure cannot override the role in the returned session',
+      (tester) async {
+        await _pumpFinishSignUp(
+          tester,
+          authRepository: _FakeAuthRepository(sessionRole: 'PATIENT'),
+          onboardingRepository: _FakeOnboardingRepository(failReadiness: true),
+          selectedRole: SignUpRole.professional,
+        );
+
+        await _fillValidForm(tester);
+        await tester.tap(find.text(' Agree & continue'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('patient-setup'), findsOneWidget);
+        expect(find.text('professional-onboarding'), findsNothing);
       },
     );
 
@@ -330,10 +349,11 @@ Future<void> _fillValidForm(WidgetTester tester) async {
 }
 
 class _FakeAuthRepository implements AuthRepository {
-  _FakeAuthRepository({this.failure, this.completer});
+  _FakeAuthRepository({this.failure, this.completer, this.sessionRole});
 
   final AuthFailure? failure;
   final Completer<AuthSession>? completer;
+  final String? sessionRole;
   int registerCalls = 0;
   String? lastEmail;
   String? lastRole;
@@ -358,7 +378,7 @@ class _FakeAuthRepository implements AuthRepository {
     if (completer != null) {
       return completer.future;
     }
-    return _session();
+    return _session(role: sessionRole ?? role);
   }
 
   @override
@@ -395,8 +415,8 @@ class _FakeOnboardingRepository implements OnboardingRepository {
   }
 }
 
-AuthSession _session() {
-  return const AuthSession(
+AuthSession _session({String role = 'PATIENT'}) {
+  return AuthSession(
     accessToken: 'access',
     refreshToken: 'refresh',
     tokenType: 'Bearer',
@@ -404,7 +424,7 @@ AuthSession _session() {
     user: AuthUser(
       id: 'user-1',
       email: 'john@example.com',
-      role: 'PATIENT',
+      role: role,
       status: 'ACTIVE',
       emailVerified: false,
     ),

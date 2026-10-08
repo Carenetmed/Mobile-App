@@ -84,6 +84,36 @@ void main() {
         RouteName.dashboard,
       );
     });
+
+    test('readiness role mismatch cannot route into another role setup', () {
+      expect(
+        resolver.resolve(
+          readiness: _readiness('PROFESSIONAL_UPLOAD_EVIDENCE'),
+          fallbackRole: 'PATIENT',
+        ),
+        RouteName.patientOnboardingSetup,
+      );
+      expect(
+        resolver.resolve(
+          readiness: _readiness('PATIENT_SETUP', role: 'PATIENT'),
+          fallbackRole: 'PROFESSIONAL',
+        ),
+        RouteName.medicalProfessional,
+      );
+    });
+
+    test(
+      'patient booking gate cannot send professional to patient dashboard',
+      () {
+        expect(
+          resolver.resolve(
+            readiness: _readiness('PATIENT_BOOKING_GATE'),
+            fallbackRole: 'PROFESSIONAL',
+          ),
+          RouteName.medicalProfessional,
+        );
+      },
+    );
   });
 }
 

@@ -25,14 +25,21 @@ onboarding destination.
 | `PROFESSIONAL_STATUS` | `professionalVerificationDocuments` |
 | `DASHBOARD` | `dashboard` |
 
-Unknown or unavailable readiness falls back by selected role:
+The backend-issued authenticated session role is the fallback authority. The
+resolver also rejects a readiness role that disagrees with that session role,
+and ignores role-specific actions that do not match it. Unknown roles fail
+closed to the dashboard shell, which performs its own role guard.
+
+Unknown or unavailable readiness falls back by authenticated role:
 
 - `PATIENT` -> `patientOnboardingSetup`
 - `PROFESSIONAL` -> `medicalProfessional`
 - unknown role -> `dashboard`
 
-This prevents professional accounts from going directly to dashboard merely
-because readiness could not be fetched.
+This prevents the role-selection screen or a mismatched readiness response
+from routing an authenticated account into another role's setup. In the
+password and Google signup flows, fallback role comes from the session returned
+by the backend, never from the mutable signup widget selection.
 
 ## Not Changed
 
@@ -41,6 +48,10 @@ because readiness could not be fetched.
 - no role switching or dual-mode accounts
 - no verification approval claim
 - no payment, review, call, note, prescription, phone/OTP, or admin behavior
+
+The sign-in email screen now uses the current CareNet green token system,
+persistent field labels, accessible error announcements, and compact scrolling
+layout. Authentication and booking-resume behavior are unchanged.
 
 ## Verification
 

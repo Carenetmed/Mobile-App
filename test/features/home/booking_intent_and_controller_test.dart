@@ -107,7 +107,7 @@ void main() {
       final service = _resumeService(
         store: store,
         sessionStore: _sessionStore(role: 'PATIENT'),
-        onboardingRepository: const _FakeOnboardingRepository(incomplete: true),
+        onboardingRepository: _FakeOnboardingRepository(incomplete: true),
       );
 
       final decision = await service.resolveAfterAuthentication();
@@ -296,6 +296,138 @@ void main() {
       expect(secondKey, isNot(firstKey));
       expect((await store.read())?.startAt, _secondStart);
     });
+
+    test(
+      'concurrent readiness checks share one request and lock selection',
+      () async {
+        final readiness = Completer<AccountReadiness>();
+        final onboarding = _FakeOnboardingRepository(
+          readinessCompleter: readiness,
+        );
+        final controller = _controller(
+          scheduling: _FakeSchedulingRepository(
+            responses: <RequestableTimes>[_times(twoTimes: true)],
+          ),
+          onboardingRepository: onboarding,
+        );
+        addTearDown(controller.dispose);
+        await controller.initialize();
+        await controller.selectTime(controller.requestableTimes!.times.first);
+
+        final first = controller.prepareBooking();
+        final second = controller.prepareBooking();
+        expect(identical(first, second), isTrue);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(onboarding.calls, 1);
+        expect(controller.isPreparingBooking, isTrue);
+        await controller.selectTime(controller.requestableTimes!.times.last);
+        expect(controller.selectedTime!.startAt, _firstStart);
+
+        readiness.complete(_completeReadiness());
+        expect(
+          await Future.wait(<Future<BookingGateOutcome>>[first, second]),
+          <BookingGateOutcome>[
+            BookingGateOutcome.ready,
+            BookingGateOutcome.ready,
+          ],
+        );
+        expect(controller.isPreparingBooking, isFalse);
+        expect(onboarding.calls, 1);
+      },
+    );
+
+    test(
+      'late readiness response after dispose preserves the saved intent',
+      () async {
+        final readiness = Completer<AccountReadiness>();
+        final store = InMemoryBookingIntentStore();
+        final controller = _controller(
+          store: store,
+          scheduling: _FakeSchedulingRepository(
+            responses: <RequestableTimes>[_times()],
+          ),
+          onboardingRepository: _FakeOnboardingRepository(
+            readinessCompleter: readiness,
+          ),
+        );
+        await controller.initialize();
+        await controller.selectTime(controller.requestableTimes!.times.first);
+
+        final gate = controller.prepareBooking();
+        await Future<void>.delayed(Duration.zero);
+        final savedIntent = await store.read();
+        expect(savedIntent, isNotNull);
+
+        controller.dispose();
+        readiness.complete(
+          AccountReadiness(
+            account: const ReadinessAccount(
+              role: 'PROFESSIONAL',
+              status: 'ACTIVE',
+              emailVerified: true,
+            ),
+            patient: null,
+            nextAction: 'PROFESSIONAL_SETUP',
+            requiredActions: const <String>[],
+          ),
+        );
+
+        expect(await gate, BookingGateOutcome.failure);
+        expect(await store.read(), savedIntent);
+        expect(controller.bookingError, isNull);
+      },
+    );
+
+    test(
+      'readiness failure preserves intent and retry reuses its key',
+      () async {
+        final store = InMemoryBookingIntentStore();
+        final onboarding = _FakeOnboardingRepository(
+          failures: <Object?>[StateError('private backend error'), null],
+        );
+        final scheduling = _FakeSchedulingRepository(
+          responses: <RequestableTimes>[_times()],
+        );
+        final controller = _controller(
+          store: store,
+          scheduling: scheduling,
+          onboardingRepository: onboarding,
+        );
+        addTearDown(controller.dispose);
+        await controller.initialize();
+        await controller.selectTime(controller.requestableTimes!.times.first);
+
+        expect(await controller.prepareBooking(), BookingGateOutcome.failure);
+        final savedIntent = await store.read();
+        expect(controller.bookingReadinessFailed, isTrue);
+        expect(
+          controller.bookingError,
+          contains('Could not verify patient readiness'),
+        );
+        expect(
+          controller.bookingError,
+          isNot(contains('private backend error')),
+        );
+        expect(controller.selectedTime!.startAt, _firstStart);
+        expect(savedIntent, isNotNull);
+        expect(
+          controller.bookingIntent!.idempotencyKey,
+          savedIntent!.idempotencyKey,
+        );
+        expect(controller.isPreparingBooking, isFalse);
+
+        expect(await controller.prepareBooking(), BookingGateOutcome.ready);
+        expect(onboarding.calls, 2);
+        expect(controller.bookingReadinessFailed, isFalse);
+        expect(controller.bookingError, isNull);
+        expect(
+          controller.bookingIntent!.idempotencyKey,
+          savedIntent.idempotencyKey,
+        );
+        expect(scheduling.requestCalls, 0);
+      },
+    );
 
     test('network retry reuses the same idempotency key', () async {
       final scheduling = _FakeSchedulingRepository(
@@ -539,12 +671,12 @@ BookingIntent _intent({String? accountUserId, DateTime? createdAt}) {
 BookingResumeService _resumeService({
   required BookingIntentStore store,
   required SessionStore sessionStore,
-  OnboardingRepository onboardingRepository = const _FakeOnboardingRepository(),
+  OnboardingRepository? onboardingRepository,
 }) {
   return BookingResumeService(
     bookingIntentStore: store,
     sessionStore: sessionStore,
-    onboardingRepository: onboardingRepository,
+    onboardingRepository: onboardingRepository ?? _FakeOnboardingRepository(),
   );
 }
 
@@ -552,6 +684,7 @@ ProfessionalBookingController _controller({
   BookingIntentStore? store,
   _FakeSchedulingRepository? scheduling,
   ProfileRepository? profileRepository,
+  OnboardingRepository? onboardingRepository,
   DateTime Function()? clock,
 }) {
   return ProfessionalBookingController(
@@ -560,7 +693,7 @@ ProfessionalBookingController _controller({
     schedulingRepository: scheduling ?? _FakeSchedulingRepository(),
     bookingIntentStore: store ?? InMemoryBookingIntentStore(),
     sessionStore: _sessionStore(role: 'PATIENT'),
-    onboardingRepository: const _FakeOnboardingRepository(),
+    onboardingRepository: onboardingRepository ?? _FakeOnboardingRepository(),
     clock: clock ?? () => DateTime.now().toUtc(),
   );
 }
@@ -669,29 +802,48 @@ class _FakeSchedulingRepository implements SchedulingRepository {
 }
 
 class _FakeOnboardingRepository implements OnboardingRepository {
-  const _FakeOnboardingRepository({this.incomplete = false});
+  _FakeOnboardingRepository({
+    this.incomplete = false,
+    this.failures = const <Object?>[],
+    this.readinessCompleter,
+  });
 
   final bool incomplete;
+  final List<Object?> failures;
+  final Completer<AccountReadiness>? readinessCompleter;
+  int calls = 0;
 
   @override
   Future<AccountReadiness> accountReadiness() async {
-    return AccountReadiness(
-      account: const ReadinessAccount(
-        role: 'PATIENT',
-        status: 'ACTIVE',
-        emailVerified: true,
-      ),
-      patient: PatientReadiness(
-        profileStatus: incomplete ? 'INCOMPLETE' : 'COMPLETE',
-        requiredFields: incomplete ? const <String>['name'] : const <String>[],
-      ),
-      nextAction: incomplete ? 'PATIENT_SETUP' : 'PATIENT_BOOKING_GATE',
-      requiredActions: incomplete ? const <String>['PATIENT_name'] : const [],
-    );
+    final call = calls++;
+    if (call < failures.length && failures[call] != null) {
+      throw failures[call]!;
+    }
+    final pending = readinessCompleter;
+    if (pending != null) {
+      return pending.future;
+    }
+    return _completeReadiness(incomplete: incomplete);
   }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+AccountReadiness _completeReadiness({bool incomplete = false}) {
+  return AccountReadiness(
+    account: const ReadinessAccount(
+      role: 'PATIENT',
+      status: 'ACTIVE',
+      emailVerified: true,
+    ),
+    patient: PatientReadiness(
+      profileStatus: incomplete ? 'INCOMPLETE' : 'COMPLETE',
+      requiredFields: incomplete ? const <String>['name'] : const <String>[],
+    ),
+    nextAction: incomplete ? 'PATIENT_SETUP' : 'PATIENT_BOOKING_GATE',
+    requiredActions: incomplete ? const <String>['PATIENT_name'] : const [],
+  );
 }
 
 SessionStore _sessionStore({

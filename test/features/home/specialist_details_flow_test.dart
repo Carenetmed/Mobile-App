@@ -225,6 +225,58 @@ void main() {
     expect(find.text('appointments-dashboard'), findsOneWidget);
   });
 
+  testWidgets(
+    'readiness failure preserves selection and offers a clear retry',
+    (tester) async {
+      final store = InMemoryBookingIntentStore();
+      final scheduling = _FakeSchedulingRepository();
+      final onboarding = _FakeOnboardingRepository(
+        failures: <Object?>[StateError('private backend error'), null],
+      );
+      await _pumpDetails(
+        tester,
+        schedulingRepository: scheduling,
+        bookingIntentStore: store,
+        onboardingRepository: onboarding,
+      );
+
+      final time = find.textContaining('9:00 AM Africa/Lagos');
+      await tester.ensureVisible(time);
+      await tester.tap(time);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Request selected time'));
+      await tester.tap(find.text('Request selected time'));
+      await tester.pumpAndSettle();
+
+      final intentAfterFailure = await store.read();
+      expect(
+        find.text('Could not verify patient readiness. Please try again.'),
+        findsOneWidget,
+      );
+      expect(find.text('Retry account check'), findsOneWidget);
+      expect(intentAfterFailure, isNotNull);
+      expect(onboarding.calls, 1);
+      expect(scheduling.requestCalls, 0);
+
+      await tester.scrollUntilVisible(
+        find.text('Retry account check'),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Retry account check'));
+      await tester.pumpAndSettle();
+
+      expect(onboarding.calls, 2);
+      expect(find.text('Request this appointment?'), findsOneWidget);
+      expect(
+        (await store.read())?.idempotencyKey,
+        intentAfterFailure!.idempotencyKey,
+      );
+      expect(scheduling.requestCalls, 0);
+    },
+  );
+
   testWidgets('requestable time exposes radio selection semantics', (
     tester,
   ) async {
@@ -535,10 +587,17 @@ class _FakeSchedulingRepository implements SchedulingRepository {
 }
 
 class _FakeOnboardingRepository implements OnboardingRepository {
-  const _FakeOnboardingRepository();
+  _FakeOnboardingRepository({this.failures = const <Object?>[]});
+
+  final List<Object?> failures;
+  int calls = 0;
 
   @override
   Future<AccountReadiness> accountReadiness() async {
+    final call = calls++;
+    if (call < failures.length && failures[call] != null) {
+      throw failures[call]!;
+    }
     return const AccountReadiness(
       account: ReadinessAccount(
         role: 'PATIENT',

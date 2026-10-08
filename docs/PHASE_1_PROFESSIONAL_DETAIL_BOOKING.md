@@ -100,6 +100,13 @@ Client navigation state preserves intent only and never grants authority.
   a patient account is required, and fail closed;
 - account identity changed: clear the prior intent.
 
+The patient-readiness check before confirmation is single-flight. While it is
+running, the selected time and consultation mode cannot change. If the check
+fails, the selected time and persisted idempotency intent are retained, no
+appointment request is sent, and the action becomes an explicit `Retry account
+check`. Retrying repeats the authoritative readiness lookup with the same
+selection and key; it does not submit an appointment until the patient confirms.
+
 Booking-origin signup offers only the Patient role. Normal signup retains both
 Patient and Professional choices.
 

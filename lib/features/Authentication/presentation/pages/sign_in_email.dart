@@ -3,7 +3,6 @@ import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/model/validator.dart';
-import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
 import 'package:app_t/features/Authentication/data/services/google_sign_in_provider.dart';
@@ -177,135 +176,200 @@ class _SignInEmailState extends State<SignInEmail> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FBFA),
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: REdgeInsets.only(left: 15.w, right: 15.w, top: .04.sh),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Align(
-                alignment: Alignment.topCenter,
-                child: Text(
-                  'Welcome back',
-                  style: TextStyle(
-                    fontSize: FontSizes.footer2,
-                    fontFamily: AppFonts.montserrat,
-                    fontWeight: FontWeight.w400,
-                    color: CarenetColors.brand,
-                  ),
-                ),
-              ),
-              SizedBox(height: .05.sh),
-              CarenetTextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                hintText: 'Email',
-                validationState: _validationStateFor(_emailError),
-                errorText: _emailError,
-              ),
-              SizedBox(height: 15.h),
-              CarenetTextField(
-                controller: _passwordController,
-                keyboardType: TextInputType.visiblePassword,
-                hintText: 'Password',
-                obscureText: _visiblePassword,
-                validationState: _validationStateFor(_passwordError),
-                errorText: _passwordError,
-                suffixIcon: IconButton(
-                  tooltip: _visiblePassword ? 'Show password' : 'Hide password',
-                  onPressed: () {
-                    setState(() {
-                      _visiblePassword = !_visiblePassword;
-                    });
-                  },
-                  icon:
-                      _visiblePassword
-                          ? SvgImage(imgName: AssetsIcon.visible)
-                          : const Icon(Icons.visibility_off),
-                ),
-              ),
-              SizedBox(height: 15.h),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, RouteName.enterEmail);
-                  },
-                  style: TextButton.styleFrom(
-                    minimumSize: Size(0, 48.h),
-                    padding: EdgeInsets.zero,
-                    tapTargetSize: MaterialTapTargetSize.padded,
-                  ),
-                  child: Text(
-                    'Forgot Password?',
+          padding: REdgeInsets.fromLTRB(20, 24, 20, 32),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'SIGN IN',
                     style: TextStyle(
-                      fontSize: FontSizes.footer2,
+                      fontSize: 12.sp,
                       fontFamily: AppFonts.montserrat,
-                      fontWeight: FontWeight.w400,
-                      color: CarenetColors.brand,
+                      fontWeight: FontWeight.w800,
+                      color: CarenetColors.primary500,
                     ),
                   ),
-                ),
-              ),
-              SizedBox(height: .03.sh),
-              if (_authError != null) ...[
-                Text(
-                  _authError!,
-                  style: TextStyle(
-                    fontSize: FontSizes.body3,
-                    fontFamily: AppFonts.montserrat,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.red.shade700,
-                  ),
-                ),
-                SizedBox(height: 12.h),
-              ],
-              CarenetButton(
-                label: _isSubmitting ? 'Signing in...' : 'Continue',
-                onPressed: _isSubmitting ? null : _onContinue,
-              ),
-              RPadding(
-                padding: REdgeInsets.only(top: 24.h, bottom: 12.h),
-                child: Center(
-                  child: Text(
-                    'Or continue securely with',
-                    style: TextStyle(
-                      fontSize: FontSizes.footer2,
-                      fontFamily: AppFonts.montserrat,
-                      fontWeight: FontWeight.w400,
-                      color: CarenetColors.brand,
+                  SizedBox(height: 10.h),
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      'Welcome back',
+                      style: TextStyle(
+                        fontSize: 26.sp,
+                        height: 1.2,
+                        fontFamily: AppFonts.montserrat,
+                        fontWeight: FontWeight.w800,
+                        color: CarenetColors.primary700,
+                      ),
                     ),
                   ),
-                ),
-              ),
-              AuthWidget(
-                btnAction:
-                    _isSubmitting || !_googleIdTokenProvider.isConfigured
-                        ? null
-                        : _onGoogleSignIn,
-                assetPath: AssetsIcon.google,
-                title: 'Continue with Google',
-              ),
-              if (!_googleIdTokenProvider.isConfigured)
-                Padding(
-                  padding: REdgeInsets.only(top: 8.h),
-                  child: Text(
-                    'Google sign-in is temporarily unavailable.',
+                  SizedBox(height: 10.h),
+                  Text(
+                    'Sign in to continue to your CareNet account.',
                     style: TextStyle(
-                      fontSize: FontSizes.body3,
+                      fontSize: 15.sp,
+                      height: 1.45,
                       fontFamily: AppFonts.montserrat,
-                      color: CarenetColors.brand,
+                      color: CarenetColors.neutral500,
                     ),
                   ),
-                ),
-              SizedBox(height: 28.h),
-              CarenetButton(
-                label: 'Don\'t have an account? Sign up',
-                onPressed: () {
-                  Navigator.pushNamed(context, RouteName.signUpEmail);
-                },
-                type: CarenetButtonType.outline,
+                  SizedBox(height: 28.h),
+                  CarenetTextField(
+                    label: 'Email address',
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    hintText: 'you@example.com',
+                    validationState: _validationStateFor(_emailError),
+                    errorText: _emailError,
+                  ),
+                  SizedBox(height: 18.h),
+                  CarenetTextField(
+                    label: 'Password',
+                    controller: _passwordController,
+                    keyboardType: TextInputType.visiblePassword,
+                    textInputAction: TextInputAction.done,
+                    hintText: 'Enter your password',
+                    obscureText: _visiblePassword,
+                    validationState: _validationStateFor(_passwordError),
+                    errorText: _passwordError,
+                    onFieldSubmitted: (_) {
+                      if (!_isSubmitting) _onContinue();
+                    },
+                    suffixIcon: IconButton(
+                      tooltip:
+                          _visiblePassword ? 'Show password' : 'Hide password',
+                      onPressed: () {
+                        setState(() {
+                          _visiblePassword = !_visiblePassword;
+                        });
+                      },
+                      icon:
+                          _visiblePassword
+                              ? SvgImage(imgName: AssetsIcon.visible)
+                              : const Icon(Icons.visibility_off),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed:
+                          _isSubmitting
+                              ? null
+                              : () => Navigator.pushNamed(
+                                context,
+                                RouteName.enterEmail,
+                              ),
+                      style: TextButton.styleFrom(
+                        minimumSize: Size(0, 48.h),
+                        padding: REdgeInsets.symmetric(horizontal: 4),
+                        tapTargetSize: MaterialTapTargetSize.padded,
+                      ),
+                      child: Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          fontFamily: AppFonts.montserrat,
+                          fontWeight: FontWeight.w600,
+                          color: CarenetColors.primary500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (_authError != null) ...[
+                    Semantics(
+                      liveRegion: true,
+                      child: Container(
+                        width: double.infinity,
+                        padding: REdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: CarenetColors.error200,
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: CarenetColors.error100,
+                              size: 20.r,
+                            ),
+                            SizedBox(width: 8.w),
+                            Expanded(
+                              child: Text(
+                                _authError!,
+                                style: TextStyle(
+                                  fontSize: 13.sp,
+                                  height: 1.4,
+                                  fontFamily: AppFonts.montserrat,
+                                  color: CarenetColors.error100,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+                  ],
+                  CarenetButton(
+                    label: _isSubmitting ? 'Signing in...' : 'Continue',
+                    onPressed: _isSubmitting ? null : _onContinue,
+                  ),
+                  Padding(
+                    padding: REdgeInsets.only(bottom: 12.h, top: 28.h),
+                    child: Center(
+                      child: Text(
+                        'Or continue securely with',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          height: 1.4,
+                          fontFamily: AppFonts.montserrat,
+                          fontWeight: FontWeight.w500,
+                          color: CarenetColors.neutral500,
+                        ),
+                      ),
+                    ),
+                  ),
+                  AuthWidget(
+                    btnAction:
+                        _isSubmitting || !_googleIdTokenProvider.isConfigured
+                            ? null
+                            : _onGoogleSignIn,
+                    assetPath: AssetsIcon.google,
+                    title: 'Continue with Google',
+                  ),
+                  if (!_googleIdTokenProvider.isConfigured)
+                    Padding(
+                      padding: REdgeInsets.only(top: 8.h),
+                      child: Text(
+                        'Google sign-in is temporarily unavailable.',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          height: 1.4,
+                          fontFamily: AppFonts.montserrat,
+                          color: CarenetColors.neutral500,
+                        ),
+                      ),
+                    ),
+                  SizedBox(height: 28.h),
+                  CarenetButton(
+                    label: 'Don\'t have an account? Sign up',
+                    onPressed: () {
+                      Navigator.pushNamed(context, RouteName.signUpEmail);
+                    },
+                    type: CarenetButtonType.outline,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

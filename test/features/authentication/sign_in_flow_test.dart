@@ -29,25 +29,31 @@ Future<void> _pumpWithRoutes(
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
-      builder: (context, _) => MaterialApp(
-        home: MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: textScaler),
-          child: home,
-        ),
-        routes: {
-          RouteName.dashboard: (_) => const Scaffold(body: Text('dashboard')),
-          RouteName.enterEmail: (_) =>
-              const Scaffold(body: Text('Enter email')),
-          RouteName.signInPhone: (_) =>
-              SignInPhone(googleIdTokenProvider: _disabledGoogleProvider),
-          RouteName.signInEmail: (_) =>
-              SignInEmail(googleIdTokenProvider: _disabledGoogleProvider),
-          RouteName.signUpPhone: (_) =>
-              const Scaffold(body: Text('sign-up-phone')),
-          RouteName.signUpEmail: (_) =>
-              const Scaffold(body: Text('sign-up-email')),
-        },
-      ),
+      builder:
+          (context, _) => MaterialApp(
+            home: MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+              child: home,
+            ),
+            routes: {
+              RouteName.dashboard:
+                  (_) => const Scaffold(body: Text('dashboard')),
+              RouteName.enterEmail:
+                  (_) => const Scaffold(body: Text('Enter email')),
+              RouteName.signInPhone:
+                  (_) => SignInPhone(
+                    googleIdTokenProvider: _disabledGoogleProvider,
+                  ),
+              RouteName.signInEmail:
+                  (_) => SignInEmail(
+                    googleIdTokenProvider: _disabledGoogleProvider,
+                  ),
+              RouteName.signUpPhone:
+                  (_) => const Scaffold(body: Text('sign-up-phone')),
+              RouteName.signUpEmail:
+                  (_) => const Scaffold(body: Text('sign-up-email')),
+            },
+          ),
     ),
   );
   await tester.pump();
@@ -69,10 +75,11 @@ Future<void> _pumpProductionRoute(
   await tester.pumpWidget(
     ScreenUtilInit(
       designSize: _phoneSize,
-      builder: (context, _) => MaterialApp(
-        initialRoute: initialRoute,
-        onGenerateRoute: generateRoute,
-      ),
+      builder:
+          (context, _) => MaterialApp(
+            initialRoute: initialRoute,
+            onGenerateRoute: generateRoute,
+          ),
     ),
   );
   await tester.pump();
@@ -122,7 +129,14 @@ void main() {
         textScaler: const TextScaler.linear(2),
       );
 
+      expect(find.text('SIGN IN'), findsOneWidget);
       expect(find.text('Welcome back'), findsOneWidget);
+      expect(find.text('Email address'), findsOneWidget);
+      expect(find.text('Password'), findsOneWidget);
+      expect(
+        find.text('Sign in to continue to your CareNet account.'),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
     });
 

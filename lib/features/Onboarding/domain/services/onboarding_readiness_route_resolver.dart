@@ -8,21 +8,36 @@ class OnboardingReadinessRouteResolver {
     required AccountReadiness? readiness,
     required String fallbackRole,
   }) {
+    final role = fallbackRole.trim().toUpperCase();
+    final readinessRole = readiness?.account.role.trim().toUpperCase();
+    if (readinessRole != null &&
+        readinessRole.isNotEmpty &&
+        readinessRole != role) {
+      return fallbackForRole(role);
+    }
+
     final action = readiness?.nextAction.trim().toUpperCase();
     switch (action) {
       case 'PATIENT_SETUP':
-        return RouteName.patientOnboardingSetup;
+        return role == 'PATIENT'
+            ? RouteName.patientOnboardingSetup
+            : fallbackForRole(role);
       case 'PATIENT_BOOKING_GATE':
+        return role == 'PATIENT' ? RouteName.dashboard : fallbackForRole(role);
       case 'DASHBOARD':
         return RouteName.dashboard;
       case 'PROFESSIONAL_RESUME_APPLICATION':
-        return RouteName.medicalProfessional;
+        return role == 'PROFESSIONAL'
+            ? RouteName.medicalProfessional
+            : fallbackForRole(role);
       case 'PROFESSIONAL_UPLOAD_EVIDENCE':
       case 'PROFESSIONAL_REVIEW':
       case 'PROFESSIONAL_STATUS':
-        return RouteName.professionalVerificationDocuments;
+        return role == 'PROFESSIONAL'
+            ? RouteName.professionalVerificationDocuments
+            : fallbackForRole(role);
       default:
-        return fallbackForRole(fallbackRole);
+        return fallbackForRole(role);
     }
   }
 

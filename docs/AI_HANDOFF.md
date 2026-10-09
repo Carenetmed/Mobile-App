@@ -24,19 +24,19 @@ activity and require one explicit user confirmation before any Paystack-side
 or payment deployment mutation. Physical-device acceptance remains after the
 automated and cloud gates.
 
-`APP-P1-021F` merged through PR #205. The current integration base is
-`08478b69f95ed2745263a91266b4381953ae6b94` after APP-READY-049 merged in PR
-#213. APP-READY-042 through APP-READY-049 are integrated; PRs #206-#213 carry
-the runtime and documentation work, and the exact-head CI for PR #213 passed
-analysis, the 717-test suite, and Android build/lint gates. Do not treat the
-old APP-READY-042 worktree or the 2026-10-05 base below as current.
+`APP-P1-021F` merged through PR #205. APP-READY-050 merged through PR #214;
+the current integration base is `b2d08c9e6fdcdcfd377c69c939691bc8b1ea9b2f`.
+APP-READY-042 through APP-READY-050 are integrated. PR #214's exact-head CI
+and post-merge integration CI passed; the exact-head run passed analysis,
+717 Flutter tests, and Android build/lint gates. Do not treat the old
+APP-READY-042 worktree or the 2026-10-05 base below as current.
 
 The separate Web verification console merged as Web-Developers PR #1 at
 `33ab4b070e03ad4e812204d299cb472aafbb2298`. Its main-branch CI passed. It is
 source-only: no hosting, deployment, or administrator provisioning occurred.
-The next mobile task is `APP-READY-051`, a read-only reconciliation of the
-remaining approved readiness gates and the safest next implementation slice.
-It must not activate providers, deploy, or alter cloud resources.
+APP-READY-051 is complete. The next mobile task is `APP-READY-052`, a bounded
+professional Home/dashboard large-text and accessibility regression audit and
+repair. It must not activate providers, deploy, or alter cloud resources.
 
 Latest read-only staging observations (2026-10-09): Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
@@ -334,7 +334,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-048 | Align auth role routing and sign-in UX | M | **DONE** - PR #212 merged |
 | APP-READY-049 | Add onboarding setup retry recovery | S | **DONE** - PR #213 merged at `08478b6` |
 | APP-READY-050 | Reconcile the mobile readiness handoff against merged PRs #206-#213 and record the approved next gate without changing runtime or cloud state | S | **DONE** |
-| APP-READY-051 | Audit remaining approved readiness gates across mobile, backend, web, and staging; identify the next implementation slice and explicit cloud/payment/device gates without mutating providers or resources | M | **NEXT** |
+| APP-READY-051 | Audit remaining approved readiness gates across mobile, backend, web, and staging; identify the next implementation slice and explicit cloud/payment/device gates without mutating providers or resources | M | **DONE** - PR #214 merged |
+| APP-READY-052 | Audit and narrowly repair professional Home/dashboard semantics and layout at compact width with enlarged text; record unverified physical accessibility separately | S | **NEXT** |
 
 ### APP-READY-050 verification
 
@@ -350,6 +351,34 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
   was performed.
 - Run `git diff --check` for this documentation-only change. No application
   tests are required because runtime code is unchanged.
+
+### APP-READY-051 audit evidence
+
+- Mobile integration is `b2d08c9e6fdcdcfd377c69c939691bc8b1ea9b2f` after
+  APP-READY-050 PR #214; exact-head and post-merge CI passed.
+- Backend main is `8e5175e9ea569630eb91728e449877fafac9a530`. BE-P1-037 PR #136
+  and its CI/image scan passed, but the scanned digest was not deployed; Cloud
+  Run remains on `carenet-backend-staging-be-p1-031-livekit`.
+- Scan exception: one documented upstream high finding, `CVE-2026-85091`, has
+  no available fix; no unrated unfixed findings were reported.
+- Web main is `33ab4b070e03ad4e812204d299cb472aafbb2298`; CI passed, but the admin
+  console remains source-only, GitHub reports zero deployments, and no admin
+  identity is provisioned.
+- Cloud SQL `carenet-staging-postgres` is STOPPED with activation policy NEVER;
+  the notification scheduler is PAUSED. Cloud Run has no minimum instances
+  and maxScale 3, but request-based traffic can still incur charges. No cloud
+  resources were changed; keep SQL and Scheduler off unless the user approves
+  a bounded operation.
+- Staging verification upload-init returns HTTP 500. A meaningful database
+  diagnosis requires an explicitly approved, time-bounded SQL activation.
+  Payments remain gated on one explicit user confirmation. Physical-device
+  acceptance and iOS/Apple hardware/provider proof remain open.
+- Requested doctor posts and short-form video are outside the current
+  consultation-marketplace boundary and need a separately approved safety,
+  moderation, storage/delivery, and operating-cost scope.
+- C: has no free space; Flutter package resolution stalled and was canceled.
+  `pubspec.lock` is unchanged. No application tests were run for this
+  read-only audit; do not claim a new local verification result.
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 

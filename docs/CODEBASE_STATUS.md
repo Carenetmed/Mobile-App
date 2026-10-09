@@ -1,18 +1,19 @@
 # Codebase status
 
-## Production Readiness Checkpoint (APP-READY-054)
+## Production Readiness Checkpoint (APP-READY-056)
 
-Current mobile integration is `b677b50a5b1eff25a06aa2188be4ca3cd1313dce`.
+Current mobile integration is `20bc085615bfbe31882100984823797a3c9e47b2`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
 PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
 debug APK, Android release lint, and release signing/environment regressions.
 APP-READY-048 aligned sign-in UX and backend-session role routing; APP-READY-049
 preserves onboarding edits across readiness-load failure and retry. APP-READY-
 050 reconciled the preceding handoff. APP-READY-054 is documentation-only: it
-reconciles this mobile handoff with the merged Web admin route-test work and
-records the still-off cloud posture. APP-READY-055 applies local auth form,
+reconciles this mobile handoff with the Web admin source and records the
+still-off cloud posture. APP-READY-055 merged in PR #219 and adds auth form,
 accessibility, and responsive-width polish without changing auth authority or
-providers; its PR is pending. No cloud changes are included.
+providers. APP-READY-056 audited the Web verification journey and fixed the
+same-origin read request guard in Web PR #5. No cloud changes are included.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus
@@ -26,18 +27,19 @@ with no fix available, and zero unrated unfixed findings. Deployment,
 migration/rollback proof, and resolution tracking remain open.
 
 The Web admin verification console is integrated separately in Web-Developers
-PRs #1-#4; current Web main is `d1a6811dde731e8a119f6e31ff1f9ee8853a9140`.
-PR #4 added HTTP integration coverage for login, role eligibility, refresh
-rotation, and logout revocation; its exact-head CI passed all 16 tests, lint,
-and production build. The console remains source-only: no hosting/deployment
-has been configured and no administrator was provisioned. Backend admin CLI
+PRs #1-#5; current Web main is
+`39cc5b4dfee31f243c5584cd05afb1e2373e31d0`. PR #5 corrected browser-safe
+same-origin reads and its exact-head CI passed 18 tests, lint, and production
+build. The console remains source-only: no hosting/deployment has been
+configured and no administrator was provisioned. Backend admin CLI
 provisioning remains operator-controlled and requires an approved identity and
 time-bounded execution; there is no first-admin endpoint.
 
 Read-only staging observations on 2026-10-09: Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
 notification scheduler is PAUSED; Cloud Run `carenet-backend-staging` has no
-minimum scale and maxScale 3. Cloud Run can still incur request-based charges.
+minimum scale (service maxScale 2, revision maxScale 3). Cloud Run can still
+incur request-based charges.
 No cloud resource was changed. Keep SQL and Scheduler off when not explicitly
 needed. Verification upload-init continues to return staging HTTP 500; a
 meaningful database diagnosis requires a user-approved, time-bounded SQL

@@ -195,7 +195,9 @@ void main() {
       find.text('Verified professional').evaluate().isNotEmpty ||
           find.textContaining('Verification').evaluate().isNotEmpty,
       isTrue,
-      reason: 'The professional verification status must be visible.',
+      reason:
+          'The professional verification status must be visible. Rendered '
+          'text: ${tester.widgetList<Text>(find.byType(Text)).map((text) => text.data).toList()}',
     );
     await tester.drag(find.byType(ListView).first, const Offset(0, 240));
     await tester.pumpAndSettle();

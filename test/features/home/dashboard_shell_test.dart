@@ -59,6 +59,7 @@ Future<void> _pumpDashboard(
       designSize: _phoneSize,
       builder:
           (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             builder:
                 (context, child) => MediaQuery(
                   data: MediaQuery.of(context).copyWith(textScaler: textScaler),
@@ -457,6 +458,50 @@ void main() {
 
     expect(find.text('Your account role is unavailable.'), findsOneWidget);
     expect(find.byType(BottomNavigationBar), findsNothing);
+  });
+
+  testWidgets('unsupported role can safely return to sign in', (tester) async {
+    final sessionStore = InMemorySessionStore();
+    await sessionStore.save(
+      AuthSessionModel(
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+        tokenType: 'Bearer',
+        expiresIn: 900,
+        user: AuthUser(
+          id: 'user-admin',
+          email: 'admin@carenet.app',
+          role: 'ADMIN',
+          status: 'ACTIVE',
+          emailVerified: true,
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
+        home: Dashboard(sessionStore: sessionStore),
+        routes: <String, WidgetBuilder>{
+          RouteName.signInPhone:
+              (_) => const Scaffold(body: Text('sign-in-entry')),
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('This account cannot open a CareNet workspace.'),
+      findsNothing,
+    );
+    expect(
+      find.textContaining('This account cannot open a CareNet workspace.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Return to sign in'));
+    await tester.pumpAndSettle();
+
+    expect(await sessionStore.read(), isNull);
+    expect(find.text('sign-in-entry'), findsOneWidget);
   });
 }
 

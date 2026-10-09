@@ -33,7 +33,10 @@ release configuration/signing regressions. APP-READY-055 merged through PR
 #219 at `20bc085615bfbe31882100984823797a3c9e47b2`; APP-READY-056 synchronized
 the Web admin review status; APP-READY-057 added browser-level admin review
 coverage through Web PR #6 at `2ec9dd79b5c321d29225eab341a7285ef19b492d`.
-Keep nonessential cloud services stopped/paused.
+Mobile PR #221 merged at `139b5153cc677a5ac77e0f6e7e857e0028a82492` with
+four documentation-only updates and exact-head CI green. Keep Cloud SQL
+stopped, Scheduler paused, and nonessential services off; staging Cloud Run
+remains available to the app with minimum instances disabled.
 
 The separate Web verification console and tests are in Web-Developers main
 `2ec9dd79b5c321d29225eab341a7285ef19b492d` after PR #6. PR #6 adds a Chromium
@@ -347,7 +350,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-055 | Audit and close the remaining sign-in/sign-up visual and compact/enlarged-text UX mismatch without changing auth authority or enabling providers | M | **DONE** - PR #219 merged at `20bc085`; exact-head CI passed with 726 Flutter tests |
 | APP-READY-056 | Audit the Web professional-verification review journey against its backend contract; define the smallest source/CI-only readiness step and list cloud/admin operations that remain approval-gated | S | **DONE** - Web PR #5 merged at `39cc5b4`; same-origin read guard fixed, 18 tests/lint/build pass; no hosting or admin provisioning |
 | APP-READY-057 | Add browser-level tests for the admin verification journey using a mock backend: sign-in/session restore, queue pagination, document preview, decision confirmation, and recovery states; keep it source/CI-only | M | **DONE** - Web PR #6 merged at `2ec9dd7`; exact-head CI passed |
-| APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **NEXT** |
+| APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **IN PROGRESS** - unsupported-role sign-in recovery and internal Account/Appointment wording addressed; populated Messages/Chat/Notifications accessibility regressions added; local Flutter runner stalled after a low-disk compiler failure, final verification pending |
 
 ### APP-READY-055 implementation evidence
 

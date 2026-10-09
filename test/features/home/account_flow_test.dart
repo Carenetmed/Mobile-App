@@ -62,6 +62,7 @@ Future<void> _pumpDashboard(WidgetTester tester) async {
     ScreenUtilInit(
       designSize: _phoneSize,
       builder: (_, __) => MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
         home: Dashboard(
           sessionStore: sessionStore,
           profileRepository: _FakeProfileRepository(
@@ -102,6 +103,7 @@ Future<void> _pumpAccount(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder: (_, __) => MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaler: textScaler),
           child: child!,
@@ -144,6 +146,7 @@ Future<void> _pumpEditEmail(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder: (_, __) => MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
         home: EditEmailShellPage(accountRepository: repository),
         routes: <String, WidgetBuilder>{
           RouteName.changeEmail: (_) =>
@@ -170,6 +173,7 @@ Future<void> _pumpSettingsProfile(
     ScreenUtilInit(
       designSize: _phoneSize,
       builder: (_, __) => MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
         home: SettingsProfilePage(profileRepository: profileRepository),
       ),
     ),
@@ -920,7 +924,7 @@ void main() {
     expect(repository.patientMeCalls, 1);
     expect(find.text('Ada Lovelace'), findsWidgets);
     expect(
-      find.text('Backend name: Ada Lovelace\nAge: 37\nLocation: Lagos'),
+      find.text('Name: Ada Lovelace\nAge: 37\nLocation: Lagos'),
       findsOneWidget,
     );
     expect(find.widgetWithText(TextFormField, 'Ada'), findsOneWidget);
@@ -936,7 +940,7 @@ void main() {
     expect(repository.patientMeCalls, 1);
     expect(
       find.text(
-        'No backend patient profile yet. Local settings remain editable.',
+        'Patient profile details are not available yet. You can still manage the account options shown here.',
       ),
       findsOneWidget,
     );
@@ -1180,7 +1184,8 @@ void main() {
     await tester.pumpWidget(
       ScreenUtilInit(
         designSize: _phoneSize,
-        builder: (context, _) => MaterialApp(
+          builder: (context, _) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context).copyWith(
               textScaler: const TextScaler.linear(2),
@@ -1242,6 +1247,7 @@ void main() {
       ScreenUtilInit(
         designSize: _phoneSize,
         builder: (_, __) => MaterialApp(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           home: EmailVerificationConfirmPage(
             token: null,
             accountRepository: repository,
@@ -1281,6 +1287,7 @@ void main() {
       ScreenUtilInit(
         designSize: _phoneSize,
         builder: (_, __) => MaterialApp(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           home: EmailVerificationConfirmPage(
             token: 'opaque-verification-token',
             accountRepository: repository,

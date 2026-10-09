@@ -65,6 +65,48 @@ void main() {
     expect(repository.markReadCalls, 1);
   });
 
+  testWidgets('long chat title stays readable at compact width and 2x text', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const participant =
+        'Dr. A very long professional name that needs to remain readable';
+    final repository = FakeMessagingRepository(
+      conversations: <dynamic>[conversationSummary()].cast(),
+      detail: conversationDetail(professionalName: participant),
+      messages: <dynamic>[careMessage()].cast(),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
+        builder:
+            (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2)),
+              child: child!,
+            ),
+        home: ChatPage(
+          arguments: const AppointmentConversationRouteArgs(
+            conversationId: 'conversation-1',
+          ),
+          repository: repository,
+          realtime: FakeRealtimeConnection(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(participant), findsOneWidget);
+    expect(find.byKey(const Key('chat-open-appointment')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    semantics.dispose();
+  });
+
   testWidgets('failed message retry exposes a 48dp action target', (
     tester,
   ) async {

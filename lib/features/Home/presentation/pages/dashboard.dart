@@ -70,7 +70,7 @@ class _DashboardState extends State<Dashboard> {
 
         final role = _resolvedRole(snapshot.data);
         if (role == null) {
-          return const _UnavailableRolePage();
+          return _UnavailableRolePage(onReturnToSignIn: _returnToSignIn);
         }
 
         final destinations = _destinations(role);
@@ -236,6 +236,14 @@ class _DashboardState extends State<Dashboard> {
     };
   }
 
+  Future<void> _returnToSignIn() async {
+    await _sessionStore.clear();
+    if (!mounted) return;
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(RouteName.signInPhone, (_) => false);
+  }
+
   List<_DashboardDestination> _destinations(_DashboardRole role) {
     final professional = role == _DashboardRole.professional;
     return <_DashboardDestination>[
@@ -343,7 +351,9 @@ class _DashboardDestination {
 }
 
 class _UnavailableRolePage extends StatelessWidget {
-  const _UnavailableRolePage();
+  const _UnavailableRolePage({required this.onReturnToSignIn});
+
+  final VoidCallback onReturnToSignIn;
 
   @override
   Widget build(BuildContext context) {
@@ -364,8 +374,14 @@ class _UnavailableRolePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Please sign in again so CareNet can load the correct workspace.',
+                  'This account cannot open a CareNet workspace. Return to sign in and choose a supported account.',
                   textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                OutlinedButton.icon(
+                  onPressed: onReturnToSignIn,
+                  icon: const Icon(Icons.login),
+                  label: const Text('Return to sign in'),
                 ),
               ],
             ),

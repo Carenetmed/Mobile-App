@@ -1,8 +1,8 @@
 # Codebase status
 
-## Production Readiness Checkpoint (APP-READY-057)
+## Production Readiness Checkpoint (APP-READY-058)
 
-Current mobile integration is `13d5926a7d02a9da4dfc3a717d8933dafed26674`.
+Current mobile integration is `139b5153cc677a5ac77e0f6e7e857e0028a82492`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
 PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
 debug APK, Android release lint, and release signing/environment regressions.
@@ -16,7 +16,8 @@ providers. APP-READY-056 audited the Web verification journey and fixed the
 same-origin read request guard in Web PR #5. APP-READY-057 added a Chromium
 browser journey and corrected the Web queue DTO validator mismatch in PR #6;
 exact-head CI passed 19 Node tests, one browser journey, lint, and production
-build. No cloud changes are included.
+build. Mobile PR #221 merged at the current integration SHA with four
+documentation-only files and green exact-head CI. No cloud changes are included.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus
@@ -48,9 +49,14 @@ needed. Verification upload-init continues to return staging HTTP 500; a
 meaningful database diagnosis requires a user-approved, time-bounded SQL
 activation window. Local C: space remains constrained; do not delete protected
 worktrees to reclaim it. APP-READY-057 used a CI-hosted Chromium install only;
-it did not start cloud resources. APP-READY-058 is the next no-cloud task: audit
-remaining active mobile routes for UX/accessibility gaps and close only
-evidenced issues.
+it did not start cloud resources. APP-READY-058 is the active no-cloud mobile
+route audit. Initial evidence identified missing recovery from an unsupported
+authenticated role and implementation-facing copy in Account/Appointment
+Detail; compact, 2x-text regression coverage for Messages, Chat, and
+Notifications is in place, and the 94-test targeted group passes. Manual
+TalkBack, keyboard-focus order, and full-device route acceptance remain
+unproven. A local full-suite compilation stalled after the host ran low on C:
+space; use exact-head GitHub Actions evidence for full-suite and APK gates.
 
 Remaining gates identified by APP-READY-051: staging upload diagnosis and
 deployment of the scanned backend digest with migration/rollback proof;

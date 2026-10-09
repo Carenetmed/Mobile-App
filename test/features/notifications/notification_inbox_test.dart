@@ -111,6 +111,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           home: NotificationsPage(
             repository: repository,
             coordinator: coordinator,
@@ -141,6 +142,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
         home: NotificationsPage(
           repository: repository,
           coordinator: coordinator,
@@ -156,10 +158,61 @@ void main() {
     );
     expect(unreadLabel, findsOneWidget);
     expect(tester.getSemantics(unreadLabel).label, contains('Unread'));
+    await tester.ensureVisible(find.text('Appointment accepted'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Appointment accepted'));
     await tester.pumpAndSettle();
     expect(repository.markedRead, ['notification-1']);
     expect(unreadLabel, findsNothing);
+    semantics.dispose();
+  });
+
+  testWidgets('long inbox copy remains readable and tappable at 2x text', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const title = 'Your appointment request has an important status update';
+    const body =
+        'Open the appointment details to review the latest response from the professional and the next available action.';
+    final repository = FakeNotificationRepository(
+      items: [notificationTestItem(title: title, body: body)],
+    )..unread = 1;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: const TextScaler.linear(2),
+          ),
+          child: child!,
+        ),
+        home: NotificationsPage(
+          repository: repository,
+          coordinator: _coordinator(repository),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text(title),
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text(title), findsOneWidget);
+    expect(find.text(body), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.ensureVisible(find.text(title));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(title));
+    await tester.pumpAndSettle();
+    expect(repository.markedRead, ['notification-1']);
+    expect(tester.takeException(), isNull);
     semantics.dispose();
   });
 
@@ -176,6 +229,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
         home: NotificationsPage(
           repository: repository,
           coordinator: coordinator,
@@ -219,12 +273,13 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: const TextScaler.linear(2),
-          ),
-          child: child!,
-        ),
+        builder:
+            (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2)),
+              child: child!,
+            ),
         home: NotificationPreferencesPage(
           repository: FakeNotificationRepository(),
         ),

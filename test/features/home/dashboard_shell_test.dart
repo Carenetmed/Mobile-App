@@ -15,7 +15,6 @@ import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
-import 'package:app_t/features/Home/presentation/pages/home.dart';
 import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart';
 import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';

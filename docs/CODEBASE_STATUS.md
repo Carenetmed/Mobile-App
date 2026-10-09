@@ -1,16 +1,26 @@
 # Codebase status
 
-## Authentication Entry And Role Routing (APP-READY-048, in progress)
+## Production Readiness Checkpoint (APP-READY-049)
 
-The legacy email sign-in screen has been aligned with the current CareNet
-green design tokens and compact-screen accessibility. Signup route fallback
-now uses the role in the backend-issued authenticated session; readiness
-actions are ignored when their role conflicts with that session. This does not
-change backend auth, account roles, or normal signup choices. Targeted resolver
-tests and Flutter analysis pass; full auth-flow tests and PR CI remain pending.
-The last successful read-only cloud check showed Cloud SQL stopped and the
-notification scheduler paused. This work made no cloud changes; the latest
-status could not be rechecked because the local C: volume is full.
+Current mobile integration is `08478b69f95ed2745263a91266b4381953ae6b94`,
+after APP-READY-049 merged in PR #213. APP-READY-048 aligned sign-in UX and
+backend-session role routing; APP-READY-049 preserves onboarding edits across
+readiness-load failure and retry. Both PRs are merged, and PR #213's exact-head
+GitHub CI passed the 717-test suite, analysis, and Android build/lint gates.
+These changes do not alter backend authentication or grant client-side role
+authority.
+
+The Web admin verification console is integrated separately in Web-Developers
+PR #1 at `33ab4b070e03ad4e812204d299cb472aafbb2298`. Its CI passed, but it has
+not been hosted or deployed and no administrator was provisioned.
+
+Read-only staging observations on 2026-10-09: Cloud SQL
+`carenet-staging-postgres` is STOPPED with activation policy NEVER; the
+notification scheduler is PAUSED; Cloud Run `carenet-backend-staging` has no
+minimum scale and maxScale 3. Cloud Run can still incur request-based charges.
+No cloud resource was changed. The local C: volume has no free space, so local
+Flutter verification and agent startup were unavailable in the latest session;
+use exact-head CI evidence until local tooling is reliable again.
 
 ## Session and notification startup hardening (APP-READY-045)
 
@@ -92,7 +102,7 @@ backups, and Firebase upload-certificate registration are verified. Signed
 distribution artifacts, Play certificate registration, release configuration,
 physical acceptance, and production promotion remain explicit open gates.
 
-**Last updated:** 2026-10-05 APP-READY-042 RTC adapter safety verification.
+**Last updated:** 2026-10-09 APP-READY-049 integration and staging posture checkpoint.
 
 ## Android Release Lint Gate
 

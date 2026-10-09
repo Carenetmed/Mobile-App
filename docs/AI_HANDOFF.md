@@ -25,14 +25,31 @@ or payment deployment mutation. Physical-device acceptance remains after the
 automated and cloud gates.
 
 `APP-P1-021F` merged through PR #205. The current integration base is
-`ebe50184dcd3063ec9c138e2b6b127cc08bab8a0`; its CI passed 623 tests, analysis,
-debug APK, Android release lint, and release signing/configuration regressions.
-Current readiness slice: `APP-READY-042`, LiveKit adapter resource safety,
-being verified from an isolated worktree at that base. It currently has 51
-focused tests, 674 full-suite tests, and clean analysis; debug APK, CI,
-signed-native, and physical-device proof remain open. The earlier dirty
-in-progress worktree is preserved and is not the integration source. See
-`RTC_ADAPTER_RESOURCE_SAFETY.md` for exact guarantees and limitations.
+`08478b69f95ed2745263a91266b4381953ae6b94` after APP-READY-049 merged in PR
+#213. APP-READY-042 through APP-READY-049 are integrated; PRs #206-#213 carry
+the runtime and documentation work, and the exact-head CI for PR #213 passed
+analysis, the 717-test suite, and Android build/lint gates. Do not treat the
+old APP-READY-042 worktree or the 2026-10-05 base below as current.
+
+The separate Web verification console merged as Web-Developers PR #1 at
+`33ab4b070e03ad4e812204d299cb472aafbb2298`. Its main-branch CI passed. It is
+source-only: no hosting, deployment, or administrator provisioning occurred.
+The next mobile task is `APP-READY-051`, a read-only reconciliation of the
+remaining approved readiness gates and the safest next implementation slice.
+It must not activate providers, deploy, or alter cloud resources.
+
+Latest read-only staging observations (2026-10-09): Cloud SQL
+`carenet-staging-postgres` is STOPPED with activation policy NEVER; the
+notification scheduler is PAUSED; Cloud Run `carenet-backend-staging` has no
+minimum scale and maxScale 3, so request-based use can still incur charges.
+No cloud mutations were made. Keep the SQL instance and scheduler off unless
+an explicitly approved smoke operation needs them; do not disable the backend
+service that the staging app uses.
+
+Local C: currently has no free space. Flutter package resolution and agent
+startup were therefore not reliable in the previous session. Work can use the
+clean F: clone, but do not delete or clean protected worktrees to reclaim
+space. GitHub CI is the current verification evidence until local setup works.
 
 Manual acceptance remains for the final device session: join a consultation
 with camera or microphone disabled by the backend grant, confirm its control
@@ -308,7 +325,31 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-P1-021D | Add accessible Back semantics to professional name, details, and description editors with compact enlarged-text regression coverage | S | **DONE** - PR #203 merged at `5be33cb` |
 | APP-P1-021E | Keep the professional Schedule editor operable at compact width and enlarged text, with semantic control regression coverage | S | **DONE** - PR #204 merged at `0105478` |
 | APP-P1-021F | Announce changing Account status/error feedback and verify accessible Account actions without altering account authority | S | **DONE** - PR #205 merged |
-| APP-READY-042 | Harden LiveKit adapter room/track ownership, join-grant limits, and cleanup race behavior | M | **NEXT** |
+| APP-READY-042 | Harden LiveKit adapter room/track ownership, join-grant limits, and cleanup race behavior | M | **DONE** - PR #206 merged |
+| APP-READY-043 | Validate runtime environment isolation | M | **DONE** - PR #207 merged |
+| APP-READY-044 | Align authentication and recovery UX | M | **DONE** - PR #208 merged |
+| APP-READY-045 | Harden session/account isolation and prevent notification startup work from blocking authenticated flows | M | **DONE** - included in the current session/notification integration; mobile PR #209 merged |
+| APP-READY-046 | Close notification binding handoff | S | **DONE** - PR #210 merged |
+| APP-READY-047 | Make booking readiness retry safe | S | **DONE** - PR #211 merged |
+| APP-READY-048 | Align auth role routing and sign-in UX | M | **DONE** - PR #212 merged |
+| APP-READY-049 | Add onboarding setup retry recovery | S | **DONE** - PR #213 merged at `08478b6` |
+| APP-READY-050 | Reconcile the mobile readiness handoff against merged PRs #206-#213 and record the approved next gate without changing runtime or cloud state | S | **DONE** |
+| APP-READY-051 | Audit remaining approved readiness gates across mobile, backend, web, and staging; identify the next implementation slice and explicit cloud/payment/device gates without mutating providers or resources | M | **NEXT** |
+
+### APP-READY-050 verification
+
+- `git rev-parse HEAD` and `origin/feature/frontend-milestone` both resolve to
+  `08478b69f95ed2745263a91266b4381953ae6b94`.
+- GitHub confirms mobile PR #213 merged and its exact-head workflow passed;
+  PRs #206-#212 are also merged.
+- Web-Developers PR #1 merged at
+  `33ab4b070e03ad4e812204d299cb472aafbb2298`; main CI passed and there are no
+  GitHub deployment records.
+- Read-only GCP inspection found Cloud SQL stopped/NEVER, Scheduler paused,
+  and Cloud Run maxScale 3 with no configured minimum. No resource mutation
+  was performed.
+- Run `git diff --check` for this documentation-only change. No application
+  tests are required because runtime code is unchanged.
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 

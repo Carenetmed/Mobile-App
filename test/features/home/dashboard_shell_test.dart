@@ -172,7 +172,6 @@ void main() {
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
 
     await _pumpDashboard(
       tester,
@@ -225,6 +224,7 @@ void main() {
           .hasAction(SemanticsAction.tap),
       isTrue,
     );
+    semantics.dispose();
     expect(tester.takeException(), isNull);
 
     await tester.tap(find.text('Manage schedule'));

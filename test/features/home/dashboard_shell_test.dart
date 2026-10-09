@@ -189,15 +189,17 @@ void main() {
       'Messages',
     ]);
     expect(find.text('Dr Ada Okafor'), findsOneWidget);
-    await tester.drag(find.byType(ListView).first, const Offset(0, -120));
+    await tester.scrollUntilVisible(
+      find.textContaining('Verification'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     expect(
       find.text('Verified professional').evaluate().isNotEmpty ||
           find.textContaining('Verification').evaluate().isNotEmpty,
       isTrue,
-      reason:
-          'The professional verification status must be visible. Rendered '
-          'text: ${tester.widgetList<Text>(find.byType(Text)).map((text) => text.data).toList()}',
+      reason: 'The professional verification status must be visible.',
     );
     await tester.drag(find.byType(ListView).first, const Offset(0, 240));
     await tester.pumpAndSettle();

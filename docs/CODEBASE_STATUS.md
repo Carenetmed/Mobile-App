@@ -1,26 +1,53 @@
 # Codebase status
 
-## Production Readiness Checkpoint (APP-READY-049)
+## Production Readiness Checkpoint (APP-READY-051)
 
-Current mobile integration is `08478b69f95ed2745263a91266b4381953ae6b94`,
-after APP-READY-049 merged in PR #213. APP-READY-048 aligned sign-in UX and
+Current mobile integration is `b2d08c9e6fdcdcfd377c69c939691bc8b1ea9b2f`,
+after APP-READY-050 merged in PR #214. APP-READY-048 aligned sign-in UX and
 backend-session role routing; APP-READY-049 preserves onboarding edits across
-readiness-load failure and retry. Both PRs are merged, and PR #213's exact-head
-GitHub CI passed the 717-test suite, analysis, and Android build/lint gates.
-These changes do not alter backend authentication or grant client-side role
-authority.
+readiness-load failure and retry. APP-READY-050 reconciled the handoff. PR
+#214's exact-head and post-merge GitHub CI passed analysis, all 717 Flutter
+tests, and Android build/lint gates. No runtime behavior changed in APP-READY-050.
+
+APP-READY-051 cross-repository audit: backend main is
+`8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus
+immutable image scan passed. Candidate image:
+`asia-south1-docker.pkg.dev/project-a96784ee-811c-46ab-a7b/carenet-backend/carenet-backend@sha256:1c7f7e0e902914355fcab86ef185f09d4c27c6563b682d4cb426c19eff718ad6`.
+This is only a scanned artifact: Cloud Run still serves
+`carenet-backend-staging-be-p1-031-livekit` at digest
+`sha256:869a7125fc5a981462e46bbfd72b7be50fc160510a942195b229d3960760b98a`.
+The scan records one documented unfixed upstream high CVE (`CVE-2026-85091`),
+with no fix available, and zero unrated unfixed findings. Deployment,
+migration/rollback proof, and resolution tracking remain open.
 
 The Web admin verification console is integrated separately in Web-Developers
-PR #1 at `33ab4b070e03ad4e812204d299cb472aafbb2298`. Its CI passed, but it has
-not been hosted or deployed and no administrator was provisioned.
+PR #1 at `33ab4b070e03ad4e812204d299cb472aafbb2298`. Its CI passed, but it is
+source-only: the GitHub deployments API reports zero deployments, no hosting
+has been configured, and no administrator was provisioned. Backend admin CLI
+provisioning remains operator-controlled and requires an approved identity and
+time-bounded execution; there is no first-admin endpoint.
 
 Read-only staging observations on 2026-10-09: Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
 notification scheduler is PAUSED; Cloud Run `carenet-backend-staging` has no
 minimum scale and maxScale 3. Cloud Run can still incur request-based charges.
-No cloud resource was changed. The local C: volume has no free space, so local
-Flutter verification and agent startup were unavailable in the latest session;
-use exact-head CI evidence until local tooling is reliable again.
+No cloud resource was changed. Keep SQL and Scheduler off when not explicitly
+needed. Verification upload-init continues to return staging HTTP 500; a
+meaningful database diagnosis requires a user-approved, time-bounded SQL
+activation window. The local C: volume has no free space, so Flutter package
+resolution stalled and was canceled; `pubspec.lock` remained unchanged. Do not
+delete protected worktrees to reclaim space. Use exact-head CI evidence until
+local setup works again.
+
+Remaining gates identified by APP-READY-051: staging upload diagnosis and
+deployment of the scanned backend digest with migration/rollback proof;
+admin hosting/access and controlled first-admin provisioning; notification,
+email, RTC and provider/device acceptance; final Android physical-device
+session; iOS/Apple hardware and credentials; and Paystack test-mode activation
+only after all preceding gates plus one explicit user confirmation. No
+services were activated in this audit. Doctor-authored posts and short-form
+video are a separate product decision requiring safety/moderation, storage,
+delivery, and cost planning; do not silently expand the Phase 1 marketplace.
 
 ## Session and notification startup hardening (APP-READY-045)
 
@@ -102,7 +129,7 @@ backups, and Firebase upload-certificate registration are verified. Signed
 distribution artifacts, Play certificate registration, release configuration,
 physical acceptance, and production promotion remain explicit open gates.
 
-**Last updated:** 2026-10-09 APP-READY-049 integration and staging posture checkpoint.
+**Last updated:** 2026-10-09 APP-READY-051 cross-repository readiness audit.
 
 ## Android Release Lint Gate
 

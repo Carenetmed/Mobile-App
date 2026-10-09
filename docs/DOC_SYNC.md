@@ -58,11 +58,13 @@
 | Phase 22 | **In progress** |
 | Product direction | **Phase 1 consultation marketplace** - broad social/content/readings/emergency/creator modules leave the active mainline in ordered slices |
 | Archive checkpoint | **APP-P1-001A complete** - branch `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` resolve to `3e04d6e` |
-| Integration base | `08478b69f95ed2745263a91266b4381953ae6b94` - APP-READY-049 merged in PR #213 |
-| NEXT task | **APP-READY-051** - read-only audit of remaining approved readiness gates and next implementation slice |
-| Last completed | **APP-READY-050** - reconciled stale readiness handoff against merged mobile PRs #206-#213 |
+| Integration base | `b2d08c9e6fdcdcfd377c69c939691bc8b1ea9b2f` - APP-READY-050 merged in PR #214 |
+| NEXT task | **APP-READY-052** - professional Home/dashboard compact-width and enlarged-text accessibility audit/repair; no cloud mutations |
+| Last completed | **APP-READY-051** - cross-repository mobile/backend/web/staging readiness audit; no runtime or cloud mutation |
 | Latest Web admin surface | Web-Developers PR #1 merged at `33ab4b070e03ad4e812204d299cb472aafbb2298`; source only, not hosted or deployed |
-| Cloud posture | As read on 2026-10-09: Cloud SQL STOPPED/NEVER, notification scheduler PAUSED, staging Cloud Run has no minimum scale; no cloud changes made |
+| Cloud posture | As read on 2026-10-09: Cloud SQL STOPPED/NEVER, notification scheduler PAUSED, staging Cloud Run has no minimum scale; keep nonessential services off and no cloud changes were made |
+| Backend artifact | BE-P1-037 PR #136 passed CI/scan on main `8e5175e9`; scanned digest is not deployed; one documented upstream high CVE has no fix |
+| Admin console | Web source merged, CI passed, but no hosting/deployment or administrator provisioning; GitHub deployment count is zero |
 | Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, patient-device proof through real Search/public availability/appointment request plus own-list rendering, and professional-device proof through role-aware appointment accept/decline/reschedule plus terminal-row behavior; Android backup is disabled, own-list parses the backend `appointments` envelope, secure session writes are ordered, and professional Account now exposes Manage Profile/Verification documents. Verification upload route access is proven, but upload-init returns staging HTTP 500; separate appointment-detail, optional fresh completion, successful upload after backend fix, and cleanup phone smoke remain open |
 | Product interruption | **APP-63** - Google first-time signup now runs through explicit patient/professional role selection with a real Google ID token before backend account creation. Email/password signup remains aligned to the staging contract. Facebook/Apple signup, Google unlink, iOS/release OAuth proof, production OAuth consent/app verification, phone/OTP, MFA, and broader profile trust rules remain deferred |
 | Registered routes | Live inventory has **79 constants and 78 router cases**; `login` is reserved and unwired. Phase 1 classifications are in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
@@ -111,6 +113,7 @@ Do not use old chat history. Do not start the next task without my approval.
 
 ## Audit log
 
+| 2026-10-09 | APP-READY-051 DONE - reconciled current mobile/backend/web/staging gates; BE-P1-037 image scan is not deployment, web admin remains source-only, upload-init HTTP 500 requires an explicitly approved SQL window to diagnose, and Cloud SQL/Scheduler remain off; APP-READY-052 NEXT for bounded dashboard accessibility work; no cloud mutations |
 | 2026-10-09 | APP-READY-050 DONE - reconciled current integration after mobile PRs #206-#213, recorded the source-only Web admin console merge and read-only cloud posture, and queued APP-READY-051 as the next readiness audit; no runtime or cloud changes |
 | 2026-10-04 | APP-P1-021B in progress - added compact Account/Notification Preferences, failed-chat retry, Find Care category, booking-date and selected-time semantics coverage; unread, Schedule Active/Inactive, countdown, password-reset, and viewer-local-time states are clearer. Full Flutter suite passes 619 and analyzer is clean. Full and staging ARM64 debug APK attempts were stopped after unusually slow local Gradle native-library packaging on the redirected F: volume; no APK result is claimed and CI/device packaging proof remains open. Screen-reader and keyboard-focus acceptance remain open. Legacy `ManageProfileShellPage` is not the registered account route and was not reactivated |
 

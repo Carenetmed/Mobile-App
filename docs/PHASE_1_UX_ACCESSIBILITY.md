@@ -102,7 +102,7 @@ keyboard, and screen-reader checks are marked only where explicitly exercised.
 | `enterEmail`, `enterPassword` | Password recovery request and legacy tokenless alias | `password_recovery_flow_test.dart` | A successful reset request stays on email entry and gives generic account-enumeration-safe guidance; the legacy tokenless route fails closed to the missing-token confirmation state. Only the reset-link token route accepts a new password. Compact request and token confirmation flows are covered; physical screen-reader/keyboard proof remains open. |
 | `resetPasswordConfirm`, `emailVerificationConfirm` | Token confirmation pages | `password_recovery_flow_test.dart`, `auth_route_authority_test.dart`, `account_flow_test.dart` | Password-reset and email-verification success flows are exercised at 320x568 / 2x text, with confirmation actions scroll-accessible and no layout exceptions. Screen-reader/device proof remains open. |
 | `medicalEdit` | DeferredFeaturePage (legacy `UserEdit` source retained) | `auth_route_authority_test.dart` | Direct legacy route fails closed; compact 320x568 / 2x-text test checks the explanation and accessible Return home action. Authoritative broad profile editing remains deferred. |
-| `dashboard` | Dashboard | `dashboard_shell_test.dart` | Role destinations, header actions, tab persistence and Android back covered; patient destination switching is checked at 320x568 / 2x text. Professional large-text layout and physical accessibility remain open. |
+| `dashboard` | Dashboard | `dashboard_shell_test.dart` | Role destinations, header actions, tab persistence and Android back covered. Patient navigation and professional identity/status, header/primary-action tap semantics, Schedule handoff, and scrollable appointment state are checked at 320x568 / 2x text. Physical keyboard/TalkBack and device accessibility remain open. |
 | `search`, `findMentor`, `bookAppointment`, `publicProfile` | SearchShellPage | `search_flow_test.dart`, `find_mentor_flow_test.dart`, `public_profile_flow_test.dart` | Canonical discovery and legacy alias behavior covered; patient name query, clear, scroll, and profile handoff are checked at 320x568 / 2x text. Category-chip targets are at least 48dp and remain horizontally reachable at compact width. Keyboard, TalkBack, and wider discovery states remain uncertified. |
 | `specialistDetails` | SpecialistDetailsShellPage | `specialist_details_flow_test.dart` | Patient detail, backend time selection, confirmation, request-sent result, and Appointments handoff are checked at 320x568 / 2x text. Date choices have 48dp targets; time options announce their professional-time label and selected radio state. Dialog content scrolls while actions remain usable; other screen-reader states remain open. |
 | `appointments` | AppointmentsShellPage | `appointments_flow_test.dart`, `appointment_experience_flow_test.dart` | Cards label displayed appointment instants as viewer-local time; at 320x568 / 2x text, a professional can scroll to a card and open canonical detail. Screen-reader, keyboard, and device proof remain open. |
@@ -215,6 +215,12 @@ acceptance is still required before release.
 - `RouteName.manageProfile` currently opens `ProfessionalOnboardingSetupPage`;
   the legacy `ManageProfileShellPage` is not registered as the account
   destination. This pass does not reactivate that legacy social-era source.
+- APP-READY-052 adds a professional Home compact-text regression covering the
+  verified identity/status, header controls and their tap semantics, primary
+  Schedule action semantics and route, all four professional tabs, and the
+  scrollable no-appointment state. Source/test review found no demonstrated
+  production layout defect, so no runtime widget was changed. This does not
+  certify focus order, TalkBack announcement quality, or physical-device use.
 
 These repairs are bounded findings, not a claim that all active routes have
 passed every contrast, keyboard, focus-order, or largest-text criterion. The
@@ -235,7 +241,6 @@ missing, followed by physical Android/iOS accessibility checks before release.
 
 ## Next Work
 
-Continue APP-P1-021 with a route-by-route active-screen audit and focused
-regressions. Track issues by route and severity; repair only findings that fit
-the approved accessibility/UX boundary, otherwise record them for an explicitly
-scoped slice.
+Continue with the single `NEXT` row in `AI_HANDOFF.md`. Track findings by route
+and severity; repair only those within the approved accessibility/UX boundary,
+otherwise record them for an explicitly scoped slice.

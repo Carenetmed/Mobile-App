@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
@@ -13,6 +15,7 @@ import 'package:app_t/features/Home/domain/entities/patient_profile.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
 import 'package:app_t/features/Home/domain/entities/public_professional.dart';
 import 'package:app_t/features/Home/presentation/pages/dashboard.dart';
+import 'package:app_t/features/Home/presentation/pages/home.dart';
 import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart';
 import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
@@ -164,6 +167,77 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(SelectedDatesShellPage), findsOneWidget);
     expect(find.text('Availability saved from backend.'), findsNothing);
+  });
+
+  testWidgets('professional dashboard remains accessible at compact 2x text', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    addTearDown(semantics.dispose);
+
+    await _pumpDashboard(
+      tester,
+      role: 'PROFESSIONAL',
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+    );
+
+    expect(_bottomLabels(tester), <String?>[
+      'Home',
+      'Schedule',
+      'Appointments',
+      'Messages',
+    ]);
+    expect(find.text('Dr Ada Okafor'), findsOneWidget);
+    expect(find.text('Verified professional'), findsOneWidget);
+    expect(find.byTooltip('Notifications'), findsOneWidget);
+    expect(find.byTooltip('Account'), findsOneWidget);
+    expect(
+      tester
+          .getSemantics(find.byTooltip('Notifications'))
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isTrue,
+    );
+    expect(
+      tester
+          .getSemantics(find.byTooltip('Account'))
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isTrue,
+    );
+    expect(
+      tester
+          .getSemantics(find.byType(InkWell).first)
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('Manage schedule'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SelectedDatesShellPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomNavigationBar),
+        matching: find.text('Home'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.descendant(
+        of: find.byType(Home),
+        matching: find.byType(ListView),
+      ),
+      const Offset(0, -900),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('No appointment activity yet'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('header bell and avatar use retained routes', (tester) async {

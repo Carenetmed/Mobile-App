@@ -88,7 +88,10 @@ class _FinSignUpState extends State<FinSignUp> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: REdgeInsets.fromLTRB(20, 18, 20, 28),
-          child: Column(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -132,9 +135,10 @@ class _FinSignUpState extends State<FinSignUp> {
                 ),
               ),
               SizedBox(height: 28.h),
-              Form(
-                key: _formKey,
-                child: Column(
+              AutofillGroup(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -142,6 +146,8 @@ class _FinSignUpState extends State<FinSignUp> {
                       label: 'Email address',
                       hintText: 'you@example.com',
                       keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.email],
                       controller: _emailController,
                       validator: Validators.validateEmail,
                     ),
@@ -150,6 +156,8 @@ class _FinSignUpState extends State<FinSignUp> {
                       label: 'Password',
                       hintText: 'At least 15 characters',
                       controller: _passwordController,
+                      textInputAction: TextInputAction.next,
+                      autofillHints: const [AutofillHints.newPassword],
                       obscureText: _visiblePassword,
                       validator: Validators.validatePassword,
                       suffixIcon: IconButton(
@@ -174,6 +182,11 @@ class _FinSignUpState extends State<FinSignUp> {
                       label: 'Confirm password',
                       hintText: 'Enter it again',
                       controller: _confirmPasswordController,
+                      textInputAction: TextInputAction.done,
+                      autofillHints: const [AutofillHints.newPassword],
+                      onFieldSubmitted: (_) {
+                        if (!_isSubmitting) _onAgreeAndContinue();
+                      },
                       obscureText: _visibleConfirmPassword,
                       validator:
                           (value) => Validators.validateConfirmPassword(
@@ -198,6 +211,7 @@ class _FinSignUpState extends State<FinSignUp> {
                       ),
                     ),
                   ],
+                  ),
                 ),
               ),
               SizedBox(height: 12.h),
@@ -288,7 +302,9 @@ class _FinSignUpState extends State<FinSignUp> {
                 label:
                     _isSubmitting ? 'Creating account...' : ' Agree & continue',
               ),
-            ],
+              ],
+              ),
+            ),
           ),
         ),
       ),

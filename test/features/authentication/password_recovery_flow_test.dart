@@ -91,6 +91,42 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('recovery page title is exposed as screen-reader heading', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        initialRoute: RouteName.enterEmail,
+        repository: _FakeAuthRepository(),
+      );
+
+      final heading = find.ancestor(
+        of: find.text('Reset your password'),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Semantics && widget.properties.header == true,
+        ),
+      );
+      expect(heading, findsOneWidget);
+    });
+
+    testWidgets('reset confirmation title is a screen-reader heading', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        initialRoute: RouteName.enterPassword,
+        repository: _FakeAuthRepository(),
+      );
+
+      final heading = find.ancestor(
+        of: find.text('Reset password'),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Semantics && widget.properties.header == true,
+        ),
+      );
+      expect(heading, findsOneWidget);
+    });
+
     testWidgets('sign in phone forgot password routes to enter email', (
       tester,
     ) async {

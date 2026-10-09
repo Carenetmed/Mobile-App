@@ -90,7 +90,11 @@ Import: `import 'package:app_t/shared/widgets/carenet_text_field.dart';`
 | `enabled` | `true` / `false` |
 | `validationState` | `none`, `valid`, `invalid` |
 | `errorText` | Optional error copy when `validationState` is `invalid` |
-| Field behavior | Supports `controller`, `focusNode`, `keyboardType`, `textInputAction`, `validator`, `onChanged`, `onTap`, `onFieldSubmitted`, `readOnly`, `obscureText` |
+| Field behavior | Supports `controller`, `focusNode`, `keyboardType`, `textInputAction`, `autofillHints`, `validator`, `onChanged`, `onTap`, `onFieldSubmitted`, `readOnly`, `obscureText` |
+
+Authentication forms group related email and password fields with
+`AutofillGroup`; signup uses `AutofillHints.newPassword` for both password
+entries, and sign-in uses `AutofillHints.password`.
 
 ### Layout (blueprint `screens/input-fields/` + `screens/input/`)
 

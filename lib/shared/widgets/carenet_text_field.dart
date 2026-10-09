@@ -13,6 +13,7 @@ class CarenetTextField extends StatefulWidget {
     this.focusNode,
     this.keyboardType,
     this.textInputAction,
+    this.autofillHints,
     this.validator,
     this.onChanged,
     this.onTap,
@@ -36,6 +37,7 @@ class CarenetTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
+  final Iterable<String>? autofillHints;
   final String? Function(String?)? validator;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
@@ -207,6 +209,7 @@ class _CarenetTextFieldState extends State<CarenetTextField> {
               maxLines: widget.maxLines,
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
+              autofillHints: widget.autofillHints,
               validator: widget.validator,
               onTap: widget.onTap,
               onChanged: widget.onChanged,

@@ -220,28 +220,33 @@ class _SignInEmailState extends State<SignInEmail> {
                     ),
                   ),
                   SizedBox(height: 28.h),
-                  CarenetTextField(
-                    label: 'Email address',
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    hintText: 'you@example.com',
-                    validationState: _validationStateFor(_emailError),
-                    errorText: _emailError,
-                  ),
-                  SizedBox(height: 18.h),
-                  CarenetTextField(
-                    label: 'Password',
-                    controller: _passwordController,
-                    keyboardType: TextInputType.visiblePassword,
-                    textInputAction: TextInputAction.done,
-                    hintText: 'Enter your password',
-                    obscureText: _visiblePassword,
-                    validationState: _validationStateFor(_passwordError),
-                    errorText: _passwordError,
-                    onFieldSubmitted: (_) {
-                      if (!_isSubmitting) _onContinue();
-                    },
+                  AutofillGroup(
+                    child: Column(
+                      children: [
+                        CarenetTextField(
+                          label: 'Email address',
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.email],
+                          hintText: 'you@example.com',
+                          validationState: _validationStateFor(_emailError),
+                          errorText: _emailError,
+                        ),
+                        SizedBox(height: 18.h),
+                        CarenetTextField(
+                          label: 'Password',
+                          controller: _passwordController,
+                          keyboardType: TextInputType.visiblePassword,
+                          textInputAction: TextInputAction.done,
+                          autofillHints: const [AutofillHints.password],
+                          hintText: 'Enter your password',
+                          obscureText: _visiblePassword,
+                          validationState: _validationStateFor(_passwordError),
+                          errorText: _passwordError,
+                          onFieldSubmitted: (_) {
+                            if (!_isSubmitting) _onContinue();
+                          },
                     suffixIcon: IconButton(
                       tooltip:
                           _visiblePassword ? 'Show password' : 'Hide password',
@@ -254,6 +259,9 @@ class _SignInEmailState extends State<SignInEmail> {
                           _visiblePassword
                               ? SvgImage(imgName: AssetsIcon.visible)
                               : const Icon(Icons.visibility_off),
+                    ),
+                        ),
+                      ],
                     ),
                   ),
                   Align(

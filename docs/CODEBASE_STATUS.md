@@ -2,7 +2,7 @@
 
 ## Production Readiness Checkpoint (APP-READY-054)
 
-Current mobile integration is `82d597ccd2ef6048742b0f69a6bf5a88743a041d`.
+Current mobile integration is `b677b50a5b1eff25a06aa2188be4ca3cd1313dce`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
 PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
 debug APK, Android release lint, and release signing/environment regressions.
@@ -10,7 +10,9 @@ APP-READY-048 aligned sign-in UX and backend-session role routing; APP-READY-049
 preserves onboarding edits across readiness-load failure and retry. APP-READY-
 050 reconciled the preceding handoff. APP-READY-054 is documentation-only: it
 reconciles this mobile handoff with the merged Web admin route-test work and
-records the still-off cloud posture. No runtime or cloud changes are included.
+records the still-off cloud posture. APP-READY-055 applies local auth form,
+accessibility, and responsive-width polish without changing auth authority or
+providers; its PR is pending. No cloud changes are included.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus
@@ -39,10 +41,9 @@ minimum scale and maxScale 3. Cloud Run can still incur request-based charges.
 No cloud resource was changed. Keep SQL and Scheduler off when not explicitly
 needed. Verification upload-init continues to return staging HTTP 500; a
 meaningful database diagnosis requires a user-approved, time-bounded SQL
-activation window. The local C: volume has no free space, so Flutter package
-resolution stalled and was canceled; `pubspec.lock` remained unchanged. Do not
-delete protected worktrees to reclaim space. Use exact-head CI evidence until
-local setup works again.
+activation window. Local C: space remains constrained; do not delete protected
+worktrees to reclaim it. APP-READY-055 used the existing package cache, enforced
+the lockfile, and passed local analysis plus 726 Flutter tests.
 
 Remaining gates identified by APP-READY-051: staging upload diagnosis and
 deployment of the scanned backend digest with migration/rollback proof;

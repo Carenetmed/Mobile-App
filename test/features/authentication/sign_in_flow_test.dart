@@ -140,6 +140,19 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('sign-in fields expose saved-credential autofill hints', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(googleIdTokenProvider: _disabledGoogleProvider),
+      );
+
+      final fields = tester.widgetList<EditableText>(find.byType(EditableText));
+      expect(fields.elementAt(0).autofillHints, [AutofillHints.email]);
+      expect(fields.elementAt(1).autofillHints, [AutofillHints.password]);
+    });
+
     testWidgets('email entry hides unsupported identity providers', (
       tester,
     ) async {

@@ -131,14 +131,17 @@ class _EnterEmailPageState extends State<EnterEmailPage> {
                           SizedBox(height: 16.h),
                           const _RecoveryIcon(icon: Icons.lock_reset),
                           SizedBox(height: 20.h),
-                          Text(
-                            'Reset your password',
-                            style: textTheme.headlineSmall?.copyWith(
-                              color: CarenetColors.neutral700,
-                              fontWeight: FontWeight.w700,
-                              height: 1.2,
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              'Reset your password',
+                              style: textTheme.headlineSmall?.copyWith(
+                                color: CarenetColors.neutral700,
+                                fontWeight: FontWeight.w700,
+                                height: 1.2,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                            textAlign: TextAlign.center,
                           ),
                           SizedBox(height: 8.h),
                           Text(

@@ -240,12 +240,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.drag(
-      find.descendant(
-        of: find.byType(Home),
-        matching: find.byType(ListView),
-      ),
-      const Offset(0, -900),
+    await tester.dragUntilVisible(
+      find.text('No appointment activity yet'),
+      find.byType(ListView).first,
+      const Offset(0, -300),
     );
     await tester.pumpAndSettle();
 

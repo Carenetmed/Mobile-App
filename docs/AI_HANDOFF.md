@@ -340,8 +340,9 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-052 | Verify professional Home identity, status, primary action, navigation, scroll, and header semantics at 320x568 with 2x text; repair only demonstrated defects and retain device limitations | S | **DONE** - PR #216 merged |
 | APP-READY-053 | Verify patient Home identity, Find Care action, appointments empty/priority states, navigation, and header semantics at 320x568 with 2x text; repair only demonstrated defects | S | **DONE** - PR #217 merged, 719 tests in exact-head CI |
 | APP-READY-054 | Reconcile the mobile readiness handoff with Web admin PRs #1-#4 and restate cloud-cost guardrails without runtime/provider changes | S | **DONE** - documentation-only |
-| APP-READY-055 | Audit and close the remaining sign-in/sign-up visual and compact/enlarged-text UX mismatch without changing auth authority or enabling providers | M | **DONE** - 7 tests added; 726 full suite passes, PR pending |
-| APP-READY-056 | Audit the Web professional-verification review journey against its backend contract; define the smallest source/CI-only readiness step and list cloud/admin operations that remain approval-gated | S | **NEXT** |
+| APP-READY-055 | Audit and close the remaining sign-in/sign-up visual and compact/enlarged-text UX mismatch without changing auth authority or enabling providers | M | **DONE** - PR #219 merged at `20bc085`; exact-head CI passed with 726 Flutter tests |
+| APP-READY-056 | Audit the Web professional-verification review journey against its backend contract; define the smallest source/CI-only readiness step and list cloud/admin operations that remain approval-gated | S | **DONE** - Web PR #5 merged at `39cc5b4`; same-origin read guard fixed, 18 tests/lint/build pass; no hosting or admin provisioning |
+| APP-READY-057 | Add browser-level tests for the admin verification journey using a mock backend: sign-in/session restore, queue pagination, document preview, decision confirmation, and recovery states; keep it source/CI-only | M | **NEXT** |
 
 ### APP-READY-055 implementation evidence
 
@@ -361,6 +362,14 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 - No auth/session authority, provider configuration, cloud service, or
   deployment was changed. Manual TalkBack, keyboard, and device proof remains
   part of the later physical-device gate.
+
+### APP-READY-056 admin-review audit and source fix
+
+- Backend `main` is `8e5175e9ea569630eb91728e449877fafac9a530`. Its admin verification routes require an active authenticated `ADMIN` or `SUPER_ADMIN`; the review queue is paginated, document reads use short-lived signed URLs, and decisions are limited to `APPROVED`/`REJECTED`. The backend does not accept a rejection note.
+- Web main is `39cc5b4dfee31f243c5584cd05afb1e2373e31d0` after PR #5. Same-origin queue and document-preview `GET`s now permit an absent `Origin` only for safe `GET` requests, reject explicit foreign origins and non-same-origin Fetch Metadata, and still require bearer authority. Login and decision `POST`s retain explicit same-origin checks.
+- Web PR #5 added two integration tests (16 to 18) and passed its exact-head CI test, lint, and production build. The local npm install stalled; no lockfile or dependency files changed.
+- This proves source/CI behavior only. The Web console is still not hosted, no admin identity is provisioned, and no cloud resource was changed. Keep Cloud SQL stopped and Scheduler paused; the staging API remains available with no minimum instances.
+- Browser-level journey coverage is next. Hosting, first-admin provisioning, and any time-bounded database activation remain separately approval-gated.
 
 ### APP-READY-050 verification
 

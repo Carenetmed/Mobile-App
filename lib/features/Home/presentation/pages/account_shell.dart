@@ -1104,7 +1104,7 @@ class _PatientProfileReadPanel extends StatelessWidget {
     final profile = this.profile;
     final rows = <String>[
       if (profile?.name.trim().isNotEmpty == true)
-        'Backend name: ${profile!.name.trim()}',
+        'Name: ${profile!.name.trim()}',
       if (profile?.age != null) 'Age: ${profile!.age}',
       if (profile?.location?.trim().isNotEmpty == true)
         'Location: ${profile!.location!.trim()}',
@@ -1118,9 +1118,9 @@ class _PatientProfileReadPanel extends StatelessWidget {
         : successMessage != null
         ? successMessage!
         : profile == null
-        ? 'No backend patient profile yet. Local settings remain editable.'
+        ? 'Patient profile details are not available yet. You can still manage the account options shown here.'
         : rows.isEmpty
-        ? 'Backend patient profile loaded without display fields.'
+        ? 'No patient profile details are available to show.'
         : rows.join('\n');
 
     return Container(

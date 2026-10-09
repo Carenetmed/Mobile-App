@@ -219,6 +219,7 @@ ConversationSummary conversationSummary({
   int unreadCount = 0,
   DateTime? lastActivityAt,
   ConversationLastMessage? lastMessage,
+  String counterpartName = 'Dr. Ada Okafor',
 }) {
   return ConversationSummary(
     conversationId: conversationId,
@@ -228,9 +229,9 @@ ConversationSummary conversationSummary({
     durationMinutes: 30,
     writable: writable,
     writableUntil: DateTime.utc(2026, 7, 28, 10, 30),
-    counterpart: const MessagingParticipant(
+    counterpart: MessagingParticipant(
       userId: 'professional-user',
-      displayName: 'Dr. Ada Okafor',
+      displayName: counterpartName,
       role: 'PROFESSIONAL',
     ),
     lastMessage: lastMessage,
@@ -245,6 +246,7 @@ ConversationDetail conversationDetail({
   String status = 'ACCEPTED',
   bool writable = true,
   BigInt? professionalRead,
+  String professionalName = 'Dr. Ada Okafor',
 }) {
   return ConversationDetail(
     conversationId: 'conversation-1',
@@ -255,9 +257,9 @@ ConversationDetail conversationDetail({
       displayName: 'Amaka Patient',
       role: 'PATIENT',
     ),
-    professional: const MessagingParticipant(
+    professional: MessagingParticipant(
       userId: 'professional-user',
-      displayName: 'Dr. Ada Okafor',
+      displayName: professionalName,
       role: 'PROFESSIONAL',
     ),
     writable: writable,

@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Messaging/presentation/pages/Messages.dart';
 import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
@@ -7,7 +9,6 @@ import 'package:app_t/features/Messaging/presentation/state/messaging_controller
 import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'messaging_test_fakes.dart';
 import '../notifications/notification_test_fakes.dart';
 
@@ -50,6 +51,7 @@ void main() {
       AppointmentConversationRouteArgs? captured;
       await tester.pumpWidget(
         MaterialApp(
+          theme: ThemeData(splashFactory: NoSplash.splashFactory),
           home: MessagesPage(repository: repository),
           onGenerateRoute: (settings) {
             if (settings.name == RouteName.chat) {
@@ -82,7 +84,10 @@ void main() {
       conversations: <dynamic>[conversationSummary()].cast(),
     );
     await tester.pumpWidget(
-      MaterialApp(home: MessagesPage(repository: repository)),
+      MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
+        home: MessagesPage(repository: repository),
+      ),
     );
     await tester.pumpAndSettle();
     repository.conversationsError = StateError('offline');
@@ -95,6 +100,66 @@ void main() {
       find.textContaining('previous conversations remain visible'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('long conversation content stays usable at 320px and 2x text', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const participant =
+        'Dr. A very long professional name that needs to remain readable';
+    final repository = FakeMessagingRepository(
+      conversations: <ConversationSummary>[
+        conversationSummary(
+          counterpartName: participant,
+          lastActivityAt: DateTime.now().subtract(const Duration(days: 45)),
+        ),
+      ],
+    );
+    String? openedRoute;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(splashFactory: NoSplash.splashFactory),
+        builder:
+            (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: const TextScaler.linear(2)),
+              child: child!,
+            ),
+        home: MessagesPage(repository: repository),
+        onGenerateRoute: (settings) {
+          openedRoute = settings.name;
+          return MaterialPageRoute<void>(
+            builder: (_) => const Scaffold(body: Text('thread')),
+          );
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text(participant), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    final row = find.byKey(const Key('conversation-conversation-1'));
+    expect(
+      tester
+          .getSemantics(row)
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isTrue,
+    );
+    await tester.ensureVisible(row);
+    await tester.pumpAndSettle();
+    await tester.tap(row);
+    await tester.pumpAndSettle();
+    expect(openedRoute, RouteName.chat);
+    expect(find.text('thread'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    semantics.dispose();
   });
 
   testWidgets('realtime hint refreshes authoritative conversation metadata', (

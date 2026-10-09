@@ -312,6 +312,7 @@ Future<void> _pumpList(
       designSize: const Size(430, 932),
       builder:
           (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             builder:
                 (context, child) => MediaQuery(
                   data: MediaQuery.of(context).copyWith(
@@ -355,6 +356,7 @@ Future<void> _pumpDetail(
       designSize: const Size(430, 932),
       builder:
           (_, __) => MaterialApp(
+            theme: ThemeData(splashFactory: NoSplash.splashFactory),
             home: AppointmentDetailShellPage(
               appointmentId: 'appointment-1',
               schedulingRepository: repository,

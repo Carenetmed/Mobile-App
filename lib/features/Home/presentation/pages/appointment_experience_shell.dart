@@ -464,7 +464,7 @@ class _AppointmentDetailShellPageState extends State<AppointmentDetailShellPage>
         const SizedBox(height: 18),
         if (controller.actions.isEmpty)
           const Text(
-            'No lifecycle action is currently available.',
+            'There are no actions available for this appointment right now.',
             style: TextStyle(color: CarenetColors.neutral600),
           )
         else

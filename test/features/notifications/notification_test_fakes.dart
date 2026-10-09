@@ -32,13 +32,14 @@ CareNotification notificationTestItem({
   String? entityId = 'appointment-1',
   DateTime? readAt,
   String title = 'Appointment update',
+  String body = 'Open CareNet to view the latest appointment status.',
 }) {
   return CareNotification(
     id: id,
     category: NotificationCategory.appointments,
     priority: 'NORMAL',
     title: title,
-    body: 'Open CareNet to view the latest appointment status.',
+    body: body,
     routeCode: routeCode,
     entityId: entityId,
     occurrenceCount: 1,

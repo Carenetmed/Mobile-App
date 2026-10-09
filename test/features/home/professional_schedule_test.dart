@@ -241,6 +241,7 @@ void main() {
             designSize: const Size(430, 932),
             builder:
                 (_, __) => MaterialApp(
+                  theme: ThemeData(splashFactory: NoSplash.splashFactory),
                   builder:
                       (context, child) => MediaQuery(
                         data: MediaQuery.of(

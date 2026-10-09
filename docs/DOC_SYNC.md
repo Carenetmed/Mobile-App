@@ -58,13 +58,13 @@
 | Phase 22 | **In progress** |
 | Product direction | **Phase 1 consultation marketplace** - broad social/content/readings/emergency/creator modules leave the active mainline in ordered slices |
 | Archive checkpoint | **APP-P1-001A complete** - branch `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` resolve to `3e04d6e` |
-| Integration base | `60436b8d92bbae410c995848dd7f985740a11490` - APP-READY-052 merged in PR #216 |
-| NEXT task | **APP-READY-053 PR #217 final CI/merge** - patient Home compact-width and enlarged-text regression; no cloud mutations |
-| Last completed | **APP-READY-052** - professional Home compact-text/accessibility regression; PR #216 merged, exact-head CI passed with 718 tests |
-| Latest Web admin surface | Web-Developers PR #1 merged at `33ab4b070e03ad4e812204d299cb472aafbb2298`; source only, not hosted or deployed |
+| Integration base | `82d597ccd2ef6048742b0f69a6bf5a88743a041d` - APP-READY-053 merged in PR #217 |
+| NEXT task | **APP-READY-055** - audit/fix sign-in and sign-up visual consistency plus compact/enlarged-text UX; no auth authority or provider changes |
+| Last completed | **APP-READY-054** - synchronized Web admin route-test and cloud-cost handoff; documentation-only, no runtime/cloud changes |
+| Latest Web admin surface | Web-Developers PRs #1-#4 merged; current main `d1a6811dde731e8a119f6e31ff1f9ee8853a9140`; 16 tests, lint and production build passed; source only, not hosted/deployed |
 | Cloud posture | As read on 2026-10-09: Cloud SQL STOPPED/NEVER, notification scheduler PAUSED, staging Cloud Run has no minimum scale; keep nonessential services off and no cloud changes were made |
 | Backend artifact | BE-P1-037 PR #136 passed CI/scan on main `8e5175e9`; scanned digest is not deployed; one documented upstream high CVE has no fix |
-| Admin console | Web source merged, CI passed, but no hosting/deployment or administrator provisioning; GitHub deployment count is zero |
+| Admin console | Web PRs #1-#4 merged and CI passed, including route-level auth/session and verification proxy coverage; no hosting/deployment or administrator provisioning |
 | Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, patient-device proof through real Search/public availability/appointment request plus own-list rendering, and professional-device proof through role-aware appointment accept/decline/reschedule plus terminal-row behavior; Android backup is disabled, own-list parses the backend `appointments` envelope, secure session writes are ordered, and professional Account now exposes Manage Profile/Verification documents. Verification upload route access is proven, but upload-init returns staging HTTP 500; separate appointment-detail, optional fresh completion, successful upload after backend fix, and cleanup phone smoke remain open |
 | Product interruption | **APP-63** - Google first-time signup now runs through explicit patient/professional role selection with a real Google ID token before backend account creation. Email/password signup remains aligned to the staging contract. Facebook/Apple signup, Google unlink, iOS/release OAuth proof, production OAuth consent/app verification, phone/OTP, MFA, and broader profile trust rules remain deferred |
 | Registered routes | Live inventory has **79 constants and 78 router cases**; `login` is reserved and unwired. Phase 1 classifications are in `PHASE_1_ROUTE_SCREEN_CLASSIFICATION.md` |
@@ -113,6 +113,7 @@ Do not use old chat history. Do not start the next task without my approval.
 
 ## Audit log
 
+| 2026-10-09 | APP-READY-054 DONE - reconciled current mobile base `82d597c` and Web main `d1a6811`; Web admin route integration suite passes 16 tests/lint/build, but remains unhosted and unprovisioned; Cloud SQL STOPPED/NEVER, Scheduler PAUSED, Cloud Run min scale zero; no service changes; APP-READY-055 NEXT for auth/sign-up UX consistency audit |
 | 2026-10-09 | APP-READY-053 awaiting final docs-head CI on PR #217 - code head `cd6b1fb` passed analyzer, 719 Flutter tests, Android debug APK, release lint, signing and release environment gates; test covers patient identity, header semantics, Find Care action routing and honest empty appointments; local worker stalls with C: full; no runtime/cloud changes |
 | 2026-10-09 | APP-READY-052 DONE - merged PR #216 at `60436b8d92bbae410c995848dd7f985740a11490`; professional Home compact accessibility regression passed exact-head CI with 718 tests, analyzer, Android debug build/lint and release gates; 717-test base plus one test; no runtime/cloud changes; APP-READY-053 NEXT |
 | 2026-10-09 | APP-READY-051 DONE - reconciled current mobile/backend/web/staging gates; BE-P1-037 image scan is not deployment, web admin remains source-only, upload-init HTTP 500 requires an explicitly approved SQL window to diagnose, and Cloud SQL/Scheduler remain off; APP-READY-052 NEXT for bounded dashboard accessibility work; no cloud mutations |

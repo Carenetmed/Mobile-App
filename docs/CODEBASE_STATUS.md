@@ -1,20 +1,16 @@
 # Codebase status
 
-## Production Readiness Checkpoint (APP-READY-053)
+## Production Readiness Checkpoint (APP-READY-054)
 
-Current mobile integration is `60436b8d92bbae410c995848dd7f985740a11490`.
-APP-READY-051 merged in PR #215 and APP-READY-052 merged in PR #216.
+Current mobile integration is `82d597ccd2ef6048742b0f69a6bf5a88743a041d`.
+APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
+PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
+debug APK, Android release lint, and release signing/environment regressions.
 APP-READY-048 aligned sign-in UX and backend-session role routing; APP-READY-049
 preserves onboarding edits across readiness-load failure and retry. APP-READY-
-050 reconciled the handoff. PR #216 exact-head CI passed analysis, all 718
-Flutter tests, Android debug APK, Android release lint, and release
-signing/environment regressions. APP-READY-053 adds one patient Home compact
-320x568 / 2x-text accessibility regression in PR #217. The test, analyzer,
-debug APK, Android release lint, signing, and release environment checks passed
-on code head `cd6b1fb`; a documentation-only synchronization commit is awaiting
-its exact-head CI before merge. The expected suite is 719 tests (718 baseline
-plus one). No runtime/cloud changes are in scope; local Flutter execution was
-blocked by the Windows C: volume having no free space.
+050 reconciled the preceding handoff. APP-READY-054 is documentation-only: it
+reconciles this mobile handoff with the merged Web admin route-test work and
+records the still-off cloud posture. No runtime or cloud changes are included.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus
@@ -28,9 +24,11 @@ with no fix available, and zero unrated unfixed findings. Deployment,
 migration/rollback proof, and resolution tracking remain open.
 
 The Web admin verification console is integrated separately in Web-Developers
-PR #1 at `33ab4b070e03ad4e812204d299cb472aafbb2298`. Its CI passed, but it is
-source-only: the GitHub deployments API reports zero deployments, no hosting
-has been configured, and no administrator was provisioned. Backend admin CLI
+PRs #1-#4; current Web main is `d1a6811dde731e8a119f6e31ff1f9ee8853a9140`.
+PR #4 added HTTP integration coverage for login, role eligibility, refresh
+rotation, and logout revocation; its exact-head CI passed all 16 tests, lint,
+and production build. The console remains source-only: no hosting/deployment
+has been configured and no administrator was provisioned. Backend admin CLI
 provisioning remains operator-controlled and requires an approved identity and
 time-bounded execution; there is no first-admin endpoint.
 
@@ -136,7 +134,7 @@ backups, and Firebase upload-certificate registration are verified. Signed
 distribution artifacts, Play certificate registration, release configuration,
 physical acceptance, and production promotion remain explicit open gates.
 
-**Last updated:** 2026-10-09 APP-READY-051 cross-repository readiness audit.
+**Last updated:** 2026-10-09 APP-READY-054 admin-readiness handoff reconciliation.
 
 ## Android Release Lint Gate
 
@@ -395,8 +393,8 @@ not override the `APP-P1` product boundary.
 | Google sign-in/signup wiring | `google_sign_in` is added behind `GoogleIdTokenProvider`; sign-in phone/email Google rows are enabled only when `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` is configured, then call `AuthRepository.googleSignIn` without a role for existing/linked accounts. Sign-up Google uses the same real provider token but requires explicit `PATIENT`/`PROFESSIONAL` role selection before sending the role to backend auth and routing into patient/professional setup. Google unlink, iOS proof, release signing, production OAuth, phone/OTP, MFA, and broader profile trust rules remain deferred |
 | Google account linking | Account now exposes a constrained `Google account` entry below `Authentication`. When `GoogleIdTokenProvider` is configured, it obtains a real Google ID token and calls `AuthRepository.googleLink`; missing config, provider failure, backend validation, and unauthorized failures show safe copy. Account/session email, role, and status remain backend-owned and are not locally mutated after linking. Google sign-up role selection, unlinking, cross-email/recovery linking, recent re-auth, production OAuth, release signing, iOS proof, phone/OTP, MFA, profile creation, admin verification, payments, notifications, reviews, calls, calendar sync, notes, prescriptions, staging data, and production claims remain deferred |
 | Google account linking regression | `GOOGLE_ACCOUNT_LINKING_REGRESSION.md` records focused proof for Account placement, disabled missing-config behavior, configured provider token handoff to `AuthRepository.googleLink`, provider failure without backend call, backend validation/unauthorized safe copy, no raw token/error exposure, and no local account/session mutation |
-| Next backend-completed surface after Google linking | `NEXT_SURFACE_AFTER_GOOGLE_LINKING_REGRESSION_DECISION.md` selects an admin verification review boundary decision as the next lane. Runtime admin UI is not selected yet; 52.94 must decide whether admin queue, signed-read, and approve/reject belong in this Flutter app, a separate admin dashboard, or another frontend surface |
-| Admin verification review boundary | `ADMIN_VERIFICATION_REVIEW_SURFACE_BOUNDARY.md` accepts a separate admin dashboard/web console for admin verification queue, signed-read, and approve/reject behavior. This patient/professional Flutter app should not add admin routes, hidden admin mode, signed-read handling, approve/reject controls, or admin document previews |
+| Next backend-completed surface after Google linking | `NEXT_SURFACE_AFTER_GOOGLE_LINKING_REGRESSION_DECISION.md` and `ADMIN_VERIFICATION_REVIEW_SURFACE_BOUNDARY.md` selected a separate Web console rather than adding reviewer authority to Flutter; the Web console source and route integration tests are implemented in Web-Developers PRs #1-#4 |
+| Admin verification review boundary | The separate Web console provides admin session, queue, signed-read, and approve/reject flows with backend authority. It is not deployed or hosted, and no administrator is provisioned. This patient/professional Flutter app must not add admin routes, hidden admin mode, signed-read handling, approve/reject controls, or admin document previews |
 | Final backend-completed mobile surface checkpoint | `FINAL_BACKEND_COMPLETED_MOBILE_SURFACE_CHECKPOINT.md` and the updated `BACKEND_COMPLETED_SURFACE_WIRING_MAP.md` found no remaining backend-completed surface that clearly belongs in this patient/professional mobile app and is still waiting for first-pass runtime wiring. Next mobile-app work should plan stabilization/regression for the already-wired backend milestone |
 | Mobile backend integration stabilization plan | `MOBILE_BACKEND_INTEGRATION_STABILIZATION_PLAN.md` defines grouped regression suites, focused analyze/docs checks, manual smoke checklist, known blockers, and the next execution slice for the already-wired backend mobile milestone. The next slice should execute the regression pass and record evidence before new product surfaces are added |
 | Mobile backend integration regression pass | `MOBILE_BACKEND_INTEGRATION_REGRESSION_PASS.md` records green grouped regression evidence for auth/session/account, profile/verification, discovery/booking, and scheduling lifecycle after one password-recovery widget-test harness fixture fix. Focused analyze reports no issues. This is not a production, public staging, store, admin dashboard, or deferred-module completion claim |

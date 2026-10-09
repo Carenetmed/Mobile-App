@@ -24,25 +24,21 @@ activity and require one explicit user confirmation before any Paystack-side
 or payment deployment mutation. Physical-device acceptance remains after the
 automated and cloud gates.
 
-`APP-P1-021F` merged through PR #205. APP-READY-050 through APP-READY-052
-are integrated; APP-READY-051 merged through PR #215 and APP-READY-052
-through PR #216 at `60436b8d92bbae410c995848dd7f985740a11490`, the current
-integration base. PR #216 exact-head CI passed analysis, 718 Flutter tests,
-Android debug build/lint, and release configuration regressions. APP-READY-053
-is in PR #217, adding patient Home compact-width/accessibility coverage. The
-test and analyzer passed on implementation head `cd6b1fb`; a documentation
-sync update is in this PR and its exact-head CI must finish before merge. No
-runtime or cloud changes are in scope; keep nonessential cloud services
-stopped/paused.
+`APP-P1-021F` merged through PR #205. APP-READY-051 through APP-READY-053 are
+integrated; APP-READY-051 merged through PR #215, APP-READY-052 through PR #216,
+and APP-READY-053 through PR #217 at
+`82d597ccd2ef6048742b0f69a6bf5a88743a041d`. PR #217 exact-head CI passed
+analysis, 719 Flutter tests, Android debug APK, Android release lint, and
+release configuration/signing regressions. APP-READY-054 synchronizes this
+handoff with the latest Web admin status and confirms no runtime/cloud changes.
+Keep nonessential cloud services stopped/paused.
 
-The separate Web verification console merged as Web-Developers PR #1 at
-`33ab4b070e03ad4e812204d299cb472aafbb2298`. Its main-branch CI passed. It is
-source-only: no hosting, deployment, or administrator provisioning occurred.
-APP-READY-052 is merged. APP-READY-053 covers patient Home compact-width and
-enlarged-text identity, accessible Find Care actions, the honest empty
-appointment state, header controls, and canonical tab routing. PR #217 is
-awaiting final-head CI and merge. Do not activate providers, deploy, or alter
-cloud resources.
+The separate Web verification console merged as Web-Developers PRs #1-#4;
+current Web main is `d1a6811dde731e8a119f6e31ff1f9ee8853a9140`. PR #4 added
+route-level login/refresh/logout tests; CI passed all 16 Web tests, lint, and
+production build. The console is still source-only: no hosting, deployment,
+or administrator provisioning occurred. Do not activate providers, deploy,
+or alter cloud resources.
 
 Latest read-only staging observations (2026-10-09): Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
@@ -341,8 +337,10 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-049 | Add onboarding setup retry recovery | S | **DONE** - PR #213 merged at `08478b6` |
 | APP-READY-050 | Reconcile the mobile readiness handoff against merged PRs #206-#213 and record the approved next gate without changing runtime or cloud state | S | **DONE** |
 | APP-READY-051 | Audit remaining approved readiness gates across mobile, backend, web, and staging; identify the next implementation slice and explicit cloud/payment/device gates without mutating providers or resources | M | **DONE** - PR #214 merged |
-| APP-READY-052 | Verify professional Home identity, status, primary action, navigation, scroll, and header semantics at 320x568 with 2x text; repair only demonstrated defects and retain device limitations | S | **DONE** - PR #216 CI green, open |
-| APP-READY-053 | Verify patient Home identity, Find Care action, appointments empty/priority states, navigation, and header semantics at 320x568 with 2x text; repair only demonstrated defects | S | **NEXT** |
+| APP-READY-052 | Verify professional Home identity, status, primary action, navigation, scroll, and header semantics at 320x568 with 2x text; repair only demonstrated defects and retain device limitations | S | **DONE** - PR #216 merged |
+| APP-READY-053 | Verify patient Home identity, Find Care action, appointments empty/priority states, navigation, and header semantics at 320x568 with 2x text; repair only demonstrated defects | S | **DONE** - PR #217 merged, 719 tests in exact-head CI |
+| APP-READY-054 | Reconcile the mobile readiness handoff with Web admin PRs #1-#4 and restate cloud-cost guardrails without runtime/provider changes | S | **DONE** - documentation-only |
+| APP-READY-055 | Audit and close the remaining sign-in/sign-up visual and compact/enlarged-text UX mismatch without changing auth authority or enabling providers | M | **NEXT** |
 
 ### APP-READY-050 verification
 

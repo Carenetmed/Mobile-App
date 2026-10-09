@@ -198,7 +198,10 @@ void main() {
           .hasAction(SemanticsAction.tap),
       isTrue,
     );
-    await tester.tap(find.text('Find care').first);
+    final primaryLabel = find.text('Find care').first;
+    await tester.ensureVisible(primaryLabel);
+    await tester.pumpAndSettle();
+    await tester.tap(primaryLabel);
     await tester.pumpAndSettle();
     expect(find.byType(SearchShellPage), findsOneWidget);
     expect(
@@ -221,14 +224,17 @@ void main() {
       const Offset(0, -300),
     );
     expect(find.text('No appointments scheduled'), findsOneWidget);
+    final emptyFindCare = find.widgetWithText(TextButton, 'Find care').last;
+    await tester.ensureVisible(emptyFindCare);
+    await tester.pumpAndSettle();
     expect(
       tester
-          .getSemantics(find.widgetWithText(TextButton, 'Find care').last)
+          .getSemantics(emptyFindCare)
           .getSemanticsData()
           .hasAction(SemanticsAction.tap),
       isTrue,
     );
-    await tester.tap(find.widgetWithText(TextButton, 'Find care').last);
+    await tester.tap(emptyFindCare);
     await tester.pumpAndSettle();
     expect(find.byType(SearchShellPage), findsOneWidget);
     expect(

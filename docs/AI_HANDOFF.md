@@ -25,8 +25,9 @@ or payment deployment mutation. Physical-device acceptance remains after the
 automated and cloud gates.
 
 `APP-P1-021F` merged through PR #205. APP-READY-050 merged through PR #214;
-the current integration base is `b2d08c9e6fdcdcfd377c69c939691bc8b1ea9b2f`.
-APP-READY-042 through APP-READY-050 are integrated. PR #214's exact-head CI
+APP-READY-051 then merged through PR #215 at
+`578069d0a8abaa1c67f2c08197bf2cc8ea2c08ea`, the current integration base.
+APP-READY-042 through APP-READY-051 are integrated. PR #214's exact-head CI
 and post-merge integration CI passed; the exact-head run passed analysis,
 717 Flutter tests, and Android build/lint gates. Do not treat the old
 APP-READY-042 worktree or the 2026-10-05 base below as current.
@@ -34,9 +35,12 @@ APP-READY-042 worktree or the 2026-10-05 base below as current.
 The separate Web verification console merged as Web-Developers PR #1 at
 `33ab4b070e03ad4e812204d299cb472aafbb2298`. Its main-branch CI passed. It is
 source-only: no hosting, deployment, or administrator provisioning occurred.
-APP-READY-051 is complete. The next mobile task is `APP-READY-052`, a bounded
-professional Home/dashboard large-text and accessibility regression audit and
-repair. It must not activate providers, deploy, or alter cloud resources.
+APP-READY-051 is complete. APP-READY-052 is complete on PR #216 at head
+`7512536e34c3d6ac0604fc497e757ba98176efa4`; exact-head CI passed 718 Flutter
+tests, analyzer, Android debug build, Android lint, and release configuration
+regressions. The PR is open and has not been merged. Next is APP-READY-053,
+patient Home compact-width and enlarged-text accessibility coverage. Do not
+activate providers, deploy, or alter cloud resources.
 
 Latest read-only staging observations (2026-10-09): Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
@@ -335,7 +339,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-049 | Add onboarding setup retry recovery | S | **DONE** - PR #213 merged at `08478b6` |
 | APP-READY-050 | Reconcile the mobile readiness handoff against merged PRs #206-#213 and record the approved next gate without changing runtime or cloud state | S | **DONE** |
 | APP-READY-051 | Audit remaining approved readiness gates across mobile, backend, web, and staging; identify the next implementation slice and explicit cloud/payment/device gates without mutating providers or resources | M | **DONE** - PR #214 merged |
-| APP-READY-052 | Audit and narrowly repair professional Home/dashboard semantics and layout at compact width with enlarged text; record unverified physical accessibility separately | S | **NEXT** |
+| APP-READY-052 | Verify professional Home identity, status, primary action, navigation, scroll, and header semantics at 320x568 with 2x text; repair only demonstrated defects and retain device limitations | S | **DONE** - PR #216 CI green, open |
+| APP-READY-053 | Verify patient Home identity, Find Care action, appointments empty/priority states, navigation, and header semantics at 320x568 with 2x text; repair only demonstrated defects | S | **NEXT** |
 
 ### APP-READY-050 verification
 
@@ -379,6 +384,30 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 - C: has no free space; Flutter package resolution stalled and was canceled.
   `pubspec.lock` is unchanged. No application tests were run for this
   read-only audit; do not claim a new local verification result.
+
+### APP-READY-052 implementation evidence
+
+- Added a professional-role dashboard regression at 320x568 and 2x text. It
+  verifies identity and verification status, all four role-appropriate tabs,
+  tap semantics for header controls and the primary Schedule shortcut,
+  navigation into Schedule, scrolling to the truthful empty appointment
+  state, and absence of layout exceptions.
+- No production widget change was indicated by the targeted source review;
+  existing flexible/wrapping layout is retained. Keyboard focus order,
+  TalkBack announcement quality, and physical-device accessibility remain
+  explicitly unverified.
+- Local targeted Flutter execution is unavailable: package configuration is
+  absent, the F: Pub cache lacks `flutter_launcher_icons`, C: has no free
+  space, and online package resolution stalled. Exact-head GitHub Actions run
+  `37884338724` passed on `7512536e34c3d6ac0604fc497e757ba98176efa4`:
+  analyzer clean, 718 tests passed, Android debug APK and Android release lint
+  passed, and release signing/environment regressions passed. The base had 717
+  tests; this slice adds one test and removes or disables none. `git diff --check`
+  passed.
+- Manual follow-up: on an Android device at enlarged system font, inspect
+  professional Home identity/status/action, traverse header and tabs with
+  TalkBack, and confirm Schedule and appointment sections can be reached
+  without clipped controls. This is not claimed complete by widget tests.
 
 **AI:** Work only on the **NEXT** row. When finished, mark it **DONE**, set the following row to **NEXT**, update test steps below, **stop**, ask user to continue.
 

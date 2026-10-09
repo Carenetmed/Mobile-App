@@ -2,12 +2,22 @@
 
 ## Production Readiness Checkpoint (APP-READY-051)
 
-Current mobile integration is `b2d08c9e6fdcdcfd377c69c939691bc8b1ea9b2f`,
-after APP-READY-050 merged in PR #214. APP-READY-048 aligned sign-in UX and
+Current mobile integration is `578069d0a8abaa1c67f2c08197bf2cc8ea2c08ea`,
+after APP-READY-051 merged in PR #215; APP-READY-050 merged in PR #214.
+APP-READY-048 aligned sign-in UX and
 backend-session role routing; APP-READY-049 preserves onboarding edits across
 readiness-load failure and retry. APP-READY-050 reconciled the handoff. PR
 #214's exact-head and post-merge GitHub CI passed analysis, all 717 Flutter
 tests, and Android build/lint gates. No runtime behavior changed in APP-READY-050.
+
+APP-READY-052 is implemented in open PR #216 at
+`7512536e34c3d6ac0604fc497e757ba98176efa4`. Exact-head GitHub Actions passed
+analysis, all 718 Flutter tests, Android debug APK, Android release lint, and
+release signing/environment regression gates. This adds one accessibility
+widget test to the 717-test base; no app runtime files changed. Local Flutter
+verification was unavailable because package resolution stalled in the
+isolated worktree. PR #216 remains unmerged, so the integration SHA above is
+unchanged. APP-READY-053 is patient Home compact-width/enlarged-text coverage.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus

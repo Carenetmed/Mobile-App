@@ -1,8 +1,8 @@
 # Codebase status
 
-## Production Readiness Checkpoint (APP-READY-056)
+## Production Readiness Checkpoint (APP-READY-057)
 
-Current mobile integration is `20bc085615bfbe31882100984823797a3c9e47b2`.
+Current mobile integration is `13d5926a7d02a9da4dfc3a717d8933dafed26674`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
 PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
 debug APK, Android release lint, and release signing/environment regressions.
@@ -13,7 +13,10 @@ reconciles this mobile handoff with the Web admin source and records the
 still-off cloud posture. APP-READY-055 merged in PR #219 and adds auth form,
 accessibility, and responsive-width polish without changing auth authority or
 providers. APP-READY-056 audited the Web verification journey and fixed the
-same-origin read request guard in Web PR #5. No cloud changes are included.
+same-origin read request guard in Web PR #5. APP-READY-057 added a Chromium
+browser journey and corrected the Web queue DTO validator mismatch in PR #6;
+exact-head CI passed 19 Node tests, one browser journey, lint, and production
+build. No cloud changes are included.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus
@@ -27,11 +30,11 @@ with no fix available, and zero unrated unfixed findings. Deployment,
 migration/rollback proof, and resolution tracking remain open.
 
 The Web admin verification console is integrated separately in Web-Developers
-PRs #1-#5; current Web main is
-`39cc5b4dfee31f243c5584cd05afb1e2373e31d0`. PR #5 corrected browser-safe
-same-origin reads and its exact-head CI passed 18 tests, lint, and production
-build. The console remains source-only: no hosting/deployment has been
-configured and no administrator was provisioned. Backend admin CLI
+PRs #1-#6; current Web main is
+`2ec9dd79b5c321d29225eab341a7285ef19b492d`. PR #6 adds loopback-mock Chromium
+coverage and its exact-head CI passed 19 Node tests, one browser journey,
+lint, and production build. The console remains source-only: no
+hosting/deployment has been configured and no administrator was provisioned. Backend admin CLI
 provisioning remains operator-controlled and requires an approved identity and
 time-bounded execution; there is no first-admin endpoint.
 
@@ -44,8 +47,10 @@ No cloud resource was changed. Keep SQL and Scheduler off when not explicitly
 needed. Verification upload-init continues to return staging HTTP 500; a
 meaningful database diagnosis requires a user-approved, time-bounded SQL
 activation window. Local C: space remains constrained; do not delete protected
-worktrees to reclaim it. APP-READY-055 used the existing package cache, enforced
-the lockfile, and passed local analysis plus 726 Flutter tests.
+worktrees to reclaim it. APP-READY-057 used a CI-hosted Chromium install only;
+it did not start cloud resources. APP-READY-058 is the next no-cloud task: audit
+remaining active mobile routes for UX/accessibility gaps and close only
+evidenced issues.
 
 Remaining gates identified by APP-READY-051: staging upload diagnosis and
 deployment of the scanned backend digest with migration/rollback proof;

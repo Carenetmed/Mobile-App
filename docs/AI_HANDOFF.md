@@ -29,16 +29,20 @@ integrated; APP-READY-051 merged through PR #215, APP-READY-052 through PR #216,
 and APP-READY-053 through PR #217 at
 `82d597ccd2ef6048742b0f69a6bf5a88743a041d`. PR #217 exact-head CI passed
 analysis, 719 Flutter tests, Android debug APK, Android release lint, and
-release configuration/signing regressions. APP-READY-054 synchronizes this
-handoff with the latest Web admin status and confirms no runtime/cloud changes.
+release configuration/signing regressions. APP-READY-055 merged through PR
+#219 at `20bc085615bfbe31882100984823797a3c9e47b2`; APP-READY-056 synchronized
+the Web admin review status; APP-READY-057 added browser-level admin review
+coverage through Web PR #6 at `2ec9dd79b5c321d29225eab341a7285ef19b492d`.
 Keep nonessential cloud services stopped/paused.
 
-The separate Web verification console merged as Web-Developers PRs #1-#4;
-current Web main is `d1a6811dde731e8a119f6e31ff1f9ee8853a9140`. PR #4 added
-route-level login/refresh/logout tests; CI passed all 16 Web tests, lint, and
-production build. The console is still source-only: no hosting, deployment,
+The separate Web verification console and tests are in Web-Developers main
+`2ec9dd79b5c321d29225eab341a7285ef19b492d` after PR #6. PR #6 adds a Chromium
+browser journey using a loopback mock backend; exact-head CI passed 19 Node
+tests, one browser journey, lint, and production build. The test exposed and
+fixed a mismatch between the server's privacy-filtered queue DTO and the
+browser validator. The console remains source-only: no hosting, deployment,
 or administrator provisioning occurred. Do not activate providers, deploy,
-or alter cloud resources.
+or alter cloud resources for source-only work.
 
 Latest read-only staging observations (2026-10-09): Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
@@ -342,7 +346,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-054 | Reconcile the mobile readiness handoff with Web admin PRs #1-#4 and restate cloud-cost guardrails without runtime/provider changes | S | **DONE** - documentation-only |
 | APP-READY-055 | Audit and close the remaining sign-in/sign-up visual and compact/enlarged-text UX mismatch without changing auth authority or enabling providers | M | **DONE** - PR #219 merged at `20bc085`; exact-head CI passed with 726 Flutter tests |
 | APP-READY-056 | Audit the Web professional-verification review journey against its backend contract; define the smallest source/CI-only readiness step and list cloud/admin operations that remain approval-gated | S | **DONE** - Web PR #5 merged at `39cc5b4`; same-origin read guard fixed, 18 tests/lint/build pass; no hosting or admin provisioning |
-| APP-READY-057 | Add browser-level tests for the admin verification journey using a mock backend: sign-in/session restore, queue pagination, document preview, decision confirmation, and recovery states; keep it source/CI-only | M | **NEXT** |
+| APP-READY-057 | Add browser-level tests for the admin verification journey using a mock backend: sign-in/session restore, queue pagination, document preview, decision confirmation, and recovery states; keep it source/CI-only | M | **DONE** - Web PR #6 merged at `2ec9dd7`; exact-head CI passed |
+| APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **NEXT** |
 
 ### APP-READY-055 implementation evidence
 
@@ -370,6 +375,14 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 - Web PR #5 added two integration tests (16 to 18) and passed its exact-head CI test, lint, and production build. The local npm install stalled; no lockfile or dependency files changed.
 - This proves source/CI behavior only. The Web console is still not hosted, no admin identity is provisioned, and no cloud resource was changed. Keep Cloud SQL stopped and Scheduler paused; the staging API remains available with no minimum instances.
 - Browser-level journey coverage is next. Hosting, first-admin provisioning, and any time-bounded database activation remain separately approval-gated.
+
+### APP-READY-057 browser journey
+
+- Web PR #6 merged at `2ec9dd79b5c321d29225eab341a7285ef19b492d`; reviewed head `aa54e26daf3aed03186e8f08b94058b9641d9103`.
+- The Chromium journey uses synthetic administrator/document fixtures and a loopback mock backend. It covers login, HttpOnly-cookie session restoration, queue failure/retry and pagination, document preview, cancelled and confirmed decision, and authoritative queue reload.
+- Browser testing exposed that the UI validated the server's privacy-projected queue with the stricter backend-input validator. Separate validators now preserve the private-field projection while accepting the browser DTO.
+- Exact-head GitHub Actions run `37941457266` passed `npm ci`, Chromium setup, 19 Node tests, one browser journey, lint, and production build. It does not call cloud services or a real backend.
+- The Web console remains unhosted and no administrator is provisioned. Hosting, first-admin provisioning, and any time-bounded database activation remain approval-gated.
 
 ### APP-READY-050 verification
 

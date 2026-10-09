@@ -189,10 +189,10 @@ void main() {
       'Messages',
     ]);
     expect(find.text('Dr Ada Okafor'), findsOneWidget);
-    await tester.scrollUntilVisible(
+    await tester.dragUntilVisible(
       find.textContaining('Verification'),
-      300,
-      scrollable: find.byType(Scrollable).first,
+      find.byType(ListView).first,
+      const Offset(0, -300),
     );
     await tester.pumpAndSettle();
     expect(

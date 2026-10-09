@@ -24,23 +24,25 @@ activity and require one explicit user confirmation before any Paystack-side
 or payment deployment mutation. Physical-device acceptance remains after the
 automated and cloud gates.
 
-`APP-P1-021F` merged through PR #205. APP-READY-050 merged through PR #214;
-APP-READY-051 then merged through PR #215 at
-`578069d0a8abaa1c67f2c08197bf2cc8ea2c08ea`, the current integration base.
-APP-READY-042 through APP-READY-051 are integrated. PR #214's exact-head CI
-and post-merge integration CI passed; the exact-head run passed analysis,
-717 Flutter tests, and Android build/lint gates. Do not treat the old
-APP-READY-042 worktree or the 2026-10-05 base below as current.
+`APP-P1-021F` merged through PR #205. APP-READY-050 through APP-READY-052
+are integrated; APP-READY-051 merged through PR #215 and APP-READY-052
+through PR #216 at `60436b8d92bbae410c995848dd7f985740a11490`, the current
+integration base. PR #216 exact-head CI passed analysis, 718 Flutter tests,
+Android debug build/lint, and release configuration regressions. APP-READY-053
+is in PR #217, adding patient Home compact-width/accessibility coverage. The
+test and analyzer passed on implementation head `cd6b1fb`; a documentation
+sync update is in this PR and its exact-head CI must finish before merge. No
+runtime or cloud changes are in scope; keep nonessential cloud services
+stopped/paused.
 
 The separate Web verification console merged as Web-Developers PR #1 at
 `33ab4b070e03ad4e812204d299cb472aafbb2298`. Its main-branch CI passed. It is
 source-only: no hosting, deployment, or administrator provisioning occurred.
-APP-READY-051 is complete. APP-READY-052 is complete on PR #216 at head
-`7512536e34c3d6ac0604fc497e757ba98176efa4`; exact-head CI passed 718 Flutter
-tests, analyzer, Android debug build, Android lint, and release configuration
-regressions. The PR is open and has not been merged. Next is APP-READY-053,
-patient Home compact-width and enlarged-text accessibility coverage. Do not
-activate providers, deploy, or alter cloud resources.
+APP-READY-052 is merged. APP-READY-053 covers patient Home compact-width and
+enlarged-text identity, accessible Find Care actions, the honest empty
+appointment state, header controls, and canonical tab routing. PR #217 is
+awaiting final-head CI and merge. Do not activate providers, deploy, or alter
+cloud resources.
 
 Latest read-only staging observations (2026-10-09): Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the

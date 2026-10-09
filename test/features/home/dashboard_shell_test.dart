@@ -150,6 +150,104 @@ void main() {
     }
   });
 
+  testWidgets('patient Home actions remain accessible at compact 2x text', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+
+    await _pumpDashboard(
+      tester,
+      role: 'PATIENT',
+      screenSize: const Size(320, 568),
+      textScaler: const TextScaler.linear(2),
+    );
+
+    expect(find.text('Amina Yusuf'), findsOneWidget);
+    expect(_bottomLabels(tester), <String?>[
+      'Home',
+      'Find Care',
+      'Appointments',
+      'Messages',
+    ]);
+
+    for (final tooltip in <String>['Notifications', 'Account']) {
+      final control = find.byTooltip(tooltip);
+      expect(control, findsOneWidget);
+      expect(
+        tester
+            .getSemantics(control)
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isTrue,
+      );
+    }
+
+    await tester.dragUntilVisible(
+      find.text('Search verified healthcare professionals'),
+      find.byType(ListView).first,
+      const Offset(0, -300),
+    );
+    final primaryAction = find.ancestor(
+      of: find.text('Search verified healthcare professionals'),
+      matching: find.byType(InkWell),
+    );
+    expect(
+      tester
+          .getSemantics(primaryAction.first)
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isTrue,
+    );
+    final primaryLabel = find.text('Find care').first;
+    await tester.ensureVisible(primaryLabel);
+    await tester.pumpAndSettle();
+    await tester.tap(primaryLabel);
+    await tester.pumpAndSettle();
+    expect(find.byType(SearchShellPage), findsOneWidget);
+    expect(
+      tester
+          .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
+          .currentIndex,
+      1,
+    );
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomNavigationBar),
+        matching: find.text('Home'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.dragUntilVisible(
+      find.text('No appointments scheduled'),
+      find.byType(ListView).first,
+      const Offset(0, -300),
+    );
+    expect(find.text('No appointments scheduled'), findsOneWidget);
+    final emptyFindCare = find.widgetWithText(TextButton, 'Find care').last;
+    await tester.ensureVisible(emptyFindCare);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .getSemantics(emptyFindCare)
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isTrue,
+    );
+    await tester.tap(emptyFindCare);
+    await tester.pumpAndSettle();
+    expect(find.byType(SearchShellPage), findsOneWidget);
+    expect(
+      tester
+          .widget<BottomNavigationBar>(find.byType(BottomNavigationBar))
+          .currentIndex,
+      1,
+    );
+    expect(tester.takeException(), isNull);
+
+    semantics.dispose();
+  });
+
   testWidgets('professional sees the approved four destinations', (
     tester,
   ) async {

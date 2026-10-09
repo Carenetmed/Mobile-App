@@ -58,9 +58,9 @@
 | Phase 22 | **In progress** |
 | Product direction | **Phase 1 consultation marketplace** - broad social/content/readings/emergency/creator modules leave the active mainline in ordered slices |
 | Archive checkpoint | **APP-P1-001A complete** - branch `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` resolve to `3e04d6e` |
-| Integration base | `578069d0a8abaa1c67f2c08197bf2cc8ea2c08ea` - APP-READY-051 merged in PR #215 |
-| NEXT task | **APP-READY-053** - patient Home compact-width and enlarged-text accessibility regression; no cloud mutations |
-| Last completed | **APP-READY-052** - professional Home compact-text/accessibility regression; PR #216 open, exact-head CI passed |
+| Integration base | `60436b8d92bbae410c995848dd7f985740a11490` - APP-READY-052 merged in PR #216 |
+| NEXT task | **APP-READY-053 PR #217 final CI/merge** - patient Home compact-width and enlarged-text regression; no cloud mutations |
+| Last completed | **APP-READY-052** - professional Home compact-text/accessibility regression; PR #216 merged, exact-head CI passed with 718 tests |
 | Latest Web admin surface | Web-Developers PR #1 merged at `33ab4b070e03ad4e812204d299cb472aafbb2298`; source only, not hosted or deployed |
 | Cloud posture | As read on 2026-10-09: Cloud SQL STOPPED/NEVER, notification scheduler PAUSED, staging Cloud Run has no minimum scale; keep nonessential services off and no cloud changes were made |
 | Backend artifact | BE-P1-037 PR #136 passed CI/scan on main `8e5175e9`; scanned digest is not deployed; one documented upstream high CVE has no fix |
@@ -113,7 +113,8 @@ Do not use old chat history. Do not start the next task without my approval.
 
 ## Audit log
 
-| 2026-10-09 | APP-READY-052 DONE on open PR #216 head `7512536e34c3d6ac0604fc497e757ba98176efa4` - professional Home 320x568/2x-text regression covers identity/status, four tabs, primary Schedule route/action semantics, header tap semantics, scrollable empty appointment state, and layout exceptions; exact-head CI passed 718 tests, analyze, Android debug build/lint and release gates; 717-test base plus one added test; no runtime or cloud changes; APP-READY-053 NEXT |
+| 2026-10-09 | APP-READY-053 awaiting final docs-head CI on PR #217 - code head `cd6b1fb` passed analyzer, 719 Flutter tests, Android debug APK, release lint, signing and release environment gates; test covers patient identity, header semantics, Find Care action routing and honest empty appointments; local worker stalls with C: full; no runtime/cloud changes |
+| 2026-10-09 | APP-READY-052 DONE - merged PR #216 at `60436b8d92bbae410c995848dd7f985740a11490`; professional Home compact accessibility regression passed exact-head CI with 718 tests, analyzer, Android debug build/lint and release gates; 717-test base plus one test; no runtime/cloud changes; APP-READY-053 NEXT |
 | 2026-10-09 | APP-READY-051 DONE - reconciled current mobile/backend/web/staging gates; BE-P1-037 image scan is not deployment, web admin remains source-only, upload-init HTTP 500 requires an explicitly approved SQL window to diagnose, and Cloud SQL/Scheduler remain off; APP-READY-052 NEXT for bounded dashboard accessibility work; no cloud mutations |
 | 2026-10-09 | APP-READY-050 DONE - reconciled current integration after mobile PRs #206-#213, recorded the source-only Web admin console merge and read-only cloud posture, and queued APP-READY-051 as the next readiness audit; no runtime or cloud changes |
 | 2026-10-04 | APP-P1-021B in progress - added compact Account/Notification Preferences, failed-chat retry, Find Care category, booking-date and selected-time semantics coverage; unread, Schedule Active/Inactive, countdown, password-reset, and viewer-local-time states are clearer. Full Flutter suite passes 619 and analyzer is clean. Full and staging ARM64 debug APK attempts were stopped after unusually slow local Gradle native-library packaging on the redirected F: volume; no APK result is claimed and CI/device packaging proof remains open. Screen-reader and keyboard-focus acceptance remain open. Legacy `ManageProfileShellPage` is not the registered account route and was not reactivated |

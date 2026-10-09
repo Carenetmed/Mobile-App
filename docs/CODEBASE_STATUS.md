@@ -1,23 +1,20 @@
 # Codebase status
 
-## Production Readiness Checkpoint (APP-READY-051)
+## Production Readiness Checkpoint (APP-READY-053)
 
-Current mobile integration is `578069d0a8abaa1c67f2c08197bf2cc8ea2c08ea`,
-after APP-READY-051 merged in PR #215; APP-READY-050 merged in PR #214.
-APP-READY-048 aligned sign-in UX and
-backend-session role routing; APP-READY-049 preserves onboarding edits across
-readiness-load failure and retry. APP-READY-050 reconciled the handoff. PR
-#214's exact-head and post-merge GitHub CI passed analysis, all 717 Flutter
-tests, and Android build/lint gates. No runtime behavior changed in APP-READY-050.
-
-APP-READY-052 is implemented in open PR #216 at
-`7512536e34c3d6ac0604fc497e757ba98176efa4`. Exact-head GitHub Actions passed
-analysis, all 718 Flutter tests, Android debug APK, Android release lint, and
-release signing/environment regression gates. This adds one accessibility
-widget test to the 717-test base; no app runtime files changed. Local Flutter
-verification was unavailable because package resolution stalled in the
-isolated worktree. PR #216 remains unmerged, so the integration SHA above is
-unchanged. APP-READY-053 is patient Home compact-width/enlarged-text coverage.
+Current mobile integration is `60436b8d92bbae410c995848dd7f985740a11490`.
+APP-READY-051 merged in PR #215 and APP-READY-052 merged in PR #216.
+APP-READY-048 aligned sign-in UX and backend-session role routing; APP-READY-049
+preserves onboarding edits across readiness-load failure and retry. APP-READY-
+050 reconciled the handoff. PR #216 exact-head CI passed analysis, all 718
+Flutter tests, Android debug APK, Android release lint, and release
+signing/environment regressions. APP-READY-053 adds one patient Home compact
+320x568 / 2x-text accessibility regression in PR #217. The test, analyzer,
+debug APK, Android release lint, signing, and release environment checks passed
+on code head `cd6b1fb`; a documentation-only synchronization commit is awaiting
+its exact-head CI before merge. The expected suite is 719 tests (718 baseline
+plus one). No runtime/cloud changes are in scope; local Flutter execution was
+blocked by the Windows C: volume having no free space.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus

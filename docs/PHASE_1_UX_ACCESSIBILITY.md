@@ -223,6 +223,14 @@ acceptance is still required before release.
   Source/test review found no demonstrated production layout defect, so no
   runtime widget was changed. This does not certify focus order, TalkBack
   announcement quality, or physical-device use.
+- APP-READY-053 adds the corresponding patient Home check at 320x568 and 2x
+  text: authenticated profile identity, four patient destinations, accessible
+  Notifications/Account actions, the primary Find Care route, and the truthful
+  no-appointments state with its Find Care action. The code head's CI passed
+  all 719 tests and Android/analyzer gates; final documentation-head CI is
+  pending before merge. No runtime widget or cloud service is changed. This
+  test does not certify focus order, TalkBack announcement quality, or
+  physical-device use.
 
 These repairs are bounded findings, not a claim that all active routes have
 passed every contrast, keyboard, focus-order, or largest-text criterion. The

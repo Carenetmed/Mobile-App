@@ -198,7 +198,7 @@ void main() {
           .hasAction(SemanticsAction.tap),
       isTrue,
     );
-    await tester.tap(primaryAction.first);
+    await tester.tap(find.text('Find care').first);
     await tester.pumpAndSettle();
     expect(find.byType(SearchShellPage), findsOneWidget);
     expect(

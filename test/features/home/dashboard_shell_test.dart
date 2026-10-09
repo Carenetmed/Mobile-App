@@ -190,7 +190,7 @@ void main() {
     ]);
     expect(find.text('Dr Ada Okafor'), findsOneWidget);
     await tester.dragUntilVisible(
-      find.textContaining('Verification'),
+      find.text('Verified professional'),
       find.byType(ListView).first,
       const Offset(0, -300),
     );

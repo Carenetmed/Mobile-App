@@ -29,17 +29,20 @@ are integrated; APP-READY-051 merged through PR #215 and APP-READY-052
 through PR #216 at `60436b8d92bbae410c995848dd7f985740a11490`, the current
 integration base. PR #216 exact-head CI passed analysis, 718 Flutter tests,
 Android debug build/lint, and release configuration regressions. APP-READY-053
-is in progress on the isolated patient Home compact-width/accessibility test
-branch. No runtime or cloud changes are in scope; keep nonessential cloud
-services stopped/paused.
+is in PR #217, adding patient Home compact-width/accessibility coverage. The
+test and analyzer passed on implementation head `cd6b1fb`; a documentation
+sync update is in this PR and its exact-head CI must finish before merge. No
+runtime or cloud changes are in scope; keep nonessential cloud services
+stopped/paused.
 
 The separate Web verification console merged as Web-Developers PR #1 at
 `33ab4b070e03ad4e812204d299cb472aafbb2298`. Its main-branch CI passed. It is
 source-only: no hosting, deployment, or administrator provisioning occurred.
-APP-READY-052 is merged. The current slice adds patient Home compact-width and
-enlarged-text coverage for identity, accessible Find Care actions, the honest
-empty appointment state, header controls, and canonical tab routing. Do not
-activate providers, deploy, or alter cloud resources.
+APP-READY-052 is merged. APP-READY-053 covers patient Home compact-width and
+enlarged-text identity, accessible Find Care actions, the honest empty
+appointment state, header controls, and canonical tab routing. PR #217 is
+awaiting final-head CI and merge. Do not activate providers, deploy, or alter
+cloud resources.
 
 Latest read-only staging observations (2026-10-09): Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the

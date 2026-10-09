@@ -9,8 +9,12 @@ preserves onboarding edits across readiness-load failure and retry. APP-READY-
 050 reconciled the handoff. PR #216 exact-head CI passed analysis, all 718
 Flutter tests, Android debug APK, Android release lint, and release
 signing/environment regressions. APP-READY-053 adds one patient Home compact
-320x568 / 2x-text accessibility regression; implementation and CI verification
-are in progress. No runtime/cloud changes are in scope.
+320x568 / 2x-text accessibility regression in PR #217. The test, analyzer,
+debug APK, Android release lint, signing, and release environment checks passed
+on code head `cd6b1fb`; a documentation-only synchronization commit is awaiting
+its exact-head CI before merge. The expected suite is 719 tests (718 baseline
+plus one). No runtime/cloud changes are in scope; local Flutter execution was
+blocked by the Windows C: volume having no free space.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus

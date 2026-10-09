@@ -340,7 +340,27 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-052 | Verify professional Home identity, status, primary action, navigation, scroll, and header semantics at 320x568 with 2x text; repair only demonstrated defects and retain device limitations | S | **DONE** - PR #216 merged |
 | APP-READY-053 | Verify patient Home identity, Find Care action, appointments empty/priority states, navigation, and header semantics at 320x568 with 2x text; repair only demonstrated defects | S | **DONE** - PR #217 merged, 719 tests in exact-head CI |
 | APP-READY-054 | Reconcile the mobile readiness handoff with Web admin PRs #1-#4 and restate cloud-cost guardrails without runtime/provider changes | S | **DONE** - documentation-only |
-| APP-READY-055 | Audit and close the remaining sign-in/sign-up visual and compact/enlarged-text UX mismatch without changing auth authority or enabling providers | M | **NEXT** |
+| APP-READY-055 | Audit and close the remaining sign-in/sign-up visual and compact/enlarged-text UX mismatch without changing auth authority or enabling providers | M | **DONE** - 7 tests added; 726 full suite passes, PR pending |
+| APP-READY-056 | Audit the Web professional-verification review journey against its backend contract; define the smallest source/CI-only readiness step and list cloud/admin operations that remain approval-gated | S | **NEXT** |
+
+### APP-READY-055 implementation evidence
+
+- Sign-in and email signup now group related fields for password managers and
+  provide email, current-password, and new-password autofill hints. Signup
+  keyboard actions move through the fields and submit through the existing
+  validated signup method.
+- Signup role-selection and credential steps use the same 480px content cap as
+  the existing sign-in screens. Password-reset headings are now announced as
+  semantic headers.
+- Seven focused tests were added: three signup, one sign-in, two recovery, and
+  one shared text-field contract. The 719-test base becomes 726; no tests were
+  removed, skipped, disabled, or weakened. The four-file APP-READY-054 docs PR
+  merged as `b677b50a5b1eff25a06aa2188be4ca3cd1313dce` before this slice.
+- Local `flutter pub get --enforce-lockfile`, analyzer, 50 focused auth/widget
+  tests, and the full 726-test suite passed. `pubspec.lock` is unchanged.
+- No auth/session authority, provider configuration, cloud service, or
+  deployment was changed. Manual TalkBack, keyboard, and device proof remains
+  part of the later physical-device gate.
 
 ### APP-READY-050 verification
 

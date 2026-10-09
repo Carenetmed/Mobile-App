@@ -186,7 +186,10 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: REdgeInsets.fromLTRB(20, 18, 20, 22),
-          child: Column(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconButton(
@@ -230,7 +233,9 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
                   onEmail: () => _continueWithEmail(selectedRole),
                   onGoogle: () => _continueWithGoogle(selectedRole),
                 ),
-            ],
+              ],
+              ),
+            ),
           ),
         ),
       ),

@@ -49,6 +49,21 @@ void main() {
       expect(find.text('Belrah'), findsOneWidget);
     });
 
+    testWidgets('forwards autofill hints to the underlying form field', (
+      tester,
+    ) async {
+      await _pumpField(
+        tester,
+        field: const CarenetTextField(
+          label: 'Email address',
+          autofillHints: [AutofillHints.email],
+        ),
+      );
+
+      final field = tester.widget<EditableText>(find.byType(EditableText));
+      expect(field.autofillHints, [AutofillHints.email]);
+    });
+
     testWidgets('disabled state uses neutral border and fill', (tester) async {
       await _pumpField(
         tester,

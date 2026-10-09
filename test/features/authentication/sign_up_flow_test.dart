@@ -97,6 +97,56 @@ Future<void> _pumpWithRoutes(
 
 void main() {
   group('Sign up flow', () {
+    testWidgets('credential fields expose password-manager and keyboard hints', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(tester, home: const FinSignUp());
+
+      final fields = tester.widgetList<EditableText>(find.byType(EditableText));
+      expect(fields, hasLength(3));
+      expect(fields.elementAt(0).autofillHints, [AutofillHints.email]);
+      expect(fields.elementAt(0).textInputAction, TextInputAction.next);
+      expect(fields.elementAt(1).autofillHints, [AutofillHints.newPassword]);
+      expect(fields.elementAt(1).textInputAction, TextInputAction.next);
+      expect(fields.elementAt(2).autofillHints, [AutofillHints.newPassword]);
+      expect(fields.elementAt(2).textInputAction, TextInputAction.done);
+    });
+
+    testWidgets('signup content is capped on wide layouts', (tester) async {
+      await _pumpWithRoutes(
+        tester,
+        home: const FinSignUp(),
+        screenSize: const Size(1000, 900),
+      );
+
+      final content = find.ancestor(
+        of: find.text(
+          'Create your login now. Your profile details are collected in the next role-specific step.',
+        ),
+        matching: find.byType(ConstrainedBox),
+      );
+      expect(content, findsOneWidget);
+      expect(tester.getSize(content).width, 480);
+    });
+
+    testWidgets('role selection content is capped on wide layouts', (
+      tester,
+    ) async {
+      await _pumpWithRoutes(
+        tester,
+        home: const SignUpRoleSelectionPage(),
+        screenSize: const Size(1000, 900),
+      );
+      await tester.pumpAndSettle();
+
+      final content = find.ancestor(
+        of: find.text('How will you use CareNet?'),
+        matching: find.byType(ConstrainedBox),
+      );
+      expect(content, findsOneWidget);
+      expect(tester.getSize(content).width, 480);
+    });
+
     testWidgets('email signup remains usable at compact width with 2x text', (
       tester,
     ) async {

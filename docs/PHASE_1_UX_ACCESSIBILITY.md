@@ -218,9 +218,11 @@ acceptance is still required before release.
 - APP-READY-052 adds a professional Home compact-text regression covering the
   verified identity/status, header controls and their tap semantics, primary
   Schedule action semantics and route, all four professional tabs, and the
-  scrollable no-appointment state. Source/test review found no demonstrated
-  production layout defect, so no runtime widget was changed. This does not
-  certify focus order, TalkBack announcement quality, or physical-device use.
+  scrollable no-appointment state. PR #216 exact-head CI passed all 718 tests,
+  analysis, Android debug build/lint, and release configuration regressions.
+  Source/test review found no demonstrated production layout defect, so no
+  runtime widget was changed. This does not certify focus order, TalkBack
+  announcement quality, or physical-device use.
 
 These repairs are bounded findings, not a claim that all active routes have
 passed every contrast, keyboard, focus-order, or largest-text criterion. The

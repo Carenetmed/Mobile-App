@@ -50,19 +50,10 @@ jobs:
         run: flutter build ios --config-only --no-codesign --flavor staging
 
       - name: Resolve native iOS dependencies
-        run: pod install --project-directory=ios
-
-      - name: Export migrated iOS dependency files for pinning
-        uses: actions/upload-artifact@v4
-        with:
-          name: bootstrap-ios-pod-files
-          path: |
-            ios/Podfile
-            ios/Podfile.lock
-          retention-days: 1
+        run: pod install --deployment --project-directory=ios
 
       - name: Verify dependency lock integrity
-        run: git diff --exit-code -- pubspec.lock
+        run: git diff --exit-code -- pubspec.lock ios/Podfile ios/Podfile.lock
 
       - name: Build unsigned simulator app
         run: |

@@ -16,6 +16,18 @@ for ($id = 1; $id -le 18; $id++) {
   }
 }
 
+foreach ($id in 7..18) {
+  $objectId = 'A060000000000000000000{0:X2}' -f $id
+  $configuration = [regex]::Match(
+    $project,
+    "(?s)$objectId.*?isa = XCBuildConfiguration;.*?buildSettings = \{(.*?)\};"
+  )
+  if (-not $configuration.Success -or
+      -not $configuration.Groups[1].Value.Contains('CLANG_ENABLE_OBJC_ARC = YES;')) {
+    throw "Flavor build configuration $objectId must enable Objective-C ARC."
+  }
+}
+
 $expected = @{
   staging = @{
     bundle = 'com.carenet.app.staging'

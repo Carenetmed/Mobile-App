@@ -60,11 +60,20 @@ class _NotificationPreferencesPageState
                       ),
                       if (_controller.errorMessage != null) ...[
                         const SizedBox(height: 12),
-                        Text(
-                          _controller.errorMessage!,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            _controller.errorMessage!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
                           ),
+                        ),
+                        TextButton.icon(
+                          onPressed:
+                              _controller.isLoading ? null : _controller.load,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Retry loading preferences'),
                         ),
                       ],
                       const SizedBox(height: 18),

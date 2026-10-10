@@ -737,6 +737,12 @@ class _LiveStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final message =
+        reconnecting
+            ? 'Reconnecting securely...'
+            : participantPresent
+            ? 'Consultation in progress'
+            : 'Waiting for the other participant';
     return Align(
       alignment: Alignment.centerLeft,
       child: DecoratedBox(
@@ -746,15 +752,18 @@ class _LiveStatus extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Text(
-            reconnecting
-                ? 'Reconnecting securely...'
-                : participantPresent
-                ? 'Consultation in progress'
-                : 'Waiting for the other participant',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+          child: Semantics(
+            container: true,
+            liveRegion: true,
+            label: message,
+            child: ExcludeSemantics(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ),

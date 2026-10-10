@@ -161,6 +161,7 @@ class FakeNotificationRepository implements NotificationRepository {
   Completer<NotificationPage>? listCompleter;
   int unread = 0;
   int listCalls = 0;
+  int preferencesCalls = 0;
   int unreadCalls = 0;
   int markAllCalls = 0;
   final List<String> markedRead = <String>[];
@@ -223,6 +224,7 @@ class FakeNotificationRepository implements NotificationRepository {
 
   @override
   Future<List<NotificationPreference>> preferences() async {
+    preferencesCalls++;
     if (preferencesFailure case final failure?) throw failure;
     return preferenceValues;
   }

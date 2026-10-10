@@ -316,6 +316,7 @@ void main() {
   testWidgets('409 conflict refreshes authority without false accepted state', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     final repository = _SchedulingFake(
       appointments: <AppointmentSummary>[
         _appointment(status: AppointmentStatus.requested),
@@ -338,7 +339,18 @@ void main() {
       find.text('This appointment changed. Refresh and review it again.'),
       findsOneWidget,
     );
+    expect(
+      tester
+          .getSemantics(
+            find.text('This appointment changed. Refresh and review it again.'),
+          )
+          .getSemanticsData()
+          .flagsCollection
+          .isLiveRegion,
+      isTrue,
+    );
     expect(find.text('raw accepted conflict'), findsNothing);
+    semantics.dispose();
   });
 }
 

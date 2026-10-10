@@ -63,6 +63,12 @@ tests; one payment-error regression was added and none were removed, skipped,
 or disabled. Manual TalkBack, focus-order, and physical-device proof remain
 open.
 
+The following focused continuation adds live announcements for appointment
+status/action notices and consultation connection/presence changes, plus an
+explicit retry and live error announcement for notification preferences. Its
+targeted appointment, consultation, and notification group passes 71 tests;
+analyzer passes. Exact-head CI, full-suite count, and debug APK are pending.
+
 - Primary, success, error, and information text/surface pairs are checked at
   WCAG normal-text contrast of at least 4.5:1.
 - `CarenetButton` has one labelled button semantic with a real tap action, a

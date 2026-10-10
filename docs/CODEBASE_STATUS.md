@@ -2,7 +2,7 @@
 
 ## Production Readiness Checkpoint (APP-READY-058)
 
-Current mobile integration is `547e5cc5b52c2e00f10d9c3371f4d20dbf68eafd`.
+Current mobile integration is `77127b8a64a0cf68ba2e7f6d7be7cd0dac7fd9db`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
 PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
 debug APK, Android release lint, and release signing/environment regressions.
@@ -33,6 +33,12 @@ the 732-test integration suite, one payment-error test was added; none were
 removed, skipped, or disabled. No backend, provider, native, dependency, or
 cloud changes are in this follow-up.
 
+APP-READY-058 continuation on the current integration adds live announcements
+for appointment status/action notices and consultation connection/presence
+changes, plus an explicit notification-preference retry and error announcement.
+The three focused files pass 71 tests and analyzer; exact-head CI is pending.
+No backend, dependency, native, or cloud files changed.
+
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus
 immutable image scan passed. Candidate image:
@@ -53,13 +59,14 @@ hosting/deployment has been configured and no administrator was provisioned. Bac
 provisioning remains operator-controlled and requires an approved identity and
 time-bounded execution; there is no first-admin endpoint.
 
-Last successful read-only staging observations on 2026-10-09: Cloud SQL
+Last successful read-only staging observations on 2026-10-10: Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
 notification scheduler is PAUSED; Cloud Run `carenet-backend-staging` has no
 minimum scale (service maxScale 2, revision maxScale 3). Cloud Run can still
 incur request-based charges.
-No cloud resource was changed. A 2026-10-10 refresh could not resolve the
-Google OAuth endpoint, so live state has not been reconfirmed today. Keep SQL
+No cloud resource was changed. The read-only 2026-10-10 check confirms SQL
+STOPPED/NEVER, the notification Scheduler job PAUSED, and the only Cloud Run
+service has no minimum instance configured (scales to zero when idle). Keep SQL
 and Scheduler off when not explicitly needed. Verification upload-init
 continues to return staging HTTP 500; a
 meaningful database diagnosis requires a user-approved, time-bounded SQL

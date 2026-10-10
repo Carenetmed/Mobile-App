@@ -22,7 +22,7 @@ concurrency:
 jobs:
   simulator-build:
     name: Build staging and production iOS simulator apps
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 45
 
     steps:
@@ -46,14 +46,19 @@ jobs:
       - name: Resolve Flutter dependencies
         run: flutter pub get
 
+      - name: Generate flavor-specific iOS project configuration
+        run: flutter build ios --config-only --flavor staging
+
       - name: Resolve native iOS dependencies
         run: pod install --project-directory=ios
 
-      - name: Export initial pod lock for pinning
+      - name: Export migrated iOS dependency files for pinning
         uses: actions/upload-artifact@v4
         with:
-          name: bootstrap-ios-pod-lockfile
-          path: ios/Podfile.lock
+          name: bootstrap-ios-pod-files
+          path: |
+            ios/Podfile
+            ios/Podfile.lock
           retention-days: 1
 
       - name: Verify dependency lock integrity

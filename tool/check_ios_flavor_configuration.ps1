@@ -33,6 +33,10 @@ foreach ($flavor in $expected.Keys) {
   $schemePath = Join-Path $schemeDirectory "$flavor.xcscheme"
   if (-not (Test-Path $schemePath)) { throw "Missing shared $flavor scheme." }
   [xml]$scheme = Get-Content -Raw $schemePath
+  if (-not $scheme.Scheme.TestAction.customLLDBInitFile -or
+      -not $scheme.Scheme.LaunchAction.customLLDBInitFile) {
+    throw "$flavor scheme must load Flutter's LLDB init file for Run and Test."
+  }
   $configurations = @(
     "Debug-$flavor",
     "Profile-$flavor",

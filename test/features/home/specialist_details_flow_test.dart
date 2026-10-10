@@ -225,57 +225,58 @@ void main() {
     expect(find.text('appointments-dashboard'), findsOneWidget);
   });
 
-  testWidgets(
-    'readiness failure preserves selection and offers a clear retry',
-    (tester) async {
-      final store = InMemoryBookingIntentStore();
-      final scheduling = _FakeSchedulingRepository();
-      final onboarding = _FakeOnboardingRepository(
-        failures: <Object?>[StateError('private backend error'), null],
-      );
-      await _pumpDetails(
-        tester,
-        schedulingRepository: scheduling,
-        bookingIntentStore: store,
-        onboardingRepository: onboarding,
-      );
+  testWidgets('readiness failure preserves selection and offers a clear retry', (
+    tester,
+  ) async {
+    final store = InMemoryBookingIntentStore();
+    final scheduling = _FakeSchedulingRepository();
+    final onboarding = _FakeOnboardingRepository(
+      failures: <Object?>[StateError('private backend error'), null],
+    );
+    await _pumpDetails(
+      tester,
+      schedulingRepository: scheduling,
+      bookingIntentStore: store,
+      onboardingRepository: onboarding,
+    );
 
-      final time = find.textContaining('9:00 AM Africa/Lagos');
-      await tester.ensureVisible(time);
-      await tester.tap(time);
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Request selected time'));
-      await tester.tap(find.text('Request selected time'));
-      await tester.pumpAndSettle();
+    final time = find.textContaining('9:00 AM Africa/Lagos');
+    await tester.ensureVisible(time);
+    await tester.tap(time);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Request selected time'));
+    await tester.tap(find.text('Request selected time'));
+    await tester.pumpAndSettle();
 
-      final intentAfterFailure = await store.read();
-      expect(
-        find.text('Could not verify patient readiness. Please try again.'),
-        findsOneWidget,
-      );
-      expect(find.text('Retry account check'), findsOneWidget);
-      expect(intentAfterFailure, isNotNull);
-      expect(onboarding.calls, 1);
-      expect(scheduling.requestCalls, 0);
+    final intentAfterFailure = await store.read();
+    expect(
+      find.text(
+        "We couldn't confirm that your account is ready to request an appointment. Please try again.",
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Retry account check'), findsOneWidget);
+    expect(intentAfterFailure, isNotNull);
+    expect(onboarding.calls, 1);
+    expect(scheduling.requestCalls, 0);
 
-      await tester.scrollUntilVisible(
-        find.text('Retry account check'),
-        250,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Retry account check'));
-      await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Retry account check'),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Retry account check'));
+    await tester.pumpAndSettle();
 
-      expect(onboarding.calls, 2);
-      expect(find.text('Request this appointment?'), findsOneWidget);
-      expect(
-        (await store.read())?.idempotencyKey,
-        intentAfterFailure!.idempotencyKey,
-      );
-      expect(scheduling.requestCalls, 0);
-    },
-  );
+    expect(onboarding.calls, 2);
+    expect(find.text('Request this appointment?'), findsOneWidget);
+    expect(
+      (await store.read())?.idempotencyKey,
+      intentAfterFailure!.idempotencyKey,
+    );
+    expect(scheduling.requestCalls, 0);
+  });
 
   testWidgets('requestable time exposes radio selection semantics', (
     tester,
@@ -286,28 +287,16 @@ void main() {
     try {
       final timeOption = find.bySemanticsLabel(RegExp('9:00 AM Africa/Lagos'));
       final initialData = tester.getSemantics(timeOption).getSemanticsData();
-      expect(
-        initialData.flagsCollection.isInMutuallyExclusiveGroup,
-        isTrue,
-      );
-      expect(
-        initialData.flagsCollection.isSelected,
-        Tristate.isFalse,
-      );
+      expect(initialData.flagsCollection.isInMutuallyExclusiveGroup, isTrue);
+      expect(initialData.flagsCollection.isSelected, Tristate.isFalse);
 
       await tester.ensureVisible(find.textContaining('9:00 AM Africa/Lagos'));
       await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
       await tester.pumpAndSettle();
 
       final selectedData = tester.getSemantics(timeOption).getSemanticsData();
-      expect(
-        selectedData.flagsCollection.isInMutuallyExclusiveGroup,
-        isTrue,
-      );
-      expect(
-        selectedData.flagsCollection.isSelected,
-        Tristate.isTrue,
-      );
+      expect(selectedData.flagsCollection.isInMutuallyExclusiveGroup, isTrue);
+      expect(selectedData.flagsCollection.isSelected, Tristate.isTrue);
       expect(selectedData.hasAction(SemanticsAction.tap), isTrue);
     } finally {
       semantics.dispose();

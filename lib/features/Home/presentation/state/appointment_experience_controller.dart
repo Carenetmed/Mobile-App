@@ -25,7 +25,8 @@ String safeAppointmentFailure(Object error) {
     404 => 'This appointment is no longer available.',
     409 => 'This appointment changed. Refresh and review it again.',
     _ => switch (error.type) {
-      AuthFailureType.missingConfiguration => 'Backend is not configured yet.',
+      AuthFailureType.missingConfiguration =>
+        'Appointments are unavailable right now. Please try again.',
       AuthFailureType.unauthorized =>
         'Your session has expired. Please sign in again.',
       AuthFailureType.forbidden =>

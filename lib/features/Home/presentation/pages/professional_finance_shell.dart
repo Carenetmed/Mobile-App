@@ -98,8 +98,8 @@ class _ProfessionalFinanceShellPageState
                       ),
                       const SizedBox(height: 6),
                       const Text(
-                        'CareNet keeps collection, commission, holds, and '
-                        'payout state authoritative on the server.',
+                        'Review consultation income, your current balance, '
+                        'and payout details below.',
                         style: TextStyle(color: CarenetColors.neutral600),
                       ),
                       if (_controller.errorMessage != null)

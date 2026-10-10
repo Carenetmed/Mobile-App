@@ -456,11 +456,17 @@ void main() {
   testWidgets('unknown session role fails closed', (tester) async {
     await _pumpDashboard(tester, role: 'ADMIN');
 
-    expect(find.text('Your account role is unavailable.'), findsOneWidget);
+    expect(
+      find.text("This account can't open a CareNet workspace."),
+      findsOneWidget,
+    );
     expect(find.byType(BottomNavigationBar), findsNothing);
   });
 
   testWidgets('unsupported role can safely return to sign in', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     final sessionStore = InMemorySessionStore();
     await sessionStore.save(
       AuthSessionModel(
@@ -480,7 +486,13 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeData(splashFactory: NoSplash.splashFactory),
-        home: Dashboard(sessionStore: sessionStore),
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(320, 568),
+            textScaler: TextScaler.linear(2),
+          ),
+          child: Dashboard(sessionStore: sessionStore),
+        ),
         routes: <String, WidgetBuilder>{
           RouteName.signInPhone:
               (_) => const Scaffold(body: Text('sign-in-entry')),
@@ -490,18 +502,33 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('This account cannot open a CareNet workspace.'),
-      findsNothing,
-    );
-    expect(
-      find.textContaining('This account cannot open a CareNet workspace.'),
+      find.text("This account can't open a CareNet workspace."),
       findsOneWidget,
     );
-    await tester.tap(find.text('Return to sign in'));
+    expect(
+      find.textContaining('patient or professional account'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('choose a supported account'), findsNothing);
+    expect(tester.takeException(), isNull);
+    final returnButton = find.bySemanticsLabel('Return to sign in');
+    expect(returnButton, findsOneWidget);
+    await tester.ensureVisible(returnButton);
+    await tester.pumpAndSettle();
+    expect(returnButton.hitTestable(), findsOneWidget);
+    expect(
+      tester
+          .getSemantics(returnButton)
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isTrue,
+    );
+    await tester.tap(returnButton);
     await tester.pumpAndSettle();
 
     expect(await sessionStore.read(), isNull);
     expect(find.text('sign-in-entry'), findsOneWidget);
+    semantics.dispose();
   });
 }
 

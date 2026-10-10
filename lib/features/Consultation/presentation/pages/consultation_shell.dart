@@ -170,7 +170,7 @@ class _ConsultationShellPageState extends State<ConsultationShellPage>
           (context) => AlertDialog(
             title: const Text('Leave consultation?'),
             content: const Text(
-              'You can rejoin while the backend consultation window remains open.',
+              'You can rejoin while the consultation is still open.',
             ),
             actions: [
               TextButton(
@@ -634,8 +634,10 @@ class _CallControls extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        child: Wrap(
+          alignment: WrapAlignment.spaceEvenly,
+          spacing: 8,
+          runSpacing: 4,
           children: [
             _CallButton(
               label: controller.microphoneEnabled ? 'Mute' : 'Unmute',
@@ -698,24 +700,27 @@ class _CallButton extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton.filled(
-            tooltip: label,
-            style: IconButton.styleFrom(
-              backgroundColor:
-                  destructive ? const Color(0xFFD84545) : Colors.white12,
-              foregroundColor: Colors.white,
+      onTap: onPressed,
+      child: ExcludeSemantics(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton.filled(
+              tooltip: label,
+              style: IconButton.styleFrom(
+                backgroundColor:
+                    destructive ? const Color(0xFFD84545) : Colors.white12,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: onPressed,
+              icon: Icon(icon),
             ),
-            onPressed: onPressed,
-            icon: Icon(icon),
-          ),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white, fontSize: 11),
-          ),
-        ],
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white, fontSize: 11),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -95,7 +95,7 @@ class ProfessionalScheduleController extends ChangeNotifier {
       return 'End time must be after start time.';
     }
     if (!ProfessionalTimeFormatter().isValidTimezone(draft.timezone.trim())) {
-      return 'Choose a valid IANA timezone.';
+      return 'Choose a valid time zone, such as Africa/Lagos.';
     }
     if (draft.active) {
       final overlaps = windows.any(
@@ -257,7 +257,7 @@ class ProfessionalScheduleController extends ChangeNotifier {
       409 => 'Availability changed. Refresh and try again.',
       _ => switch (error.type) {
         AuthFailureType.missingConfiguration =>
-          'Backend is not configured yet.',
+          'Schedule is unavailable right now. Please try again.',
         AuthFailureType.unauthorized =>
           'Your session has expired. Please sign in again.',
         AuthFailureType.forbidden =>

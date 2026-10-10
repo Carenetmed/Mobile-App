@@ -479,7 +479,8 @@ class ProfessionalBookingController extends ChangeNotifier {
         return BookingGateOutcome.failure;
       }
       bookingReadinessFailed = true;
-      bookingError = 'Could not verify patient readiness. Please try again.';
+      bookingError =
+          "We couldn't confirm that your account is ready to request an appointment. Please try again.";
       _notify();
       return BookingGateOutcome.failure;
     }

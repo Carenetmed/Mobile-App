@@ -263,6 +263,40 @@ void main() {
     expect(find.text('Email'), findsWidgets);
   });
 
+  testWidgets('preferences failure is announced and offers explicit retry', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final repository = FakeNotificationRepository()
+      ..preferencesFailure = StateError('raw preference failure');
+    await tester.pumpWidget(
+      MaterialApp(home: NotificationPreferencesPage(repository: repository)),
+    );
+    await tester.pumpAndSettle();
+
+    final error = find.text('Notifications are unavailable. Please try again.');
+    expect(error, findsOneWidget);
+    expect(
+      tester
+          .getSemantics(error)
+          .getSemanticsData()
+          .flagsCollection
+          .isLiveRegion,
+      isTrue,
+    );
+    expect(find.text('Retry loading preferences'), findsOneWidget);
+    expect(find.text('raw preference failure'), findsNothing);
+
+    repository.preferencesFailure = null;
+    await tester.tap(find.text('Retry loading preferences'));
+    await tester.pumpAndSettle();
+
+    expect(repository.preferencesCalls, 2);
+    expect(find.text('Notifications are unavailable. Please try again.'), findsNothing);
+    expect(find.text('Appointments'), findsOneWidget);
+    semantics.dispose();
+  });
+
   testWidgets('preferences remain reachable at compact width with 2x text', (
     tester,
   ) async {

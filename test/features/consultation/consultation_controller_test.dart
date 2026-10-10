@@ -956,6 +956,41 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(controller.isConnected, isTrue);
+      final waitingStatus = find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label == 'Waiting for the other participant',
+      );
+      expect(waitingStatus, findsOneWidget);
+      expect(
+        tester
+            .getSemantics(waitingStatus)
+            .getSemanticsData()
+            .flagsCollection
+            .isLiveRegion,
+        isTrue,
+      );
+      room.connectionState = RtcConnectionState.reconnecting;
+      room.notifyListeners();
+      await tester.pumpAndSettle();
+      final reconnectingStatus = find.byWidgetPredicate(
+        (widget) =>
+            widget is Semantics &&
+            widget.properties.label == 'Reconnecting securely...',
+      );
+      expect(reconnectingStatus, findsOneWidget);
+      expect(
+        tester
+            .getSemantics(reconnectingStatus)
+            .getSemanticsData()
+            .flagsCollection
+            .isLiveRegion,
+        isTrue,
+      );
+      room.connectionState = RtcConnectionState.connected;
+      room.notifyListeners();
+      await tester.pumpAndSettle();
+
       for (final label in <String>['Mute', 'Speaker', 'Leave']) {
         final control = find.bySemanticsLabel(label);
         expect(control, findsOneWidget);

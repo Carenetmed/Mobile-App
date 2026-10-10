@@ -44,8 +44,13 @@ The isolated 13-file follow-up passes 115 targeted tests and
 started, with no Dart CPU progress, and its local Gradle build also stalled.
 Exact-head CI on `08774c1a15544cff72eae44f9b1f3b8d86b0d60b` passed analysis,
 733 Flutter tests, debug APK, Android release lint, signing, and environment
-regressions. Relative to the 732-test integration inventory, this follow-up
-adds one payment-error test and removes/disables none. Keep Cloud SQL
+regressions. Relative to the 732-test integration inventory, that follow-up
+adds one payment-error test and removes/disables none. APP-READY-058 now has a
+second focused continuation on base `77127b8a64a0cf68ba2e7f6d7be7cd0dac7fd9db`:
+it adds appointment/call state announcements and notification-preference
+retry; 71 targeted tests and analyzer pass, with full CI pending. Read-only GCP
+inspection on 2026-10-10 confirms Cloud SQL STOPPED/NEVER, the notification
+Scheduler job PAUSED, and staging Cloud Run has no minimum scale. Keep Cloud SQL
 stopped, Scheduler paused, and nonessential services off; staging Cloud Run
 remains available to the app with minimum instances disabled.
 
@@ -58,7 +63,7 @@ browser validator. The console remains source-only: no hosting, deployment,
 or administrator provisioning occurred. Do not activate providers, deploy,
 or alter cloud resources for source-only work.
 
-Last successful read-only staging observations (2026-10-09): Cloud SQL
+Last successful read-only staging observations (2026-10-10): Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
 notification scheduler is PAUSED; Cloud Run `carenet-backend-staging` has no
 minimum scale and maxScale 3, so request-based use can still incur charges.
@@ -363,7 +368,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-055 | Audit and close the remaining sign-in/sign-up visual and compact/enlarged-text UX mismatch without changing auth authority or enabling providers | M | **DONE** - PR #219 merged at `20bc085`; exact-head CI passed with 726 Flutter tests |
 | APP-READY-056 | Audit the Web professional-verification review journey against its backend contract; define the smallest source/CI-only readiness step and list cloud/admin operations that remain approval-gated | S | **DONE** - Web PR #5 merged at `39cc5b4`; same-origin read guard fixed, 18 tests/lint/build pass; no hosting or admin provisioning |
 | APP-READY-057 | Add browser-level tests for the admin verification journey using a mock backend: sign-in/session restore, queue pagination, document preview, decision confirmation, and recovery states; keep it source/CI-only | M | **DONE** - Web PR #6 merged at `2ec9dd7`; exact-head CI passed |
-| APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **IN PROGRESS** - PR #222 merged; follow-up PR #224 at `08774c1` passes exact-head CI: analyzer, 733 tests, debug APK, Android release lint/signing/environment checks; one test added, none removed/disabled; manual TalkBack/device evidence remains |
+| APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **IN PROGRESS** - PR #222 and follow-up PR #224 merged; next continuation adds accessible appointment/call state announcements and notification retry, with 71 targeted tests and analyzer passing; exact-head CI pending; cloud services untouched |
 
 ### APP-READY-055 implementation evidence
 

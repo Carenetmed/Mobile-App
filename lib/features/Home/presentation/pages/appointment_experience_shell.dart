@@ -950,11 +950,14 @@ class _AppointmentStatusHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            _statusLabel(appointment.status),
-            style: const TextStyle(
-              color: CarenetColors.brand,
-              fontWeight: FontWeight.w700,
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              _statusLabel(appointment.status),
+              style: const TextStyle(
+                color: CarenetColors.brand,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -1274,7 +1277,7 @@ class _InlineNotice extends StatelessWidget {
         color: positive ? CarenetColors.primary100 : CarenetColors.neutral100,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(message),
+      child: Semantics(liveRegion: true, child: Text(message)),
     );
   }
 }

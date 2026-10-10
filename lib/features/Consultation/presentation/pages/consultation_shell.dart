@@ -982,7 +982,7 @@ class _ConsultationCountdownState extends State<_ConsultationCountdown> {
     final text =
         widget.active
             ? past
-                ? 'Scheduled time ended. Backend grace rules still apply.'
+                ? 'The scheduled time has passed. Access follows your appointment status.'
                 : 'Scheduled time remaining: $value'
             : past
             ? 'The scheduled join opening time has arrived.'

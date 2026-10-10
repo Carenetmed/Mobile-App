@@ -35,10 +35,17 @@ the Web admin review status; APP-READY-057 added browser-level admin review
 coverage through Web PR #6 at `2ec9dd79b5c321d29225eab341a7285ef19b492d`.
 Mobile PR #221 merged at `139b5153cc677a5ac77e0f6e7e857e0028a82492` with
 four documentation-only updates and exact-head CI green. APP-READY-058 PR #222
-merged at `96c7c8d11ee92a8fe5089cf2a2bee4cfb4088906`; exact-head CI passed 730
-Flutter tests. The isolated continuation has 179 focused tests and a clean
-analyzer, but its full local suite stalled during compilation and was stopped;
-full-suite verification remains open. Keep Cloud SQL
+merged at `547e5cc5b52c2e00f10d9c3371f4d20dbf68eafd`; exact-head CI passed 730
+Flutter tests. Three independent route audits identified account-detail retry
+recovery, live announcement of onboarding catalog failures, and
+implementation-facing copy in appointments, verification, and consultation.
+The isolated 13-file follow-up passes 115 targeted tests and
+`flutter analyze --no-pub`; its full local suite stalled before the first test
+started, with no Dart CPU progress, and its local Gradle build also stalled.
+Exact-head CI on `08774c1a15544cff72eae44f9b1f3b8d86b0d60b` passed analysis,
+733 Flutter tests, debug APK, Android release lint, signing, and environment
+regressions. Relative to the 732-test integration inventory, this follow-up
+adds one payment-error test and removes/disables none. Keep Cloud SQL
 stopped, Scheduler paused, and nonessential services off; staging Cloud Run
 remains available to the app with minimum instances disabled.
 
@@ -356,7 +363,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-055 | Audit and close the remaining sign-in/sign-up visual and compact/enlarged-text UX mismatch without changing auth authority or enabling providers | M | **DONE** - PR #219 merged at `20bc085`; exact-head CI passed with 726 Flutter tests |
 | APP-READY-056 | Audit the Web professional-verification review journey against its backend contract; define the smallest source/CI-only readiness step and list cloud/admin operations that remain approval-gated | S | **DONE** - Web PR #5 merged at `39cc5b4`; same-origin read guard fixed, 18 tests/lint/build pass; no hosting or admin provisioning |
 | APP-READY-057 | Add browser-level tests for the admin verification journey using a mock backend: sign-in/session restore, queue pagination, document preview, decision confirmation, and recovery states; keep it source/CI-only | M | **DONE** - Web PR #6 merged at `2ec9dd7`; exact-head CI passed |
-| APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **IN PROGRESS** - PR #222 merged; isolated continuation fixes two reproduced compact 2x-text overflows and misleading/internal copy/semantics; analyzer and focused 179-test group pass, full-suite verification pending |
+| APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **IN PROGRESS** - PR #222 merged; follow-up PR #224 at `08774c1` passes exact-head CI: analyzer, 733 tests, debug APK, Android release lint/signing/environment checks; one test added, none removed/disabled; manual TalkBack/device evidence remains |
 
 ### APP-READY-055 implementation evidence
 

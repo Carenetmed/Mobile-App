@@ -45,6 +45,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
   bool _isLoggingOut = false;
   bool _isDeletingAccount = false;
   bool _isLoadingCurrentAccount = true;
+  bool _accountLoadInFlight = false;
   bool _isLinkingGoogle = false;
   String? _logoutError;
   String? _currentAccountError;
@@ -104,11 +105,24 @@ class _AccountShellPageState extends State<AccountShellPage> {
   }
 
   Future<void> _loadCurrentAccount() async {
+    if (_accountLoadInFlight) {
+      return;
+    }
+    _accountLoadInFlight = true;
+    if (mounted && !_isLoadingCurrentAccount) {
+      setState(() {
+        _isLoadingCurrentAccount = true;
+        _currentAccountError = null;
+      });
+    }
     if (widget.accountRepository == null &&
         !sl.isRegistered<AccountRepository>()) {
-      setState(() {
-        _isLoadingCurrentAccount = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingCurrentAccount = false;
+        });
+      }
+      _accountLoadInFlight = false;
       return;
     }
 
@@ -132,6 +146,8 @@ class _AccountShellPageState extends State<AccountShellPage> {
         _currentAccountError = 'Could not load account details.';
         _isLoadingCurrentAccount = false;
       });
+    } finally {
+      _accountLoadInFlight = false;
     }
   }
 
@@ -410,18 +426,40 @@ class _AccountShellPageState extends State<AccountShellPage> {
                       borderRadius: BorderRadius.circular(12.r),
                       border: Border.all(color: AppColors.white04),
                     ),
-                    child: Semantics(
-                      liveRegion: true,
-                      child: Text(
-                        _currentAccountError!,
-                        style: TextStyle(
-                          fontSize: FontSizes.footer3,
-                          fontFamily: AppFonts.montserrat,
-                          fontWeight: FontWeight.w400,
-                          color: AppColors.primaryBlue5,
-                          height: 1.4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            _currentAccountError!,
+                            style: TextStyle(
+                              fontSize: FontSizes.footer3,
+                              fontFamily: AppFonts.montserrat,
+                              fontWeight: FontWeight.w400,
+                              color: AppColors.primaryBlue5,
+                              height: 1.4,
+                            ),
+                          ),
                         ),
-                      ),
+                        SizedBox(height: 8.h),
+                        OutlinedButton.icon(
+                          onPressed:
+                              _isLoadingCurrentAccount
+                                  ? null
+                                  : _loadCurrentAccount,
+                          icon:
+                              _isLoadingCurrentAccount
+                                  ? SizedBox.square(
+                                      dimension: 16.r,
+                                      child: const CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.refresh),
+                          label: const Text('Retry account details'),
+                        ),
+                      ],
                     ),
                   ),
                 ],

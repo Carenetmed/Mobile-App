@@ -790,6 +790,15 @@ void main() {
     expect(find.text('doctor@carenet.app'), findsNothing);
     expect(find.text('Unavailable'), findsOneWidget);
     expect(find.text('Account details unavailable'), findsOneWidget);
+    expect(find.text('Retry account details'), findsOneWidget);
+
+    repository.failure = null;
+    await tester.tap(find.text('Retry account details'));
+    await tester.pumpAndSettle();
+
+    expect(repository.currentAccountCalls, 2);
+    expect(find.text('Please sign in again.'), findsNothing);
+    expect(find.text('backend-user@carenet.app'), findsOneWidget);
   });
 
   testWidgets('logout failure shows safe error without navigation', (
@@ -1393,7 +1402,7 @@ class _FakeAccountRepository implements AccountRepository {
   _FakeAccountRepository({this.user, this.failure, this.verificationFailure});
 
   final AuthUser? user;
-  final AuthFailure? failure;
+  AuthFailure? failure;
   final AuthFailure? verificationFailure;
   int currentAccountCalls = 0;
   int requestEmailVerificationCalls = 0;

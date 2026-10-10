@@ -523,7 +523,7 @@ class _AppointmentDetailShellPageState extends State<AppointmentDetailShellPage>
               (context) => AlertDialog(
                 title: Text('${_actionLabel(action)} appointment?'),
                 content: Text(
-                  'The backend will recheck whether this appointment can be $label.',
+                  'Please confirm you want to $label this appointment.',
                 ),
                 actions: [
                   TextButton(
@@ -989,16 +989,16 @@ class _AppointmentPaymentSection extends StatelessWidget {
       return const _StatePanel(
         icon: Icons.payments_outlined,
         title: 'Loading payment status',
-        body: 'Checking the authoritative consultation payment.',
+        body: 'Checking payment details for this appointment.',
       );
     }
     if (pricing == null && payment == null) {
       return _StatePanel(
         icon: Icons.payments_outlined,
-        title: 'Payment not yet available',
+        title: 'Payment details unavailable',
         body:
             controller.errorMessage ??
-            'A payment contract has not been created for this appointment.',
+            'No payment information is available for this appointment yet.',
         actionLabel: controller.errorMessage == null ? null : 'Retry',
         onAction: controller.errorMessage == null ? null : controller.load,
       );

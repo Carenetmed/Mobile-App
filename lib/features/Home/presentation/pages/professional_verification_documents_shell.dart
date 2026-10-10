@@ -450,7 +450,7 @@ class _IntroCard extends StatelessWidget {
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  'Document status is loaded from your backend account.',
+                  'View the current status of your verification documents.',
                   style: TextStyle(
                     fontSize: FontSizes.footer4,
                     fontFamily: AppFonts.montserrat,
@@ -707,7 +707,7 @@ class _VerificationReadinessCard extends StatelessWidget {
     }
     final professional = readiness?.professional;
     if (professional == null) {
-      return 'Loading backend verification requirements.';
+      return 'Checking what you need for verification.';
     }
     if (professional.requiredProfileFields.isNotEmpty) {
       return 'Complete your professional profile before document review.';
@@ -719,7 +719,7 @@ class _VerificationReadinessCard extends StatelessWidget {
       'PENDING' => 'Your documents are uploaded and waiting for review.',
       'REJECTED' =>
         'Your verification needs attention. Review the required evidence and upload corrected documents.',
-      'VERIFIED' => 'Your professional account is verified by the backend.',
+      'VERIFIED' => 'Your professional account is verified.',
       _ =>
         'Your required evidence is uploaded. CareNet will review it before public verification.',
     };

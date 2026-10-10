@@ -2,7 +2,7 @@
 
 ## Production Readiness Checkpoint (APP-READY-058)
 
-Current mobile integration is `96c7c8d11ee92a8fe5089cf2a2bee4cfb4088906`.
+Current mobile integration is `547e5cc5b52c2e00f10d9c3371f4d20dbf68eafd`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
 PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
 debug APK, Android release lint, and release signing/environment regressions.
@@ -18,14 +18,20 @@ browser journey and corrected the Web queue DTO validator mismatch in PR #6;
 exact-head CI passed 19 Node tests, one browser journey, lint, and production
 build. Mobile PR #221 merged at `139b5153cc677a5ac77e0f6e7e857e0028a82492`
 with four documentation-only files and green exact-head CI. APP-READY-058 PR
-#222 merged at the current integration SHA; exact-head CI passed analyzer, 730
-Flutter tests, debug APK, Android release lint, and release checks. An isolated
-follow-up reproduces and fixes two 320x568 / 2x-text overflows in unsupported-
-role recovery and active consultation controls, plus focused user-facing copy
-and semantics improvements. Its nine-file targeted group passes 179 tests and
-`flutter analyze --no-pub` reports no issues. The local full-suite run stalled
-during compilation and was stopped; full-suite verification remains open. No
-backend, provider, native, dependency, or cloud changes are in this follow-up.
+#222 merged at `547e5cc5b52c2e00f10d9c3371f4d20dbf68eafd`; exact-head CI passed
+analyzer, 730 Flutter tests, debug APK, Android release lint, and release
+checks. APP-READY-058 follow-up PR #224 head
+`08774c1a15544cff72eae44f9b1f3b8d86b0d60b` adds an account-details retry after
+failure, announces onboarding catalog errors as live regions, replaces
+implementation-facing appointment/verification/consultation copy, tests a
+payment failure's user-safe presentation, and checks consultation waiting
+action reachability at 320x568 with 2x text. Its focused group passes 115
+tests and `flutter analyze --no-pub` reports no issues. The full local suite
+and local Gradle build stalled; exact-head GitHub CI passed analysis, 733 tests,
+debug APK, Android release lint, signing, and environment checks. Compared with
+the 732-test integration suite, one payment-error test was added; none were
+removed, skipped, or disabled. No backend, provider, native, dependency, or
+cloud changes are in this follow-up.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus

@@ -46,10 +46,22 @@ wrap, expose one actionable semantic button each, and remain operable in
 video/audio modes; unsupported-role recovery scrolls when enlarged text needs
 more height. User-facing copy was clarified for Find Care configuration,
 booking-readiness retry, Schedule timezone validation, verification-document
-metadata, finance, and appointment summaries. The focused nine-file group
-passes 179 tests and analyzer is clean. Full-suite local verification remains
-open because whole-suite compilation stalled on the constrained system drive;
-manual TalkBack, focus-order, and physical-device proof remain open.
+metadata, finance, and appointment summaries. The focused follow-up group
+passes 115 tests and analyzer is clean. Route audits also found that Account
+had no retry after `/account/me` failed, onboarding catalog load errors were
+not announced as live regions, and appointment, verification, and consultation
+copy exposed implementation terminology. Account now retries without
+discarding authoritative identity, onboarding errors are announced, and the
+affected copy is user-facing. Payment failure copy has a regression that
+rejects raw/internal error text. The consultation prejoin test uses 320x568
+and 2x text and proves the backend-authorized waiting action remains reachable
+without overflow. The local full-suite process stalled before its first test
+with no Dart CPU progress and the local Gradle build also stalled. Exact-head
+CI for APP-READY-058 PR #224 passed analysis, 733 tests, debug APK, Android
+release lint, signing, and environment checks. The integration base had 732
+tests; one payment-error regression was added and none were removed, skipped,
+or disabled. Manual TalkBack, focus-order, and physical-device proof remain
+open.
 
 - Primary, success, error, and information text/surface pairs are checked at
   WCAG normal-text contrast of at least 4.5:1.

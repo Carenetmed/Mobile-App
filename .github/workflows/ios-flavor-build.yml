@@ -1,0 +1,65 @@
+name: iOS Flavor Build
+
+on:
+  pull_request:
+    branches:
+      - feature/frontend-milestone
+    paths:
+      - "ios/**"
+      - "lib/core/config/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/ios-flavor-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-flavor-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulator-build:
+    name: Build staging and production iOS simulator apps
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out reviewed commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.5"
+          channel: stable
+          cache: true
+
+      - name: Print toolchain versions
+        run: |
+          flutter --version
+          xcodebuild -version
+
+      - name: Resolve Flutter dependencies
+        run: flutter pub get
+
+      - name: Resolve native iOS dependencies
+        run: pod install --project-directory=ios
+
+      - name: Export initial pod lock for pinning
+        uses: actions/upload-artifact@v4
+        with:
+          name: bootstrap-ios-pod-lockfile
+          path: ios/Podfile.lock
+          retention-days: 1
+
+      - name: Verify dependency lock integrity
+        run: git diff --exit-code -- pubspec.lock
+
+      - name: Build unsigned simulator app
+        run: |
+          flutter build ios --simulator --no-codesign --flavor staging
+          flutter build ios --simulator --no-codesign --flavor production

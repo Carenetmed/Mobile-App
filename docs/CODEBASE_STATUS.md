@@ -281,7 +281,7 @@ physical acceptance, and production promotion remain explicit open gates.
 - Canonical Firebase apps are registered for Android and iOS staging/production in `project-a96784ee-811c-46ab-a7b`.
 - Android staging (`com.carenet.app.staging`) and production (`com.carenet.app`) are explicit Gradle flavors with distinct labels.
 - Runtime environment validation rejects wrong-project Firebase configuration and insecure production API URLs.
-- iOS remains registered only; Apple signing, schemes, APNs, and device proof are unresolved release gates.
+- iOS now has shared staging/production Xcode schemes, registered bundle IDs, flavor-specific labels, CocoaPods configuration mappings, and an unsigned simulator-build CI lane. Apple signing, APNs, Apple identity capability, and device proof remain unresolved release gates; production startup remains blocked until its API host is registered.
 
 ## Authentication readiness
 

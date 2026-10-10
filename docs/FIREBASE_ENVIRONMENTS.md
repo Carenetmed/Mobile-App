@@ -45,6 +45,28 @@ Keep local runtime configuration files outside Git and pass them with
 values, but the resulting app will intentionally stop at the configuration
 error screen until launched with matching runtime defines.
 
-## iOS boundary
+## iOS builds
 
-Both bundle IDs are registered in the canonical Firebase project. Xcode schemes, Apple signing, APNs keys, Apple Sign In capability, and physical-device proof require Apple Developer access and a Mac; iOS is not release-ready until those gates pass.
+Shared Xcode schemes `staging` and `production` map to the registered iOS
+bundle IDs and Firebase app IDs above. Staging uses the visible app name
+`CareNet Staging`; production uses `CareNet`. The checked-in CocoaPods
+configuration maps each scheme's Debug, Profile, and Release configurations.
+The iOS deployment minimum is 15.0, matching the minimum required by the
+resolved Firebase iOS SDKs.
+
+Build a simulator variant from macOS with:
+
+```sh
+flutter pub get
+flutter build ios --simulator --no-codesign --flavor staging
+```
+
+Replace `staging` with `production` to compile the production flavor. Both
+flavors still require matching runtime `--dart-define` values to start. Do not
+put provider config or signing material in Xcode files. The iOS simulator CI
+build is limited to pull requests that touch iOS or environment configuration.
+
+These build definitions do not establish release readiness. Apple signing,
+APNs keys, Apple Sign In capability, provider setup, and physical-device proof
+still require Apple Developer access and a Mac/iPhone. Production startup also
+remains blocked until the canonical production API host is registered.

@@ -346,7 +346,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
@@ -369,6 +369,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app;
+				APP_DISPLAY_NAME = "CareNet";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -472,7 +473,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -523,7 +524,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = iphoneos;
@@ -548,6 +549,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app;
+				APP_DISPLAY_NAME = "CareNet";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -570,6 +572,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app;
+				APP_DISPLAY_NAME = "CareNet";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
@@ -577,6 +580,24 @@
 			};
 			name = Release;
 		};
+		A06000000000000000000001 /* Debug-staging RunnerTests */ = { isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app.staging.RunnerTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 5.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner"; }; name = "Debug-staging"; };
+		A06000000000000000000002 /* Profile-staging RunnerTests */ = { isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app.staging.RunnerTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner"; }; name = "Profile-staging"; };
+		A06000000000000000000003 /* Release-staging RunnerTests */ = { isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app.staging.RunnerTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner"; }; name = "Release-staging"; };
+		A06000000000000000000004 /* Debug-production RunnerTests */ = { isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app.RunnerTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 5.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner"; }; name = "Debug-production"; };
+		A06000000000000000000005 /* Profile-production RunnerTests */ = { isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app.RunnerTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner"; }; name = "Profile-production"; };
+		A06000000000000000000006 /* Release-production RunnerTests */ = { isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; MARKETING_VERSION = 1.0; PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app.RunnerTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Runner.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Runner"; }; name = "Release-production"; };
+		A06000000000000000000007 /* Debug-staging project */ = { isa = XCBuildConfiguration; buildSettings = { ENABLE_USER_SCRIPT_SANDBOXING = NO; IPHONEOS_DEPLOYMENT_TARGET = 15.0; SDKROOT = iphoneos; TARGETED_DEVICE_FAMILY = "1,2"; }; name = "Debug-staging"; };
+		A06000000000000000000008 /* Profile-staging project */ = { isa = XCBuildConfiguration; buildSettings = { ENABLE_USER_SCRIPT_SANDBOXING = NO; IPHONEOS_DEPLOYMENT_TARGET = 15.0; SDKROOT = iphoneos; TARGETED_DEVICE_FAMILY = "1,2"; }; name = "Profile-staging"; };
+		A06000000000000000000009 /* Release-staging project */ = { isa = XCBuildConfiguration; buildSettings = { ENABLE_USER_SCRIPT_SANDBOXING = NO; IPHONEOS_DEPLOYMENT_TARGET = 15.0; SDKROOT = iphoneos; TARGETED_DEVICE_FAMILY = "1,2"; }; name = "Release-staging"; };
+		A0600000000000000000000A /* Debug-production project */ = { isa = XCBuildConfiguration; buildSettings = { ENABLE_USER_SCRIPT_SANDBOXING = NO; IPHONEOS_DEPLOYMENT_TARGET = 15.0; SDKROOT = iphoneos; TARGETED_DEVICE_FAMILY = "1,2"; }; name = "Debug-production"; };
+		A0600000000000000000000B /* Profile-production project */ = { isa = XCBuildConfiguration; buildSettings = { ENABLE_USER_SCRIPT_SANDBOXING = NO; IPHONEOS_DEPLOYMENT_TARGET = 15.0; SDKROOT = iphoneos; TARGETED_DEVICE_FAMILY = "1,2"; }; name = "Profile-production"; };
+		A0600000000000000000000C /* Release-production project */ = { isa = XCBuildConfiguration; buildSettings = { ENABLE_USER_SCRIPT_SANDBOXING = NO; IPHONEOS_DEPLOYMENT_TARGET = 15.0; SDKROOT = iphoneos; TARGETED_DEVICE_FAMILY = "1,2"; }; name = "Release-production"; };
+		A0600000000000000000000D /* Debug-staging Runner */ = { isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CLANG_ENABLE_MODULES = YES; CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)"; ENABLE_BITCODE = NO; INFOPLIST_FILE = Runner/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks",); PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app.staging; APP_DISPLAY_NAME = "CareNet Staging"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 5.0; VERSIONING_SYSTEM = "apple-generic"; }; name = "Debug-staging"; };
+		A0600000000000000000000E /* Profile-staging Runner */ = { isa = XCBuildConfiguration; baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CLANG_ENABLE_MODULES = YES; CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)"; ENABLE_BITCODE = NO; INFOPLIST_FILE = Runner/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks",); PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app.staging; APP_DISPLAY_NAME = "CareNet Staging"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h"; SWIFT_VERSION = 5.0; VERSIONING_SYSTEM = "apple-generic"; }; name = "Profile-staging"; };
+		A0600000000000000000000F /* Release-staging Runner */ = { isa = XCBuildConfiguration; baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CLANG_ENABLE_MODULES = YES; CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)"; ENABLE_BITCODE = NO; INFOPLIST_FILE = Runner/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks",); PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app.staging; APP_DISPLAY_NAME = "CareNet Staging"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h"; SWIFT_VERSION = 5.0; VERSIONING_SYSTEM = "apple-generic"; }; name = "Release-staging"; };
+		A06000000000000000000010 /* Debug-production Runner */ = { isa = XCBuildConfiguration; baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CLANG_ENABLE_MODULES = YES; CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)"; ENABLE_BITCODE = NO; INFOPLIST_FILE = Runner/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks",); PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app; APP_DISPLAY_NAME = "CareNet"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 5.0; VERSIONING_SYSTEM = "apple-generic"; }; name = "Debug-production"; };
+		A06000000000000000000011 /* Profile-production Runner */ = { isa = XCBuildConfiguration; baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CLANG_ENABLE_MODULES = YES; CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)"; ENABLE_BITCODE = NO; INFOPLIST_FILE = Runner/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks",); PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app; APP_DISPLAY_NAME = "CareNet"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h"; SWIFT_VERSION = 5.0; VERSIONING_SYSTEM = "apple-generic"; }; name = "Profile-production"; };
+		A06000000000000000000012 /* Release-production Runner */ = { isa = XCBuildConfiguration; baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CLANG_ENABLE_MODULES = YES; CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)"; ENABLE_BITCODE = NO; INFOPLIST_FILE = Runner/Info.plist; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks",); PRODUCT_BUNDLE_IDENTIFIER = com.carenet.app; APP_DISPLAY_NAME = "CareNet"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h"; SWIFT_VERSION = 5.0; VERSIONING_SYSTEM = "apple-generic"; }; name = "Release-production"; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -586,6 +607,12 @@
 				331C8088294A63A400263BE5 /* Debug */,
 				331C8089294A63A400263BE5 /* Release */,
 				331C808A294A63A400263BE5 /* Profile */,
+				A06000000000000000000001 /* Debug-staging */,
+				A06000000000000000000002 /* Profile-staging */,
+				A06000000000000000000003 /* Release-staging */,
+				A06000000000000000000004 /* Debug-production */,
+				A06000000000000000000005 /* Profile-production */,
+				A06000000000000000000006 /* Release-production */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -596,6 +623,12 @@
 				97C147031CF9000F007C117D /* Debug */,
 				97C147041CF9000F007C117D /* Release */,
 				249021D3217E4FDB00AE95B9 /* Profile */,
+				A06000000000000000000007 /* Debug-staging */,
+				A06000000000000000000008 /* Profile-staging */,
+				A06000000000000000000009 /* Release-staging */,
+				A0600000000000000000000A /* Debug-production */,
+				A0600000000000000000000B /* Profile-production */,
+				A0600000000000000000000C /* Release-production */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -606,6 +639,12 @@
 				97C147061CF9000F007C117D /* Debug */,
 				97C147071CF9000F007C117D /* Release */,
 				249021D4217E4FDB00AE95B9 /* Profile */,
+				A0600000000000000000000D /* Debug-staging */,
+				A0600000000000000000000E /* Profile-staging */,
+				A0600000000000000000000F /* Release-staging */,
+				A06000000000000000000010 /* Debug-production */,
+				A06000000000000000000011 /* Profile-production */,
+				A06000000000000000000012 /* Release-production */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

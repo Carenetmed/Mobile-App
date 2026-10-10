@@ -47,7 +47,7 @@ jobs:
         run: flutter pub get
 
       - name: Generate flavor-specific iOS project configuration
-        run: flutter build ios --config-only --flavor staging
+        run: flutter build ios --config-only --no-codesign --flavor staging
 
       - name: Resolve native iOS dependencies
         run: pod install --project-directory=ios

@@ -198,7 +198,8 @@ class _ProfessionalVerificationDocumentsShellPageState
 
   String _safeVerificationError(AuthFailure failure) {
     return switch (failure.type) {
-      AuthFailureType.missingConfiguration => 'Backend is not configured yet.',
+      AuthFailureType.missingConfiguration =>
+        'Verification is unavailable right now. Please try again.',
       AuthFailureType.unauthorized => 'Please sign in again.',
       AuthFailureType.forbidden => 'This account cannot manage verification.',
       AuthFailureType.validation => 'Please check the details and try again.',
@@ -860,21 +861,13 @@ class _DocumentCard extends StatelessWidget {
             ],
           ),
           SizedBox(height: 12.h),
-          _MetaRow(label: 'Document id', value: document.id),
           _MetaRow(
-            label: 'MIME type',
-            value: _orUnavailable(document.mimeType),
+            label: 'File type',
+            value: _fileTypeLabel(document.mimeType),
           ),
           _MetaRow(
             label: 'File size',
-            value:
-                document.fileSizeBytes == null
-                    ? 'Not available'
-                    : '${document.fileSizeBytes} bytes',
-          ),
-          _MetaRow(
-            label: 'Checksum',
-            value: document.checksumProvided ? 'Provided' : 'Not provided',
+            value: _fileSizeLabel(document.fileSizeBytes),
           ),
           _MetaRow(
             label: 'Uploaded',
@@ -900,8 +893,27 @@ class _DocumentCard extends StatelessWidget {
         .join(' ');
   }
 
-  String _orUnavailable(String value) {
-    return value.trim().isEmpty ? 'Not available' : value;
+  String _fileTypeLabel(String value) {
+    final mimeType = value.trim().toLowerCase().split(';').first;
+    return switch (mimeType) {
+      'application/pdf' => 'PDF document',
+      'image/jpeg' => 'JPEG image',
+      'image/png' => 'PNG image',
+      _ => 'File type unavailable',
+    };
+  }
+
+  String _fileSizeLabel(int? bytes) {
+    if (bytes == null || bytes < 0) {
+      return 'Not available';
+    }
+    if (bytes < 1024) {
+      return '$bytes bytes';
+    }
+    if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).round()} KB';
+    }
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 
   String _dateLabel(DateTime date) {
@@ -927,7 +939,7 @@ class _StatusPill extends StatelessWidget {
         border: Border.all(color: AppColors.white04),
       ),
       child: Text(
-        status.trim().isEmpty ? 'UNKNOWN' : status.trim().toUpperCase(),
+        status.trim().isEmpty ? 'Status unavailable' : _statusLabel(status),
         style: TextStyle(
           fontSize: FontSizes.footer4,
           fontFamily: AppFonts.montserrat,
@@ -936,6 +948,18 @@ class _StatusPill extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _statusLabel(String value) {
+    return value
+        .trim()
+        .split(RegExp(r'[_\s-]+'))
+        .where((part) => part.isNotEmpty)
+        .map(
+          (part) =>
+              '${part[0].toUpperCase()}${part.substring(1).toLowerCase()}',
+        )
+        .join(' ');
   }
 }
 

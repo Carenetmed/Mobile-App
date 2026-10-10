@@ -146,7 +146,7 @@ class _SearchShellPageState extends State<SearchShellPage> {
     if (error is AuthFailure) {
       return switch (error.type) {
         AuthFailureType.missingConfiguration =>
-          'Backend is not configured yet.',
+          'This directory is unavailable right now. Please try again.',
         AuthFailureType.unauthorized => 'Please sign in again.',
         AuthFailureType.forbidden =>
           'This account cannot access this directory.',
@@ -206,20 +206,22 @@ class _SearchShellPageState extends State<SearchShellPage> {
                     hintText:
                         'Search by professional name, category, or specialty',
                     prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _searchController.text.isEmpty
-                        ? null
-                        : IconButton(
-                            tooltip: 'Clear search',
-                            icon: const Icon(Icons.close),
-                            onPressed: _searchController.clear,
-                          ),
+                    suffixIcon:
+                        _searchController.text.isEmpty
+                            ? null
+                            : IconButton(
+                              tooltip: 'Clear search',
+                              icon: const Icon(Icons.close),
+                              onPressed: _searchController.clear,
+                            ),
                   ),
                   SizedBox(height: 14.h),
                   _CategorySelector(
                     categories: categories,
                     selected: _selectedCategory,
-                    onSelected: (category) =>
-                        setState(() => _selectedCategory = category),
+                    onSelected:
+                        (category) =>
+                            setState(() => _selectedCategory = category),
                   ),
                   SizedBox(height: 20.h),
                   _ResultSummary(count: results.length),
@@ -232,11 +234,12 @@ class _SearchShellPageState extends State<SearchShellPage> {
                         padding: REdgeInsets.only(bottom: 12.h),
                         child: _ProfessionalResultCard(
                           professional: professional,
-                          onSelected: () => Navigator.pushNamed(
-                            context,
-                            RouteName.specialistDetails,
-                            arguments: professional.id,
-                          ),
+                          onSelected:
+                              () => Navigator.pushNamed(
+                                context,
+                                RouteName.specialistDetails,
+                                arguments: professional.id,
+                              ),
                         ),
                       ),
                     ),
@@ -330,12 +333,13 @@ class _FindCareHeading extends StatelessWidget {
         IconButton(
           tooltip: refreshing ? 'Refreshing Find Care' : 'Refresh Find Care',
           onPressed: onRefresh,
-          icon: refreshing
-              ? SizedBox.square(
-                  dimension: 20.r,
-                  child: const CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.refresh),
+          icon:
+              refreshing
+                  ? SizedBox.square(
+                    dimension: 20.r,
+                    child: const CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Icon(Icons.refresh),
         ),
       ],
     );
@@ -521,7 +525,11 @@ class _ProfessionalResultCard extends StatelessWidget {
                 SizedBox(height: 10.h),
                 OutlinedButton(
                   onPressed: onSelected,
-                  child: const Text('View profile'),
+                  child: Text(
+                    'View profile',
+                    semanticsLabel:
+                        'View profile for ${professional.displayName.trim()}',
+                  ),
                 ),
               ],
             ),

@@ -403,7 +403,7 @@ void main() {
         expect(controller.bookingReadinessFailed, isTrue);
         expect(
           controller.bookingError,
-          contains('Could not verify patient readiness'),
+          contains('ready to request an appointment'),
         );
         expect(
           controller.bookingError,

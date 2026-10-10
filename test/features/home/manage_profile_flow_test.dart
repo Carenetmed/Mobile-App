@@ -668,8 +668,10 @@ void main() {
     expect(find.text('Verification documents'), findsOneWidget);
     expect(
       find.text('document-with-a-long-backend-owned-identifier'),
-      findsOneWidget,
+      findsNothing,
     );
+    expect(find.text('File type unavailable'), findsOneWidget);
+    expect(find.text('2 KB'), findsOneWidget);
   });
 
   testWidgets('verification entry opens owner document status shell', (
@@ -710,11 +712,13 @@ void main() {
     );
     expect(find.text('Received: Qualification certificate'), findsOneWidget);
     expect(find.text('License'), findsWidgets);
-    expect(find.text('PENDING'), findsOneWidget);
-    expect(find.text('document-1'), findsOneWidget);
-    expect(find.text('application/pdf'), findsOneWidget);
-    expect(find.text('2048 bytes'), findsOneWidget);
-    expect(find.text('Provided'), findsOneWidget);
+    expect(find.text('Pending'), findsOneWidget);
+    expect(find.text('document-1'), findsNothing);
+    expect(find.text('application/pdf'), findsNothing);
+    expect(find.text('PDF document'), findsOneWidget);
+    expect(find.text('2 KB'), findsOneWidget);
+    expect(find.text('Checksum'), findsNothing);
+    expect(find.text('Provided'), findsNothing);
     expect(find.text('2026-07-15'), findsOneWidget);
     expect(find.text('Upload document'), findsOneWidget);
     expect(

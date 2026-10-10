@@ -39,6 +39,18 @@ tap targets, narrow layouts, and largest supported text. The route inventory is
 
 ## Shared Foundations
 
+APP-READY-058 follow-up evidence (2026-10-10): compact 320x568 / 2x-text
+tests reproduced a 299px horizontal overflow in active consultation controls
+and a 380px vertical overflow in unsupported-role recovery. The controls now
+wrap, expose one actionable semantic button each, and remain operable in
+video/audio modes; unsupported-role recovery scrolls when enlarged text needs
+more height. User-facing copy was clarified for Find Care configuration,
+booking-readiness retry, Schedule timezone validation, verification-document
+metadata, finance, and appointment summaries. The focused nine-file group
+passes 179 tests and analyzer is clean. Full-suite local verification remains
+open because whole-suite compilation stalled on the constrained system drive;
+manual TalkBack, focus-order, and physical-device proof remain open.
+
 - Primary, success, error, and information text/surface pairs are checked at
   WCAG normal-text contrast of at least 4.5:1.
 - `CarenetButton` has one labelled button semantic with a real tap action, a

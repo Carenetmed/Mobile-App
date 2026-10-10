@@ -109,7 +109,7 @@ class _AppointmentsShellPageState extends State<AppointmentsShellPage> {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Authoritative requests and care sessions.',
+                          'View and manage your appointment requests and consultations.',
                           style: TextStyle(color: CarenetColors.neutral600),
                         ),
                       ],

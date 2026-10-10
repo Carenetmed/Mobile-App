@@ -359,7 +359,7 @@ class _AvailabilityEditorState extends State<_AvailabilityEditor> {
             TextField(
               controller: _timezone,
               decoration: const InputDecoration(
-                labelText: 'IANA timezone',
+                labelText: 'Professional time zone',
                 hintText: 'Africa/Lagos',
               ),
               autocorrect: false,

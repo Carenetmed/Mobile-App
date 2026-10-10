@@ -2,7 +2,7 @@
 
 ## Production Readiness Checkpoint (APP-READY-058)
 
-Current mobile integration is `139b5153cc677a5ac77e0f6e7e857e0028a82492`.
+Current mobile integration is `96c7c8d11ee92a8fe5089cf2a2bee4cfb4088906`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
 PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
 debug APK, Android release lint, and release signing/environment regressions.
@@ -16,8 +16,16 @@ providers. APP-READY-056 audited the Web verification journey and fixed the
 same-origin read request guard in Web PR #5. APP-READY-057 added a Chromium
 browser journey and corrected the Web queue DTO validator mismatch in PR #6;
 exact-head CI passed 19 Node tests, one browser journey, lint, and production
-build. Mobile PR #221 merged at the current integration SHA with four
-documentation-only files and green exact-head CI. No cloud changes are included.
+build. Mobile PR #221 merged at `139b5153cc677a5ac77e0f6e7e857e0028a82492`
+with four documentation-only files and green exact-head CI. APP-READY-058 PR
+#222 merged at the current integration SHA; exact-head CI passed analyzer, 730
+Flutter tests, debug APK, Android release lint, and release checks. An isolated
+follow-up reproduces and fixes two 320x568 / 2x-text overflows in unsupported-
+role recovery and active consultation controls, plus focused user-facing copy
+and semantics improvements. Its nine-file targeted group passes 179 tests and
+`flutter analyze --no-pub` reports no issues. The local full-suite run stalled
+during compilation and was stopped; full-suite verification remains open. No
+backend, provider, native, dependency, or cloud changes are in this follow-up.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus
@@ -39,13 +47,15 @@ hosting/deployment has been configured and no administrator was provisioned. Bac
 provisioning remains operator-controlled and requires an approved identity and
 time-bounded execution; there is no first-admin endpoint.
 
-Read-only staging observations on 2026-10-09: Cloud SQL
+Last successful read-only staging observations on 2026-10-09: Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
 notification scheduler is PAUSED; Cloud Run `carenet-backend-staging` has no
 minimum scale (service maxScale 2, revision maxScale 3). Cloud Run can still
 incur request-based charges.
-No cloud resource was changed. Keep SQL and Scheduler off when not explicitly
-needed. Verification upload-init continues to return staging HTTP 500; a
+No cloud resource was changed. A 2026-10-10 refresh could not resolve the
+Google OAuth endpoint, so live state has not been reconfirmed today. Keep SQL
+and Scheduler off when not explicitly needed. Verification upload-init
+continues to return staging HTTP 500; a
 meaningful database diagnosis requires a user-approved, time-bounded SQL
 activation window. Local C: space remains constrained; do not delete protected
 worktrees to reclaim it. APP-READY-057 used a CI-hosted Chromium install only;
@@ -55,8 +65,9 @@ authenticated role and implementation-facing copy in Account/Appointment
 Detail; compact, 2x-text regression coverage for Messages, Chat, and
 Notifications is in place, and the 94-test targeted group passes. Manual
 TalkBack, keyboard-focus order, and full-device route acceptance remain
-unproven. A local full-suite compilation stalled after the host ran low on C:
-space; use exact-head GitHub Actions evidence for full-suite and APK gates.
+unproven. This follow-up also verifies active consultation controls and
+unsupported-role recovery at 320x568 / 2x text. Exact-head CI or a successful
+later full local run is still required for the follow-up.
 
 Remaining gates identified by APP-READY-051: staging upload diagnosis and
 deployment of the scanned backend digest with migration/rollback proof;

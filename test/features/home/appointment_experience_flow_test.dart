@@ -68,6 +68,11 @@ void main() {
     );
 
     expect(find.text('Appointments').first, findsOneWidget);
+    expect(
+      find.text('View and manage your appointment requests and consultations.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Authoritative'), findsNothing);
     expect(tester.takeException(), isNull);
     final row = find.byKey(const Key('appointment-large-text-appointment'));
     await tester.scrollUntilVisible(
@@ -315,9 +320,7 @@ Future<void> _pumpList(
             theme: ThemeData(splashFactory: NoSplash.splashFactory),
             builder:
                 (context, child) => MediaQuery(
-                  data: MediaQuery.of(context).copyWith(
-                    textScaler: textScaler,
-                  ),
+                  data: MediaQuery.of(context).copyWith(textScaler: textScaler),
                   child: child!,
                 ),
             home: AppointmentsShellPage(

@@ -1,6 +1,6 @@
 # Documentation sync index
 
-**Last audited:** 2026-10-09
+**Last audited:** 2026-10-10
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 ---
@@ -58,11 +58,11 @@
 | Phase 22 | **In progress** |
 | Product direction | **Phase 1 consultation marketplace** - broad social/content/readings/emergency/creator modules leave the active mainline in ordered slices |
 | Archive checkpoint | **APP-P1-001A complete** - branch `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` resolve to `3e04d6e` |
-| Integration base | `139b5153cc677a5ac77e0f6e7e857e0028a82492` - APP-READY-057 handoff merged in Mobile PR #221 |
-| NEXT task | **APP-READY-058** - audit active mobile routes for compact/enlarged-text usability, accessible semantics, and truthful loading/empty/error copy; no backend/provider/cloud changes |
+| Integration base | `96c7c8d11ee92a8fe5089cf2a2bee4cfb4088906` - APP-READY-058 PR #222 merged; isolated follow-up remains uncommitted |
+| NEXT task | **APP-READY-058** - continue compact/enlarged-text, semantic-accessibility, and truthful-copy audit; no backend/provider/cloud changes |
 | Last completed | **APP-READY-057** - added a mock-backed Chromium admin verification journey in Web PR #6; CI green, no hosting/provisioning/cloud changes |
 | Latest Web admin surface | Web-Developers PR #6 merged at `2ec9dd79b5c321d29225eab341a7285ef19b492d`; CI passed 19 Node tests, one browser journey, lint and production build; source only, not hosted/deployed |
-| Cloud posture | Read-only check 2026-10-09: Cloud SQL STOPPED/NEVER, notification scheduler PAUSED, staging Cloud Run has no minimum instances (revision maxScale 3); no cloud changes; keep nonessential services off |
+| Cloud posture | Last read-only check 2026-10-09: Cloud SQL STOPPED/NEVER, Scheduler PAUSED, staging Cloud Run min instances 0 (revision maxScale 3). 2026-10-10 refresh blocked by DNS/OAuth; no cloud changes. Keep billable nonessential services off |
 | Backend artifact | BE-P1-037 PR #136 passed CI/scan on main `8e5175e9`; scanned digest is not deployed; one documented upstream high CVE has no fix |
 | Admin console | Web PRs #1-#6 merged and CI passed, including safe same-origin reads and Chromium journey; no hosting/deployment or administrator provisioning |
 | Current checkpoint | **53.2 partial** - staging gateway Android APK builds, installs on phone, launches after native entrypoint package fix, has backend seed/lifecycle proof, patient-device proof through real Search/public availability/appointment request plus own-list rendering, and professional-device proof through role-aware appointment accept/decline/reschedule plus terminal-row behavior; Android backup is disabled, own-list parses the backend `appointments` envelope, secure session writes are ordered, and professional Account now exposes Manage Profile/Verification documents. Verification upload route access is proven, but upload-init returns staging HTTP 500; separate appointment-detail, optional fresh completion, successful upload after backend fix, and cleanup phone smoke remain open |
@@ -120,6 +120,7 @@ Do not use old chat history. Do not start the next task without my approval.
 | 2026-10-09 | APP-READY-056 completed: audited Web admin verification against backend main `8e5175e9`; Web PR #5 merged at `39cc5b4dfee31f243c5584cd05afb1e2373e31d0`, exact-head CI passed 18 tests/lint/build; no cloud changes; APP-READY-057 browser-level test coverage is next |
 | 2026-10-09 | APP-READY-057 completed: Web PR #6 merged at `2ec9dd79b5c321d29225eab341a7285ef19b492d`; Chromium mock journey, 19 Node tests, lint, production build passed in CI; fixed browser validation against the privacy-projected queue; no hosting, admin provisioning, or cloud changes; APP-READY-058 is next |
 | 2026-10-09 | Mobile PR #221 merged at `139b5153cc677a5ac77e0f6e7e857e0028a82492`; four readiness/handoff docs only; exact-head CI green. APP-READY-058 underway; Cloud SQL remains STOPPED/NEVER, Scheduler PAUSED, and staging Cloud Run remains min-scale zero; no cloud mutations |
+| 2026-10-10 | APP-READY-058 PR #222 merged at `96c7c8d11ee92a8fe5089cf2a2bee4cfb4088906`; exact-head CI passed 730 Flutter tests. Isolated follow-up reproduces/fixes compact 320x568, 2x-text overflow in consultation controls and unsupported-role recovery; 179 focused tests and analyzer pass. Full local suite stalled during compilation and was stopped; no tests removed. Cloud refresh blocked by DNS/OAuth, so last confirmed SQL STOPPED/NEVER and Scheduler PAUSED state is 2026-10-09; no cloud mutations |
 | 2026-10-09 | APP-READY-053 awaiting final docs-head CI on PR #217 - code head `cd6b1fb` passed analyzer, 719 Flutter tests, Android debug APK, release lint, signing and release environment gates; test covers patient identity, header semantics, Find Care action routing and honest empty appointments; local worker stalls with C: full; no runtime/cloud changes |
 | 2026-10-09 | APP-READY-052 DONE - merged PR #216 at `60436b8d92bbae410c995848dd7f985740a11490`; professional Home compact accessibility regression passed exact-head CI with 718 tests, analyzer, Android debug build/lint and release gates; 717-test base plus one test; no runtime/cloud changes; APP-READY-053 NEXT |
 | 2026-10-09 | APP-READY-051 DONE - reconciled current mobile/backend/web/staging gates; BE-P1-037 image scan is not deployment, web admin remains source-only, upload-init HTTP 500 requires an explicitly approved SQL window to diagnose, and Cloud SQL/Scheduler remain off; APP-READY-052 NEXT for bounded dashboard accessibility work; no cloud mutations |

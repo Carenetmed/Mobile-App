@@ -84,7 +84,7 @@ void main() {
           active: true,
         ),
       ),
-      contains('IANA'),
+      contains('valid time zone'),
     );
     expect(
       controller.validate(
@@ -285,15 +285,19 @@ void main() {
         expect(find.text('Weekday'), findsOneWidget);
         expect(find.textContaining('Start '), findsOneWidget);
         expect(find.textContaining('End '), findsOneWidget);
-        expect(find.text('IANA timezone'), findsOneWidget);
+        expect(find.text('Professional time zone'), findsOneWidget);
         expect(find.text('Active'), findsOneWidget);
         expect(find.text('Cancel'), findsOneWidget);
         expect(find.text('Save'), findsOneWidget);
         final dialogContext = tester.element(find.byType(AlertDialog));
         expect(MediaQuery.textScalerOf(dialogContext).scale(16), 32);
-        for (final label in ['Weekday', 'IANA timezone', 'Active']) {
+        for (final label in ['Weekday', 'Professional time zone', 'Active']) {
           final control = find.bySemanticsLabel(RegExp(label));
-          expect(control, findsWidgets, reason: '$label is exposed to semantics');
+          expect(
+            control,
+            findsWidgets,
+            reason: '$label is exposed to semantics',
+          );
           expect(
             tester
                 .getSemantics(control.first)

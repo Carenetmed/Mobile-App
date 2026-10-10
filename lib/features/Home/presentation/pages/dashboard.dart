@@ -359,33 +359,41 @@ class _UnavailableRolePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.lock_person_outlined, size: 40),
-                const SizedBox(height: 16),
-                Text(
-                  'Your account role is unavailable.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium,
+        child: LayoutBuilder(
+          builder:
+              (context, constraints) => SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.lock_person_outlined, size: 40),
+                          const SizedBox(height: 16),
+                          Text(
+                            "This account can't open a CareNet workspace.",
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Return to sign in to continue with a patient or professional account.',
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 20),
+                          OutlinedButton.icon(
+                            onPressed: onReturnToSignIn,
+                            icon: const Icon(Icons.login),
+                            label: const Text('Return to sign in'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'This account cannot open a CareNet workspace. Return to sign in and choose a supported account.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                OutlinedButton.icon(
-                  onPressed: onReturnToSignIn,
-                  icon: const Icon(Icons.login),
-                  label: const Text('Return to sign in'),
-                ),
-              ],
-            ),
-          ),
+              ),
         ),
       ),
     );

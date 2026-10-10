@@ -128,6 +128,13 @@ void main() {
 
     expect(find.text('Payments & payouts'), findsOneWidget);
     expect(find.text('Your consultation finances'), findsOneWidget);
+    expect(
+      find.text(
+        'Review consultation income, your current balance, and payout details below.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('authoritative on the server'), findsNothing);
     expect(tester.takeException(), isNull);
 
     for (var i = 0; i < 8; i++) {

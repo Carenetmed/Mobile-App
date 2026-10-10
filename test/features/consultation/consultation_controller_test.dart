@@ -11,6 +11,7 @@ import 'package:app_t/features/Consultation/presentation/pages/consultation_shel
 import 'package:app_t/features/Consultation/presentation/state/consultation_controller.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -893,6 +894,92 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets('active call controls fit compact large-text layouts', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    for (final mode in ConsultationMode.values) {
+      final store = InMemorySessionStore()..save(_session(role: 'PATIENT'));
+      final gateway = _Gateway(_projection(canJoin: true, mode: mode));
+      final room = _Room();
+      final controller = ConsultationController(
+        appointmentId: 'appointment-1',
+        repository: gateway,
+        sessionStore: store,
+        permissionService: _Permissions(),
+        room: room,
+        pollingInterval: const Duration(days: 1),
+        now: () => DateTime.utc(2026, 7, 30, 10),
+      );
+      await controller.initialize();
+      await controller.prepareMedia();
+      await controller.join();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(
+              size: Size(320, 568),
+              textScaler: TextScaler.linear(2),
+            ),
+            child: ConsultationShellPage(
+              appointmentId: 'appointment-1',
+              controller: controller,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(controller.isConnected, isTrue);
+      for (final label in <String>['Mute', 'Speaker', 'Leave']) {
+        final control = find.bySemanticsLabel(label);
+        expect(control, findsOneWidget);
+        expect(
+          tester
+              .getSemantics(control)
+              .getSemanticsData()
+              .hasAction(SemanticsAction.tap),
+          isTrue,
+        );
+      }
+      if (mode == ConsultationMode.video) {
+        final camera = find.bySemanticsLabel('Camera off');
+        expect(camera, findsOneWidget);
+        expect(
+          tester
+              .getSemantics(camera)
+              .getSemanticsData()
+              .hasAction(SemanticsAction.tap),
+          isTrue,
+        );
+      } else {
+        expect(find.bySemanticsLabel('Camera off'), findsNothing);
+      }
+      expect(tester.takeException(), isNull);
+
+      if (mode == ConsultationMode.video) {
+        await tester.tap(find.bySemanticsLabel('Leave'));
+        await tester.pumpAndSettle();
+        expect(
+          find.text('You can rejoin while the consultation is still open.'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('backend'), findsNothing);
+        await tester.tap(find.text('Stay'));
+        await tester.pumpAndSettle();
+      }
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+    }
+
+    semantics.dispose();
+  });
+
   test('expired join grant never reaches the RTC provider', () async {
     final store = InMemorySessionStore()..save(_session(role: 'PATIENT'));
     final gateway = _Gateway(_projection(canJoin: true))
@@ -1321,6 +1408,7 @@ AuthSessionModel _session({required String role, String userId = 'user-1'}) {
 
 ConsultationProjection _projection({
   ConsultationSessionStatus status = ConsultationSessionStatus.pending,
+  ConsultationMode mode = ConsultationMode.video,
   bool canEnterWaitingRoom = false,
   bool canJoin = false,
   bool canAdmit = false,
@@ -1330,7 +1418,7 @@ ConsultationProjection _projection({
 }) {
   return ConsultationProjection(
     appointmentId: 'appointment-1',
-    mode: ConsultationMode.video,
+    mode: mode,
     sessionStatus: status,
     joinOpensAt: DateTime.utc(2026, 7, 30, 9, 50),
     lateJoinDeadlineAt: DateTime.utc(2026, 7, 30, 10, 15),

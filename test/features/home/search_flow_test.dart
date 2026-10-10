@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show SemanticsAction;
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
@@ -561,6 +562,7 @@ void main() {
   testWidgets('selection opens specialist details with exact backend id', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
     final routes = <RouteSettings>[];
     await _pumpSearch(
       tester,
@@ -576,14 +578,49 @@ void main() {
       pushedRoutes: routes,
     );
 
-    await tester.tap(find.text('View profile'));
+    final profileButton = find.bySemanticsLabel('View profile for Dr Exact Id');
+    expect(profileButton, findsOneWidget);
+    expect(
+      tester
+          .getSemantics(profileButton)
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isTrue,
+    );
+    await tester.tap(profileButton);
     await tester.pumpAndSettle();
 
     expect(routes.single.name, RouteName.specialistDetails);
     expect(routes.single.arguments, 'backend-professional-id');
     expect(find.byType(BottomSheet), findsNothing);
     expect(find.text('Request appointment'), findsNothing);
+    semantics.dispose();
   });
+
+  testWidgets(
+    'missing Find Care configuration uses user-facing recovery copy',
+    (tester) async {
+      await _pumpSearch(
+        tester,
+        profileRepository: _FakeProfileRepository(<_ListingLoad>[
+          () async =>
+              throw const AuthFailure(
+                type: AuthFailureType.missingConfiguration,
+                message: 'missing API base URL',
+              ),
+        ]),
+      );
+
+      expect(find.text('Find Care is unavailable'), findsOneWidget);
+      expect(
+        find.text('This directory is unavailable right now. Please try again.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Backend is not configured'), findsNothing);
+      expect(find.textContaining('missing API base URL'), findsNothing);
+      expect(find.text('Retry'), findsOneWidget);
+    },
+  );
 
   testWidgets('unsupported discovery capabilities are not advertised', (
     tester,

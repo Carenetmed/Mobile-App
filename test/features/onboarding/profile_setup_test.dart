@@ -292,6 +292,7 @@ void main() {
     testWidgets('patient setup retries a failed load without losing input', (
       tester,
     ) async {
+      final semantics = tester.ensureSemantics();
       final repository = _FakeProfileRepository();
       final onboardingRepository = _FakeOnboardingRepository(
         failure: const AuthFailure(
@@ -308,6 +309,17 @@ void main() {
         ),
       );
 
+      final loadError = find.text('Service is unavailable. Please try again.');
+      expect(loadError, findsOneWidget);
+      expect(
+        tester
+            .getSemantics(loadError)
+            .getSemanticsData()
+            .flagsCollection
+            .isLiveRegion,
+        isTrue,
+      );
+
       final nameField = find.byType(EditableText).first;
       await tester.enterText(nameField, 'Ada Patient');
       onboardingRepository.failure = null;
@@ -320,6 +332,7 @@ void main() {
       expect(find.text('Ada Patient'), findsOneWidget);
       expect(find.text('Retry loading setup'), findsNothing);
       expect(tester.takeException(), isNull);
+      semantics.dispose();
     });
 
     testWidgets('professional setup requires credential fields', (
@@ -597,6 +610,7 @@ void main() {
     testWidgets(
       'professional setup retries a failed load without losing input',
       (tester) async {
+        final semantics = tester.ensureSemantics();
         final repository = _FakeProfileRepository();
         final onboardingRepository = _FakeOnboardingRepository(
           failure: const AuthFailure(
@@ -611,6 +625,19 @@ void main() {
             profileRepository: repository,
             onboardingRepository: onboardingRepository,
           ),
+        );
+
+        final loadError = find.text(
+          'Service is unavailable. Please try again.',
+        );
+        expect(loadError, findsOneWidget);
+        expect(
+          tester
+              .getSemantics(loadError)
+              .getSemanticsData()
+              .flagsCollection
+              .isLiveRegion,
+          isTrue,
         );
 
         final legalName = find.byType(EditableText).at(0);
@@ -628,6 +655,7 @@ void main() {
         expect(find.text('Dr. Ada Okafor'), findsNWidgets(2));
         expect(find.text('Retry loading setup'), findsNothing);
         expect(tester.takeException(), isNull);
+        semantics.dispose();
       },
     );
   });

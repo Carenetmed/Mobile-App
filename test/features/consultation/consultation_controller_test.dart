@@ -846,7 +846,7 @@ void main() {
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    await tester.binding.setSurfaceSize(const Size(800, 1200));
+    await tester.binding.setSurfaceSize(const Size(320, 568));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final store = InMemorySessionStore()..save(_session(role: 'PATIENT'));
     final controller = ConsultationController(
@@ -861,23 +861,33 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: ConsultationShellPage(
-          appointmentId: 'appointment-1',
-          controller: controller,
+        home: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(320, 568),
+            textScaler: TextScaler.linear(2),
+          ),
+          child: ConsultationShellPage(
+            appointmentId: 'appointment-1',
+            controller: controller,
+          ),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.text('Video consultation'), findsOneWidget);
-    expect(find.byKey(const Key('consultation-enter-waiting')), findsOneWidget);
-    expect(find.byKey(const Key('consultation-join')), findsNothing);
-    expect(find.textContaining('payment', findRichText: true), findsNothing);
     final countdown = find.byWidgetPredicate(
       (widget) =>
           widget is Semantics &&
-          widget.properties.label ==
-              'The scheduled join opening time has arrived.',
+          (widget.properties.label ==
+                  'The scheduled join opening time has arrived.' ||
+              widget.properties.label?.startsWith('Waiting room opens in ') ==
+                  true),
+    );
+    await tester.scrollUntilVisible(
+      countdown,
+      120,
+      scrollable: find.byType(Scrollable).first,
     );
     expect(countdown, findsOneWidget);
     expect(
@@ -888,6 +898,17 @@ void main() {
           .isLiveRegion,
       isFalse,
     );
+
+    final waiting = find.byKey(const Key('consultation-enter-waiting'));
+    await tester.scrollUntilVisible(
+      waiting,
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(waiting.hitTestable(), findsOneWidget);
+    expect(find.byKey(const Key('consultation-join')), findsNothing);
+    expect(find.textContaining('payment', findRichText: true), findsNothing);
+    expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();

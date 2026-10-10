@@ -4,11 +4,15 @@ import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
+import 'package:app_t/features/Home/data/repositories/financial_repository.dart';
 import 'package:app_t/features/Home/data/repositories/scheduling_repository.dart';
+import 'package:app_t/features/Home/data/storage/payment_checkout_intent_store.dart';
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/domain/entities/availability_window.dart';
+import 'package:app_t/features/Home/domain/entities/financial_entities.dart';
 import 'package:app_t/features/Home/domain/entities/requestable_times.dart';
 import 'package:app_t/features/Home/presentation/pages/appointment_experience_shell.dart';
+import 'package:app_t/features/Home/presentation/state/appointment_payment_controller.dart';
 import 'package:app_t/features/Home/presentation/state/appointment_experience_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -235,6 +239,42 @@ void main() {
     expect(find.byKey(const Key('appointment-action-accept')), findsNothing);
     expect(find.byKey(const Key('appointment-action-decline')), findsNothing);
     expect(find.byKey(const Key('appointment-action-cancel')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('appointment-action-cancel')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Please confirm you want to cancel this appointment.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('backend'), findsNothing);
+    await tester.tap(find.text('Keep appointment'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('appointment payment failure uses user-facing copy', (
+    tester,
+  ) async {
+    final controller = AppointmentPaymentController(
+      appointmentId: 'appointment-1',
+      financialRepository: _UnavailableFinancialRepository(),
+      sessionStore: _sessionStore('PATIENT'),
+      intentStore: InMemoryPaymentCheckoutIntentStore(),
+    );
+    addTearDown(controller.dispose);
+    await _pumpDetail(
+      tester,
+      repository: _SchedulingFake(
+        appointments: <AppointmentSummary>[_appointment()],
+      ),
+      role: 'PATIENT',
+      paymentController: controller,
+    );
+
+    expect(find.text('Payment details unavailable'), findsOneWidget);
+    expect(find.textContaining('backend'), findsNothing);
+    expect(find.textContaining('authoritative'), findsNothing);
+    expect(find.textContaining('payment contract'), findsNothing);
+    expect(find.text('raw payment failure'), findsNothing);
   });
 
   testWidgets('reschedule uses only backend-returned time at fixed duration', (
@@ -353,6 +393,7 @@ Future<void> _pumpDetail(
   WidgetTester tester, {
   required _SchedulingFake repository,
   required String role,
+  AppointmentPaymentController? paymentController,
 }) async {
   await tester.pumpWidget(
     ScreenUtilInit(
@@ -365,11 +406,27 @@ Future<void> _pumpDetail(
               schedulingRepository: repository,
               sessionStore: _sessionStore(role),
               now: DateTime.utc(2026, 7, 26, 12),
+              paymentController: paymentController,
             ),
           ),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _UnavailableFinancialRepository implements FinancialRepository {
+  @override
+  Future<AppointmentPaymentView> appointmentPayment(
+    String appointmentId,
+  ) async {
+    throw const AuthFailure(
+      type: AuthFailureType.network,
+      message: 'raw payment failure',
+    );
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 InMemorySessionStore _sessionStore(String role) {

@@ -1090,12 +1090,15 @@ class _SetupLoadStatus extends StatelessWidget {
               ),
             ),
           if (message != null)
-            Text(
-              message!,
-              style: TextStyle(
-                color: CarenetColors.error100,
-                fontFamily: AppFonts.montserrat,
-                fontSize: 12.sp,
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                message!,
+                style: TextStyle(
+                  color: CarenetColors.error100,
+                  fontFamily: AppFonts.montserrat,
+                  fontSize: 12.sp,
+                ),
               ),
             ),
           if (showRetry)

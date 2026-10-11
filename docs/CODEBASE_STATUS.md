@@ -1,8 +1,8 @@
 # Codebase status
 
-## Production Readiness Checkpoint (APP-READY-058)
+## Production Readiness Checkpoint (APP-READY-060)
 
-Current mobile integration is `77127b8a64a0cf68ba2e7f6d7be7cd0dac7fd9db`.
+Current mobile integration is `71fe391e1b0854af880f3ec371df5a51291df2f4`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
 PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
 debug APK, Android release lint, and release signing/environment regressions.
@@ -33,11 +33,21 @@ the 732-test integration suite, one payment-error test was added; none were
 removed, skipped, or disabled. No backend, provider, native, dependency, or
 cloud changes are in this follow-up.
 
-APP-READY-058 continuation on the current integration adds live announcements
-for appointment status/action notices and consultation connection/presence
-changes, plus an explicit notification-preference retry and error announcement.
-The three focused files pass 71 tests and analyzer; exact-head CI is pending.
-No backend, dependency, native, or cloud files changed.
+APP-READY-058 completed in mobile PR #225 at the current integration base;
+exact-head CI passed the analyzer, 734 Flutter tests, debug APK, Android
+release lint, signing, and environment checks. The test baseline is 734.
+
+APP-READY-060 is in progress in mobile PR #226. Shared iOS staging and
+production schemes, Firebase bundle mapping, CocoaPods configuration, and an
+unsigned simulator-build lane are present. The ARC build-setting repair and
+locked CocoaPods dependencies are committed at the PR code head
+`4529b962143f77c24e0b123f6779bc746fff44f5`. Local `flutter analyze`, the iOS
+configuration checker, diff checks, and all 734 Flutter tests pass. GitHub
+Actions rejected both exact-head lanes before starting because account billing
+or the Actions spending limit blocks runners; the simulator build after the
+ARC repair is therefore unverified. Keep PR #226 draft and unmerged until
+both exact-head workflows pass. No backend, cloud, payment, or provider
+changes occurred in this slice.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus
@@ -79,8 +89,9 @@ Detail; compact, 2x-text regression coverage for Messages, Chat, and
 Notifications is in place, and the 94-test targeted group passes. Manual
 TalkBack, keyboard-focus order, and full-device route acceptance remain
 unproven. This follow-up also verifies active consultation controls and
-unsupported-role recovery at 320x568 / 2x text. Exact-head CI or a successful
-later full local run is still required for the follow-up.
+unsupported-role recovery at 320x568 / 2x text. The current open iOS
+environment PR still requires exact-head GitHub CI after Actions billing is
+restored.
 
 Remaining gates identified by APP-READY-051: staging upload diagnosis and
 deployment of the scanned backend digest with migration/rollback proof;

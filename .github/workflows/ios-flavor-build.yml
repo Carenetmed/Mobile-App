@@ -10,6 +10,17 @@ on:
       - "pubspec.yaml"
       - "pubspec.lock"
       - ".github/workflows/ios-flavor-build.yml"
+      - "tool/check_ios_flavor_configuration.ps1"
+  push:
+    branches:
+      - feature/frontend-milestone
+    paths:
+      - "ios/**"
+      - "lib/core/config/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/ios-flavor-build.yml"
+      - "tool/check_ios_flavor_configuration.ps1"
   workflow_dispatch:
 
 permissions:

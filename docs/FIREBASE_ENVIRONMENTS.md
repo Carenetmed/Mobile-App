@@ -64,7 +64,8 @@ flutter build ios --simulator --no-codesign --flavor staging
 Replace `staging` with `production` to compile the production flavor. Both
 flavors still require matching runtime `--dart-define` values to start. Do not
 put provider config or signing material in Xcode files. The iOS simulator CI
-build is limited to pull requests that touch iOS or environment configuration.
+build runs for pull requests and integration-branch pushes that touch iOS,
+environment configuration, dependencies, or its workflow/checker.
 
 These build definitions do not establish release readiness. Apple signing,
 APNs keys, Apple Sign In capability, provider setup, and physical-device proof

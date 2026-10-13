@@ -45,10 +45,11 @@ started, with no Dart CPU progress, and its local Gradle build also stalled.
 Exact-head CI on `08774c1a15544cff72eae44f9b1f3b8d86b0d60b` passed analysis,
 733 Flutter tests, debug APK, Android release lint, signing, and environment
 regressions. Relative to the 732-test integration inventory, that follow-up
-adds one payment-error test and removes/disables none. APP-READY-058 now has a
-second focused continuation on base `77127b8a64a0cf68ba2e7f6d7be7cd0dac7fd9db`:
-it adds appointment/call state announcements and notification-preference
-retry; 71 targeted tests and analyzer pass, with full CI pending. Read-only GCP
+adds one payment-error test and removes/disables none. The second focused
+APP-READY-058 continuation merged through PR #225 at
+`71fe391e1b0854af880f3ec371df5a51291df2f4`: appointment/call state announcements
+and notification-preference retry passed the 71-test targeted group, analyzer,
+full 734-test suite, and Android release gates. Read-only GCP
 inspection on 2026-10-10 confirms Cloud SQL STOPPED/NEVER, the notification
 Scheduler job PAUSED, and staging Cloud Run has no minimum scale. Keep Cloud SQL
 stopped, Scheduler paused, and nonessential services off; staging Cloud Run
@@ -73,19 +74,22 @@ scheduler off unless
 an explicitly approved smoke operation needs them; do not disable the backend
 service that the staging app uses.
 
-APP-READY-060 is in progress in mobile PR #226; the current iOS implementation
-commit is `4529b962143f77c24e0b123f6779bc746fff44f5`. Local analysis, the iOS flavor
-configuration checker, diff checks, and the full 734-test Flutter suite pass.
-The exact-head Flutter and iOS Actions jobs were rejected before starting
-because GitHub reports failed account payments or an insufficient Actions
-spending limit. The iOS simulator build therefore remains unverified after the
-ARC configuration repair. Keep the PR draft and do not merge until billing is
-resolved and both exact-head workflows pass. No GCP resources were changed.
+APP-READY-060 source and simulator validation is complete in mobile PR #226.
+The repository is now `Carenetmed/Mobile-App`; it is public, and the current
+account has administrator access. On 2026-10-13, Actions runs `38124641991`
+and `38124641985` passed for implementation head
+`e71e8ec603ce459a6be6719274f6def2324042c6`: analyzer, 734 Flutter tests,
+staging debug APK, Android release lint, signing/environment regressions,
+and both staging/production iOS simulator builds. Test sources and the
+Flutter lockfile are unchanged. The iOS lane also runs on relevant integration
+pushes. Final documentation/trigger changes require green PR checks before
+merge. Apple signing, APNs, provider/device acceptance, and production API
+configuration remain open. No GCP resources were changed.
 
-Local C: currently has no free space. Flutter package resolution and agent
-startup were therefore not reliable in the previous session. Work can use the
-clean F: clone, but do not delete or clean protected worktrees to reclaim
-space. GitHub CI is the current verification evidence until local setup works.
+Earlier local C: space exhaustion made Flutter package resolution and agent
+startup unreliable. Final review uses a clean F: clone; do not delete or clean
+protected worktrees to reclaim space. The successful GitHub CI runs above
+provide full-suite and native build evidence.
 
 Manual acceptance remains for the final device session: join a consultation
 with camera or microphone disabled by the backend grant, confirm its control
@@ -378,7 +382,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-056 | Audit the Web professional-verification review journey against its backend contract; define the smallest source/CI-only readiness step and list cloud/admin operations that remain approval-gated | S | **DONE** - Web PR #5 merged at `39cc5b4`; same-origin read guard fixed, 18 tests/lint/build pass; no hosting or admin provisioning |
 | APP-READY-057 | Add browser-level tests for the admin verification journey using a mock backend: sign-in/session restore, queue pagination, document preview, decision confirmation, and recovery states; keep it source/CI-only | M | **DONE** - Web PR #6 merged at `2ec9dd7`; exact-head CI passed |
 | APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **DONE** - accessibility follow-up merged through PR #225 at `71fe391`; 734-test suite and release gates passed; cloud services untouched |
-| APP-READY-060 | Add cost-conscious iOS staging/production schemes and exact-head simulator build validation; keep iOS signing, APNs, and device proof as separate gates | M | **IN PROGRESS** - PR #226 draft, head `4529b962`; local analyzer and 734 tests pass; GitHub Actions cannot start because account billing/spending limit blocks runners; iOS simulator build remains unverified |
+| APP-READY-060 | Add cost-conscious iOS staging/production schemes and simulator build validation; keep iOS signing, APNs, and device proof as separate gates | M | **DONE** - PR #226 implementation head `e71e8ec` passed both CI lanes with 734 tests; final documentation/trigger follow-up must pass before merge |
+| APP-READY-061 | Reconcile remaining pre-device readiness gates against merged mobile/backend/web changes and read-only infrastructure evidence; select the next supported repair while keeping the final Paystack confirmation and device session gated | S | **NEXT** |
 
 ### APP-READY-055 implementation evidence
 

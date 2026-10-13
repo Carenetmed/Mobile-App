@@ -51,6 +51,9 @@ Shared Xcode schemes `staging` and `production` map to the registered iOS
 bundle IDs and Firebase app IDs above. Staging uses the visible app name
 `CareNet Staging`; production uses `CareNet`. The checked-in CocoaPods
 configuration maps each scheme's Debug, Profile, and Release configurations.
+Each Runner build configuration selects an explicit Flutter configuration file
+that includes its matching CocoaPods settings and generated Flutter settings.
+CI rejects CocoaPods base-configuration integration warnings.
 The iOS deployment minimum is 15.0, matching the minimum required by the
 resolved Firebase iOS SDKs.
 

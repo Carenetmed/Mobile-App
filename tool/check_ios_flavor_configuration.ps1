@@ -7,6 +7,36 @@ $schemeDirectory = Join-Path $PSScriptRoot '../ios/Runner.xcodeproj/xcshareddata
 $project = Get-Content -Raw $projectPath
 $podfile = Get-Content -Raw $podfilePath
 $info = [xml](Get-Content -Raw $infoPath)
+$frameworkInfo = [xml](Get-Content -Raw (Join-Path $PSScriptRoot '../ios/Flutter/AppFrameworkInfo.plist'))
+
+$flavorConfigurations = @(
+  'Debug-staging', 'Profile-staging', 'Release-staging',
+  'Debug-production', 'Profile-production', 'Release-production'
+)
+for ($index = 0; $index -lt $flavorConfigurations.Count; $index++) {
+  $name = $flavorConfigurations[$index]
+  $configurationId = 'A060000000000000000000{0:X2}' -f (13 + $index)
+  $fileId = 'B060000000000000000000{0:X2}' -f (1 + $index)
+  $configuration = [regex]::Match($project, "(?m)^\s*$configurationId /\*[^\r\n]+")
+  if (-not $configuration.Success -or
+      -not $configuration.Value.Contains("baseConfigurationReference = $fileId /* $name.xcconfig */")) {
+    throw "$name must use its matching Flutter/CocoaPods configuration."
+  }
+  $configurationPath = Join-Path $PSScriptRoot "../ios/Flutter/$name.xcconfig"
+  $content = Get-Content -Raw $configurationPath
+  $podsName = $name.ToLowerInvariant()
+  if (-not $content.Contains("Pods-Runner.$podsName.xcconfig") -or
+      -not $content.Contains('#include "Generated.xcconfig"')) {
+    throw "$name must include its own CocoaPods settings and Generated.xcconfig."
+  }
+}
+
+foreach ($mode in @('Debug', 'Profile', 'Release')) {
+  $content = Get-Content -Raw (Join-Path $PSScriptRoot "../ios/Flutter/$mode.xcconfig")
+  if (-not $content.Contains("Pods-Runner.$($mode.ToLowerInvariant()).xcconfig")) {
+    throw "$mode must include its matching CocoaPods configuration."
+  }
+}
 
 for ($id = 1; $id -le 18; $id++) {
   $objectId = 'A060000000000000000000{0:X2}' -f $id
@@ -84,7 +114,8 @@ foreach ($flavor in $expected.Keys) {
 }
 
 if (-not $project.Contains('IPHONEOS_DEPLOYMENT_TARGET = 15.0;') -or
-    -not $podfile.Contains("platform :ios, '15.0'")) {
+    -not $podfile.Contains("platform :ios, '15.0'") -or
+    $frameworkInfo.SelectSingleNode('//dict/key[.="MinimumOSVersion"]/following-sibling::string[1]').InnerText -ne '15.0') {
   throw 'iOS deployment minimum must match the resolved Firebase SDK requirement.'
 }
 

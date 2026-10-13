@@ -82,7 +82,10 @@ and `38124641985` passed for implementation head
 staging debug APK, Android release lint, signing/environment regressions,
 and both staging/production iOS simulator builds. Test sources and the
 Flutter lockfile are unchanged. The iOS lane also runs on relevant integration
-pushes. Final documentation/trigger changes require green PR checks before
+pushes. Final review found and repaired missing CocoaPods configuration includes
+for the new flavors, and aligned AppFrameworkInfo.plist to iOS 15. The static
+checker validates the references/includes; CI rejects the integration warning.
+Final configuration/documentation changes require green PR checks before
 merge. Apple signing, APNs, provider/device acceptance, and production API
 configuration remain open. No GCP resources were changed.
 
@@ -382,7 +385,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-056 | Audit the Web professional-verification review journey against its backend contract; define the smallest source/CI-only readiness step and list cloud/admin operations that remain approval-gated | S | **DONE** - Web PR #5 merged at `39cc5b4`; same-origin read guard fixed, 18 tests/lint/build pass; no hosting or admin provisioning |
 | APP-READY-057 | Add browser-level tests for the admin verification journey using a mock backend: sign-in/session restore, queue pagination, document preview, decision confirmation, and recovery states; keep it source/CI-only | M | **DONE** - Web PR #6 merged at `2ec9dd7`; exact-head CI passed |
 | APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **DONE** - accessibility follow-up merged through PR #225 at `71fe391`; 734-test suite and release gates passed; cloud services untouched |
-| APP-READY-060 | Add cost-conscious iOS staging/production schemes and simulator build validation; keep iOS signing, APNs, and device proof as separate gates | M | **DONE** - PR #226 implementation head `e71e8ec` passed both CI lanes with 734 tests; final documentation/trigger follow-up must pass before merge |
+| APP-READY-060 | Add cost-conscious iOS staging/production schemes and simulator build validation; keep iOS signing, APNs, and device proof as separate gates | M | **DONE** - PR #226 implementation head `e71e8ec` passed both CI lanes with 734 tests; final CocoaPods configuration/documentation follow-up must pass before merge |
 | APP-READY-061 | Reconcile remaining pre-device readiness gates against merged mobile/backend/web changes and read-only infrastructure evidence; select the next supported repair while keeping the final Paystack confirmation and device session gated | S | **NEXT** |
 
 ### APP-READY-055 implementation evidence

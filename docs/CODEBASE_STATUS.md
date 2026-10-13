@@ -46,7 +46,9 @@ and `38124641985` passed on 2026-10-13: analysis, 734 Flutter tests, staging
 debug APK, Android release lint, signing/environment regressions, and both
 staging/production iOS simulator builds. The repository moved to
 `Carenetmed/Mobile-App` and is public; the previous runner billing block is
-resolved. The final documentation/integration-push trigger follow-up must
+resolved. Review repaired missing per-configuration CocoaPods includes and
+aligned the Flutter framework minimum to iOS 15. CI now rejects the CocoaPods
+base-configuration warning. The final configuration/documentation follow-up must
 pass both workflows before merge. No tests or Flutter dependencies changed.
 No backend, cloud, payment, or provider changes occurred in this slice.
 
@@ -91,7 +93,7 @@ Notifications is in place, and the 94-test targeted group passes. Manual
 TalkBack, keyboard-focus order, and full-device route acceptance remain
 unproven. This follow-up also verifies active consultation controls and
 unsupported-role recovery at 320x568 / 2x text. The iOS environment PR has
-passed both GitHub CI lanes; its final documentation/trigger follow-up is
+passed both GitHub CI lanes; its final configuration/documentation follow-up is
 checked again before merge.
 
 Remaining gates identified by APP-READY-051: staging upload diagnosis and

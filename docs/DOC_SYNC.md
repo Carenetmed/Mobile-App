@@ -58,9 +58,9 @@
 | Phase 22 | **In progress** |
 | Product direction | **Phase 1 consultation marketplace** - broad social/content/readings/emergency/creator modules leave the active mainline in ordered slices |
 | Archive checkpoint | **APP-P1-001A complete** - branch `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` resolve to `3e04d6e` |
-| Integration base | `77127b8a64a0cf68ba2e7f6d7be7cd0dac7fd9db` - APP-READY-058 follow-up PR #224 merged; next focused continuation is in review preparation |
-| NEXT task | **APP-READY-058** - continue compact/enlarged-text, semantic-accessibility, and truthful-copy audit; current continuation's 71 targeted tests and analyzer pass; exact-head CI pending; no backend/provider/cloud changes |
-| Last completed | **APP-READY-057** - added a mock-backed Chromium admin verification journey in Web PR #6; CI green, no hosting/provisioning/cloud changes |
+| Integration base | `71fe391e1b0854af880f3ec371df5a51291df2f4` before APP-READY-060; repository now `Carenetmed/Mobile-App` |
+| NEXT task | **APP-READY-061** - reconcile remaining pre-device gates and select the next supported repair; keep payment activation and device acceptance gated |
+| Last completed | **APP-READY-060** - staging/production iOS schemes and locked CocoaPods integration in PR #226; implementation head `e71e8ec` passed 734 Flutter tests, Android release gates, and both iOS simulator builds; final CocoaPods configuration/documentation follow-up must pass before merge |
 | Latest Web admin surface | Web-Developers PR #6 merged at `2ec9dd79b5c321d29225eab341a7285ef19b492d`; CI passed 19 Node tests, one browser journey, lint and production build; source only, not hosted/deployed |
 | Cloud posture | Read-only check 2026-10-10: Cloud SQL STOPPED/NEVER, notification Scheduler PAUSED, staging Cloud Run has no minimum scale and can scale to zero. No cloud changes; keep nonessential billable services off |
 | Backend artifact | BE-P1-037 PR #136 passed CI/scan on main `8e5175e9`; scanned digest is not deployed; one documented upstream high CVE has no fix |

@@ -1,8 +1,8 @@
 # Codebase status
 
-## Production Readiness Checkpoint (APP-READY-058)
+## Production Readiness Checkpoint (APP-READY-060)
 
-Current mobile integration is `77127b8a64a0cf68ba2e7f6d7be7cd0dac7fd9db`.
+Mobile integration before APP-READY-060 is `71fe391e1b0854af880f3ec371df5a51291df2f4`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
 PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
 debug APK, Android release lint, and release signing/environment regressions.
@@ -33,11 +33,24 @@ the 732-test integration suite, one payment-error test was added; none were
 removed, skipped, or disabled. No backend, provider, native, dependency, or
 cloud changes are in this follow-up.
 
-APP-READY-058 continuation on the current integration adds live announcements
-for appointment status/action notices and consultation connection/presence
-changes, plus an explicit notification-preference retry and error announcement.
-The three focused files pass 71 tests and analyzer; exact-head CI is pending.
-No backend, dependency, native, or cloud files changed.
+APP-READY-058 completed in mobile PR #225 at the current integration base;
+exact-head CI passed the analyzer, 734 Flutter tests, debug APK, Android
+release lint, signing, and environment checks. The test baseline is 734.
+
+APP-READY-060 source and simulator validation is complete in mobile PR #226. Shared iOS staging and
+production schemes, Firebase bundle mapping, CocoaPods configuration, and an
+unsigned simulator-build lane are present. The ARC build-setting repair and
+locked CocoaPods dependencies are committed at the PR code head
+`e71e8ec603ce459a6be6719274f6def2324042c6`. GitHub Actions runs `38124641991`
+and `38124641985` passed on 2026-10-13: analysis, 734 Flutter tests, staging
+debug APK, Android release lint, signing/environment regressions, and both
+staging/production iOS simulator builds. The repository moved to
+`Carenetmed/Mobile-App` and is public; the previous runner billing block is
+resolved. Review repaired missing per-configuration CocoaPods includes and
+aligned the Flutter framework minimum to iOS 15. CI now rejects the CocoaPods
+base-configuration warning. The final configuration/documentation follow-up must
+pass both workflows before merge. No tests or Flutter dependencies changed.
+No backend, cloud, payment, or provider changes occurred in this slice.
 
 APP-READY-051 cross-repository audit: backend main is
 `8e5175e9ea569630eb91728e449877fafac9a530`; BE-P1-037 PR #136 and its CI plus
@@ -79,8 +92,9 @@ Detail; compact, 2x-text regression coverage for Messages, Chat, and
 Notifications is in place, and the 94-test targeted group passes. Manual
 TalkBack, keyboard-focus order, and full-device route acceptance remain
 unproven. This follow-up also verifies active consultation controls and
-unsupported-role recovery at 320x568 / 2x text. Exact-head CI or a successful
-later full local run is still required for the follow-up.
+unsupported-role recovery at 320x568 / 2x text. The iOS environment PR has
+passed both GitHub CI lanes; its final configuration/documentation follow-up is
+checked again before merge.
 
 Remaining gates identified by APP-READY-051: staging upload diagnosis and
 deployment of the scanned backend digest with migration/rollback proof;
@@ -281,7 +295,7 @@ physical acceptance, and production promotion remain explicit open gates.
 - Canonical Firebase apps are registered for Android and iOS staging/production in `project-a96784ee-811c-46ab-a7b`.
 - Android staging (`com.carenet.app.staging`) and production (`com.carenet.app`) are explicit Gradle flavors with distinct labels.
 - Runtime environment validation rejects wrong-project Firebase configuration and insecure production API URLs.
-- iOS remains registered only; Apple signing, schemes, APNs, and device proof are unresolved release gates.
+- iOS now has shared staging/production Xcode schemes, registered bundle IDs, flavor-specific labels, CocoaPods configuration mappings, and an unsigned simulator-build CI lane. Apple signing, APNs, Apple identity capability, and device proof remain unresolved release gates; production startup remains blocked until its API host is registered.
 
 ## Authentication readiness
 

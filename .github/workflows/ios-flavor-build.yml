@@ -1,0 +1,78 @@
+name: iOS Flavor Build
+
+on:
+  pull_request:
+    branches:
+      - feature/frontend-milestone
+    paths:
+      - "ios/**"
+      - "lib/core/config/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/ios-flavor-build.yml"
+      - "tool/check_ios_flavor_configuration.ps1"
+  push:
+    branches:
+      - feature/frontend-milestone
+    paths:
+      - "ios/**"
+      - "lib/core/config/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/ios-flavor-build.yml"
+      - "tool/check_ios_flavor_configuration.ps1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-flavor-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulator-build:
+    name: Build staging and production iOS simulator apps
+    runs-on: macos-26
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out reviewed commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.5"
+          channel: stable
+          cache: true
+
+      - name: Print toolchain versions
+        run: |
+          flutter --version
+          xcodebuild -version
+
+      - name: Resolve Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate flavor-specific iOS project configuration
+        run: flutter build ios --config-only --no-codesign --flavor staging
+
+      - name: Resolve native iOS dependencies
+        run: |
+          set -euo pipefail
+          pod install --deployment --project-directory=ios 2>&1 | tee "$RUNNER_TEMP/ios-pod-install.log"
+          if grep -Fq 'CocoaPods did not set the base configuration' "$RUNNER_TEMP/ios-pod-install.log"; then
+            echo '::error::An iOS build configuration is missing its CocoaPods settings.'
+            exit 1
+          fi
+
+      - name: Verify dependency lock integrity
+        run: git diff --exit-code -- pubspec.lock ios/Podfile ios/Podfile.lock
+
+      - name: Build unsigned simulator app
+        run: |
+          flutter build ios --simulator --no-codesign --flavor staging
+          flutter build ios --simulator --no-codesign --flavor production

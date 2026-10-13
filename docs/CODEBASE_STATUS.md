@@ -1,8 +1,9 @@
 # Codebase status
 
-## Production Readiness Checkpoint (APP-READY-060)
+## Production Readiness Checkpoint (APP-READY-061)
 
-Mobile integration before APP-READY-060 is `71fe391e1b0854af880f3ec371df5a51291df2f4`.
+Current mobile integration is `31ed6ae8d2627a5aae6c1c5b5fb5eb6798911593` in
+`Carenetmed/Mobile-App`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in
 PR #217. PR #217 exact-head CI passed analysis, 719 Flutter tests, Android
 debug APK, Android release lint, and release signing/environment regressions.
@@ -37,19 +38,20 @@ APP-READY-058 completed in mobile PR #225 at the current integration base;
 exact-head CI passed the analyzer, 734 Flutter tests, debug APK, Android
 release lint, signing, and environment checks. The test baseline is 734.
 
-APP-READY-060 source and simulator validation is complete in mobile PR #226. Shared iOS staging and
+APP-READY-060 merged in mobile PR #226 at `31ed6ae`. Shared iOS staging and
 production schemes, Firebase bundle mapping, CocoaPods configuration, and an
 unsigned simulator-build lane are present. The ARC build-setting repair and
 locked CocoaPods dependencies are committed at the PR code head
-`e71e8ec603ce459a6be6719274f6def2324042c6`. GitHub Actions runs `38124641991`
-and `38124641985` passed on 2026-10-13: analysis, 734 Flutter tests, staging
+`6f0d656e76b85e58d829dc177522ec49957e0db7`. PR runs `38349401977` and
+`38349401983`, then merge-push runs `38350943633` and `38350943941`, passed
+on 2026-10-13: analysis, 734 Flutter tests, staging
 debug APK, Android release lint, signing/environment regressions, and both
 staging/production iOS simulator builds. The repository moved to
 `Carenetmed/Mobile-App` and is public; the previous runner billing block is
 resolved. Review repaired missing per-configuration CocoaPods includes and
 aligned the Flutter framework minimum to iOS 15. CI now rejects the CocoaPods
-base-configuration warning. The final configuration/documentation follow-up must
-pass both workflows before merge. No tests or Flutter dependencies changed.
+base-configuration warning; final PR and merged-source builds are clean.
+No tests or Flutter dependencies changed.
 No backend, cloud, payment, or provider changes occurred in this slice.
 
 APP-READY-051 cross-repository audit: backend main is
@@ -59,42 +61,62 @@ immutable image scan passed. Candidate image:
 This is only a scanned artifact: Cloud Run still serves
 `carenet-backend-staging-be-p1-031-livekit` at digest
 `sha256:869a7125fc5a981462e46bbfd72b7be50fc160510a942195b229d3960760b98a`.
+The 2026-10-13 service read confirms that configured manifest; its ready
+revision resolves the platform image to
+`sha256:1ad1482e4be6634a8152cd2099bbbc136b1957370b97366ed8d3428ab5b5ec6f`.
 The scan records one documented unfixed upstream high CVE (`CVE-2026-85091`),
 with no fix available, and zero unrated unfixed findings. Deployment,
 migration/rollback proof, and resolution tracking remain open.
 
-The Web admin verification console is integrated separately in Web-Developers
-PRs #1-#6; current Web main is
-`2ec9dd79b5c321d29225eab341a7285ef19b492d`. PR #6 adds loopback-mock Chromium
-coverage and its exact-head CI passed 19 Node tests, one browser journey,
-lint, and production build. The console remains source-only: no
+The Web admin verification console is integrated separately in
+`Carenetmed/Web-Developers` PRs #1-#7; current Web main is
+`bcb7742af0ba6749da9d0a45f694bc6e79755206`. Run `38072892929` passed tests,
+loopback-mock Chromium coverage, lint, production build, and container smoke.
+The console remains source-only: no
 hosting/deployment has been configured and no administrator was provisioned. Backend admin CLI
 provisioning remains operator-controlled and requires an approved identity and
 time-bounded execution; there is no first-admin endpoint.
 
-Last successful read-only staging observations on 2026-10-10: Cloud SQL
+Read-only staging observations on 2026-10-13: Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
 notification scheduler is PAUSED; Cloud Run `carenet-backend-staging` has no
 minimum scale (service maxScale 2, revision maxScale 3). Cloud Run can still
 incur request-based charges.
-No cloud resource was changed. The read-only 2026-10-10 check confirms SQL
+No cloud resource was changed. The read-only 2026-10-13 check confirms SQL
 STOPPED/NEVER, the notification Scheduler job PAUSED, and the only Cloud Run
 service has no minimum instance configured (scales to zero when idle). Keep SQL
-and Scheduler off when not explicitly needed. Verification upload-init
-continues to return staging HTTP 500; a
-meaningful database diagnosis requires a user-approved, time-bounded SQL
-activation window. Local C: space remains constrained; do not delete protected
+and Scheduler off when not explicitly needed. Historical verification upload-init
+returned staging HTTP 500; no fresh backend/provider smoke was invoked while
+SQL is stopped. Current-revision diagnosis requires a bounded database-use
+window. Local C: space remains constrained; do not delete protected
 worktrees to reclaim it. APP-READY-057 used a CI-hosted Chromium install only;
-it did not start cloud resources. APP-READY-058 is the active no-cloud mobile
-route audit. Initial evidence identified missing recovery from an unsupported
+it did not start cloud resources. The completed APP-READY-058 mobile route
+audit initially identified missing recovery from an unsupported
 authenticated role and implementation-facing copy in Account/Appointment
 Detail; compact, 2x-text regression coverage for Messages, Chat, and
 Notifications is in place, and the 94-test targeted group passes. Manual
 TalkBack, keyboard-focus order, and full-device route acceptance remain
 unproven. This follow-up also verifies active consultation controls and
 unsupported-role recovery at 320x568 / 2x text. The iOS environment PR has
-passed both GitHub CI lanes; its final configuration/documentation follow-up is
-checked again before merge.
+passed both GitHub CI lanes on the final PR and integration merge.
+
+### Remaining pre-device evidence and repairs
+
+| Gate | Current proof | Remaining work |
+|---|---|---|
+| Backend release | Main `8e5175e`, PR #136 CI/scan passed; scanned digest `1c7f7e0...` exists in Artifact Registry with one documented unfixed HIGH exception | Deploy approved current digest; prove migrations, rollback, and restored current schema |
+| Database protection | STOPPED/NEVER; backups, seven-day PITR, deletion protection, REQUIRED connector, ENCRYPTED_ONLY transport enabled; latest successful backup 2026-10-07 | Fresh bounded restore proof, approved RPO/RTO/HA, and private-network boundary; no private network returned by current configuration |
+| Monitoring | Live Monitoring read returns zero alert policies and zero notification channels | Approved recipients, policies for the required domains, read-back and alert/recovery delivery proof |
+| Notification worker | Durable claim/retry source exists | Fix outcomes that write by ID after another worker reclaims a stale delivery; capture/fence the exact claim and endpoint effects |
+| Admin verification | Web main `bcb7742`, mock-backed browser/container CI green | Reset confirmation on preview expiry/replacement; prove real document readability, protected hosting, real connectivity, and approved admin access |
+| Messaging/email/RTC | Source contracts and historical staging evidence exist | Exact current deployed-revision/provider acceptance and reconnect/reconciliation proof; only migration and notification jobs exist, and the notification Scheduler is paused |
+| Mobile crash reporting | Startup and declared dependencies contain no crash-reporting integration | Privacy-reviewed reporting and release-health metadata that exclude credentials, raw requests, and health content |
+| Locale/accessibility | English UI and existing time/NGN formatters; 734 tests including focused enlarged-text cases | Explicit English/Nigerian locale policy; remaining focus/contrast/semantics evidence and final TalkBack/device acceptance |
+| Platforms/payments | Android automated gates and both unsigned iOS simulator flavors pass | Signed exact release candidate/provider proof; Apple credentials/hardware gates; Paystack test activation only at the final confirmation gate |
+
+APP-READY-061 is a source/control-plane reconciliation, not a claim that the
+52-finding program or production acceptance is complete. No backend mutation,
+database activation, provider event, or physical-device test occurred.
 
 Remaining gates identified by APP-READY-051: staging upload diagnosis and
 deployment of the scanned backend digest with migration/rollback proof;

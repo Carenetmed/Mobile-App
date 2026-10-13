@@ -6,6 +6,34 @@ Rule: do not implement a deferred item until its product and backend contracts
 are defined. Do not fake backend, payment, or media behavior to make a screen
 look complete.
 
+## Current pre-device readiness gates (APP-READY-061)
+
+The 2026-10-13 reconciliation uses mobile merge `31ed6ae` (734 tests and both
+platform CI lanes), backend main `8e5175e`, Web main `bcb7742`, and read-only
+GCP control-plane responses. Full evidence is summarized in CODEBASE_STATUS.
+
+- Repair notification-delivery claim ownership so a late provider outcome
+  cannot overwrite a reclaimed delivery or invalidate an endpoint from an
+  obsolete claim. Ownership must be captured at the successful claim, not
+  inferred from a later row read.
+- Reset Web admin decision confirmation on document-preview expiry, close,
+  replacement, and session-context changes. Mock browser/iframe presence is
+  not real document-rendering or production-cookie proof.
+- Complete privacy-reviewed mobile crash reporting/release-health metadata
+  and the explicit English/Nigerian locale policy.
+- Promote the approved scanned backend digest, then prove current-schema
+  migration/rollback/restore and deployed messaging/email/RTC operations.
+- Monitoring currently has no alert policies or notification channels; approve
+  recipients and prove required-domain alert/recovery delivery.
+- Preserve enabled SQL backups/PITR/deletion protection and encrypted connector
+  enforcement. Private networking and current restore/RPO/RTO proof remain open.
+- Keep unused SQL and Scheduler off. Exact signed-device acceptance, Apple
+  hardware/provider gates, admin hosting/access, and final Paystack test-mode
+  confirmation remain separate gates.
+
+No source deletion, test disabling, service activation, or provider mutation
+was used to produce this reconciliation.
+
 ## Legal and authentication-link release gates
 
 - Replace the launch-placeholder support availability notice with a monitored,

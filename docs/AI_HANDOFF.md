@@ -55,39 +55,63 @@ Scheduler job PAUSED, and staging Cloud Run has no minimum scale. Keep Cloud SQL
 stopped, Scheduler paused, and nonessential services off; staging Cloud Run
 remains available to the app with minimum instances disabled.
 
-The separate Web verification console and tests are in Web-Developers main
-`2ec9dd79b5c321d29225eab341a7285ef19b492d` after PR #6. PR #6 adds a Chromium
-browser journey using a loopback mock backend; exact-head CI passed 19 Node
-tests, one browser journey, lint, and production build. The test exposed and
-fixed a mismatch between the server's privacy-filtered queue DTO and the
-browser validator. The console remains source-only: no hosting, deployment,
-or administrator provisioning occurred. Do not activate providers, deploy,
-or alter cloud resources for source-only work.
+The separate verification console is now `Carenetmed/Web-Developers` main
+`bcb7742af0ba6749da9d0a45f694bc6e79755206` after PR #7. Its tests, browser
+journey, lint, build, and container preflight passed in run `38072892929`.
+Browser proof uses a loopback mock backend; the container smoke uses an invalid
+example backend. These do not prove hosting, real document readability,
+production cookies, or administrator provisioning.
 
-Last successful read-only staging observations (2026-10-10): Cloud SQL
+Read-only staging observations (2026-10-13): Cloud SQL
 `carenet-staging-postgres` is STOPPED with activation policy NEVER; the
 notification scheduler is PAUSED; Cloud Run `carenet-backend-staging` has no
 minimum scale and maxScale 3, so request-based use can still incur charges.
-No cloud mutations were made. A 2026-10-10 refresh was blocked by DNS/OAuth
-resolution, so do not claim a newer live check. Keep the SQL instance and
-scheduler off unless
-an explicitly approved smoke operation needs them; do not disable the backend
-service that the staging app uses.
+Backups, seven-day PITR, deletion protection, connector enforcement REQUIRED,
+and ENCRYPTED_ONLY transport are enabled. No private-network configuration is
+returned. The latest successful automated backup is 2026-10-07. Monitoring
+has zero alert policies and notification channels. Only migration and
+notification-worker Cloud Run jobs exist; RTC reconciliation is not scheduled.
+No cloud mutations or backend/provider smoke calls were made. Keep unused
+services off and use a bounded activation window for later approved proof.
 
-APP-READY-060 source and simulator validation is complete in mobile PR #226.
+APP-READY-060 merged in mobile PR #226 at
+`31ed6ae8d2627a5aae6c1c5b5fb5eb6798911593`, reviewed head
+`6f0d656e76b85e58d829dc177522ec49957e0db7`.
 The repository is now `Carenetmed/Mobile-App`; it is public, and the current
-account has administrator access. On 2026-10-13, Actions runs `38124641991`
-and `38124641985` passed for implementation head
-`e71e8ec603ce459a6be6719274f6def2324042c6`: analyzer, 734 Flutter tests,
+account has administrator access. On 2026-10-13, PR Actions runs `38349401977`
+and `38349401983`, then integration-push runs `38350943633` and `38350943941`,
+passed: analyzer, 734 Flutter tests,
 staging debug APK, Android release lint, signing/environment regressions,
 and both staging/production iOS simulator builds. Test sources and the
 Flutter lockfile are unchanged. The iOS lane also runs on relevant integration
 pushes. Final review found and repaired missing CocoaPods configuration includes
 for the new flavors, and aligned AppFrameworkInfo.plist to iOS 15. The static
 checker validates the references/includes; CI rejects the integration warning.
-Final configuration/documentation changes require green PR checks before
-merge. Apple signing, APNs, provider/device acceptance, and production API
+The final CocoaPods repair is verified in both flavors with no integration
+warning. Apple signing, APNs, provider/device acceptance, and production API
 configuration remain open. No GCP resources were changed.
+
+APP-READY-061 reconciles current source and control-plane evidence. Backend
+main is `8e5175e9ea569630eb91728e449877fafac9a530`; its PR #136 image scan
+passed with one documented unfixed upstream HIGH exception. The scanned
+`sha256:1c7f7e0e902914355fcab86ef185f09d4c27c6563b682d4cb426c19eff718ad6`
+is not deployed. Staging's configured manifest remains `sha256:869a7125...`;
+the ready revision resolves its platform image to `sha256:1ad1482e...`.
+
+The audit found two source defects for the next bounded repairs: backend
+notification outcomes write by delivery ID after a stale claim can be
+reclaimed, and Web decision confirmation can survive preview expiry/reopen.
+Capture delivery ownership atomically and fence outcomes/endpoint invalidation;
+bind admin confirmation to the active document context. Require late-result
+and expiry/reopen regressions before merging either repair. No parallel
+workers may edit the same repository paths.
+
+Privacy-reviewed mobile crash reporting/release-health metadata is absent from
+the current startup/dependency surface. The explicit English/Nigerian locale
+policy is not configured in MaterialApp. These remain program work alongside
+current-image migration/rollback/restore proof, monitoring, provider acceptance,
+admin hosting/access, and signing/device gates. This record does not declare
+all 52 original findings closed.
 
 Earlier local C: space exhaustion made Flutter package resolution and agent
 startup unreliable. Final review uses a clean F: clone; do not delete or clean
@@ -385,8 +409,9 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-056 | Audit the Web professional-verification review journey against its backend contract; define the smallest source/CI-only readiness step and list cloud/admin operations that remain approval-gated | S | **DONE** - Web PR #5 merged at `39cc5b4`; same-origin read guard fixed, 18 tests/lint/build pass; no hosting or admin provisioning |
 | APP-READY-057 | Add browser-level tests for the admin verification journey using a mock backend: sign-in/session restore, queue pagination, document preview, decision confirmation, and recovery states; keep it source/CI-only | M | **DONE** - Web PR #6 merged at `2ec9dd7`; exact-head CI passed |
 | APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **DONE** - accessibility follow-up merged through PR #225 at `71fe391`; 734-test suite and release gates passed; cloud services untouched |
-| APP-READY-060 | Add cost-conscious iOS staging/production schemes and simulator build validation; keep iOS signing, APNs, and device proof as separate gates | M | **DONE** - PR #226 implementation head `e71e8ec` passed both CI lanes with 734 tests; final CocoaPods configuration/documentation follow-up must pass before merge |
-| APP-READY-061 | Reconcile remaining pre-device readiness gates against merged mobile/backend/web changes and read-only infrastructure evidence; select the next supported repair while keeping the final Paystack confirmation and device session gated | S | **NEXT** |
+| APP-READY-060 | Add cost-conscious iOS staging/production schemes and simulator build validation; keep iOS signing, APNs, and device proof as separate gates | M | **DONE** - PR #226 merged at `31ed6ae`; reviewed head and integration push passed both lanes, 734 tests, and clean CocoaPods configuration |
+| APP-READY-061 | Reconcile remaining pre-device readiness gates against merged mobile/backend/web changes and read-only infrastructure evidence; select the next supported repair while keeping the final Paystack confirmation and device session gated | S | **DONE** - 2026-10-13 source/control-plane evidence recorded; two bounded source defects identified; no cloud services activated |
+| APP-READY-062 | Review and integrate notification delivery claim fencing and admin preview-confirmation repairs in their own repositories, then continue crash-reporting/locale and operational gates | M | **NEXT** |
 
 ### APP-READY-055 implementation evidence
 

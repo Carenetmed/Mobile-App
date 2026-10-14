@@ -1,5 +1,20 @@
 # Codebase status
 
+## APP-READY-063 - In Progress (2026-10-14)
+
+Base PR #228 merge `31e0aa9f64a1ed75c7bef8a3f51b5ffd0e1f464a`.
+Default-off Account diagnostic consent is bound to the existing secure session
+generation. Allowlisted framework/asynchronous/optional-startup codes and strict
+release metadata use a separate bounded JWT client; no raw/native crash SDK,
+exception text, stack, identity or clinical/payment/message payload is sent.
+The coordinator bounds outstanding work and drops duplicates without queuing.
+Backend PR #141/main `f1a3f0b` implements strict admission; merged CI proves
+669 unit/149 E2E/164 PostgreSQL and image policy, not deployed delivery.
+77 new focused tests, full 811-test suite and analyzer pass; debug/release-lint/CI
+verification is pending. No dependency/native/domain-lifecycle changes. See
+`PHASE_1_RELEASE_HEALTH.md`; operational log/retention/alerts, native crashes,
+locale, rollout/restore, device and final Paystack gates remain open.
+
 ## Production Readiness Checkpoint (APP-READY-061)
 
 Superseding APP-READY-062 checkpoint (2026-10-13): mobile integration is

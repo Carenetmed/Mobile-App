@@ -3,6 +3,8 @@ import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/config/carenet_public_links.dart';
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/diagnostics/diagnostic_consent_tile.dart';
+import 'package:app_t/core/diagnostics/diagnostic_preferences_controller.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Authentication/data/repositories/auth_repository.dart';
@@ -53,6 +55,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
   String? _googleLinkError;
   String? _accountDeletionError;
   AuthUser? _currentAccount;
+  DiagnosticPreferencesController? _diagnostics;
 
   AuthRepository get _authRepository =>
       widget.authRepository ?? sl<AuthRepository>();
@@ -101,6 +104,10 @@ class _AccountShellPageState extends State<AccountShellPage> {
   @override
   void initState() {
     super.initState();
+    if (sl.isRegistered<DiagnosticPreferencesController>()) {
+      _diagnostics = sl<DiagnosticPreferencesController>();
+      _diagnostics!.initialize();
+    }
     _loadCurrentAccount();
   }
 
@@ -152,6 +159,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
   }
 
   Future<void> _logout() async {
+    _diagnostics?.sessionChanged();
     setState(() {
       _isLoggingOut = true;
       _logoutError = null;
@@ -252,6 +260,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
       ),
     );
     if (choice == null || !mounted) return;
+    _diagnostics?.sessionChanged();
 
     setState(() {
       _isDeletingAccount = true;
@@ -534,6 +543,8 @@ class _AccountShellPageState extends State<AccountShellPage> {
                     );
                   },
                 ),
+                if (_diagnostics != null)
+                  DiagnosticConsentTile(controller: _diagnostics!),
                 _AccountTile(
                   icon: Icons.support_agent_outlined,
                   title: 'Support',

@@ -2,6 +2,11 @@
 
 **You do not need any old chat.** Everything required to continue this project lives in this `docs/` folder and in the codebase.
 
+APP-READY-063 is in progress. See PHASE_1_RELEASE_HEALTH for the approved
+default-off sanitized backend diagnostics contract and remaining native,
+deployment, retention and alerting gates. Backend PR #141 is merged; mobile
+final verification is pending. No payments or physical-device acceptance began.
+
 APP-READY-062 reconciles merged notification authority/execution and admin
 preview-confirmation proof. See AI_HANDOFF, CODEBASE_STATUS and DOC_SYNC for exact
 source/CI evidence and operational limits. APP-READY-063 crash/release-health is

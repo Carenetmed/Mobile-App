@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:app_t/app.dart';
 import 'package:app_t/core/config/app_environment.dart';
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/diagnostics/release_health_coordinator.dart';
+import 'package:app_t/core/diagnostics/release_health_error_bridge.dart';
+import 'package:app_t/core/diagnostics/release_health_metadata.dart';
 import 'package:app_t/features/Notifications/data/services/firebase_notification_transport.dart';
 import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -36,6 +39,7 @@ Future<void> main() async {
   ]);
 
   await configureDependencies();
+  sl<ReleaseHealthErrorBridge>().install();
   runApp(const CarenetApp());
   WidgetsBinding.instance.addPostFrameCallback((_) {
     unawaited(_initializeOptionalNotifications());
@@ -68,7 +72,15 @@ class AppEnvironmentStartupFailure extends StatelessWidget {
 }
 
 Future<void> _initializeOptionalNotifications() async {
-  final coordinator = sl<NotificationCoordinator>();
-  await coordinator.initialize();
-  await coordinator.restoreSession();
+  try {
+    final coordinator = sl<NotificationCoordinator>();
+    await (() async {
+      await coordinator.initialize();
+      await coordinator.restoreSession();
+    })().timeout(const Duration(seconds: 15));
+  } catch (_) {
+    await sl<ReleaseHealthCoordinator>().report(
+      DiagnosticCode.optionalStartupFailure,
+    );
+  }
 }

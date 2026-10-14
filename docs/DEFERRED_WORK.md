@@ -1,5 +1,19 @@
 # Deferred work and backend replacement map
 
+## Sanitized Release-Health Operational Boundary (APP-READY-063)
+
+The user selected backend allowlisted diagnostics instead of raw/native crash
+uploads. Mobile source and consent tests are in progress; backend PR #141 is
+merged but not deployed by this slice. Still required: reviewed image/migration
+promotion, gateway admission, restricted log access and retention approval,
+controlled opt-in acceptance, alert recipients/delivery and release-health
+runbook proof. Counts are untrusted technical hints, not crash-free-user metrics.
+Native crashes, process death and child-isolate capture remain unavailable.
+Failed opt-out writes are reported as paused only in the current app session;
+durable preference success must not be claimed. See PHASE_1_RELEASE_HEALTH.
+Backend historical index-name drift needs separate alignment before production
+promotion. No native SDK, deployment, payment activation or device test is added.
+
 Purpose: one place to see what is intentionally local, disabled, or deferred so later work does not lose the path.
 
 Rule: do not implement a deferred item until its product and backend contracts

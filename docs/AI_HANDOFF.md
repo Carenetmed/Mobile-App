@@ -18,6 +18,29 @@
 
 ## Current production-readiness continuation
 
+### APP-READY-063 Sanitized Release Health (2026-10-14, In Progress)
+
+Base is PR #228 merge `31e0aa9f64a1ed75c7bef8a3f51b5ffd0e1f464a`.
+The user chose strictly allowlisted reports through CareNet's backend, not
+Crashlytics/native uploads. Backend PR #141 merged at
+`f1a3f0b482d533268b43a2caf6ca1df115f5e776`; exact-head/main CI passed
+669 unit, 149 E2E and 164 PostgreSQL tests, and image-scan policy. No deployment
+is implied. Five historical index-name mismatches remain a separate schema
+alignment gate before promotion; BE-P1-042 adds only its enum/index migration.
+
+Mobile now has closed metadata models, generation-bound secure consent, a
+private bounded API client, single-flight coordinator, safe root-isolate hooks
+and an Account opt-in switch. No raw exception/stack/context, user ID, URL or
+clinical/payment/message content is sent. Sharing defaults off; JWT is only
+authentication, never a report field. Refresh preserves consent generation;
+new login cannot reuse it. Native/process-death reporting remains unavailable.
+77 new focused tests pass, no old tests changed; full analyzer passes. Earlier
+full run passed 806 before final regressions; final full suite passed 811.
+Backup privacy and iOS flavor static checks pass. Build/CI are pending. See
+`PHASE_1_RELEASE_HEALTH.md` for failure/cancellation and retention limitations.
+SQL and Scheduler have not been started for this source work. Payments and
+physical-device acceptance remain gated. APP-READY-063 is still the sole NEXT.
+
 ### APP-READY-062 Integrated Proof (2026-10-13)
 
 Mobile base is `739745a6786b07e1f4c0b392ee1f832896a118f0` (PR #227),

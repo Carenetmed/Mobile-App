@@ -2,6 +2,21 @@
 
 ## Production Readiness Checkpoint (APP-READY-061)
 
+Superseding APP-READY-062 checkpoint (2026-10-13): mobile integration is
+`739745a6786b07e1f4c0b392ee1f832896a118f0`, green CI `38357943329`, 734 tests.
+This four-document reconciliation changes no runtime, tests, dependencies or
+native files. Backend PRs #137-#140 merged at latest main
+`ba40c1bc91ff81289c7bfb3f69c0bb69df24bf68`: CI `38445314885` passed
+659 unit/105 E2E/152 PostgreSQL, build/lint and patched runtime. Image scan
+`38445315082` passed existing policy, not a zero-CVE or deployment assertion.
+Web PR #8 merged at `6e94fcd3ee44c881a2625918e179928a0f65b659`, CI
+`38362609676` green (18 Node/five browser tests, lint/build/container smoke).
+Notification authority/execution and admin preview-confirmation source repairs
+are integrated; operational/provider/admin access and device proof remain open.
+SQL STOPPED/NEVER and scheduler PAUSED were rechecked without mutation.
+Crash/release-health and explicit English/Nigerian locale remain unfinished;
+Paystack requires final confirmation. Earlier text below is historical.
+
 Current mobile integration is `31ed6ae8d2627a5aae6c1c5b5fb5eb6798911593` in
 `Carenetmed/Mobile-App`.
 APP-READY-051 merged in PR #215, APP-READY-052 in PR #216, and APP-READY-053 in

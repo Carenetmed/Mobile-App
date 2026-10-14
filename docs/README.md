@@ -2,6 +2,12 @@
 
 **You do not need any old chat.** Everything required to continue this project lives in this `docs/` folder and in the codebase.
 
+APP-READY-062 reconciles merged notification authority/execution and admin
+preview-confirmation proof. See AI_HANDOFF, CODEBASE_STATUS and DOC_SYNC for exact
+source/CI evidence and operational limits. APP-READY-063 crash/release-health is
+next; locale, deployment/alerts/provider acceptance and final device gates remain
+open. No payments activate before final explicit user confirmation.
+
 If you use a new IDE or a new AI tool, paste this:
 
 ```

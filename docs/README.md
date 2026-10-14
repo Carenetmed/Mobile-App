@@ -2,15 +2,16 @@
 
 **You do not need any old chat.** Everything required to continue this project lives in this `docs/` folder and in the codebase.
 
-APP-READY-063 is in progress. See PHASE_1_RELEASE_HEALTH for the approved
+APP-READY-063 source is in PR #229. See PHASE_1_RELEASE_HEALTH for the approved
 default-off sanitized backend diagnostics contract and remaining native,
-deployment, retention and alerting gates. Backend PR #141 is merged; mobile
-final verification is pending. No payments or physical-device acceptance began.
+deployment, retention and alerting gates. Backend PR #141 is merged. Runtime
+`301f939` passed 811 tests/analyzer; final exact-head CI is a merge gate. Local
+native builds hit cache/disk limits, not a pass. No payments or device acceptance.
 
 APP-READY-062 reconciles merged notification authority/execution and admin
 preview-confirmation proof. See AI_HANDOFF, CODEBASE_STATUS and DOC_SYNC for exact
-source/CI evidence and operational limits. APP-READY-063 crash/release-health is
-next; locale, deployment/alerts/provider acceptance and final device gates remain
+source/CI evidence and operational limits. After PR #229 merges, APP-READY-064
+locale is next; deployment/alerts/provider acceptance and final device gates remain
 open. No payments activate before final explicit user confirmation.
 
 If you use a new IDE or a new AI tool, paste this:

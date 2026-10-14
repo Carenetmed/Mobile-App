@@ -1,6 +1,6 @@
 # Mobile Release Health
 
-## APP-READY-063 - In Progress
+## APP-READY-063 - Source Contract In PR #229
 
 Base: mobile PR #228 merge `31e0aa9f64a1ed75c7bef8a3f51b5ffd0e1f464a`.
 The complete readiness program requires privacy-reviewed diagnostics without
@@ -164,14 +164,36 @@ is sanitized by the Flutter reporting model.
 
 ### Verification And Remaining Gates
 
-Final focused diagnostics: 77 passed. Complete local suite: 811 passed (734 +77).
-Full analyzer: no issues. Android backup checks passed 25 negative probes; iOS
-flavor consistency passed. Debug build, release lint and final CI remain pending.
-The first local build was cancelled after repeated Windows C:/F: Kotlin
-incremental-cache path-root errors, not marked passed. A process-local retry
-without incremental caching is required; native/dependency/CI files are unchanged.
-Post-review consent-first ordering and reduced preference credential retention
-require full verification again. Focused 77 tests pass after consent-first ordering.
-No provider acceptance, merge or production-readiness completion is claimed.
+Reviewed runtime source: `301f9395d44ac96b7283b3b101e35eed3f2c462f`.
+The exact committed tree passed all 811 local tests on C: in 74 seconds and full
+analysis with no issues. This includes all 77 new cases and the 734-test baseline.
+Final source includes consent-first admission (zero session reads when default
+off), coalescing before I/O, bounded consent parsing and no cached authentication
+session in preferences. Backup privacy passed 25 negative probes; iOS flavor
+consistency passed. No pre-existing test was edited, removed, skipped or disabled.
+
+An independent read-only review of that exact runtime commit found no present
+privacy, session-isolation or concurrency blocker within the approved limits.
+The final documentation commit must leave runtime/tests identical to that
+reviewed commit; exact-head CI remains mandatory, not inferred from this review.
+
+Initial PR #229 CI `38539680857` passed on `ac3ffd5` with Ubuntu APK, release
+lint and signing/environment regressions. That older head is not final proof:
+the unchanged complete CI lane must pass on the final reviewed PR head before
+merge. The PR checks and final review comment carry that immutable run/head proof.
+
+Local native attempts are not passed. F: builds encountered Windows C:/F:
+Kotlin incremental-cache errors and slow I/O; a process-only retry did not complete.
+A fresh same-drive C: validation checkout resolved test speed, but guarded APK
+attempts ran out of disk headroom. The single-worker attempt stopped at
+995,098,624 free bytes after 57 seconds, with the full default ABI targets still
+enabled. Owned processes were stopped; no native/dependency/CI file was changed,
+no test was dropped and no artifact is described as a valid release candidate.
+Kotlin cache logs remain local/untracked; tooling policy blocked cleanup.
+More local headroom and actual signed release-candidate/device proof remain open.
+
+No provider acceptance, deployment or production-readiness completion is claimed.
+The next source slice after this PR merges is APP-READY-064, the approved
+English/Nigerian locale policy; backend currency/time authority must not change.
 Dependencies remain unchanged. Payments remain the final explicitly approved
 provider gate; no cloud service was started for this work.

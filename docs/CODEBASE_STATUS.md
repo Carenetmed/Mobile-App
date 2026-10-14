@@ -1,6 +1,6 @@
 # Codebase status
 
-## APP-READY-063 - In Progress (2026-10-14)
+## APP-READY-063 - Source Contract In PR #229 (2026-10-14)
 
 Base PR #228 merge `31e0aa9f64a1ed75c7bef8a3f51b5ffd0e1f464a`.
 Default-off Account diagnostic consent is bound to the existing secure session
@@ -10,10 +10,17 @@ exception text, stack, identity or clinical/payment/message payload is sent.
 The coordinator bounds outstanding work and drops duplicates without queuing.
 Backend PR #141/main `f1a3f0b` implements strict admission; merged CI proves
 669 unit/149 E2E/164 PostgreSQL and image policy, not deployed delivery.
-77 new focused tests, full 811-test suite and analyzer pass; debug/release-lint/CI
-verification is pending. No dependency/native/domain-lifecycle changes. See
+Reviewed runtime `301f9395d44ac96b7283b3b101e35eed3f2c462f` passed all
+811 tests and analysis in a same-drive C: validation checkout. Net +77, no old
+test changes. Initial draft CI `38539680857` passed Ubuntu APK, release lint and
+signing/environment probes on `ac3ffd5`; final reviewed-head CI is still a
+mandatory merge gate for PR #229. Local native builds are not claimed passed:
+cross-drive F: cache problems and C: disk safeguards blocked those attempts.
+The single-worker C: attempt stopped at 995,098,624 free bytes after 57 seconds.
+No dependency/native/domain-lifecycle changes or lowered CI checks. See
 `PHASE_1_RELEASE_HEALTH.md`; operational log/retention/alerts, native crashes,
-locale, rollout/restore, device and final Paystack gates remain open.
+local signed-release headroom, locale, rollout/restore, device and final Paystack
+gates remain open. APP-READY-064 locale work starts only after PR #229 merges.
 
 ## Production Readiness Checkpoint (APP-READY-061)
 

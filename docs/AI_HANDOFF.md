@@ -18,7 +18,7 @@
 
 ## Current production-readiness continuation
 
-### APP-READY-063 Sanitized Release Health (2026-10-14, In Progress)
+### APP-READY-063 Sanitized Release Health (2026-10-14, PR #229)
 
 Base is PR #228 merge `31e0aa9f64a1ed75c7bef8a3f51b5ffd0e1f464a`.
 The user chose strictly allowlisted reports through CareNet's backend, not
@@ -34,12 +34,27 @@ and an Account opt-in switch. No raw exception/stack/context, user ID, URL or
 clinical/payment/message content is sent. Sharing defaults off; JWT is only
 authentication, never a report field. Refresh preserves consent generation;
 new login cannot reuse it. Native/process-death reporting remains unavailable.
-77 new focused tests pass, no old tests changed; full analyzer passes. Earlier
-full run passed 806 before final regressions; final full suite passed 811.
-Backup privacy and iOS flavor static checks pass. Build/CI are pending. See
+Reviewed runtime source is `301f9395d44ac96b7283b3b101e35eed3f2c462f`.
+The exact committed tree passed all 811 tests and full analysis in a separate
+C: validation worktree; 734 retained tests plus 77 new cases, none removed or
+weakened. Backup privacy (25 negative probes) and iOS flavor static checks pass.
+Initial draft CI `38539680857` passed on `ac3ffd5`, including Ubuntu APK,
+release lint and signing/environment regressions. This is not final-head proof:
+PR #229 must pass the unchanged complete CI lane on its final reviewed head
+before merge. The queue transition below applies only when that PR merges.
+
+Local native builds are not passed: F: attempts were cancelled after cross-drive
+Kotlin-cache errors/slow I/O; the same-drive C: build hit the 1 GiB disk safeguard,
+including a single-worker attempt at 995,098,624 free bytes after 57 seconds.
+No dependency/native/CI file was changed to obtain green results. More local
+disk headroom and actual signed release-candidate/device proof remain required.
+Task-generated Kotlin caches are retained locally, excluded from the PR; cleanup
+was blocked by tooling policy, not hidden in a commit. See
 `PHASE_1_RELEASE_HEALTH.md` for failure/cancellation and retention limitations.
 SQL and Scheduler have not been started for this source work. Payments and
-physical-device acceptance remain gated. APP-READY-063 is still the sole NEXT.
+physical-device acceptance remain gated. The next source slice after PR #229
+is APP-READY-064: explicit English/Nigerian locale and formatting consistency.
+It has not started. Source completion is not deployment or full readiness.
 
 ### APP-READY-062 Integrated Proof (2026-10-13)
 
@@ -467,7 +482,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-060 | Add cost-conscious iOS staging/production schemes and simulator build validation; keep iOS signing, APNs, and device proof as separate gates | M | **DONE** - PR #226 merged at `31ed6ae`; reviewed head and integration push passed both lanes, 734 tests, and clean CocoaPods configuration |
 | APP-READY-061 | Reconcile remaining pre-device readiness gates against merged mobile/backend/web changes and read-only infrastructure evidence; select the next supported repair while keeping the final Paystack confirmation and device session gated | S | **DONE** - 2026-10-13 source/control-plane evidence recorded; two bounded source defects identified; no cloud services activated |
 | APP-READY-062 | Reconcile reviewed notification authority/execution and admin preview-confirmation source proofs; retain operational gates | S | **DONE** |
-| APP-READY-063 | Add privacy-reviewed crash reporting/release-health metadata without credentials or health content; preserve bounded optional startup | M | **NEXT** |
+| APP-READY-063 | Add privacy-reviewed crash reporting/release-health metadata without credentials or health content; preserve bounded optional startup | M | **DONE** - source-only in PR #229; promotion requires final exact-head CI |
+| APP-READY-064 | Apply the approved English/Nigerian Phase 1 locale and deterministic presentation without changing backend currency, UTC/IANA time authority or business rules | M | **NEXT** - begin only after PR #229 merges |
 
 ### APP-READY-055 implementation evidence
 

@@ -1,11 +1,17 @@
 # Documentation sync index
 
-**Last audited:** 2026-10-10
+**Last audited:** 2026-10-13
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 ---
 
 ## Authority (if two docs seem to conflict)
+
+APP-READY-062 reconciles mobile PR #227, backend PRs #137-#140 and Web PR #8
+against exact integration SHAs and green CI in AI_HANDOFF/CODEBASE_STATUS.
+Four docs only; source/image evidence is not deployment/provider/device proof.
+APP-READY-063 crash/release-health is the sole NEXT task; locale, operational
+gates and final user-confirmed Paystack activation remain unfinished.
 
 | Topic | Authoritative doc |
 |-------|-------------------|

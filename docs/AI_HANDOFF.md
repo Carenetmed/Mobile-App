@@ -18,6 +18,38 @@
 
 ## Current production-readiness continuation
 
+### APP-READY-062 Integrated Proof (2026-10-13)
+
+Mobile base is `739745a6786b07e1f4c0b392ee1f832896a118f0` (PR #227),
+integration CI `38357943329` green. This slice changes four docs only; the
+734-test baseline and runtime/test/native/dependency files are unchanged.
+
+Backend PRs #137-#140 merged, current main
+`ba40c1bc91ff81289c7bfb3f69c0bb69df24bf68`. Reviewed-head and merged CI
+passed notification delivery claim fencing, recipient binding snapshots,
+event/reminder freshness and provider/runner/database bounds. Merged CI
+`38445314885` proves 659 unit, 105 E2E and 152 PostgreSQL tests; scan
+`38445315082` passed existing policy. Source/image proof is not deployment or
+zero-CVE proof; the disclosed no-fix upstream HIGH exception remains.
+
+Web PR #8 merged at `6e94fcd3ee44c881a2625918e179928a0f65b659`, integration
+CI `38362609676` green: 18 Node tests, five browser cases, lint/build/container
+smoke. Preview confirmation is bound to the active document context; synthetic
+fixtures do not prove real private-file hosting or approved operator access.
+
+Transport stays at-least-once; timeout means uncertain outcome, not cancellation.
+Old workers must drain, the binding migration must apply and the reviewed image
+must be promoted before staging acceptance. Local disk-sync failures are recorded
+in backend PR #140; clean exact-lock CI provides PostgreSQL proof, not a local pass.
+Read-only cloud checks confirm SQL STOPPED/NEVER and scheduler PAUSED. Archive
+refs/protected worktrees are unchanged; no deployment/provider/payment activation.
+
+Next is APP-READY-063 privacy-reviewed crash reporting/release-health metadata.
+Locale, alerts, restore/rollback/current-image rollout, provider acceptance,
+admin hosting/operator approval, iOS signing/hardware and device gates stay open.
+Paystack stays last with one final explicit confirmation. Do not claim all 52
+findings closed. Earlier snapshots below are historical and superseded here.
+
 The user approved the multi-slice Production-Readiness Completion Program.
 Continue it as ordered, reviewable slices. Payments remain the final gated
 activity and require one explicit user confirmation before any Paystack-side
@@ -411,7 +443,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-058 | Audit remaining active mobile patient/professional routes for compact-width and enlarged-text usability, accessible control semantics, and honest loading/empty/error copy; close only evidenced gaps with focused tests, with no backend/provider/cloud changes | M | **DONE** - accessibility follow-up merged through PR #225 at `71fe391`; 734-test suite and release gates passed; cloud services untouched |
 | APP-READY-060 | Add cost-conscious iOS staging/production schemes and simulator build validation; keep iOS signing, APNs, and device proof as separate gates | M | **DONE** - PR #226 merged at `31ed6ae`; reviewed head and integration push passed both lanes, 734 tests, and clean CocoaPods configuration |
 | APP-READY-061 | Reconcile remaining pre-device readiness gates against merged mobile/backend/web changes and read-only infrastructure evidence; select the next supported repair while keeping the final Paystack confirmation and device session gated | S | **DONE** - 2026-10-13 source/control-plane evidence recorded; two bounded source defects identified; no cloud services activated |
-| APP-READY-062 | Review and integrate notification delivery claim fencing and admin preview-confirmation repairs in their own repositories, then continue crash-reporting/locale and operational gates | M | **NEXT** |
+| APP-READY-062 | Reconcile reviewed notification authority/execution and admin preview-confirmation source proofs; retain operational gates | S | **DONE** |
+| APP-READY-063 | Add privacy-reviewed crash reporting/release-health metadata without credentials or health content; preserve bounded optional startup | M | **NEXT** |
 
 ### APP-READY-055 implementation evidence
 

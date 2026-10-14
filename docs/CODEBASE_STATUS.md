@@ -1,5 +1,20 @@
 # Codebase status
 
+## APP-READY-064 - Locale Source Verified (2026-10-15)
+
+Base `5955616039ce4bec8b9077d1c54f75e4649e5d82` is merged PR #229.
+Its final-head CI `38549558633` and integration CI `38552538855` passed all
+811 tests, analysis, Ubuntu APK, release lint and signing/environment probes.
+The APP-READY-063 pending-merge entry below is historical, not current status.
+Locale work now pins English/Nigeria presentation, bundled English day-first
+date fallback and twelve-hour labels without changing time or money authority.
+See `PHASE_1_LOCALE_POLICY.md` for scope, SDK-only dependency and pending gates.
+All 821 tests pass locally (811 retained + 10 added); analyzer is clean. Backup
+privacy probes, iOS static consistency, new-file formatting and diff checks pass.
+No test was removed/renamed/skipped; only documented display assertions changed.
+Both exact-head native CI lanes and integration CI remain merge gates. No local
+native pass, cloud promotion, signing/device or full readiness claim is made.
+
 ## APP-READY-063 - Source Contract In PR #229 (2026-10-14)
 
 Base PR #228 merge `31e0aa9f64a1ed75c7bef8a3f51b5ffd0e1f464a`.

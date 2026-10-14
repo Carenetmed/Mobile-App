@@ -1,6 +1,7 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/presentation/carenet_presentation.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
@@ -12,6 +13,7 @@ import 'package:app_t/features/Home/domain/entities/verification_upload_request.
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 
 class VerificationPickedFile {
   const VerificationPickedFile({
@@ -918,9 +920,7 @@ class _DocumentCard extends StatelessWidget {
 
   String _dateLabel(DateTime date) {
     final local = date.toLocal();
-    return '${local.year.toString().padLeft(4, '0')}-'
-        '${local.month.toString().padLeft(2, '0')}-'
-        '${local.day.toString().padLeft(2, '0')}';
+    return DateFormat('d MMM y', CareNetPresentation.dateLocale).format(local);
   }
 }
 

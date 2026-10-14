@@ -18,6 +18,30 @@
 
 ## Current production-readiness continuation
 
+### APP-READY-064 English/Nigerian Locale (2026-10-15, Verified Source)
+
+Base is PR #229 merge `5955616039ce4bec8b9077d1c54f75e4649e5d82`.
+Final PR #229 CI `38549558633` and integration CI `38552538855` passed:
+811 tests, analyzer, Ubuntu APK, release lint and signing/environment probes.
+This supersedes the pending-merge wording in the historical entry below.
+
+Current scope is presentation only: English/Nigeria app identity, bundled
+English day-first date fallback, consistent twelve-hour labels and unchanged
+NGN integer-minor-unit formatting. See `PHASE_1_LOCALE_POLICY.md`. Only the SDK
+localizations dependency is added; no hosted package upgrade or native change.
+UTC/IANA conversion, backend contracts, navigation and money input stay intact.
+Full local suite passes 821 tests (811 retained + eight locale + two Schedule);
+analyzer, backup privacy probes, iOS flavor static checks and diff checks pass.
+Initial failures were old display-string expectations only; all assertion
+coverage remains. Independent review found no blocking defect. Both exact-head
+native CI lanes and integration push CI remain merge gates, not assumed passes.
+The full readiness program is not complete. Local disk/native validation,
+deployment/restore/alerts, signed release candidate, iOS hardware and final
+device acceptance remain gates. Payments remain last after final confirmation.
+Manual locale/device checks are in `PHASE_1_LOCALE_POLICY.md`. After merge,
+APP-READY-065 reconciles historical backend Prisma index-name drift using the
+locked client before promotion. It has not started; no cloud service activated.
+
 ### APP-READY-063 Sanitized Release Health (2026-10-14, PR #229)
 
 Base is PR #228 merge `31e0aa9f64a1ed75c7bef8a3f51b5ffd0e1f464a`.
@@ -482,8 +506,9 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-060 | Add cost-conscious iOS staging/production schemes and simulator build validation; keep iOS signing, APNs, and device proof as separate gates | M | **DONE** - PR #226 merged at `31ed6ae`; reviewed head and integration push passed both lanes, 734 tests, and clean CocoaPods configuration |
 | APP-READY-061 | Reconcile remaining pre-device readiness gates against merged mobile/backend/web changes and read-only infrastructure evidence; select the next supported repair while keeping the final Paystack confirmation and device session gated | S | **DONE** - 2026-10-13 source/control-plane evidence recorded; two bounded source defects identified; no cloud services activated |
 | APP-READY-062 | Reconcile reviewed notification authority/execution and admin preview-confirmation source proofs; retain operational gates | S | **DONE** |
-| APP-READY-063 | Add privacy-reviewed crash reporting/release-health metadata without credentials or health content; preserve bounded optional startup | M | **DONE** - source-only in PR #229; promotion requires final exact-head CI |
-| APP-READY-064 | Apply the approved English/Nigerian Phase 1 locale and deterministic presentation without changing backend currency, UTC/IANA time authority or business rules | M | **NEXT** - begin only after PR #229 merges |
+| APP-READY-063 | Add privacy-reviewed crash reporting/release-health metadata without credentials or health content; preserve bounded optional startup | M | **DONE** - PR #229 merged at `5955616`; final and integration CI green, 811 tests; deployment/native limitations remain |
+| APP-READY-064 | Apply the approved English/Nigerian Phase 1 locale and deterministic presentation without changing backend currency, UTC/IANA time authority or business rules | M | **DONE** - source verified with 821 tests/analyzer; merge only after both unchanged CI lanes pass |
+| APP-READY-065 | Reconcile the five historical backend Prisma index-name differences using the locked client; prove narrow alignment before promotion without deploying or changing domain semantics | S | **NEXT** - begin only after APP-READY-064 merges |
 
 ### APP-READY-055 implementation evidence
 

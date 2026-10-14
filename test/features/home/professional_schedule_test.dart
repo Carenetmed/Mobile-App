@@ -196,6 +196,103 @@ void main() {
     expect(find.textContaining('Generated slot'), findsNothing);
   });
 
+  testWidgets('Sunday midnight boundary labels do not mutate backend values', (
+    tester,
+  ) async {
+    final window = AvailabilityWindow(
+      id: 'sunday-midnight',
+      weekday: 0,
+      startMinute: 540,
+      endMinute: 1440,
+      timezone: 'Africa/Lagos',
+      active: true,
+    );
+    final windows = <AvailabilityWindow>[window];
+    final repository = _ScheduleRepository(windows: windows);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(430, 932),
+        builder: (_, __) => MaterialApp(
+          home: SelectedDatesShellPage(
+            schedulingRepository: repository,
+            sessionStore: _sessionStore('PROFESSIONAL'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sunday - Active'), findsOneWidget);
+    expect(
+      find.text('9:00 am - 12:00 am (next day)\nAfrica/Lagos'),
+      findsOneWidget,
+    );
+    expect(repository.readCalls, 1);
+    expect(repository.replaceCalls, 0);
+    expect(repository.lastReplacement, isEmpty);
+    expect(repository.windows, same(windows));
+    expect(repository.windows.single, same(window));
+    expect(window.weekday, 0);
+    expect(window.startMinute, 540);
+    expect(window.endMinute, 1440);
+    expect(window.timezone, 'Africa/Lagos');
+    expect(window.active, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('24-hour device preference preserves 12-hour labels and minutes', (
+    tester,
+  ) async {
+    final repository = _ScheduleRepository(
+      windows: <AvailabilityWindow>[_window(weekday: 0)],
+    );
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(430, 932),
+        builder: (_, __) => MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+            child: child!,
+          ),
+          home: SelectedDatesShellPage(
+            schedulingRepository: repository,
+            sessionStore: _sessionStore('PROFESSIONAL'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('9:00 am - 10:00 am\nAfrica/Lagos'), findsOneWidget);
+    expect(repository.replaceCalls, 0);
+    await tester.tap(find.byTooltip('Edit availability'));
+    await tester.pumpAndSettle();
+
+    expect(
+      MediaQuery.of(tester.element(find.byType(AlertDialog)))
+          .alwaysUse24HourFormat,
+      isTrue,
+    );
+    expect(find.text('Start 9:00 am'), findsOneWidget);
+    expect(find.text('End 10:00 am'), findsOneWidget);
+    expect(repository.replaceCalls, 0);
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(repository.replaceCalls, 1);
+    expect(repository.readCalls, 2);
+    final submitted = repository.lastReplacement.single;
+    expect(submitted.weekday, 0);
+    expect(submitted.startMinute, 540);
+    expect(submitted.endMinute, 600);
+    expect(submitted.timezone, 'Africa/Lagos');
+    expect(submitted.active, isTrue);
+    expect(find.text('Sunday - Active'), findsOneWidget);
+    expect(find.text('9:00 am - 10:00 am\nAfrica/Lagos'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('inactive backend availability is labeled in row semantics', (
     tester,
   ) async {

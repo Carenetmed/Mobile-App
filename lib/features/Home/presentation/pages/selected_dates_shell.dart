@@ -323,14 +323,14 @@ class _AvailabilityEditorState extends State<_AvailabilityEditor> {
                 final startButton = OutlinedButton(
                   onPressed: () => _pickTime(start: true),
                   child: Text(
-                    'Start ${_start.format(context)}',
+                    'Start ${_timeLabel(_minutes(_start))}',
                     textAlign: TextAlign.center,
                   ),
                 );
                 final endButton = OutlinedButton(
                   onPressed: () => _pickTime(start: false),
                   child: Text(
-                    'End ${_end.format(context)}',
+                    'End ${_timeLabel(_minutes(_end))}',
                     textAlign: TextAlign.center,
                   ),
                 );
@@ -516,9 +516,11 @@ String _timeLabel(int minuteOfDay) {
     return 'Time unavailable';
   }
   if (minuteOfDay == 1440) {
-    return '24:00';
+    return '12:00 am (next day)';
   }
   final hours = minuteOfDay ~/ 60;
   final minutes = minuteOfDay % 60;
-  return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+  final hour = hours % 12 == 0 ? 12 : hours % 12;
+  final period = hours < 12 ? 'am' : 'pm';
+  return '$hour:${minutes.toString().padLeft(2, '0')} $period';
 }

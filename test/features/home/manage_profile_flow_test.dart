@@ -719,7 +719,7 @@ void main() {
     expect(find.text('2 KB'), findsOneWidget);
     expect(find.text('Checksum'), findsNothing);
     expect(find.text('Provided'), findsNothing);
-    expect(find.text('2026-07-15'), findsOneWidget);
+    expect(find.text('15 Jul 2026'), findsOneWidget);
     expect(find.text('Upload document'), findsOneWidget);
     expect(
       find.text('Select one PDF, JPEG, or PNG file under 10 MB.'),
@@ -1053,7 +1053,7 @@ void main() {
     expect(find.text('Schedule'), findsOneWidget);
     expect(find.text('Weekly availability'), findsOneWidget);
     expect(find.text('Monday - Active'), findsOneWidget);
-    expect(find.textContaining('09:00 - 17:00'), findsOneWidget);
+    expect(find.textContaining('9:00 am - 5:00 pm'), findsOneWidget);
     expect(find.text('Payment'), findsNothing);
     expect(find.text('Notification'), findsNothing);
     expect(find.text('Calendar sync'), findsNothing);

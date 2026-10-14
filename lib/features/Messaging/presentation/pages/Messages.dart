@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:app_t/core/config/carenet_api_config.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/presentation/carenet_presentation.dart';
 import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Messaging/data/repositories/messaging_repository.dart';
 import 'package:app_t/features/Messaging/data/services/messaging_realtime_client.dart';
@@ -458,10 +459,10 @@ String _relativeTime(DateTime value) {
   final local = value.toLocal();
   final now = DateTime.now();
   if (DateUtils.isSameDay(local, now)) {
-    return DateFormat.jm().format(local);
+    return DateFormat('h:mm a', CareNetPresentation.dateLocale).format(local);
   }
   if (local.year == now.year) {
-    return DateFormat.MMMd().format(local);
+    return DateFormat('d MMM', CareNetPresentation.dateLocale).format(local);
   }
-  return DateFormat.yMMMd().format(local);
+  return DateFormat('d MMM y', CareNetPresentation.dateLocale).format(local);
 }

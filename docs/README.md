@@ -2,6 +2,12 @@
 
 **You do not need any old chat.** Everything required to continue this project lives in this `docs/` folder and in the codebase.
 
+Current: APP-READY-064 locale source passes 821 tests and analyzer; see
+`PHASE_1_LOCALE_POLICY.md`. PR #229 merged at `5955616`; final CI `38549558633`
+and integration CI `38552538855` passed 811 tests and native CI gates. Earlier
+pending-merge wording below is historical. Source proof is not deployment,
+signed release-candidate, device acceptance or full-program completion.
+
 APP-READY-063 source is in PR #229. See PHASE_1_RELEASE_HEALTH for the approved
 default-off sanitized backend diagnostics contract and remaining native,
 deployment, retention and alerting gates. Backend PR #141 is merged. Runtime

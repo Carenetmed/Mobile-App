@@ -1,5 +1,15 @@
 # Deferred work and backend replacement map
 
+## Locale And Release Validation Boundary (APP-READY-064)
+
+English/Nigeria presentation does not add translated languages or Nigerian
+date data absent from pinned intl. Standard bundled English day-first fallback
+is explicit. No financial parsing, timezone or backend policy is localized.
+PR #229 is merged with final and integration CI green (811 tests and native CI);
+its older pending-merge note below is superseded. Actual signed release-candidate,
+local disk headroom, iOS signing/hardware, cloud operational proof and physical
+device acceptance remain open. No payment activation is authorized by this slice.
+
 ## Sanitized Release-Health Operational Boundary (APP-READY-063)
 
 The user selected backend allowlisted diagnostics instead of raw/native crash

@@ -1,11 +1,14 @@
 import 'package:intl/intl.dart';
+import 'package:app_t/core/presentation/carenet_presentation.dart';
 
 String formatNgnMinor(int amountMinor) {
   final negative = amountMinor < 0;
   final absolute = amountMinor.abs();
   final major = absolute ~/ 100;
   final minor = (absolute % 100).toString().padLeft(2, '0');
-  final formattedMajor = NumberFormat.decimalPattern('en_NG').format(major);
+  final formattedMajor = NumberFormat.decimalPattern(
+    CareNetPresentation.numberLocale,
+  ).format(major);
   return '${negative ? '-' : ''}NGN $formattedMajor.$minor';
 }
 

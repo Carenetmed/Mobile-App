@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:app_t/core/presentation/carenet_presentation.dart';
 import 'package:timezone/data/latest.dart' as timezone_data;
 import 'package:timezone/timezone.dart' as timezone;
 
@@ -42,13 +43,19 @@ class ProfessionalTimeFormatter {
     final professionalOffset = professional.timeZoneOffset;
     final localOffset = local.timeZoneOffset;
     return ProfessionalTimeLabels(
-      professionalDate: DateFormat('EEE, d MMM y').format(professional),
-      professionalTime: DateFormat('h:mm a').format(professional),
+      professionalDate: DateFormat(
+        'EEE, d MMM y',
+        CareNetPresentation.dateLocale,
+      ).format(professional),
+      professionalTime: DateFormat(
+        'h:mm a',
+        CareNetPresentation.dateLocale,
+      ).format(professional),
       professionalTimezone: professionalTimezone,
       patientLocalTime:
           professionalOffset == localOffset
               ? null
-              : '${DateFormat('EEE, d MMM, h:mm a').format(local)} local time',
+              : '${DateFormat('EEE, d MMM, h:mm a', CareNetPresentation.dateLocale).format(local)} local time',
     );
   }
 

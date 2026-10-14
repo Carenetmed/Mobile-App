@@ -3,6 +3,7 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/presentation/carenet_presentation.dart';
 import 'package:app_t/features/Notifications/data/repositories/notification_repository.dart';
 import 'package:app_t/features/Notifications/data/services/firebase_notification_transport.dart';
 import 'package:app_t/features/Notifications/domain/entities/notification_models.dart';
@@ -296,9 +297,9 @@ class _NotificationRow extends StatelessWidget {
     if (local.year == now.year &&
         local.month == now.month &&
         local.day == now.day) {
-      return DateFormat.jm().format(local);
+      return DateFormat('h:mm a', CareNetPresentation.dateLocale).format(local);
     }
-    return DateFormat('d MMM, h:mm a').format(local);
+    return DateFormat('d MMM, h:mm a', CareNetPresentation.dateLocale).format(local);
   }
 
   IconData _categoryIcon(NotificationCategory category) => switch (category) {

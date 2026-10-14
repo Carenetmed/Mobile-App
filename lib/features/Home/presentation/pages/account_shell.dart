@@ -3,6 +3,7 @@ import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/config/carenet_public_links.dart';
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/presentation/carenet_presentation.dart';
 import 'package:app_t/core/diagnostics/diagnostic_consent_tile.dart';
 import 'package:app_t/core/diagnostics/diagnostic_preferences_controller.dart';
 import 'package:app_t/core/theme/textStyle.dart';
@@ -20,6 +21,7 @@ import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 
 class AccountShellPage extends StatefulWidget {
   const AccountShellPage({
@@ -288,7 +290,7 @@ class _AccountShellPageState extends State<AccountShellPage> {
             'Your CareNet account is no longer active and all sessions were '
             'signed out. Records that CareNet must retain remain protected '
             'under the applicable retention policy.\n\n'
-            'Request recorded ${receipt.deletionRequestedAt.toLocal()}.',
+            'Request recorded ${DateFormat('d MMM y, h:mm a', CareNetPresentation.dateLocale).format(receipt.deletionRequestedAt.toLocal())} (local time).',
           ),
           actions: [
             TextButton(

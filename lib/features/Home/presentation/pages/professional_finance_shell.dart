@@ -1,4 +1,5 @@
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/presentation/carenet_presentation.dart';
 import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Home/data/repositories/financial_repository.dart';
 import 'package:app_t/features/Home/domain/entities/financial_entities.dart';
@@ -679,5 +680,5 @@ String _codeLabel(String value) {
 }
 
 String _date(DateTime value) {
-  return DateFormat('d MMM y, h:mm a').format(value.toLocal());
+  return DateFormat('d MMM y, h:mm a', CareNetPresentation.dateLocale).format(value.toLocal());
 }

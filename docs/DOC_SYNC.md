@@ -1,11 +1,19 @@
 # Documentation sync index
 
-**Last audited:** 2026-10-14
+**Last audited:** 2026-10-15
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 ---
 
 ## Authority (if two docs seem to conflict)
+
+APP-READY-064 source is verified against merged PR #229 `5955616` (811 tests).
+PHASE_1_LOCALE_POLICY and DECISIONS define English/Nigeria identity, explicit
+bundled English day-first fallback, twelve-hour labels and unchanged authority.
+Final PR #229 CI `38549558633` and integration CI `38552538855` passed; older
+pending-merge wording below is historical. Locale local proof is 821 tests and
+clean analyzer/static/diff checks; exact-head and integration CI remain gates.
+APP-READY-065 is next only after merge; no backend/cloud change is included.
 
 APP-READY-063 is implemented in PR #229 against mobile PR #228. PHASE_1_RELEASE_HEALTH
 and DECISIONS record the approved sanitized backend transport, generation-bound

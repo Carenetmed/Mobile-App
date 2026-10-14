@@ -1,6 +1,7 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/constants/navigators/router.dart';
 import 'package:app_t/core/constants/strings.dart';
+import 'package:app_t/core/config/carenet_locale.dart';
 import 'package:app_t/core/routing/app_navigator.dart';
 import 'package:app_t/core/theme/bloc/theme_bloc.dart';
 import 'package:app_t/core/theme/theme.dart';
@@ -29,6 +30,10 @@ class CarenetApp extends StatelessWidget {
                 navigatorKey: appNavigatorKey,
                 title: Strings.appName,
                 debugShowCheckedModeBanner: false,
+                locale: CareNetLocale.locale,
+                supportedLocales: CareNetLocale.supportedLocales,
+                localizationsDelegates: CareNetLocale.delegates,
+                builder: CareNetLocale.builder,
                 themeMode: themeMode,
                 theme: lightTheme,
                 darkTheme: darkTheme,

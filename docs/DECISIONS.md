@@ -1,5 +1,15 @@
 # Product & technical decisions
 
+## APP-READY-064 English/Nigeria Presentation (2026-10-15)
+
+Phase 1 remains English only, identified as `en_NG`, independent of device
+language. The pinned intl date bundle lacks `en_NG`; explicitly use its bundled
+`en_GB` day-first English date data, not invented Nigerian CLDR data. Visible
+times use twelve-hour `am/pm`; preserve text scaling and accessibility media
+preferences. SDK `flutter_localizations` supplies standard control translations.
+NGN display, decimal-point input, UTC instants and IANA conversion are unchanged.
+No ambient `Intl.defaultLocale` mutation. See `PHASE_1_LOCALE_POLICY.md`.
+
 ## APP-READY-063 Diagnostic Transport (2026-10-14)
 
 The user selected strictly allowlisted reports through CareNet's existing backend

@@ -163,7 +163,7 @@ void main() {
     expect(scheduling.requestableIds, <String>['pro-1']);
     expect(find.text('Professional timezone: Africa/Lagos'), findsOneWidget);
     expect(
-      find.textContaining('9:00 AM Africa/Lagos - 30 min'),
+      find.textContaining('9:00 am Africa/Lagos - 30 min'),
       findsOneWidget,
     );
     expect(find.textContaining('Day 2:'), findsNothing);
@@ -184,7 +184,7 @@ void main() {
     expect(find.text('Dr Ada Care'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
-    final availableTime = find.textContaining('9:00 AM Africa/Lagos');
+    final availableTime = find.textContaining('9:00 am Africa/Lagos');
     await tester.scrollUntilVisible(
       availableTime,
       250,
@@ -240,7 +240,7 @@ void main() {
       onboardingRepository: onboarding,
     );
 
-    final time = find.textContaining('9:00 AM Africa/Lagos');
+    final time = find.textContaining('9:00 am Africa/Lagos');
     await tester.ensureVisible(time);
     await tester.tap(time);
     await tester.pumpAndSettle();
@@ -285,13 +285,13 @@ void main() {
     await _pumpDetails(tester);
 
     try {
-      final timeOption = find.bySemanticsLabel(RegExp('9:00 AM Africa/Lagos'));
+      final timeOption = find.bySemanticsLabel(RegExp('9:00 am Africa/Lagos'));
       final initialData = tester.getSemantics(timeOption).getSemanticsData();
       expect(initialData.flagsCollection.isInMutuallyExclusiveGroup, isTrue);
       expect(initialData.flagsCollection.isSelected, Tristate.isFalse);
 
-      await tester.ensureVisible(find.textContaining('9:00 AM Africa/Lagos'));
-      await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+      await tester.ensureVisible(find.textContaining('9:00 am Africa/Lagos'));
+      await tester.tap(find.textContaining('9:00 am Africa/Lagos'));
       await tester.pumpAndSettle();
 
       final selectedData = tester.getSemantics(timeOption).getSemanticsData();
@@ -354,7 +354,7 @@ void main() {
 
     expect(find.text('Choose a date'), findsOneWidget);
     expect(
-      find.textContaining('9:00 AM Africa/Lagos - 30 min'),
+      find.textContaining('9:00 am Africa/Lagos - 30 min'),
       findsOneWidget,
     );
   });
@@ -369,7 +369,7 @@ void main() {
       bookingIntentStore: intentStore,
     );
 
-    await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+    await tester.tap(find.textContaining('9:00 am Africa/Lagos'));
     await tester.pump();
     await tester.drag(find.byType(ListView).first, const Offset(0, -120));
     await tester.pump();
@@ -393,7 +393,7 @@ void main() {
       sessionStore: _professionalSessionStore(),
     );
 
-    await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+    await tester.tap(find.textContaining('9:00 am Africa/Lagos'));
     await tester.pump();
     await tester.drag(find.byType(ListView).first, const Offset(0, -120));
     await tester.pump();
@@ -414,7 +414,7 @@ void main() {
     final scheduling = _FakeSchedulingRepository();
     await _pumpDetails(tester, schedulingRepository: scheduling);
 
-    await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+    await tester.tap(find.textContaining('9:00 am Africa/Lagos'));
     await tester.pump();
     await tester.drag(find.byType(ListView).first, const Offset(0, -120));
     await tester.pump();
@@ -450,7 +450,7 @@ void main() {
         find.text('Video and audio use the same consultation fee.'),
         findsOneWidget,
       );
-      await tester.tap(find.textContaining('9:00 AM Africa/Lagos'));
+      await tester.tap(find.textContaining('9:00 am Africa/Lagos'));
       await tester.pump();
       await tester.drag(find.byType(ListView).first, const Offset(0, -120));
       await tester.pump();

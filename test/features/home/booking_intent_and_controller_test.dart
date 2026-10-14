@@ -638,7 +638,7 @@ void main() {
         professionalTimezone: 'Africa/Lagos',
       );
 
-      expect(labels.professionalTime, '9:00 AM');
+      expect(labels.professionalTime, '9:00 am');
       expect(labels.professionalTimezone, 'Africa/Lagos');
     });
 
@@ -648,7 +648,7 @@ void main() {
         professionalTimezone: 'America/New_York',
       );
 
-      expect(labels.professionalTime, '3:30 AM');
+      expect(labels.professionalTime, '3:30 am');
     });
   });
 }

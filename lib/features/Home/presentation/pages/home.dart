@@ -1,6 +1,7 @@
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/constants/fonts.dart';
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/presentation/carenet_presentation.dart';
 import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
@@ -10,6 +11,7 @@ import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:app_t/features/Home/presentation/state/marketplace_home_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
   const Home({
@@ -837,24 +839,7 @@ String _actionLabel(HomeRequiredAction action) {
 
 String _dateLabel(DateTime value) {
   final local = value.toLocal();
-  const months = <String>[
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
-  final minute = local.minute.toString().padLeft(2, '0');
-  final period = local.hour < 12 ? 'AM' : 'PM';
-  return '${months[local.month - 1]} ${local.day} at $hour:$minute $period';
+  return DateFormat("d MMM 'at' h:mm a", CareNetPresentation.dateLocale).format(local);
 }
 
 TextStyle _text(double size, FontWeight weight, Color color, {double? height}) {

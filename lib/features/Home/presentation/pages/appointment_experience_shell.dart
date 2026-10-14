@@ -1,5 +1,6 @@
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/presentation/carenet_presentation.dart';
 import 'package:app_t/core/tokens/carenet_colors.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Consultation/data/repositories/consultation_repository.dart';
@@ -730,9 +731,8 @@ String _consultationEntryCopy(
       return 'The waiting room opens 10 minutes before the appointment.';
     }
     final local = opensAt.toLocal();
-    final localizations = MaterialLocalizations.of(context);
-    final date = localizations.formatMediumDate(local);
-    final time = localizations.formatTimeOfDay(TimeOfDay.fromDateTime(local));
+    final date = DateFormat('d MMM y', CareNetPresentation.dateLocale).format(local);
+    final time = DateFormat('h:mm a', CareNetPresentation.dateLocale).format(local);
     return 'The waiting room opens $date at $time (your time).';
   }
   if (reason == 'JOIN_WINDOW_CLOSED') {
@@ -1286,7 +1286,7 @@ String _appointmentDate(DateTime value) {
   if (value.millisecondsSinceEpoch <= 0) {
     return 'Time unavailable';
   }
-  return 'Local time: ${DateFormat('EEE, d MMM y, h:mm a').format(value.toLocal())}';
+  return 'Local time: ${DateFormat('EEE, d MMM y, h:mm a', CareNetPresentation.dateLocale).format(value.toLocal())}';
 }
 
 String _requestableTimeLabel(RequestableTime value, String timezone) {

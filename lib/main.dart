@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_t/app.dart';
 import 'package:app_t/core/config/app_environment.dart';
 import 'package:app_t/core/di/injection.dart';
+import 'package:app_t/core/presentation/carenet_presentation.dart';
 import 'package:app_t/core/diagnostics/release_health_coordinator.dart';
 import 'package:app_t/core/diagnostics/release_health_error_bridge.dart';
 import 'package:app_t/core/diagnostics/release_health_metadata.dart';
@@ -39,6 +40,7 @@ Future<void> main() async {
   ]);
 
   await configureDependencies();
+  await CareNetPresentation.initialize();
   sl<ReleaseHealthErrorBridge>().install();
   runApp(const CarenetApp());
   WidgetsBinding.instance.addPostFrameCallback((_) {

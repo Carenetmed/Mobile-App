@@ -249,7 +249,7 @@ void main() {
       expect(find.text('Waiting for professional response'), findsWidgets);
       expect(find.text('Accepted appointment'), findsOneWidget);
       expect(find.text('Dr Care'), findsNWidgets(2));
-      expect(find.textContaining('Jul 24'), findsOneWidget);
+      expect(find.textContaining('24 Jul'), findsOneWidget);
 
       await tester.tap(find.text('Accepted appointment'));
       expect(openedAppointmentId, 'next');

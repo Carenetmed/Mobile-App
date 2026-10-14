@@ -1,6 +1,14 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
+import '../config/app_environment.dart';
+import '../diagnostics/diagnostic_consent_store.dart';
+import '../diagnostics/diagnostic_preferences_controller.dart';
+import '../diagnostics/release_health_api_client.dart';
+import '../diagnostics/release_health_coordinator.dart';
+import '../diagnostics/release_health_error_bridge.dart';
+import '../diagnostics/release_health_metadata.dart';
 import '../config/carenet_api_config.dart';
 import '../network/carenet_http_client.dart';
 import '../../features/Authentication/data/repositories/account_repository.dart';
@@ -64,6 +72,52 @@ Future<void> configureDependencies() async {
   }
   if (!sl.isRegistered<SessionStore>()) {
     sl.registerLazySingleton<SessionStore>(SecureSessionStore.new);
+  }
+  if (!sl.isRegistered<DiagnosticConsentStore>()) {
+    sl.registerLazySingleton<DiagnosticConsentStore>(
+      SecureDiagnosticConsentStore.new,
+    );
+  }
+  if (!sl.isRegistered<ReleaseHealthTransport>()) {
+    sl.registerLazySingleton<ReleaseHealthTransport>(
+      () => ReleaseHealthApiClient(config: sl<CareNetApiConfig>()),
+    );
+  }
+  if (!sl.isRegistered<ReleaseHealthCoordinator>()) {
+    sl.registerLazySingleton<ReleaseHealthCoordinator>(
+      () => ReleaseHealthCoordinator(
+        sessions: sl<SessionStore>(),
+        consent: sl<DiagnosticConsentStore>(),
+        transport: sl<ReleaseHealthTransport>(),
+        metadata: () async {
+          final package = await PackageInfo.fromPlatform();
+          return ReleaseHealthMetadata(
+            version: package.version,
+            buildNumber: package.buildNumber,
+            environment: AppEnvironmentConfig.fromEnvironment().environment,
+          );
+        },
+      ),
+      dispose: (coordinator) => coordinator.dispose(),
+    );
+  }
+  if (!sl.isRegistered<ReleaseHealthErrorBridge>()) {
+    sl.registerLazySingleton<ReleaseHealthErrorBridge>(
+      () => ReleaseHealthErrorBridge(
+        report: (code) => sl<ReleaseHealthCoordinator>().report(code),
+      ),
+      dispose: (bridge) => bridge.dispose(),
+    );
+  }
+  if (!sl.isRegistered<DiagnosticPreferencesController>()) {
+    sl.registerLazySingleton<DiagnosticPreferencesController>(
+      () => DiagnosticPreferencesController(
+        sessions: sl<SessionStore>(),
+        consent: sl<DiagnosticConsentStore>(),
+        coordinator: sl<ReleaseHealthCoordinator>(),
+      ),
+      dispose: (controller) => controller.dispose(),
+    );
   }
   if (!sl.isRegistered<SessionRefreshCoordinator>()) {
     sl.registerLazySingleton<SessionRefreshCoordinator>(

@@ -1,5 +1,24 @@
 # Deferred work and backend replacement map
 
+## Sanitized Release-Health Operational Boundary (APP-READY-063)
+
+The user selected backend allowlisted diagnostics instead of raw/native crash
+uploads. Mobile source/consent proof is in PR #229; backend PR #141 is
+merged but not deployed by this slice. Still required: reviewed image/migration
+promotion, gateway admission, restricted log access and retention approval,
+controlled opt-in acceptance, alert recipients/delivery and release-health
+runbook proof. Counts are untrusted technical hints, not crash-free-user metrics.
+Native crashes, process death and child-isolate capture remain unavailable.
+Failed opt-out writes are reported as paused only in the current app session;
+durable preference success must not be claimed. See PHASE_1_RELEASE_HEALTH.
+Backend historical index-name drift needs separate alignment before production
+promotion. No native SDK, deployment, payment activation or device test is added.
+Local native validation also needs more C: disk headroom: the guarded build
+stopped before exhausting the system drive, not with a passing result. Canonical
+Ubuntu APK/lint/signing/environment CI must pass on the final source head before
+merge; actual signed release-candidate and device proof remain separate gates.
+Task-generated Kotlin cache logs remain local and are not part of the PR.
+
 Purpose: one place to see what is intentionally local, disabled, or deferred so later work does not lose the path.
 
 Rule: do not implement a deferred item until its product and backend contracts

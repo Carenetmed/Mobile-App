@@ -1,5 +1,17 @@
 # Product & technical decisions
 
+## APP-READY-063 Diagnostic Transport (2026-10-14)
+
+The user selected strictly allowlisted reports through CareNet's existing backend
+instead of Firebase Crashlytics. Native/raw crash uploads remain disabled; no new
+diagnostics SDK or dependency is installed. Sharing is default-off, explicitly
+opted in per authenticated session generation, and contains only closed technical
+codes, a boolean and validated release metadata. JWT authenticates admission but
+is never a report field or consent field. No raw exception, stack, route, user ID,
+URL, clinical/payment/message content or arbitrary log is sent. Consent storage
+failure must not appear successful. Native/process-death coverage and operational
+deployment/log retention/alerts remain explicit gates. See PHASE_1_RELEASE_HEALTH.
+
 **Purpose:** Preserve accepted product and technical decisions so future work
 does not silently reinterpret established boundaries.
 

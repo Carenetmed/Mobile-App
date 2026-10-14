@@ -1,17 +1,27 @@
 # Documentation sync index
 
-**Last audited:** 2026-10-13
+**Last audited:** 2026-10-14
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 ---
 
 ## Authority (if two docs seem to conflict)
 
+APP-READY-063 is implemented in PR #229 against mobile PR #228. PHASE_1_RELEASE_HEALTH
+and DECISIONS record the approved sanitized backend transport, generation-bound
+opt-in, safe capture boundaries and explicit operational/native limitations.
+Reviewed runtime `301f939` passed the exact 811-test suite and analyzer on C:.
+Initial draft CI `38539680857` passed on `ac3ffd5`; final exact-head CI remains
+mandatory before merge. Local native attempts hit cache/disk constraints and
+are not counted as passed. The source queue moves to APP-READY-064 only on merge.
+Backend PR #141 source/main CI is green; it is not deployment proof. The
+APP-READY-062 checkpoint below remains historical. No route contract changed.
+
 APP-READY-062 reconciles mobile PR #227, backend PRs #137-#140 and Web PR #8
 against exact integration SHAs and green CI in AI_HANDOFF/CODEBASE_STATUS.
 Four docs only; source/image evidence is not deployment/provider/device proof.
-APP-READY-063 crash/release-health is the sole NEXT task; locale, operational
-gates and final user-confirmed Paystack activation remain unfinished.
+This APP-READY-062 snapshot is historical. Locale, operational gates and final
+user-confirmed Paystack activation remain unfinished; use the queue above it.
 
 | Topic | Authoritative doc |
 |-------|-------------------|

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 abstract class DiagnosticConsentStore {
+  Future<String?> enabledGeneration();
   Future<bool> isEnabledFor(String sessionGeneration);
   Future<void> enableFor(String sessionGeneration);
   Future<void> disableFor(String sessionGeneration);
@@ -29,7 +30,7 @@ class SecureDiagnosticConsentStore implements DiagnosticConsentStore {
       RegExp(r'^[A-Za-z0-9_-]+$').hasMatch(value);
 
   static String? _generation(String? encoded) {
-    if (encoded == null) return null;
+    if (encoded == null || encoded.length > 256) return null;
     try {
       final decoded = jsonDecode(encoded);
       if (decoded is! Map<String, dynamic> ||
@@ -44,6 +45,10 @@ class SecureDiagnosticConsentStore implements DiagnosticConsentStore {
       return null;
     }
   }
+
+  @override
+  Future<String?> enabledGeneration() =>
+      _serialize(() async => _generation(await _storage.read(key: key)));
 
   @override
   Future<bool> isEnabledFor(String sessionGeneration) => _serialize(() async {

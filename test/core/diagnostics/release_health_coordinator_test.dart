@@ -13,12 +13,23 @@ import 'package:flutter_test/flutter_test.dart';
 class _Consent implements DiagnosticConsentStore {
   String? generation;
   @override
+  Future<String?> enabledGeneration() async => generation;
+  @override
   Future<bool> isEnabledFor(String value) async => value == generation;
   @override
   Future<void> enableFor(String value) async => generation = value;
   @override
   Future<void> disableFor(String value) async {
     if (generation == value) generation = null;
+  }
+}
+
+class _Sessions extends InMemorySessionStore {
+  int captures = 0;
+  @override
+  Future<SessionSnapshot?> capture() {
+    captures++;
+    return super.capture();
   }
 }
 
@@ -49,7 +60,7 @@ AuthSessionModel _session(String id) => AuthSessionModel.fromJson({
 });
 
 void main() {
-  late InMemorySessionStore sessions;
+  late _Sessions sessions;
   late _Consent consent;
   late _Transport transport;
   late ReleaseHealthCoordinator coordinator;
@@ -61,7 +72,7 @@ void main() {
   );
 
   setUp(() async {
-    sessions = InMemorySessionStore();
+    sessions = _Sessions();
     consent = _Consent();
     transport = _Transport();
     metadata = () async => release();
@@ -81,6 +92,7 @@ void main() {
   test('default off never sends', () async {
     await coordinator.report(DiagnosticCode.frameworkFailure);
     expect(transport.calls, 0);
+    expect(sessions.captures, 0);
   });
   test('consented current session sends using its latest token', () async {
     await enable();

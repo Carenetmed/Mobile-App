@@ -47,6 +47,10 @@ per minute using monotonic time. Cancellation invalidates pending work; disposal
 prevents late submission. Storage and metadata waits are bounded. It does not
 refresh or clear sessions. An underlying plugin that outlives its deadline keeps
 its capacity until actual settlement, preventing a timeout-driven request queue.
+Permission checks are coalesced before I/O. The coordinator reads the validated
+opaque consent grant first: no grant means no read of the shared SessionStore
+queue and no package metadata load. Preferences retain only generation/account
+binding in memory, not a cached session object or authentication tokens.
 
 The app-scoped preferences controller survives Account navigation, preventing an
 unsaved opt-out from being overridden on reopening that page. Opt-out immediately
@@ -163,6 +167,11 @@ is sanitized by the Flutter reporting model.
 Final focused diagnostics: 77 passed. Complete local suite: 811 passed (734 +77).
 Full analyzer: no issues. Android backup checks passed 25 negative probes; iOS
 flavor consistency passed. Debug build, release lint and final CI remain pending.
+The first local build was cancelled after repeated Windows C:/F: Kotlin
+incremental-cache path-root errors, not marked passed. A process-local retry
+without incremental caching is required; native/dependency/CI files are unchanged.
+Post-review consent-first ordering and reduced preference credential retention
+require full verification again. Focused 77 tests pass after consent-first ordering.
 No provider acceptance, merge or production-readiness completion is claimed.
 Dependencies remain unchanged. Payments remain the final explicitly approved
 provider gate; no cloud service was started for this work.

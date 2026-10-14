@@ -51,6 +51,8 @@ class _Transport implements ReleaseHealthTransport {
 class _Consent implements DiagnosticConsentStore {
   String? generation;
   @override
+  Future<String?> enabledGeneration() async => generation;
+  @override
   Future<bool> isEnabledFor(String value) async => generation == value;
   @override
   Future<void> enableFor(String value) async {

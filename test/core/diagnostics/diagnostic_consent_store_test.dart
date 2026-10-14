@@ -11,6 +11,7 @@ void main() {
   test(
     'diagnostic sharing defaults off without a matching explicit grant',
     () async {
+      expect(await SecureDiagnosticConsentStore().enabledGeneration(), isNull);
       expect(
         await SecureDiagnosticConsentStore().isEnabledFor('session-a'),
         isFalse,
@@ -78,6 +79,7 @@ void main() {
       '{invalid',
       '{}',
       '[]',
+      '${List.filled(300, ' ').join()}{"schemaVersion":1,"sessionGeneration":"session-a"}',
       '{"schemaVersion":2,"sessionGeneration":"session-a"}',
       '{"schemaVersion":1,"sessionGeneration":""}',
       '{"schemaVersion":1,"sessionGeneration":"session-a","token":"synthetic"}',
@@ -89,6 +91,7 @@ void main() {
         await SecureDiagnosticConsentStore().isEnabledFor('session-a'),
         isFalse,
       );
+      expect(await SecureDiagnosticConsentStore().enabledGeneration(), isNull);
     }
   });
 

@@ -57,16 +57,25 @@ class ReleaseHealthCoordinator {
       return;
     }
     _busy = true;
+    _lastAttempt[code] = _clock.elapsed;
     final epoch = _epoch;
     final cancellation = CancelToken();
     _cancellation = cancellation;
     bool current() => !_disposed && !_reportingSuspended && epoch == _epoch;
     try {
+      // Default-off failures must not enter the shared authenticated-store queue.
+      final grant = await _bounded(
+        _consent.enabledGeneration(),
+        const Duration(seconds: 2),
+      );
+      if (!current() || grant == null) return;
       final snapshot = await _bounded(
         _sessions.capture(),
         const Duration(seconds: 2),
       );
-      if (!current() || snapshot == null) return;
+      if (!current() || snapshot == null || snapshot.generation != grant) {
+        return;
+      }
       final allowed = await _bounded(
         _consent.isEnabledFor(snapshot.generation),
         const Duration(seconds: 2),
@@ -85,7 +94,6 @@ class ReleaseHealthCoordinator {
         return;
       }
       // No queue or automatic retry. At most one attempt per code per minute.
-      _lastAttempt[code] = _clock.elapsed;
       await _bounded(
         _transport.send(
           report: SafeDiagnosticReport(

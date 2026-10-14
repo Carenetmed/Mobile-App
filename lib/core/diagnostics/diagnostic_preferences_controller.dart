@@ -6,6 +6,13 @@ import '../../features/Authentication/data/storage/session_store.dart';
 import 'diagnostic_consent_store.dart';
 import 'release_health_coordinator.dart';
 
+class _ConsentBinding {
+  const _ConsentBinding(this.generation, this.accountId);
+
+  final String generation;
+  final String accountId;
+}
+
 /// App-scoped so failed opt-out remains paused across account-page navigation.
 /// Call [sessionChanged] on account exit/replacement.
 class DiagnosticPreferencesController extends ChangeNotifier {
@@ -24,7 +31,7 @@ class DiagnosticPreferencesController extends ChangeNotifier {
   final DiagnosticConsentStore _consent;
   final ReleaseHealthCoordinator _coordinator;
   final Duration operationTimeout;
-  SessionSnapshot? _binding;
+  _ConsentBinding? _binding;
   bool _disposed = false;
   bool _inFlight = false;
   bool _explicitChoiceRequired = false;
@@ -40,9 +47,9 @@ class DiagnosticPreferencesController extends ChangeNotifier {
   String? get message => _message;
 
   bool _current(int epoch) => !_disposed && epoch == _epoch;
-  bool _matches(SessionSnapshot? value, SessionSnapshot expected) =>
+  bool _matches(SessionSnapshot? value, _ConsentBinding expected) =>
       value?.generation == expected.generation &&
-      value?.session.user.id == expected.session.user.id;
+      value?.session.user.id == expected.accountId;
 
   /// No polling: account lifecycle must explicitly invalidate the old binding.
   void sessionChanged() {
@@ -59,12 +66,19 @@ class DiagnosticPreferencesController extends ChangeNotifier {
   Future<void> initialize() => _run((epoch) async {
     final snapshot = await _sessions.capture();
     if (!_current(epoch)) return;
-    _binding = snapshot;
-    if (snapshot == null) return;
+    if (snapshot == null) {
+      _binding = null;
+      return;
+    }
+    final binding = _ConsentBinding(
+      snapshot.generation,
+      snapshot.session.user.id,
+    );
+    _binding = binding;
     final allowed = await _consent.isEnabledFor(snapshot.generation);
     final latest = await _sessions.capture();
     if (!_current(epoch)) return;
-    if (!_matches(latest, snapshot)) {
+    if (!_matches(latest, binding)) {
       sessionChanged();
       return;
     }

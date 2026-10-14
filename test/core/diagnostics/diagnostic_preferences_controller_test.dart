@@ -11,6 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 class _Consent implements DiagnosticConsentStore {
   String? generation;
+  @override
+  Future<String?> enabledGeneration() async => generation;
   int writes = 0;
   bool fail = false;
   Completer<void>? write;

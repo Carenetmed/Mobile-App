@@ -18,7 +18,55 @@
 
 ## Current production-readiness continuation
 
-### APP-READY-067 Auth Attempt Ownership And Bounded Reads (In Progress)
+### APP-READY-068 Notification Account Isolation And Transport Lifecycle (Implementation Verified; PR Pending)
+
+Base is APP-READY-067 merge `a4a253845b54dcaf34feedb1c13e7769525c2005` (PR232).
+Post-merge integration CI38935361083 passed on that exact merge. APP-READY-067
+delivered 911 tests and Android/iOS source builds; original protected worktrees
+and archive refs remain untouched.
+
+The implementation closes two reviewed notification gaps. It resolves each
+foreground push ID through the authenticated notification repository and current
+session generation before local presentation. It never renders raw FCM title/body;
+generic copy appears only after the backend confirms that ID belongs to the current
+account. It rechecks lifetime and account after asynchronous boundaries and clears
+local notification presentations on account change/logout where platform APIs
+permit.
+
+Give NotificationTransport an explicit disposal lifecycle. Firebase
+initialization cannot be cancelled; a late completion after timeout/disposal must
+check its invalidated generation before attaching listeners. Dispose cancels all
+three attached subscriptions. Detached foreground/tap/token callbacks contain
+errors. Local OS cancellation is best-effort and does not block logout; native
+Firebase initialization/display already in progress cannot be forcibly cancelled.
+
+Implemented scope: FirebaseNotificationTransport, NotificationTransport/test
+fakes, NotificationCoordinator, notification account-isolation/coordinator
+tests, and six canonical status/decision/deferred docs. The coordinator verifies
+foreground IDs against the authenticated notification endpoint and session
+generation. Local presentation uses fixed generic copy, never FCM title/body;
+session invalidation clears displayed notifications where supported. Transport
+disposal cancels attached streams and blocks late initialization from attaching
+listeners. A display already in a native plugin call is cancelled after that call
+returns if its account generation was invalidated; native initialization/display
+cannot be forcibly cancelled mid-call. Detached callbacks and provider stream
+errors are contained. No backend, route/UI redesign, dependency, Firebase
+project, credential, or cloud change.
+
+Local verification on Flutter3.41.5:28 targeted notification tests, full924 tests,
+analyzer clean, diff check clean, and pubspec.lock unchanged. Inventory is
+911+9 transport lifecycle tests+4 account-isolation tests=924; no tests were
+removed, disabled or skipped. Independent adversarial source review found no
+blocker; exact-head Android/iOS CI remains a gate. Local native builds were not
+run due the constrained
+disk environment. A provider call that never returns cannot be interrupted; only
+late listener attachment and eventual stale display cleanup are controlled.
+Independent review's logout-delay finding was fixed by synchronously invalidating
+presentation while scheduling local cancellation without blocking account changes.
+Backend unregistration and local notification-store cleanup retain their existing
+bounded waits.
+
+### APP-READY-067 Auth Attempt Ownership And Bounded Reads (Done)
 
 Base is PR231 merge `e63471a652cbf9672f5b3e1ef41537ec3cfd076d`.
 Exact-head Android38866678366/iOS38905320080 and integration38907469546 all
@@ -54,7 +102,8 @@ No tests removed/renamed/skipped. Two retained stream/FormData tests now opt int
 replay explicitly; recovery read failures assert fixed non-clearing errors.
 Refresh/logout/reset caller deadlines are60seconds; raw queue/refresh ownership
 continues until actual completion. Independent source review found no blocker.
-Diff checks pass; unchanged Android/iOS CI and final review remain gates.
+PR232 merged as `a4a253845b54dcaf34feedb1c13e7769525c2005`; reviewed-head
+Android38913973578 and iOS38913973129 passed, as did integration38935361083.
 No writes to
 unhealthy F:, no native pass claimed with low C: space. Cloud SQL remains off;
 approved alert/admin identities, disk recovery, signed RC/device and final
@@ -590,7 +639,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-064 | Apply the approved English/Nigerian Phase 1 locale and deterministic presentation without changing backend currency, UTC/IANA time authority or business rules | M | **DONE** - source verified with 821 tests/analyzer; merge only after both unchanged CI lanes pass |
 | APP-READY-065 | Reconcile historical backend Prisma index-name drift with the locked client | S | **DONE** - backend BE-P1-043/PR142 merge `431bf88`, locked zero-drift CI and subsequent deployment proof; no Flutter implementation required |
 | APP-READY-066 | Reject untrusted legacy multi-key sessions and bound/dispose initial session restoration with fault/recreation coverage | M | **DONE** - PR231 merge `e63471a`,838 tests; exact-head Android/iOS and integration38907469546 green |
-| APP-READY-067 | Order authentication attempts and conditional commits; bound secure-session reads without releasing native write ownership | M+ | **NEXT** - in progress after067 base verification; backend identity remains authoritative |
+| APP-READY-067 | Order authentication attempts and conditional commits; bound secure-session reads without releasing native write ownership | M+ | **DONE** - PR232 merge a4a2538;911 tests; Android/iOS and integration CI passed |
+| APP-READY-068 | Isolate foreground notification presentation by backend account ownership and retire late/disposed Firebase transport listeners | M+ | **IMPLEMENTATION VERIFIED / PR PENDING** - 924 tests, clean analyzer; provider calls already in native code remain non-cancellable |
 
 ### APP-READY-055 implementation evidence
 

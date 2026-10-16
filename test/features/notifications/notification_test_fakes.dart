@@ -319,12 +319,14 @@ class FakeNotificationTransport implements NotificationTransport {
   final bool configured;
   NotificationPermissionValue permissionValue;
   String? token;
-  Future<void> Function()? foregroundCallback;
+  ForegroundNotificationAuthorization? foregroundCallback;
   Future<void> Function()? tokenCallback;
   NotificationTapCallback? tapCallback;
   int initializeCalls = 0;
   int permissionRequests = 0;
   int settingsRequests = 0;
+  int clearDisplayedCalls = 0;
+  int disposeCalls = 0;
 
   @override
   bool get isConfigured => configured;
@@ -334,7 +336,7 @@ class FakeNotificationTransport implements NotificationTransport {
 
   @override
   Future<void> initialize({
-    required Future<void> Function() onForegroundMessage,
+    required ForegroundNotificationAuthorization onForegroundMessage,
     required NotificationTapCallback onTap,
     required Future<void> Function() onTokenRefresh,
   }) async {
@@ -358,5 +360,15 @@ class FakeNotificationTransport implements NotificationTransport {
   Future<bool> openSettings() async {
     settingsRequests++;
     return true;
+  }
+
+  @override
+  Future<void> clearDisplayedNotifications() async {
+    clearDisplayedCalls++;
+  }
+
+  @override
+  Future<void> dispose() async {
+    disposeCalls++;
   }
 }

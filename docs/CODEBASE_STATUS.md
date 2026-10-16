@@ -1,6 +1,24 @@
 # Codebase status
 
-## APP-READY-067 - Auth Attempt Ownership (In Progress)
+## APP-READY-068 - Notification Account Isolation (Implementation Verified; PR Pending)
+
+Post-merge base is a4a253845b54dcaf34feedb1c13e7769525c2005. The audit found
+foreground local notification display trusts FCM title/body after a callback
+that can return after logout/account switch. Late Firebase transport init can
+also attach listeners after timeout/disposal because transport lacks disposal.
+Implementation verifies each foreground notification ID through the authenticated
+backend and current session generation, shows generic copy only, invalidates late
+init, cancels attached subscriptions, clears local displays on account changes,
+and retires a stale display after an in-flight native call returns. Local OS
+cancellation invalidates presentation synchronously but does not block logout or
+account rebinding. Detached callbacks and provider-stream errors are contained.
+Flutter3.41.5 verification:28 targeted tests,924 full tests, analyzer clean, diff
+check clean, lock unchanged. Inventory 911+9 transport lifecycle+4 account-
+isolation=924, with no tests removed/skipped/disabled. Independent review found
+no blocker; exact-head Android/iOS CI remains pending.
+No provider/cloud change. Already-running native plugin calls cannot be cancelled.
+
+## APP-READY-067 - Auth Attempt Ownership (Done, CI Verified)
 
 PR231 is merged as e63471a with838 tests and exact-head Android/iOS plus merged
 CI38907469546 green.067 repairs a separately reproduced stale-auth-response race
@@ -11,7 +29,8 @@ No raw queue release on timeout, unsafe replay or false durable-clear claim.
 Local93 focused/full911 tests and analyzer pass.838+41 auth-attempt+24 store-wait
 +6 refresh-wait+2 shared-refresh=911; no removed/skipped tests. Refresh/logout/reset
 caller waits are bounded without releasing raw operations. Independent review
-found no blocker; Android/iOS CI remains required. Full readiness remains open.
+found no blocker. PR232 mergea4a2538; Android38913973578, iOS38913973129 and
+integration38935361083 passed. Full readiness remains open.
 
 ## APP-READY-066 - Session Recovery Integrity (Source Verified)
 

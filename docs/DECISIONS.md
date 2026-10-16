@@ -1,5 +1,20 @@
 # Product & technical decisions
 
+## APP-READY-068 Foreground Notification Ownership (2026-10-16)
+
+Treat FCM notification IDs as opaque hints. Before a foreground local
+notification is shown, resolve its ID through the authenticated notification
+repository and confirm the current account/session generation still owns it.
+Never display unverified FCM title/body; show generic CareNet copy only. A
+session switch/logout invalidates pending display work and clears local
+notifications where supported. Backend notification detail remains the owner
+authority.
+
+Firebase initialization may continue after its caller times out. Generation
+checks prevent late completion from attaching listeners; already attached
+subscriptions are cancelled on transport disposal. This does not claim native
+Firebase initialization or OS background delivery can be cancelled.
+
 ## APP-READY-067 Authentication Ordering And Waits (2026-10-16)
 
 One private attempt owner orders email login, registration and Google sign-in

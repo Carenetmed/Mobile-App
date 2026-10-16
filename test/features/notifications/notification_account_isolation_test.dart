@@ -11,6 +11,64 @@ import 'package:flutter_test/flutter_test.dart';
 import 'notification_test_fakes.dart';
 
 void main() {
+  test('coordinator disposal retires its transport', () {
+    final transport = FakeNotificationTransport(configured: false);
+    final coordinator = _coordinator(
+      FakeNotificationRepository(),
+      FakeNotificationInstallationStore(),
+      transport: transport,
+    );
+    coordinator.dispose();
+    expect(transport.disposeCalls, 1);
+  });
+
+  test(
+    'foreground notification is displayed only for a backend-owned ID',
+    () async {
+      final repository = FakeNotificationRepository();
+      final transport = FakeNotificationTransport();
+      final coordinator = _coordinator(
+        repository,
+        FakeNotificationInstallationStore(),
+        transport: transport,
+      );
+      addTearDown(coordinator.dispose);
+      await coordinator.initialize();
+
+      expect(await transport.foregroundCallback!('not-bound'), isFalse);
+      await coordinator.onAuthenticatedSession(repository.session);
+      repository.notificationsById['owned-id'] = notificationTestItem(
+        id: 'owned-id',
+      );
+      expect(await transport.foregroundCallback!('owned-id'), isTrue);
+      expect(await transport.foregroundCallback!('foreign-id'), isFalse);
+    },
+  );
+
+  test(
+    'foreground lookup completing after account switch is rejected',
+    () async {
+      final repository = _HeldForegroundRepository();
+      final transport = FakeNotificationTransport();
+      final coordinator = _coordinator(
+        repository,
+        FakeNotificationInstallationStore(),
+        transport: transport,
+      );
+      addTearDown(coordinator.dispose);
+      await coordinator.initialize();
+      await coordinator.onAuthenticatedSession(repository.session);
+
+      final authorization = transport.foregroundCallback!('owned-id');
+      await repository.started.future;
+      repository.session = notificationTestSession(userId: 'user-2');
+      await coordinator.onAuthenticatedSession(repository.session);
+      repository.result.complete(notificationTestItem(id: 'owned-id'));
+      expect(await authorization, isFalse);
+      expect(transport.clearDisplayedCalls, greaterThan(0));
+    },
+  );
+
   testWidgets('disposed initialization cannot attach provider lifecycle', (
     tester,
   ) async {
@@ -72,13 +130,19 @@ void main() {
   test('late logout cleanup preserves the new account binding', () async {
     final repository = _HeldRemovalRepository();
     final store = FakeNotificationInstallationStore();
-    final coordinator = _coordinator(repository, store);
+    final transport = FakeNotificationTransport();
+    final coordinator = _coordinator(repository, store, transport: transport);
     addTearDown(coordinator.dispose);
+    await coordinator.initialize();
     final firstSession = repository.session;
     await coordinator.onAuthenticatedSession(firstSession);
     await store.bindUser(firstSession.user.id);
+    repository.notificationsById['late-id'] = notificationTestItem(
+      id: 'late-id',
+    );
     final logout = coordinator.beforeLogout(firstSession);
     await repository.started.future;
+    expect(await transport.foregroundCallback!('late-id'), isFalse);
     repository.session = notificationTestSession(userId: 'user-2');
     await coordinator.onAuthenticatedSession(repository.session);
     await store.bindUser(repository.session.user.id);
@@ -88,6 +152,33 @@ void main() {
     expect(store.boundUser, 'user-2');
     expect(store.pendingNotification, 'user-2-notification');
   });
+
+  test(
+    'logout does not wait for a stalled local notification cleanup',
+    () async {
+      final repository = FakeNotificationRepository();
+      final transport = _HeldNotificationCleanupTransport();
+      final coordinator = _coordinator(
+        repository,
+        FakeNotificationInstallationStore(),
+        transport: transport,
+      );
+      addTearDown(() async {
+        if (!transport.release.isCompleted) transport.release.complete();
+        coordinator.dispose();
+      });
+      await coordinator.initialize();
+      final session = repository.session;
+      await coordinator.onAuthenticatedSession(session);
+
+      await coordinator
+          .beforeLogout(session)
+          .timeout(const Duration(milliseconds: 100));
+
+      expect(transport.clearDisplayedCalls, greaterThan(0));
+      expect(await transport.foregroundCallback!('late-id'), isFalse);
+    },
+  );
 
   test('late account deletion preserves the new account binding', () async {
     final repository = FakeNotificationRepository();
@@ -194,7 +285,7 @@ class _HeldInitializationTransport extends FakeNotificationTransport {
 
   @override
   Future<void> initialize({
-    required Future<void> Function() onForegroundMessage,
+    required ForegroundNotificationAuthorization onForegroundMessage,
     required NotificationTapCallback onTap,
     required Future<void> Function() onTokenRefresh,
   }) async {
@@ -224,11 +315,12 @@ class _HeldUnreadRepository extends FakeNotificationRepository {
 
 NotificationCoordinator _coordinator(
   FakeNotificationRepository repository,
-  FakeNotificationInstallationStore store,
-) => NotificationCoordinator(
+  FakeNotificationInstallationStore store, {
+  FakeNotificationTransport? transport,
+}) => NotificationCoordinator(
   repository: repository,
   installationStore: store,
-  transport: FakeNotificationTransport(configured: false),
+  transport: transport ?? FakeNotificationTransport(configured: false),
   navigatorKey: GlobalKey<NavigatorState>(),
 );
 
@@ -257,6 +349,17 @@ class _HeldTapRepository extends FakeNotificationRepository {
   }
 }
 
+class _HeldForegroundRepository extends FakeNotificationRepository {
+  final started = Completer<void>();
+  final result = Completer<CareNotification>();
+
+  @override
+  Future<CareNotification> notification(String id) {
+    if (!started.isCompleted) started.complete();
+    return result.future;
+  }
+}
+
 class _HeldRegistrationRepository extends FakeNotificationRepository {
   final started = Completer<void>();
   final release = Completer<void>();
@@ -272,5 +375,15 @@ class _HeldRegistrationRepository extends FakeNotificationRepository {
       started.complete();
       await release.future;
     }
+  }
+}
+
+class _HeldNotificationCleanupTransport extends FakeNotificationTransport {
+  final release = Completer<void>();
+
+  @override
+  Future<void> clearDisplayedNotifications() async {
+    clearDisplayedCalls++;
+    await release.future;
   }
 }

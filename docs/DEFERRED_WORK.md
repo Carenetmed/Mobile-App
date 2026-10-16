@@ -1,5 +1,14 @@
 # Deferred work and backend replacement map
 
+## Notification Provider Late Work And Native Delivery (APP-READY-068)
+
+Mobile bounds provider callers and cancels Dart Firebase stream subscriptions,
+but cannot cancel native Firebase initialization already in progress. Generic
+foreground copy is shown only after an owner-scoped backend lookup. This does
+not revoke OS notifications already delivered while backgrounded, prove provider
+delivery/retry, or replace backend notification authority. Physical shared-device
+account-switch and push acceptance remain gates.
+
 ## Auth Commit And Native Fault Boundary (APP-READY-067)
 
 Caller deadlines do not cancel native secure-storage I/O or release its queue.

@@ -1,10 +1,10 @@
 ﻿# CareNet project documentation
 
-Current: APP-READY-067 auth-attempt ownership and bounded session reads against
-merged PR231 `e63471a` (838 tests; exact-head Android/iOS and integration CI green).
-See AI_HANDOFF, DECISIONS and DEFERRED_WORK; no native fault/full-program claim.
-067 local93 focused/full911 tests and analyzer pass;73 tests added, none removed.
-Independent review found no blocker; exact-head Android/iOS CI remains required.
+Current: APP-READY-068 notification account isolation and Firebase transport
+lifecycle, based on `a4a2538` (APP-READY-067 PR232 merged). Local verification:
+924 tests, analyzer/diff clean, lock unchanged; independent review and exact-head
+Android/iOS CI pending. See AI_HANDOFF, DECISIONS and DEFERRED_WORK; provider
+delivery and physical shared-device notification acceptance remain open.
 
 Previous: APP-READY-066 session-recovery integrity against merged PR230 `1f091d28`.
 See AI_HANDOFF, DECISIONS and DEFERRED_WORK for scope and verification gates.

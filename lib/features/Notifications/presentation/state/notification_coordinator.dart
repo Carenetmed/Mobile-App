@@ -90,7 +90,7 @@ class NotificationCoordinator extends ChangeNotifier
     try {
       await _transport
           .initialize(
-            onForegroundMessage: refreshUnreadCount,
+            onForegroundMessage: _authorizeForegroundNotification,
             onTap: handleTap,
             onTokenRefresh: _registerCurrentInstallation,
           )
@@ -107,6 +107,11 @@ class NotificationCoordinator extends ChangeNotifier
       if (_disposed) return;
       _debug('transport initialization failed (${error.runtimeType}).');
       permission = NotificationPermissionValue.notDetermined;
+      try {
+        await _transport.dispose().timeout(_providerTimeout);
+      } catch (_) {
+        // A timed-out native initializer cannot be cancelled by this caller.
+      }
     }
     _notify();
   }
@@ -135,6 +140,7 @@ class NotificationCoordinator extends ChangeNotifier
         if (_disposed) return null;
         if ((previousUser != null && previousUser != session.user.id) ||
             (_session != null && _session!.user.id != session.user.id)) {
+          _clearDisplayedNotificationsBestEffort();
           await _installationStore.clearPendingNotificationId().timeout(
             _providerTimeout,
           );
@@ -316,7 +322,15 @@ class NotificationCoordinator extends ChangeNotifier
 
   @override
   Future<void> beforeLogout(AuthSessionModel session) async {
-    final bindingGeneration = _sessionGeneration;
+    final ownsBinding = _session?.user.id == session.user.id;
+    final bindingGeneration =
+        ownsBinding ? ++_sessionGeneration : _sessionGeneration;
+    if (ownsBinding) {
+      _session = null;
+      unreadCount = 0;
+      _notify();
+      _clearDisplayedNotificationsBestEffort();
+    }
     SessionSnapshot? snapshot;
     try {
       snapshot = await _repository.currentSessionSnapshot().timeout(
@@ -376,10 +390,43 @@ class NotificationCoordinator extends ChangeNotifier
     if (boundUser != null && boundUser != session.user.id) return;
     _session = null;
     unreadCount = 0;
+    _clearDisplayedNotificationsBestEffort();
     await _installationStore.clearBinding();
     await _installationStore.clearPendingNotificationId();
     _notify();
   });
+
+  void _clearDisplayedNotificationsBestEffort() {
+    try {
+      // Invalidate pending presentations synchronously, without waiting for OS cleanup.
+      unawaited(
+        _transport
+            .clearDisplayedNotifications()
+            .timeout(_providerTimeout)
+            .catchError((Object _) {}),
+      );
+    } catch (_) {
+      // Account transitions must not depend on local notification cleanup.
+    }
+  }
+
+  Future<bool> _authorizeForegroundNotification(String notificationId) async {
+    final session = _session;
+    final generation = _sessionGeneration;
+    if (session == null || !_isCurrentSession(session, generation)) {
+      return false;
+    }
+    try {
+      final notification = await _repository
+          .notification(notificationId)
+          .timeout(_providerTimeout);
+      return notification.id == notificationId &&
+          _isCurrentSession(session, generation) &&
+          await _hasCurrentSession(session, generation);
+    } catch (_) {
+      return false;
+    }
+  }
 
   Future<void> refreshUnreadCount() async {
     final session = _session;
@@ -637,6 +684,7 @@ class NotificationCoordinator extends ChangeNotifier
     _sessionGeneration++;
     _session = null;
     if (_observingLifecycle) WidgetsBinding.instance.removeObserver(this);
+    unawaited(_transport.dispose().catchError((Object _) {}));
     super.dispose();
   }
 }

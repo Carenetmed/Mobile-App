@@ -7,11 +7,14 @@
 
 ## Authority (if two docs seem to conflict)
 
-APP-READY-067 is current against merged PR231 e63471a;838 tests and exact-head
-Android/iOS plus integration38907469546 passed. AI_HANDOFF/DECISIONS own attempt
-ordering, queued conditional commits, read/caller deadlines and honest uncertain
-I/O semantics. DEFERRED_WORK preserves native/provider/device limits. Remaining
-full-program gates are not closed by source checks. Entries below are historical.
+APP-READY-068 is current against merge a4a2538 (PR232, integration CI green).
+Notification ownership/lifecycle scope and boundaries are in
+AI_HANDOFF/DECISIONS/DEFERRED_WORK. APP-READY-068 implementation has 924 local
+tests (911+9 transport lifecycle+4 account isolation), clean analyzer/diff and
+unchanged lock; independent review found no blocker, exact-head Android/iOS CI
+remains pending.
+APP-READY-067 is done with reviewed Android/iOS and post-merge CI. Remaining
+full-program gates are open. Entries below are historical.
 
 067 local evidence:93 focused/full911 tests, analyzer and diff checks pass.
 838+41 auth-attempt+24 store-wait+6 refresh-wait+2 shared-refresh=911, with no

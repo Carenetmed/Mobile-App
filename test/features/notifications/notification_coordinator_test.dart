@@ -257,13 +257,19 @@ class _NeverInitializingTransport implements NotificationTransport {
 
   @override
   Future<void> initialize({
-    required Future<void> Function() onForegroundMessage,
+    required ForegroundNotificationAuthorization onForegroundMessage,
     required NotificationTapCallback onTap,
     required Future<void> Function() onTokenRefresh,
   }) => Completer<void>().future;
 
   @override
   Future<bool> openSettings() async => false;
+
+  @override
+  Future<void> clearDisplayedNotifications() async {}
+
+  @override
+  Future<void> dispose() async {}
 
   @override
   Future<NotificationPermissionValue> permission() async =>

@@ -1,5 +1,24 @@
 # Product & technical decisions
 
+## APP-READY-067 Authentication Ordering And Waits (2026-10-16)
+
+One private attempt owner orders email login, registration and Google sign-in
+responses. A newer attempt or logout supersedes older responses without granting
+any role or authority. Check ownership before API-result persistence, inside
+the queued conditional write, and around optional lifecycle completion. Cleanup
+may clear only the exact generation written by that attempt; never a newer
+account. Superseded, unacknowledged commits fail closed rather than reviving an
+older attempt when the newer one fails.
+
+Secure read/capture caller waits default to5seconds, including queue delay;
+authentication caller waits default to60seconds. Errors are fixed, non-clearing
+network failures, not fabricated401s. The underlying serialized future remains
+owned until it actually completes; timeout is neither native cancellation nor
+evidence that a write did not commit. Already-started I/O/notifications may finish
+later. Logout/cleanup failure must never be shown as successful durable removal.
+No custom Dio cancellation rewrite is justified: actual probes already verify
+single-flight refresh, cancelled transport exclusion and unsafe-body rejection.
+
 ## APP-READY-066 Session Recovery Integrity (2026-10-16)
 
 Separately stored historical token/user fields cannot prove a shared authenticated

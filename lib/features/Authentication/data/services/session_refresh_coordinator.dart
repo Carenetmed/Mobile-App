@@ -1,5 +1,8 @@
-import '../../domain/entities/auth_failure.dart';
+import 'dart:async';
+
 import 'package:dio/dio.dart';
+
+import '../../domain/entities/auth_failure.dart';
 import '../models/auth_session_model.dart';
 import '../storage/session_store.dart';
 import 'auth_api_client.dart';
@@ -13,17 +16,33 @@ class SessionRefreshCoordinator {
   SessionRefreshCoordinator({
     required AuthApiClient apiClient,
     required SessionStore sessionStore,
+    Duration callerTimeout = const Duration(seconds: 60),
   }) : _apiClient = apiClient,
-       _sessionStore = sessionStore;
+       _sessionStore = sessionStore,
+       _callerTimeout = callerTimeout {
+    if (callerTimeout <= Duration.zero) {
+      throw ArgumentError.value(callerTimeout, 'callerTimeout');
+    }
+  }
 
   final AuthApiClient _apiClient;
   final SessionStore _sessionStore;
+  final Duration _callerTimeout;
   Future<AuthSessionModel>? _refreshing;
   SessionSnapshot? _refreshingSnapshot;
   SessionAuthenticatedCallback? onAuthenticated;
   SessionClearingCallback? onClearing;
 
+  // Caller deadlines must not release the real refresh/persistence owner.
   Future<AuthSessionModel> refresh({
+    AuthSessionModel? expected,
+    SessionSnapshot? expectedSnapshot,
+  }) => _refreshOwned(
+    expected: expected,
+    expectedSnapshot: expectedSnapshot,
+  ).timeout(_callerTimeout, onTimeout: () => throw _sessionWaitFailure);
+
+  Future<AuthSessionModel> _refreshOwned({
     AuthSessionModel? expected,
     SessionSnapshot? expectedSnapshot,
   }) async {
@@ -56,7 +75,7 @@ class SessionRefreshCoordinator {
       } catch (_) {
         // The current session is validated independently below.
       }
-      return refresh(expected: current, expectedSnapshot: snapshot);
+      return _refreshOwned(expected: current, expectedSnapshot: snapshot);
     }
 
     final future = _refresh(snapshot);
@@ -171,6 +190,11 @@ class SessionRefreshCoordinator {
     type: AuthFailureType.unauthorized,
     message: 'Please sign in again.',
     statusCode: 401,
+  );
+
+  static const AuthFailure _sessionWaitFailure = AuthFailure(
+    type: AuthFailureType.network,
+    message: 'Could not finish refreshing your session. Please try again.',
   );
 
   static const AuthFailure _accountChangedFailure = AuthFailure(

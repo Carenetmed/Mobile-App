@@ -59,6 +59,18 @@ class InMemoryNotificationSessionStore implements SessionStore {
   int _generationCounter = 0;
 
   @override
+  Future<SessionSnapshot?> saveIfOwned(
+    AuthSessionModel value,
+    bool Function() isCurrent,
+  ) async {
+    if (!isCurrent()) return null;
+    final generation = '${++_generationCounter}';
+    session = value;
+    _generation = generation;
+    return SessionSnapshot(session: value, generation: generation);
+  }
+
+  @override
   Future<void> clear() async {
     session = null;
     _generation = null;

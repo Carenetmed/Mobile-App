@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -23,6 +24,97 @@ void main() {
     expect(harness.adapter.refreshCalls, 1);
     expect(harness.adapter.protectedRequests, hasLength(2));
   });
+
+  test('concurrent GET 401 responses share one blocked refresh', () async {
+    final harness = await _ReplayHarness.create();
+    final gate = Completer<void>();
+    harness.adapter.refreshGate = gate;
+    addTearDown(() {
+      if (!gate.isCompleted) gate.complete();
+    });
+    final first = harness.dio.get<dynamic>(
+      'https://api.example.test/patients/first',
+      options: _authenticatedOptions('GET'),
+    );
+    final second = harness.dio.get<dynamic>(
+      'https://api.example.test/patients/second',
+      options: _authenticatedOptions('GET'),
+    );
+    await harness.adapter.refreshStarted.future.timeout(
+      const Duration(seconds: 2),
+    );
+    await harness.adapter.initialPairSeen.future.timeout(
+      const Duration(seconds: 2),
+    );
+    expect(harness.adapter.refreshCalls, 1);
+    gate.complete();
+    final responses = await Future.wait([first, second]);
+    expect(responses.map((response) => response.statusCode), everyElement(200));
+    expect(harness.adapter.refreshCalls, 1);
+    expect(harness.adapter.protectedRequests, hasLength(4));
+    for (final path in ['/patients/first', '/patients/second']) {
+      expect(
+        harness.adapter.protectedRequests.where((r) => r.path == path),
+        hasLength(2),
+      );
+    }
+  });
+
+  test(
+    'cancelling one shared-refresh caller never replays its transport',
+    () async {
+      final harness = await _ReplayHarness.create();
+      final gate = Completer<void>();
+      harness.adapter.refreshGate = gate;
+      addTearDown(() {
+        if (!gate.isCompleted) gate.complete();
+      });
+      final cancel = CancelToken();
+      final cancelled = harness.dio.get<dynamic>(
+        'https://api.example.test/patients/first',
+        options: _authenticatedOptions('GET'),
+        cancelToken: cancel,
+      );
+      final cancellation = expectLater(
+        cancelled,
+        throwsA(
+          isA<DioException>().having(
+            (error) => error.type,
+            'type',
+            DioExceptionType.cancel,
+          ),
+        ),
+      );
+      final remaining = harness.dio.get<dynamic>(
+        'https://api.example.test/patients/second',
+        options: _authenticatedOptions('GET'),
+      );
+      await harness.adapter.refreshStarted.future.timeout(
+        const Duration(seconds: 2),
+      );
+      await harness.adapter.initialPairSeen.future.timeout(
+        const Duration(seconds: 2),
+      );
+      cancel.cancel('Test cancellation');
+      await cancellation;
+      gate.complete();
+      expect((await remaining).statusCode, 200);
+      expect(harness.adapter.refreshCalls, 1);
+      expect(harness.adapter.protectedRequests, hasLength(3));
+      expect(
+        harness.adapter.protectedRequests.where(
+          (r) => r.path == '/patients/first',
+        ),
+        hasLength(1),
+      );
+      expect(
+        harness.adapter.protectedRequests.where(
+          (r) => r.path == '/patients/second',
+        ),
+        hasLength(2),
+      );
+    },
+  );
 
   test(
     '401 from a prior login is not replayed after same-account relogin',
@@ -152,6 +244,7 @@ void main() {
           headers: const <String, String>{
             'Idempotency-Key': 'stream-attempt-1',
           },
+          replaySafe: true,
         ),
       ),
       throwsA(isA<DioException>()),
@@ -172,6 +265,7 @@ void main() {
         options: _authenticatedOptions(
           'POST',
           headers: const <String, String>{'Idempotency-Key': 'form-attempt-1'},
+          replaySafe: true,
         ),
       ),
       throwsA(isA<DioException>()),
@@ -240,6 +334,9 @@ class _ReplayAdapter implements HttpClientAdapter {
 
   final int retryStatusCode;
   int refreshCalls = 0;
+  Completer<void>? refreshGate;
+  final refreshStarted = Completer<void>();
+  final initialPairSeen = Completer<void>();
   final List<_RecordedRequest> protectedRequests = <_RecordedRequest>[];
   Future<void> Function()? beforeProtectedResponse;
 
@@ -254,11 +351,14 @@ class _ReplayAdapter implements HttpClientAdapter {
   ) async {
     if (options.uri.path == '/auth/refresh') {
       refreshCalls++;
+      if (!refreshStarted.isCompleted) refreshStarted.complete();
+      await refreshGate?.future;
       return _json(_session('rotated-access', 'rotated-refresh').toJson(), 200);
     }
 
     protectedRequests.add(
       _RecordedRequest(
+        path: options.uri.path,
         method: options.method,
         key: _idempotencyKey(options),
         body:
@@ -267,6 +367,9 @@ class _ReplayAdapter implements HttpClientAdapter {
                 : options.data,
       ),
     );
+    if (protectedRequests.length >= 2 && !initialPairSeen.isCompleted) {
+      initialPairSeen.complete();
+    }
     final beforeResponse = beforeProtectedResponse;
     beforeProtectedResponse = null;
     await beforeResponse?.call();
@@ -286,8 +389,14 @@ class _ReplayAdapter implements HttpClientAdapter {
 }
 
 class _RecordedRequest {
-  const _RecordedRequest({required this.method, required this.key, this.body});
+  const _RecordedRequest({
+    required this.path,
+    required this.method,
+    required this.key,
+    this.body,
+  });
 
+  final String path;
   final String method;
   final String? key;
   final Object? body;

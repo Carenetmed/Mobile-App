@@ -1,5 +1,15 @@
 # Deferred work and backend replacement map
 
+## Auth Commit And Native Fault Boundary (APP-READY-067)
+
+Caller deadlines do not cancel native secure-storage I/O or release its queue.
+Conditional queued writes and generation-specific cleanup protect newer sessions,
+but native failure can leave commit/removal uncertain. Do not promise physical
+power-loss atomicity, successful logout after storage failure, multiprocess
+coordination or recall of already-dispatched provider callbacks. Device/native
+fault acceptance and optional provider late-initialization ownership remain gates.
+No backend authority, payment activation, RTC or messaging redesign is included.
+
 ## Session Recovery Boundary (APP-READY-066)
 
 Legacy multi-key sessions require fresh sign-in because cross-field account

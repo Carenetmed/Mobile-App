@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../models/auth_session_model.dart';
+import '../../domain/entities/auth_failure.dart';
 
 class SessionSnapshot {
   const SessionSnapshot({required this.session, required this.generation});
@@ -14,6 +15,11 @@ class SessionSnapshot {
 
 abstract class SessionStore {
   Future<void> save(AuthSessionModel session);
+
+  Future<SessionSnapshot?> saveIfOwned(
+    AuthSessionModel session,
+    bool Function() isCurrent,
+  );
 
   Future<AuthSessionModel?> read();
 
@@ -42,7 +48,10 @@ abstract class SessionStore {
 class SecureSessionStore implements SessionStore {
   SecureSessionStore({
     FlutterSecureStorage storage = const FlutterSecureStorage(),
+    this.readTimeout = const Duration(seconds: 5),
   }) : _storage = storage;
+
+  final Duration readTimeout;
 
   static const String _sessionKey = 'carenet.session.v1';
   static const int _schemaVersion = 2;
@@ -70,6 +79,45 @@ class SecureSessionStore implements SessionStore {
   Future<void> save(AuthSessionModel session) =>
       _serialize(() => _saveUnlocked(session, _newGeneration()));
 
+  @override
+  Future<SessionSnapshot?> saveIfOwned(
+    AuthSessionModel session,
+    bool Function() isCurrent,
+  ) => _serialize(() async {
+    if (!isCurrent()) return null;
+    _validate(session);
+    final generation = _newGeneration();
+    try {
+      await _saveUnlocked(session, generation);
+    } catch (_) {
+      // A plugin may persist bytes and then fail. Never erase another generation.
+      await _rollbackOwnedGeneration(generation);
+      rethrow;
+    }
+    if (!isCurrent()) {
+      await _rollbackOwnedGeneration(generation);
+      return null;
+    }
+    return SessionSnapshot(session: session, generation: generation);
+  });
+
+  Future<void> _rollbackOwnedGeneration(String generation) async {
+    final encoded = await _storage.read(key: _sessionKey);
+    if (encoded == null) return;
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(encoded);
+    } on FormatException {
+      // Incomplete bytes do not establish ownership; do not claim cleanup.
+      rethrow;
+    }
+    if (decoded is Map<String, dynamic> &&
+        decoded['schemaVersion'] == _schemaVersion &&
+        decoded['generation'] == generation) {
+      await _clearUnlocked();
+    }
+  }
+
   Future<void> _saveUnlocked(
     AuthSessionModel session,
     String generation,
@@ -87,12 +135,26 @@ class SecureSessionStore implements SessionStore {
   }
 
   @override
-  Future<AuthSessionModel?> read() => _serialize(() async {
-    return (await _readSnapshotUnlocked())?.session;
-  });
+  Future<AuthSessionModel?> read() => _boundRead(
+    _serialize(() async {
+      return (await _readSnapshotUnlocked())?.session;
+    }),
+  );
 
   @override
-  Future<SessionSnapshot?> capture() => _serialize(_readSnapshotUnlocked);
+  Future<SessionSnapshot?> capture() =>
+      _boundRead(_serialize(_readSnapshotUnlocked));
+
+  Future<T> _boundRead<T>(Future<T> original) async {
+    try {
+      return await original.timeout(readTimeout);
+    } catch (_) {
+      throw const AuthFailure(
+        type: AuthFailureType.network,
+        message: 'Unable to read saved session. Please try again.',
+      );
+    }
+  }
 
   Future<SessionSnapshot?> _readSnapshotUnlocked() async {
     final encoded = await _storage.read(key: _sessionKey);
@@ -250,6 +312,18 @@ class InMemorySessionStore implements SessionStore {
   AuthSessionModel? _session;
   String? _generation;
   int _generationCounter = 0;
+
+  @override
+  Future<SessionSnapshot?> saveIfOwned(
+    AuthSessionModel session,
+    bool Function() isCurrent,
+  ) async {
+    if (!isCurrent()) return null;
+    final generation = '${++_generationCounter}';
+    _session = session;
+    _generation = generation;
+    return SessionSnapshot(session: session, generation: generation);
+  }
 
   @override
   Future<void> save(AuthSessionModel session) async {

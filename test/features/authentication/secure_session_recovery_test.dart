@@ -2,11 +2,21 @@ import 'dart:convert';
 
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _sessionKey = 'carenet.session.v1';
 const _legacyAccessKey = 'carenet.accessToken';
+
+final _safeReadFailure = throwsA(
+  isA<AuthFailure>()
+      .having((failure) => failure.type, 'type', AuthFailureType.network)
+      .having((failure) => failure.message, 'message',
+          'Unable to read saved session. Please try again.')
+      .having((failure) => failure.statusCode, 'statusCode', isNull)
+      .having((failure) => failure.shouldClearSession, 'shouldClearSession', false),
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -33,12 +43,12 @@ void main() {
 
       await expectLater(
         SecureSessionStore(storage: storage).read(),
-        throwsStateError,
+        _safeReadFailure,
       );
       expect(storage.values[_legacyAccessKey], isNotNull);
       await expectLater(
         SecureSessionStore(storage: storage).capture(),
-        throwsStateError,
+        _safeReadFailure,
       );
       expect(storage.values.containsKey(_sessionKey), isFalse);
 
@@ -161,7 +171,7 @@ void main() {
             ..failDeleteKey = _legacyAccessKey;
       await expectLater(
         SecureSessionStore(storage: storage).capture(),
-        throwsStateError,
+        _safeReadFailure,
       );
 
       final recovered = await SecureSessionStore(storage: storage).capture();
@@ -190,7 +200,7 @@ void main() {
         });
         await expectLater(
           SecureSessionStore(storage: storage).read(),
-          throwsStateError,
+          _safeReadFailure,
         );
         expect(jsonDecode(storage.values[_sessionKey]!)['cleared'], isTrue);
 

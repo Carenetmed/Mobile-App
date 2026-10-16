@@ -18,6 +18,48 @@
 
 ## Current production-readiness continuation
 
+### APP-READY-067 Auth Attempt Ownership And Bounded Reads (In Progress)
+
+Base is PR231 merge `e63471a652cbf9672f5b3e1ef41537ec3cfd076d`.
+Exact-head Android38866678366/iOS38905320080 and integration38907469546 all
+passed;838 tests. The original protected worktrees/archive refs remain untouched.
+Reuse this clean isolated recovery worktree on the dedicated067 branch.
+
+Real repository probes with fake APIs proved late login/register/Google responses
+can replace a newer account or resurrect after logout. Repair one shared private
+attempt owner before API awaits, conditional-save ownership checked inside the
+existing serialized store queue, and generation-specific cleanup of superseded
+commits. Only backend responses supply identity/roles. Newer failure must not
+revive an older attempt; timeouts cannot invalidate a newer owner or release the
+actual native write queue. Already-started I/O/callbacks cannot be recalled.
+
+Bound public secure-store read/capture caller waits, including queue waiting,
+with default5seconds and fixed non-clearing network failures. Keep `_pending`
+attached to original operations. Bound authentication caller waits separately
+(default60seconds), preserving underlying ownership/cleanup and uncertain-commit
+honesty. Logout invalidates pending auth immediately but must not falsely report
+durable clear after storage failure. Existing generation/replay rules remain.
+
+Expected boundary: session_store/auth_repository, the notification SessionStore
+test fake, recovery/read-bound/auth-attempt tests, strengthened replay-policy
+tests and six canonical docs. No backend, route/UI, dependency/native or provider
+change. Verify queued/in-flight writes, old/new account and same-account races,
+callback supersession, newer failure, old timeout, late errors and actual shared
+401 cancellation. No custom cancellation architecture: probes show Dio already
+prevents cancelled retry transport and opted-in stream/FormData replay.
+
+Local proof:93 focused tests, full911 tests and analyzer pass on Flutter3.41.5.
+Inventory:838+41 auth-attempt+24 store-wait+6 refresh-wait+2 shared-refresh=911.
+No tests removed/renamed/skipped. Two retained stream/FormData tests now opt into
+replay explicitly; recovery read failures assert fixed non-clearing errors.
+Refresh/logout/reset caller deadlines are60seconds; raw queue/refresh ownership
+continues until actual completion. Independent source review found no blocker.
+Diff checks pass; unchanged Android/iOS CI and final review remain gates.
+No writes to
+unhealthy F:, no native pass claimed with low C: space. Cloud SQL remains off;
+approved alert/admin identities, disk recovery, signed RC/device and final
+Paystack approval remain independent full-program requirements.
+
 ### APP-READY-066 Session Recovery Integrity (2026-10-16, Source Verified)
 
 Base is PR230 integration `1f091d288239ff735f4bf1de5da5a4082dec290e`, with
@@ -547,7 +589,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-063 | Add privacy-reviewed crash reporting/release-health metadata without credentials or health content; preserve bounded optional startup | M | **DONE** - PR #229 merged at `5955616`; final and integration CI green, 811 tests; deployment/native limitations remain |
 | APP-READY-064 | Apply the approved English/Nigerian Phase 1 locale and deterministic presentation without changing backend currency, UTC/IANA time authority or business rules | M | **DONE** - source verified with 821 tests/analyzer; merge only after both unchanged CI lanes pass |
 | APP-READY-065 | Reconcile historical backend Prisma index-name drift with the locked client | S | **DONE** - backend BE-P1-043/PR142 merge `431bf88`, locked zero-drift CI and subsequent deployment proof; no Flutter implementation required |
-| APP-READY-066 | Reject untrusted legacy multi-key sessions and bound/dispose initial session restoration with fault/recreation coverage | M | **NEXT** - source verified,838 tests/analyzer; delivery gated on both unchanged CI lanes and review |
+| APP-READY-066 | Reject untrusted legacy multi-key sessions and bound/dispose initial session restoration with fault/recreation coverage | M | **DONE** - PR231 merge `e63471a`,838 tests; exact-head Android/iOS and integration38907469546 green |
+| APP-READY-067 | Order authentication attempts and conditional commits; bound secure-session reads without releasing native write ownership | M+ | **NEXT** - in progress after067 base verification; backend identity remains authoritative |
 
 ### APP-READY-055 implementation evidence
 

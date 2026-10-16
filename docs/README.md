@@ -1,6 +1,12 @@
 ﻿# CareNet project documentation
 
-Current: APP-READY-066 session-recovery integrity against merged PR230 `1f091d28`.
+Current: APP-READY-067 auth-attempt ownership and bounded session reads against
+merged PR231 `e63471a` (838 tests; exact-head Android/iOS and integration CI green).
+See AI_HANDOFF, DECISIONS and DEFERRED_WORK; no native fault/full-program claim.
+067 local93 focused/full911 tests and analyzer pass;73 tests added, none removed.
+Independent review found no blocker; exact-head Android/iOS CI remains required.
+
+Previous: APP-READY-066 session-recovery integrity against merged PR230 `1f091d28`.
 See AI_HANDOFF, DECISIONS and DEFERRED_WORK for scope and verification gates.
 Local838 tests/analyzer/static checks pass; unchanged native CI remains required.
 The older next-065 backend drift task is resolved by BE-P1-043/PR142. Historical

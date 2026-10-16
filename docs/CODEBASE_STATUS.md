@@ -1,5 +1,18 @@
 # Codebase status
 
+## APP-READY-067 - Auth Attempt Ownership (In Progress)
+
+PR231 is merged as e63471a with838 tests and exact-head Android/iOS plus merged
+CI38907469546 green.067 repairs a separately reproduced stale-auth-response race
+and bounds secure-store read waits. Ownership is local operation ordering only;
+backend identity/roles and existing generation guards remain authoritative.
+Conditional queued writes must check ownership at execution, not just enqueue.
+No raw queue release on timeout, unsafe replay or false durable-clear claim.
+Local93 focused/full911 tests and analyzer pass.838+41 auth-attempt+24 store-wait
++6 refresh-wait+2 shared-refresh=911; no removed/skipped tests. Refresh/logout/reset
+caller waits are bounded without releasing raw operations. Independent review
+found no blocker; Android/iOS CI remains required. Full readiness remains open.
+
 ## APP-READY-066 - Session Recovery Integrity (Source Verified)
 
 Base PR230 merge `1f091d288239ff735f4bf1de5da5a4082dec290e` has 821 tests.

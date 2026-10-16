@@ -7,7 +7,18 @@
 
 ## Authority (if two docs seem to conflict)
 
-APP-READY-066 is the active isolated mobile session-recovery repair against PR230
+APP-READY-067 is current against merged PR231 e63471a;838 tests and exact-head
+Android/iOS plus integration38907469546 passed. AI_HANDOFF/DECISIONS own attempt
+ordering, queued conditional commits, read/caller deadlines and honest uncertain
+I/O semantics. DEFERRED_WORK preserves native/provider/device limits. Remaining
+full-program gates are not closed by source checks. Entries below are historical.
+
+067 local evidence:93 focused/full911 tests, analyzer and diff checks pass.
+838+41 auth-attempt+24 store-wait+6 refresh-wait+2 shared-refresh=911, with no
+removed/skipped tests. Independent source review found no blocker. Exact-head
+Android/iOS CI and integration delivery remain unverified at this checkpoint.
+
+APP-READY-066 was the isolated mobile session-recovery repair against PR230
 merge1f091d28. AI_HANDOFF and DECISIONS own legacy-field rejection, retained
 single-envelope migration, five-second initial restore and stale/disposed work
 rules. DEFERRED_WORK owns native storage/power-loss and broader cancellation/

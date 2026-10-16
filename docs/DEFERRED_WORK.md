@@ -1,5 +1,17 @@
 # Deferred work and backend replacement map
 
+## Session Recovery Boundary (APP-READY-066)
+
+Legacy multi-key sessions require fresh sign-in because cross-field account
+provenance cannot be established. Valid versioned envelopes remain supported.
+Fault/recreation tests demonstrate logical failure handling, not physical native
+secure-storage crash/power-loss guarantees. A bounded splash timeout ignores late
+results; it does not cancel or repair an underlying hung platform operation.
+Shared account/disposal request cancellation, actual interrupted-device writes,
+optional Firebase late-initialization ownership and interceptor-driven concurrent
+401 coverage remain readiness work. Keep provider, signed RC, operational alert,
+payment-final-confirmation and physical-device gates open; no new feature scope.
+
 ## Locale And Release Validation Boundary (APP-READY-064)
 
 English/Nigeria presentation does not add translated languages or Nigerian

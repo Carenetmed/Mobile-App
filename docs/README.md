@@ -1,5 +1,11 @@
 ﻿# CareNet project documentation
 
+Current: APP-READY-066 session-recovery integrity against merged PR230 `1f091d28`.
+See AI_HANDOFF, DECISIONS and DEFERRED_WORK for scope and verification gates.
+Local838 tests/analyzer/static checks pass; unchanged native CI remains required.
+The older next-065 backend drift task is resolved by BE-P1-043/PR142. Historical
+source counts below do not imply current operational or full-program completion.
+
 **You do not need any old chat.** Everything required to continue this project lives in this `docs/` folder and in the codebase.
 
 Current: APP-READY-064 locale source passes 821 tests and analyzer; see

@@ -25,6 +25,7 @@ Future<void> _pumpSplash(
   BookingResumeService? bookingResumeService,
   Size screenSize = _phoneSize,
   TextScaler textScaler = TextScaler.noScaling,
+  Duration restoreTimeout = const Duration(seconds: 5),
   Duration refreshTimeout = const Duration(seconds: 10),
   Duration bookingResumeTimeout = const Duration(seconds: 10),
 }) async {
@@ -45,6 +46,7 @@ Future<void> _pumpSplash(
             home: SplashScreen(
               authRepository: repository,
               bookingResumeService: bookingResumeService,
+              restoreTimeout: restoreTimeout,
               refreshTimeout: refreshTimeout,
               bookingResumeTimeout: bookingResumeTimeout,
             ),
@@ -69,6 +71,104 @@ Future<void> _pumpSplash(
 
 void main() {
   group('Session restore launch guard', () {
+    testWidgets('hung restore routes safely without refresh or booking resume', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository(
+        restoreCompleter: Completer<AuthSession?>(),
+      );
+      final resumeService = _CountingBookingResumeService();
+      await _pumpSplash(
+        tester,
+        repository: repository,
+        bookingResumeService: resumeService,
+      );
+      await tester.pump(const Duration(milliseconds: 801));
+      expect(repository.restoreCalls, 1);
+      await tester.pump(const Duration(milliseconds: 4999));
+      expect(find.text('onboarding'), findsNothing);
+      await tester.pump(const Duration(milliseconds: 1));
+      await tester.pumpAndSettle();
+
+      expect(find.text('onboarding'), findsOneWidget);
+      expect(repository.refreshCalls, 0);
+      expect(resumeService.resolveCalls, 0);
+      expect(tester.takeException(), isNull);
+    });
+
+    for (final lateError in <bool>[false, true]) {
+      testWidgets(
+        'late restore ${lateError ? 'error' : 'success'} cannot restart launch',
+        (tester) async {
+          final restore = Completer<AuthSession?>();
+          final repository = _FakeAuthRepository(restoreCompleter: restore);
+          final resumeService = _CountingBookingResumeService();
+          await _pumpSplash(
+            tester,
+            repository: repository,
+            bookingResumeService: resumeService,
+            restoreTimeout: const Duration(milliseconds: 100),
+          );
+          await tester.pump(const Duration(milliseconds: 801));
+          await tester.pump(const Duration(milliseconds: 100));
+          await tester.pumpAndSettle();
+          expect(find.text('onboarding'), findsOneWidget);
+
+          if (lateError) {
+            restore.completeError(StateError('late restore failed'));
+          } else {
+            restore.complete(_session());
+          }
+          await tester.pumpAndSettle();
+
+          expect(find.text('onboarding'), findsOneWidget);
+          expect(find.text('dashboard'), findsNothing);
+          expect(repository.restoreCalls, 1);
+          expect(repository.refreshCalls, 0);
+          expect(resumeService.resolveCalls, 0);
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+
+    testWidgets('disposal before startup timer suppresses restore', (
+      tester,
+    ) async {
+      final repository = _FakeAuthRepository(session: _session());
+      await _pumpSplash(tester, repository: repository);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 6));
+
+      expect(repository.restoreCalls, 0);
+      expect(repository.refreshCalls, 0);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('disposal during restore suppresses refresh and booking resume', (
+      tester,
+    ) async {
+      final restore = Completer<AuthSession?>();
+      final repository = _FakeAuthRepository(restoreCompleter: restore);
+      final resumeService = _CountingBookingResumeService();
+      await _pumpSplash(
+        tester,
+        repository: repository,
+        bookingResumeService: resumeService,
+      );
+      await tester.pump(const Duration(milliseconds: 801));
+      expect(repository.restoreCalls, 1);
+      await tester.pumpWidget(const SizedBox.shrink());
+      restore.complete(_session());
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 6));
+
+      expect(repository.refreshCalls, 0);
+      expect(resumeService.resolveCalls, 0);
+      expect(find.text('dashboard'), findsNothing);
+      expect(find.text('onboarding'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('splash remains readable at compact width with 2x text', (
       tester,
     ) async {
@@ -295,17 +395,20 @@ class _FakeAuthRepository implements AuthRepository {
     this.session,
     this.throwsOnRestore = false,
     this.refreshCompleter,
+    this.restoreCompleter,
   });
 
   final AuthSession? session;
   final bool throwsOnRestore;
   final Completer<AuthSession>? refreshCompleter;
+  final Completer<AuthSession?>? restoreCompleter;
   int restoreCalls = 0;
   int refreshCalls = 0;
 
   @override
   Future<AuthSession?> restore() async {
     restoreCalls += 1;
+    if (restoreCompleter case final completer?) return completer.future;
     if (throwsOnRestore) {
       throw StateError('restore failed');
     }
@@ -319,6 +422,19 @@ class _FakeAuthRepository implements AuthRepository {
     final current = session;
     if (current == null) throw StateError('No session to refresh');
     return current;
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _CountingBookingResumeService implements BookingResumeService {
+  int resolveCalls = 0;
+
+  @override
+  Future<BookingResumeDecision> resolveAfterAuthentication() async {
+    resolveCalls += 1;
+    return const BookingResumeDecision(target: BookingResumeTarget.none);
   }
 
   @override

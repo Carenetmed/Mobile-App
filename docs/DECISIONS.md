@@ -1,5 +1,23 @@
 # Product & technical decisions
 
+## APP-READY-066 Session Recovery Integrity (2026-10-16)
+
+Separately stored historical token/user fields cannot prove a shared authenticated
+account. Discard them and require normal sign-in rather than guessing provenance.
+Retain valid single-envelope schema-v1 to schema-v2 migration and generation-bound
+conditional updates. No role, readiness or ownership is inferred from navigation.
+One versioned secure-storage value is a logical consistency boundary, not a claim
+of platform power-loss atomicity. Fault injection/recreation must fail closed.
+
+Initial splash restoration is bounded to five seconds and uses the existing
+unauthenticated onboarding destination on timeout/error. Late results cannot
+route, refresh or resume booking. Disposal cancels the startup timer and prevents
+subsequent authentication work. Existing refresh timeout intentionally preserves
+an already restored usable session on transient failure; this is unchanged.
+Timeout does not cancel an underlying platform secure-storage operation or prove
+the provider will recover. No storage queue may be released unsafely to permit
+late writes over a newer account; broader cancellation remains separate work.
+
 ## APP-READY-064 English/Nigeria Presentation (2026-10-15)
 
 Phase 1 remains English only, identified as `en_NG`, independent of device

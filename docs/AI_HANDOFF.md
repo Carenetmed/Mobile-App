@@ -18,6 +18,44 @@
 
 ## Current production-readiness continuation
 
+### APP-READY-066 Session Recovery Integrity (2026-10-16, Source Verified)
+
+Base is PR230 integration `1f091d288239ff735f4bf1de5da5a4082dec290e`, with
+821 tests and both platform lanes previously green. The old repository's fetch
+failed on a corrupt unrelated ref; do not repair its metadata or dirty files.
+Use the independent C-drive recovery clone/worktree. Protected worktree contents
+and archive branch/tag remain unchanged.
+
+Scope: reject unprovable independently stored legacy session fields instead of
+assembling mixed-account authority; retain safe single-envelope v1 migration and
+v2 generation guards. Test interrupted writes/cleanup/tombstone recreation without
+claiming native power-loss atomicity. Bound initial splash restore to five seconds;
+ignore its late result and cancel disposed startup work, preserving existing
+refresh/booking bounds. No backend, provider, dependency, route or visual change.
+
+Expected files: secure session store, splash screen, session resilience/restore
+tests, new secure-session recovery tests, and these canonical status/decision/
+deferred/index documents. Parent runs all tests/analyzer and unchanged CI. No
+device acceptance or full-program completion claim. Remaining cancellation,
+optional Firebase lifecycle, operational reporting, signed RC and payment gates
+remain explicit. APP-READY-065's old backend drift task is already closed through
+BE-P1-043/PR142 and deployed zero-drift proof; do not redo it in Flutter.
+
+Local Flutter3.41.5/Dart3.11.3 verification passes:33 focused tests, full838
+(821 retained +12 recovery +5 splash), clean analyzer, Android backup policy with
+25 negative probes, iOS static flavor consistency and diff/lock checks. Exactly
+one obsolete test is replaced: `legacy complete session migrates atomically`
+becomes `complete legacy fields are discarded rather than trusted as a session`.
+The seven other resilience cases and all prior splash cases remain. No skip or
+weakened retained-flow assertion. Independent source review passes.
+
+Native local APK/lint is not claimed: C: has about1GB free and Windows reports
+F: Full Repair Needed. Do not write builds there or repair/delete protected
+metadata. Existing unchanged Android/iOS CI must pass before merge; signed RC,
+physical interruption and device acceptance remain separate gates. After this
+source PR merges, advance to bounded storage/cancellation/provider lifecycle
+closure, not content features. The full program remains active.
+
 ### APP-READY-064 English/Nigerian Locale (2026-10-15, Verified Source)
 
 Base is PR #229 merge `5955616039ce4bec8b9077d1c54f75e4649e5d82`.
@@ -39,8 +77,8 @@ The full readiness program is not complete. Local disk/native validation,
 deployment/restore/alerts, signed release candidate, iOS hardware and final
 device acceptance remain gates. Payments remain last after final confirmation.
 Manual locale/device checks are in `PHASE_1_LOCALE_POLICY.md`. After merge,
-APP-READY-065 reconciles historical backend Prisma index-name drift using the
-locked client before promotion. It has not started; no cloud service activated.
+The former APP-READY-065 backend drift queue entry is superseded by completed
+BE-P1-043/PR142 proof; the current independent mobile task is APP-READY-066 above.
 
 ### APP-READY-063 Sanitized Release Health (2026-10-14, PR #229)
 
@@ -508,7 +546,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-062 | Reconcile reviewed notification authority/execution and admin preview-confirmation source proofs; retain operational gates | S | **DONE** |
 | APP-READY-063 | Add privacy-reviewed crash reporting/release-health metadata without credentials or health content; preserve bounded optional startup | M | **DONE** - PR #229 merged at `5955616`; final and integration CI green, 811 tests; deployment/native limitations remain |
 | APP-READY-064 | Apply the approved English/Nigerian Phase 1 locale and deterministic presentation without changing backend currency, UTC/IANA time authority or business rules | M | **DONE** - source verified with 821 tests/analyzer; merge only after both unchanged CI lanes pass |
-| APP-READY-065 | Reconcile the five historical backend Prisma index-name differences using the locked client; prove narrow alignment before promotion without deploying or changing domain semantics | S | **NEXT** - begin only after APP-READY-064 merges |
+| APP-READY-065 | Reconcile historical backend Prisma index-name drift with the locked client | S | **DONE** - backend BE-P1-043/PR142 merge `431bf88`, locked zero-drift CI and subsequent deployment proof; no Flutter implementation required |
+| APP-READY-066 | Reject untrusted legacy multi-key sessions and bound/dispose initial session restoration with fault/recreation coverage | M | **NEXT** - source verified,838 tests/analyzer; delivery gated on both unchanged CI lanes and review |
 
 ### APP-READY-055 implementation evidence
 

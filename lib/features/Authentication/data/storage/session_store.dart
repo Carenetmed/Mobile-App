@@ -142,43 +142,9 @@ class SecureSessionStore implements SessionStore {
       return SessionSnapshot(session: session, generation: generation);
     }
 
-    final legacy = await _readLegacy();
-    if (legacy == null) return null;
-    final generation = _newGeneration();
-    await _saveUnlocked(legacy, generation);
-    return SessionSnapshot(session: legacy, generation: generation);
-  }
-
-  Future<AuthSessionModel?> _readLegacy() async {
-    final accessToken = await _storage.read(key: _accessTokenKey);
-    final refreshToken = await _storage.read(key: _refreshTokenKey);
-    if (accessToken == null || refreshToken == null) {
-      await _clearLegacy();
-      return null;
-    }
-
-    final expiresInText = await _storage.read(key: _expiresInKey);
-    final session = AuthSessionModel.fromJson(<String, dynamic>{
-      'accessToken': accessToken,
-      'refreshToken': refreshToken,
-      'tokenType': await _storage.read(key: _tokenTypeKey) ?? 'Bearer',
-      'expiresIn': int.tryParse(expiresInText ?? '') ?? 0,
-      'user': <String, dynamic>{
-        'id': await _storage.read(key: _userIdKey) ?? '',
-        'email': await _storage.read(key: _userEmailKey) ?? '',
-        'role': await _storage.read(key: _userRoleKey) ?? '',
-        'status': await _storage.read(key: _userStatusKey) ?? '',
-        'emailVerified':
-            (await _storage.read(key: _userEmailVerifiedKey)) == 'true',
-      },
-    });
-    try {
-      _validate(session);
-      return session;
-    } catch (_) {
-      await _clearLegacy();
-      return null;
-    }
+    // Separate legacy keys cannot prove common account provenance.
+    await _clearLegacy();
+    return null;
   }
 
   @override

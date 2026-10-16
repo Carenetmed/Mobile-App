@@ -1,11 +1,24 @@
 # Documentation sync index
 
-**Last audited:** 2026-10-15
+**Last audited:** 2026-10-16
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 ---
 
 ## Authority (if two docs seem to conflict)
+
+APP-READY-066 is the active isolated mobile session-recovery repair against PR230
+merge1f091d28. AI_HANDOFF and DECISIONS own legacy-field rejection, retained
+single-envelope migration, five-second initial restore and stale/disposed work
+rules. DEFERRED_WORK owns native storage/power-loss and broader cancellation/
+provider lifecycle limits. APP-READY-065 backend drift was already resolved by
+BE-P1-043/PR142; it is not an unstarted mobile prerequisite.
+
+Local proof:33 targeted/full838 tests (821+12+5), analyzer, backup25negative,
+iOS static and diff/unchanged-lock checks pass. One obsolete multi-key migration
+test is replaced,not meaningful retained-flow coverage removed. Exact-head and
+integration CI remain required. Local native validation is blocked by low C:
+space/unhealthy F:,not a pass. Do not weaken gates or infer full readiness.
 
 APP-READY-064 source is verified against merged PR #229 `5955616` (811 tests).
 PHASE_1_LOCALE_POLICY and DECISIONS define English/Nigeria identity, explicit
@@ -13,7 +26,7 @@ bundled English day-first fallback, twelve-hour labels and unchanged authority.
 Final PR #229 CI `38549558633` and integration CI `38552538855` passed; older
 pending-merge wording below is historical. Locale local proof is 821 tests and
 clean analyzer/static/diff checks; exact-head and integration CI remain gates.
-APP-READY-065 is next only after merge; no backend/cloud change is included.
+The historical next-065 wording is superseded by the current task above.
 
 APP-READY-063 is implemented in PR #229 against mobile PR #228. PHASE_1_RELEASE_HEALTH
 and DECISIONS record the approved sanitized backend transport, generation-bound

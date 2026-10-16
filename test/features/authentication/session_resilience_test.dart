@@ -117,27 +117,28 @@ void main() {
     },
   );
 
-  test('legacy complete session migrates atomically', () async {
-    FlutterSecureStorage.setMockInitialValues(<String, String>{
-      'carenet.accessToken': 'old-access',
-      'carenet.refreshToken': 'old-refresh',
-      'carenet.tokenType': 'Bearer',
-      'carenet.expiresIn': '900',
-      'carenet.user.id': 'user-1',
-      'carenet.user.email': 'patient@example.com',
-      'carenet.user.role': 'PATIENT',
-      'carenet.user.status': 'ACTIVE',
-      'carenet.user.emailVerified': 'true',
-    });
-    const storage = FlutterSecureStorage();
-    final store = SecureSessionStore(storage: storage);
+  test(
+    'complete legacy fields are discarded rather than trusted as a session',
+    () async {
+      FlutterSecureStorage.setMockInitialValues(<String, String>{
+        'carenet.accessToken': 'old-access',
+        'carenet.refreshToken': 'old-refresh',
+        'carenet.tokenType': 'Bearer',
+        'carenet.expiresIn': '900',
+        'carenet.user.id': 'user-1',
+        'carenet.user.email': 'patient@example.com',
+        'carenet.user.role': 'PATIENT',
+        'carenet.user.status': 'ACTIVE',
+        'carenet.user.emailVerified': 'true',
+      });
+      const storage = FlutterSecureStorage();
+      final store = SecureSessionStore(storage: storage);
 
-    expect((await store.read())?.refreshToken, 'old-refresh');
-    expect(
-      (await storage.readAll()).keys,
-      unorderedEquals(<String>['carenet.session.v1']),
-    );
-  });
+      expect(await store.read(), isNull);
+      expect(await storage.readAll(), isEmpty);
+      expect(await SecureSessionStore(storage: storage).capture(), isNull);
+    },
+  );
 
   test(
     '401 refreshes once and retries with the rotated access token',

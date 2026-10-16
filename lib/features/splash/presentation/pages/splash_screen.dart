@@ -20,6 +20,7 @@ class SplashScreen extends StatefulWidget {
     this.authRepository,
     this.bookingResumeService,
     this.notificationCoordinator,
+    this.restoreTimeout = const Duration(seconds: 5),
     this.refreshTimeout = const Duration(seconds: 5),
     this.bookingResumeTimeout = const Duration(seconds: 5),
   });
@@ -27,6 +28,7 @@ class SplashScreen extends StatefulWidget {
   final AuthRepository? authRepository;
   final BookingResumeService? bookingResumeService;
   final NotificationCoordinator? notificationCoordinator;
+  final Duration restoreTimeout;
   final Duration refreshTimeout;
   final Duration bookingResumeTimeout;
 
@@ -37,6 +39,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   /// Matches Figma prototype timeout (0.8s) on splash screen.
   static const Duration _splashDuration = Duration(milliseconds: 800);
+  Timer? _startupTimer;
 
   AuthRepository get _authRepository =>
       widget.authRepository ?? sl<AuthRepository>();
@@ -62,17 +65,26 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(_splashDuration, _restoreSessionAndRoute);
+    _startupTimer = Timer(_splashDuration, _restoreSessionAndRoute);
+  }
+
+  @override
+  void dispose() {
+    _startupTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _restoreSessionAndRoute() async {
+    if (!mounted) return;
     AuthSession? session;
     try {
-      session = await _authRepository.restore();
+      // Bound the wait, not the platform read. Late completion cannot resume launch.
+      session = await _authRepository.restore().timeout(widget.restoreTimeout);
     } catch (_) {
       session = null;
     }
 
+    if (!mounted) return;
     if (_hasUsableSession(session)) {
       try {
         session = await _authRepository.refresh().timeout(

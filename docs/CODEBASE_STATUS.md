@@ -1,5 +1,20 @@
 # Codebase status
 
+## APP-READY-066 - Session Recovery Integrity (Source Verified)
+
+Base PR230 merge `1f091d288239ff735f4bf1de5da5a4082dec290e` has 821 tests.
+Current scope rejects independently stored legacy fields without shared-account
+provenance, preserves valid versioned envelope/generation behavior and bounds
+initial splash restoration/disposal. Fault-injection and recreation tests do not
+prove physical native crash atomicity.33 targeted/full838 tests and analyzer
+pass locally; backup25-negative/static iOS/diff/lock checks pass. Net+17,one
+unsafe legacy migration test replaced by stronger rejection,all others retained.
+Both unchanged native CI lanes remain merge gates. Local native APK/lint is not
+claimed with C: low space and F: reporting Full Repair Needed. No physical-device
+or complete-readiness acceptance follows from these source checks.
+APP-READY-065's backend drift work was completed separately by BE-P1-043/PR142.
+No provider, navigation, dependency, native or backend behavior changes here.
+
 ## APP-READY-064 - Locale Source Verified (2026-10-15)
 
 Base `5955616039ce4bec8b9077d1c54f75e4649e5d82` is merged PR #229.

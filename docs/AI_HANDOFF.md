@@ -67,27 +67,77 @@ presentation while scheduling local cancellation without blocking account change
 Backend unregistration and local notification-store cleanup retain their existing
 bounded waits.
 
-### APP-READY-069 Auth And Onboarding UX Integrity (In Progress)
+### APP-READY-069 Auth And Onboarding UX Integrity (Done; PR #234 Merged)
 
-Base is merged mobile integration `84856725171f49ee1731b5ade7a4aedc6286c7ac`.
-The dedicated branch is `slice/APP-READY-069-auth-onboarding-ux` in the clean
-isolated worktree `C:\CareNetAgentTemp\app-ready-069-auth-onboarding-ux`.
-Current implementation repairs the missing-email-verification-link destination,
-booking-intent read failure handling in signup role selection, auth-stack
-replacement after normal authentication fallback, patient form requirements to
-match backend readiness (`name` and `country`), and profile prefill on retry
-without overwriting non-empty input. Five focused test files cover these changes;
-the latest focused run passed 87 tests. Full suite, analyzer, diff/inventory
-review, and this documentation sync are still required. Latest full verification
-passes 926 tests and `flutter analyze`; inventory is 924 baseline +2 new tests,
-with one existing patient-validation test renamed/reasserted and no tests
-removed, skipped, or disabled. No dependency, backend, provider, cloud, payment,
-or native build change is in scope.
+PR #234 merged as `4e3bfb3d011b112f4d4e22052448154d2dd6abf4` from reviewed head
+`e98cd3cdef18812b112b9ba6ff218fba08a8c9ba`. PR CI run `39002947831` and
+post-merge integration run `39004617605` passed. The full suite has 926 tests;
+the inventory is 924 +2 new tests, one existing patient-validation test
+renamed/reasserted, and no tests removed, skipped, or disabled. Analyzer, debug
+APK, Android release lint, protected release-signing regression, and release
+environment regression passed. The PR changed 14 files and did not alter
+dependencies, backend, provider/cloud configuration, payments, or native build
+configuration.
 
-Next after 069 is one bounded audit/decision task for the two previously supplied
-Google OAuth client IDs and the missing iOS Google Sign-In URL-scheme/source
-configuration. Do not guess which client ID is the iOS client or alter OAuth
-console/backend settings without verified mapping.
+The repair sends missing email-verification links to canonical sign-in, makes
+signup booking-intent recovery failures fail closed and recoverable, clears
+obsolete auth routes after normal auth fallback, matches patient required
+fields to backend readiness (`name` and `country`), and repopulates backend
+profile/catalog values after retry without replacing non-empty user input.
+
+### APP-READY-070 Google OAuth And iOS Callback Configuration (Audit Complete; Provider Setup Pending)
+
+The canonical Firebase project is `project-a96784ee-811c-46ab-a7b`, project
+number `599365440227`. Console evidence supplied on 2026-10-17 classifies
+`599365440227-2q9l9capubk9bhmqslhsfliuve5u3ne6.apps.googleusercontent.com` as
+Web application,
+`599365440227-nu3bf67posvqpcd6uc38bubqu9rl28q4.apps.googleusercontent.com` as
+Android, and
+`599365440227-dct2dkdh0tj79an085ocmghpgv6dic82.apps.googleusercontent.com` as
+iOS. The iOS client ID is
+`599365440227-dct2dkdh0tj79an085ocmghpgv6dic82.apps.googleusercontent.com`;
+its reverse URL scheme is
+`com.googleusercontent.apps.599365440227-dct2dkdh0tj79an085ocmghpgv6dic82`.
+The copied details omit the Android package/SHA and iOS bundle ID, and show
+only one iOS client, so they do not prove a client exists for both
+`com.carenet.app.staging` and `com.carenet.app`. Repository flavor IDs are
+`com.carenet.app.staging` (staging) and `com.carenet.app` (production); the
+recorded local debug SHA-1 is
+`79:DC:39:4B:88:BF:0B:C5:3F:C9:A1:DC:08:1F:F7:09:E4:6D:95:53`. These are
+comparison values, not proof of the console Android client's association.
+Do not assign the existing iOS client to a flavor until its bundle association
+is confirmed and a client is available for the other bundle ID.
+The code currently passes only `GOOGLE_SIGN_IN_SERVER_CLIENT_ID` to
+`GoogleSignIn.initialize`; `ios/Runner/Info.plist` has neither `GIDClientID` nor
+`CFBundleURLTypes`. Staging and production iOS bundle IDs are correctly
+`com.carenet.app.staging` and `com.carenet.app`.
+
+Read-only Google Cloud project metadata is accessible, but the workforce OAuth
+client list is not the standard Google Auth Platform credential registry. The
+Firebase Management API denied the current CLI principal access to the
+registered iOS app SDK configs. The user has supplied one iOS client ID and
+reverse URL scheme, but its bundle association is missing. Do not assign it to
+a flavor without confirmation or alter provider/backend settings. Required
+evidence is the Android client's package/SHA, the iOS client's bundle ID, and
+an iOS client for the other registered bundle. Once verified, the smallest
+source repair is to add
+flavor-specific iOS OAuth client IDs and matching reversed-client-ID URL
+schemes while retaining the existing Web server client ID for backend tokens.
+No credentials or Google/Firebase app configuration files were changed. Audit
+outcome: the console evidence classifies all three supplied IDs and provides
+the iOS callback scheme, but does not establish the Android package/fingerprint
+or the iOS bundle association and second flavor client. Actual provider/source
+configuration remains blocked on those external console facts.
+
+Read-only staging probes on 2026-10-17: `/health` returned `ok`; `/health/ready`
+returned `unavailable` because database and migrations checks were unavailable.
+Provider checks reported email, `googleAuth`, and verification storage `ok`.
+Read-only Cloud SQL inspection showed `carenet-staging-postgres` is `STOPPED`
+with activation policy `NEVER`; the staging Cloud Run service's latest ready
+candidate has 100% traffic and references this instance. This explains the
+database-dependent readiness failure and is consistent with keeping staging
+SQL off between smoke windows. Do not start it without an explicitly scheduled
+test window. No cloud service was started or changed.
 
 ### APP-READY-067 Auth Attempt Ownership And Bounded Reads (Done)
 
@@ -665,7 +715,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-067 | Order authentication attempts and conditional commits; bound secure-session reads without releasing native write ownership | M+ | **DONE** - PR232 merge a4a2538;911 tests; Android/iOS and integration CI passed |
 | APP-READY-068 | Isolate foreground notification presentation by backend account ownership and retire late/disposed Firebase transport listeners | M+ | **DONE** - PR #233 merged at `8485672`; Android, iOS simulator, and integration CI green; 924 tests |
 | APP-READY-069 | Repair evidenced authentication verification-link, booking-intent recovery, route-stack, and onboarding readiness/prefill defects | M | **IN PROGRESS** - 87 focused and 926 full tests pass; analyzer clean; diff and remote review remain |
-| APP-READY-070 | Audit and classify canonical-project Google OAuth client IDs, then specify the smallest iOS Google Sign-In source/configuration repair without changing provider authority | S | **NEXT** |
+| APP-READY-070 | Audit and classify canonical-project Google OAuth client IDs, then specify the smallest iOS Google Sign-In source/configuration repair without changing provider authority | S | **DONE - AUDIT; CLIENT ASSOCIATIONS STILL REQUIRED FOR CONFIGURATION** |
+| APP-READY-071 | Preserve professional-verification authorization semantics: map HTTP 401 to unauthenticated and 403 to forbidden, with regression tests for safe user messaging; do not change upload/backend behavior | S | **NEXT** |
 
 ### APP-READY-055 implementation evidence
 

@@ -21,7 +21,7 @@ isolation=924, with no tests removed/skipped/disabled. Independent review found
 no blocker. No provider/cloud change. Already-running native plugin calls cannot
 be cancelled.
 
-## APP-READY-069 - Auth And Onboarding UX Integrity (In Progress)
+## APP-READY-069 - Auth And Onboarding UX Integrity (Done; PR #234 Merged)
 
 Base: merged integration `84856725171f49ee1731b5ade7a4aedc6286c7ac`; branch
 `slice/APP-READY-069-auth-onboarding-ux`. Fixes the missing verification-link
@@ -30,11 +30,43 @@ stale auth routes under the dashboard after normal authentication fallback, and
 patient onboarding validators stricter than backend readiness. Patient backend
 required fields are name and country; state and health interest remain optional.
 Catalog/profile retry now restores persisted profile values while retaining
-non-empty user input. Five focused files pass 87 tests; the full suite passes
-926 and `flutter analyze` is clean. Inventory is 924 baseline +2 new tests, one
+non-empty user input. PR #234 merged from reviewed head
+`e98cd3cdef18812b112b9ba6ff218fba08a8c9ba` as
+`4e3bfb3d011b112f4d4e22052448154d2dd6abf4`. PR CI `39002947831` and
+post-merge integration CI `39004617605` passed. The 926-test suite, analyzer,
+debug APK, Android release lint, protected signing regression, and release
+environment regression are green. Inventory is 924 baseline +2 new tests, one
 existing patient validation test renamed/reasserted, and no removed/skipped/
-disabled tests. Final diff and remote review remain outstanding. No package,
-backend, provider, cloud, payment, or native changes.
+disabled tests. Exactly 14 files changed; no dependency, backend, provider/cloud,
+payment, or native build changes.
+
+## APP-READY-070 - Google OAuth And iOS Callback Audit (Done; Provider Setup Pending)
+
+The canonical Firebase project `project-a96784ee-811c-46ab-a7b` has project
+number `599365440227`. Console evidence classifies the supplied `2q9l...` ID as
+Web, `nu3b...` as Android, and `dct2...` as iOS; the iOS reverse URL scheme is
+known. The evidence omits the Android package/SHA and iOS bundle association,
+and shows only one iOS client for the two registered bundle IDs. Repository
+Android flavor IDs are `com.carenet.app.staging` and `com.carenet.app`; the
+recorded debug SHA-1 is `79:DC:39:4B:88:BF:0B:C5:3F:C9:A1:DC:08:1F:F7:09:E4:6D:95:53`.
+These values still need comparison against the console client. The app has no
+iOS `GIDClientID` or callback URL type. Do not add flavor callbacks until the
+iOS client is tied to its bundle and a client exists for the other flavor.
+Read-only staging probes on 2026-10-17 returned `/health: ok` and
+`/health/ready: unavailable` (database/migrations unavailable; email,
+`googleAuth`, and verification-storage provider checks `ok`). The reason for
+the database result is now explained by read-only Cloud SQL state:
+`carenet-staging-postgres` is `STOPPED`, activation policy `NEVER`; staging
+Cloud Run's latest ready candidate has 100% traffic and references that
+instance. This supports leaving SQL off between smoke windows. No cloud service
+was started or changed.
+
+The audit is complete: provided console evidence classifies one Web, one
+Android and one iOS client and gives the iOS reverse scheme. Android
+package/SHA and iOS bundle association were not present in the copied details;
+only one iOS client is evidenced. Do not wire iOS flavors or claim provider
+acceptance until both bundle associations are confirmed and each iOS app has a
+client. No runtime configuration was changed.
 
 ## APP-READY-067 - Auth Attempt Ownership (Done, CI Verified)
 

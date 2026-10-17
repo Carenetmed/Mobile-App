@@ -1,17 +1,26 @@
 # Deferred work and backend replacement map
 
-## Auth And Onboarding Integrity (APP-READY-069)
+## Auth And Onboarding Integrity (APP-READY-069; Merged)
 
-The active repair routes a missing email-verification token to canonical
-sign-in, makes booking-intent restoration failures recoverable and fail-closed,
-clears stale auth routes after successful fallback navigation, aligns patient
-required-field validation with backend readiness (`name` and `country`), and
-refills backend profile/catalog values after retry without overwriting non-empty
-input. These changes do not complete provider acceptance. The supplied Google
-OAuth client IDs still need verified role/project mapping; iOS Google Sign-In
-URL-scheme/source configuration and Apple hardware/signing/provider proof remain
-separate gates. Do not guess client-ID roles or alter provider/cloud settings as
-part of the mobile form repair.
+PR #234 is merged with 926 passing tests and green post-merge CI. Missing
+email-verification links return to canonical sign-in; booking-intent storage
+failure during role selection is recoverable and fail-closed; successful auth
+fallback clears obsolete auth forms; patient required fields match backend
+readiness (`name` and `country`); retry prefill restores backend values without
+replacing non-empty typed input. This repairs form/navigation behavior only and
+does not complete Google provider acceptance.
+
+## Google OAuth iOS Callback Configuration (APP-READY-070 Audit Complete)
+
+The canonical Firebase project and project number are confirmed. Console
+evidence identifies a Web client, an Android client, and one iOS client with a
+known reverse URL scheme. The Android package/SHA and iOS bundle association
+were omitted, and a second iOS client for the other canonical bundle ID is not
+evidenced. The Flutter provider still lacks iOS `GIDClientID` and callback
+configuration. Obtain/confirm the missing app associations and create or locate
+the other iOS client before wiring flavor-specific configuration. Never install
+the old-project Firebase files or guess a callback scheme. Apple
+signing/hardware/provider proof remains a separate release gate.
 
 ## Notification Provider Late Work And Native Delivery (APP-READY-068)
 

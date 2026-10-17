@@ -18,7 +18,9 @@ class BookingResumeNavigator {
     required String fallbackRoute,
   }) async {
     if (!sl.isRegistered<BookingResumeService>()) {
-      Navigator.of(context).pushNamed(fallbackRoute);
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(fallbackRoute, (route) => false);
       return;
     }
 
@@ -29,7 +31,9 @@ class BookingResumeNavigator {
       if (!context.mounted) {
         return;
       }
-      Navigator.of(context).pushNamed(fallbackRoute);
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(fallbackRoute, (route) => false);
       return;
     }
     if (!context.mounted) {
@@ -78,7 +82,9 @@ class BookingResumeNavigator {
         Navigator.of(context).pushNamed(RouteName.signInEmail);
         return;
       case BookingResumeTarget.none:
-        Navigator.of(context).pushNamed(fallbackRoute);
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(fallbackRoute, (route) => false);
         return;
     }
   }

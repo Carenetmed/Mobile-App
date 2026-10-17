@@ -1,5 +1,18 @@
 # Deferred work and backend replacement map
 
+## Auth And Onboarding Integrity (APP-READY-069)
+
+The active repair routes a missing email-verification token to canonical
+sign-in, makes booking-intent restoration failures recoverable and fail-closed,
+clears stale auth routes after successful fallback navigation, aligns patient
+required-field validation with backend readiness (`name` and `country`), and
+refills backend profile/catalog values after retry without overwriting non-empty
+input. These changes do not complete provider acceptance. The supplied Google
+OAuth client IDs still need verified role/project mapping; iOS Google Sign-In
+URL-scheme/source configuration and Apple hardware/signing/provider proof remain
+separate gates. Do not guess client-ID roles or alter provider/cloud settings as
+part of the mobile form repair.
+
 ## Notification Provider Late Work And Native Delivery (APP-READY-068)
 
 Mobile bounds provider callers and cancels Dart Firebase stream subscriptions,

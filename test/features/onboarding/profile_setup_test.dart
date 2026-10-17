@@ -234,16 +234,32 @@ void main() {
       expect(find.text('Primary care'), findsWidgets);
     });
 
-    testWidgets('new patient must explicitly select catalog values', (
+    testWidgets('patient setup only requires backend-required fields', (
       tester,
     ) async {
       final repository = _FakeProfileRepository();
+      const completeReadiness = AccountReadiness(
+        account: ReadinessAccount(
+          role: 'PATIENT',
+          status: 'ACTIVE',
+          emailVerified: true,
+        ),
+        patient: PatientReadiness(
+          profileStatus: 'COMPLETE',
+          requiredFields: <String>[],
+        ),
+        professional: null,
+        nextAction: 'DASHBOARD',
+        requiredActions: <String>[],
+      );
       await _pumpSetup(
         tester,
         repository: repository,
         child: PatientOnboardingSetupPage(
           profileRepository: repository,
-          onboardingRepository: _FakeOnboardingRepository(),
+          onboardingRepository: _FakeOnboardingRepository(
+            readiness: completeReadiness,
+          ),
         ),
       );
 
@@ -252,10 +268,18 @@ void main() {
       await tester.tap(find.text('Save and continue'));
       await tester.pump();
 
-      expect(find.text('State is required'), findsOneWidget);
       expect(find.text('Country is required'), findsOneWidget);
-      expect(find.text('Health interest is required'), findsOneWidget);
       expect(repository.updatePatientCalls, 0);
+
+      await _selectCatalogValue(tester, 'patient-country', 'Nigeria');
+      await tester.ensureVisible(find.text('Save and continue'));
+      await tester.tap(find.text('Save and continue'));
+      await tester.pumpAndSettle();
+
+      expect(repository.updatePatientCalls, 1);
+      expect(repository.lastPatientCountry, 'NG');
+      expect(repository.lastPatientState, isNull);
+      expect(repository.lastPatientHealthInterests, isNull);
     });
 
     testWidgets('patient setup blocks save when catalog cannot load', (
@@ -293,7 +317,15 @@ void main() {
       tester,
     ) async {
       final semantics = tester.ensureSemantics();
-      final repository = _FakeProfileRepository();
+      final repository = _FakeProfileRepository(
+        patientProfile: const PatientProfile(
+          name: 'Ada Existing',
+          city: 'Existing city',
+          state: 'LA',
+          country: 'NG',
+          healthInterests: 'PRIMARY_CARE',
+        ),
+      );
       final onboardingRepository = _FakeOnboardingRepository(
         failure: const AuthFailure(
           type: AuthFailureType.network,
@@ -322,6 +354,7 @@ void main() {
 
       final nameField = find.byType(EditableText).first;
       await tester.enterText(nameField, 'Ada Patient');
+      await tester.enterText(find.byType(EditableText).at(2), 'Manual city');
       onboardingRepository.failure = null;
       final retry = find.byKey(const ValueKey('retry-onboarding-load'));
       await tester.ensureVisible(retry);
@@ -330,6 +363,10 @@ void main() {
 
       expect(onboardingRepository.catalogCalls, 2);
       expect(find.text('Ada Patient'), findsOneWidget);
+      expect(find.text('Manual city'), findsOneWidget);
+      expect(find.text('Nigeria'), findsWidgets);
+      expect(find.text('Lagos'), findsWidgets);
+      expect(find.text('Primary care'), findsWidgets);
       expect(find.text('Retry loading setup'), findsNothing);
       expect(tester.takeException(), isNull);
       semantics.dispose();
@@ -611,7 +648,20 @@ void main() {
       'professional setup retries a failed load without losing input',
       (tester) async {
         final semantics = tester.ensureSemantics();
-        final repository = _FakeProfileRepository();
+        final repository = _FakeProfileRepository(
+          professionalProfile: const ProfessionalProfile(
+            legalName: 'Saved Legal Name',
+            displayName: 'Saved Display Name',
+            category: 'MEDICAL_DOCTOR',
+            licenseNumber: 'MDCN-12345',
+            qualifications: 'MBBS',
+            yearsOfExperience: 8,
+            practiceName: 'Saved Clinic',
+            practiceCity: 'Ikeja',
+            practiceState: 'LA',
+            practiceCountry: 'NG',
+          ),
+        );
         final onboardingRepository = _FakeOnboardingRepository(
           failure: const AuthFailure(
             type: AuthFailureType.network,
@@ -653,6 +703,10 @@ void main() {
         expect(onboardingRepository.catalogCalls, 2);
         expect(find.text('Ada Okafor'), findsOneWidget);
         expect(find.text('Dr. Ada Okafor'), findsNWidgets(2));
+        expect(find.text('MDCN-12345'), findsWidgets);
+        expect(find.text('MBBS'), findsOneWidget);
+        expect(find.text('Nigeria'), findsWidgets);
+        expect(find.text('Lagos'), findsWidgets);
         expect(find.text('Retry loading setup'), findsNothing);
         expect(tester.takeException(), isNull);
         semantics.dispose();

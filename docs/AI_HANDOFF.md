@@ -18,12 +18,13 @@
 
 ## Current production-readiness continuation
 
-### APP-READY-068 Notification Account Isolation And Transport Lifecycle (Implementation Verified; PR Pending)
+### APP-READY-068 Notification Account Isolation And Transport Lifecycle (Done; PR #233 Merged)
 
-Base is APP-READY-067 merge `a4a253845b54dcaf34feedb1c13e7769525c2005` (PR232).
-Post-merge integration CI38935361083 passed on that exact merge. APP-READY-067
-delivered 911 tests and Android/iOS source builds; original protected worktrees
-and archive refs remain untouched.
+PR #233 merged as `84856725171f49ee1731b5ade7a4aedc6286c7ac` from reviewed head
+`0a93aecb7675776d55ad4f232869735b3ccd0709`. Android CI `38944217173`, iOS
+simulator staging/production CI `38944232798`, and integration CI `38947622870`
+passed. The suite had 924 tests; no tests were removed, skipped, or disabled.
+The original protected worktrees and archive refs remain untouched.
 
 The implementation closes two reviewed notification gaps. It resolves each
 foreground push ID through the authenticated notification repository and current
@@ -65,6 +66,28 @@ Independent review's logout-delay finding was fixed by synchronously invalidatin
 presentation while scheduling local cancellation without blocking account changes.
 Backend unregistration and local notification-store cleanup retain their existing
 bounded waits.
+
+### APP-READY-069 Auth And Onboarding UX Integrity (In Progress)
+
+Base is merged mobile integration `84856725171f49ee1731b5ade7a4aedc6286c7ac`.
+The dedicated branch is `slice/APP-READY-069-auth-onboarding-ux` in the clean
+isolated worktree `C:\CareNetAgentTemp\app-ready-069-auth-onboarding-ux`.
+Current implementation repairs the missing-email-verification-link destination,
+booking-intent read failure handling in signup role selection, auth-stack
+replacement after normal authentication fallback, patient form requirements to
+match backend readiness (`name` and `country`), and profile prefill on retry
+without overwriting non-empty input. Five focused test files cover these changes;
+the latest focused run passed 87 tests. Full suite, analyzer, diff/inventory
+review, and this documentation sync are still required. Latest full verification
+passes 926 tests and `flutter analyze`; inventory is 924 baseline +2 new tests,
+with one existing patient-validation test renamed/reasserted and no tests
+removed, skipped, or disabled. No dependency, backend, provider, cloud, payment,
+or native build change is in scope.
+
+Next after 069 is one bounded audit/decision task for the two previously supplied
+Google OAuth client IDs and the missing iOS Google Sign-In URL-scheme/source
+configuration. Do not guess which client ID is the iOS client or alter OAuth
+console/backend settings without verified mapping.
 
 ### APP-READY-067 Auth Attempt Ownership And Bounded Reads (Done)
 
@@ -640,7 +663,9 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-065 | Reconcile historical backend Prisma index-name drift with the locked client | S | **DONE** - backend BE-P1-043/PR142 merge `431bf88`, locked zero-drift CI and subsequent deployment proof; no Flutter implementation required |
 | APP-READY-066 | Reject untrusted legacy multi-key sessions and bound/dispose initial session restoration with fault/recreation coverage | M | **DONE** - PR231 merge `e63471a`,838 tests; exact-head Android/iOS and integration38907469546 green |
 | APP-READY-067 | Order authentication attempts and conditional commits; bound secure-session reads without releasing native write ownership | M+ | **DONE** - PR232 merge a4a2538;911 tests; Android/iOS and integration CI passed |
-| APP-READY-068 | Isolate foreground notification presentation by backend account ownership and retire late/disposed Firebase transport listeners | M+ | **IMPLEMENTATION VERIFIED / PR PENDING** - 924 tests, clean analyzer; provider calls already in native code remain non-cancellable |
+| APP-READY-068 | Isolate foreground notification presentation by backend account ownership and retire late/disposed Firebase transport listeners | M+ | **DONE** - PR #233 merged at `8485672`; Android, iOS simulator, and integration CI green; 924 tests |
+| APP-READY-069 | Repair evidenced authentication verification-link, booking-intent recovery, route-stack, and onboarding readiness/prefill defects | M | **IN PROGRESS** - 87 focused and 926 full tests pass; analyzer clean; diff and remote review remain |
+| APP-READY-070 | Audit and classify canonical-project Google OAuth client IDs, then specify the smallest iOS Google Sign-In source/configuration repair without changing provider authority | S | **NEXT** |
 
 ### APP-READY-055 implementation evidence
 

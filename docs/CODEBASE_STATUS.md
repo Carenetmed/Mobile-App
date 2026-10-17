@@ -1,8 +1,11 @@
 # Codebase status
 
-## APP-READY-068 - Notification Account Isolation (Implementation Verified; PR Pending)
+## APP-READY-068 - Notification Account Isolation (Done; PR #233 Merged)
 
-Post-merge base is a4a253845b54dcaf34feedb1c13e7769525c2005. The audit found
+Post-merge integration is `84856725171f49ee1731b5ade7a4aedc6286c7ac`, PR #233
+merged from reviewed head `0a93aecb7675776d55ad4f232869735b3ccd0709`.
+Android `38944217173`, iOS simulator `38944232798`, and integration CI
+`38947622870` passed. The audit found
 foreground local notification display trusts FCM title/body after a callback
 that can return after logout/account switch. Late Firebase transport init can
 also attach listeners after timeout/disposal because transport lacks disposal.
@@ -15,8 +18,23 @@ account rebinding. Detached callbacks and provider-stream errors are contained.
 Flutter3.41.5 verification:28 targeted tests,924 full tests, analyzer clean, diff
 check clean, lock unchanged. Inventory 911+9 transport lifecycle+4 account-
 isolation=924, with no tests removed/skipped/disabled. Independent review found
-no blocker; exact-head Android/iOS CI remains pending.
-No provider/cloud change. Already-running native plugin calls cannot be cancelled.
+no blocker. No provider/cloud change. Already-running native plugin calls cannot
+be cancelled.
+
+## APP-READY-069 - Auth And Onboarding UX Integrity (In Progress)
+
+Base: merged integration `84856725171f49ee1731b5ade7a4aedc6286c7ac`; branch
+`slice/APP-READY-069-auth-onboarding-ux`. Fixes the missing verification-link
+route to deferred `editEmail`, signup's indefinite booking-intent restore error,
+stale auth routes under the dashboard after normal authentication fallback, and
+patient onboarding validators stricter than backend readiness. Patient backend
+required fields are name and country; state and health interest remain optional.
+Catalog/profile retry now restores persisted profile values while retaining
+non-empty user input. Five focused files pass 87 tests; the full suite passes
+926 and `flutter analyze` is clean. Inventory is 924 baseline +2 new tests, one
+existing patient validation test renamed/reasserted, and no removed/skipped/
+disabled tests. Final diff and remote review remain outstanding. No package,
+backend, provider, cloud, payment, or native changes.
 
 ## APP-READY-067 - Auth Attempt Ownership (Done, CI Verified)
 

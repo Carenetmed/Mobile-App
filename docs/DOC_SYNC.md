@@ -1,18 +1,21 @@
 # Documentation sync index
 
-**Last audited:** 2026-10-16
+**Last audited:** 2026-10-17
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 ---
 
 ## Authority (if two docs seem to conflict)
 
-APP-READY-068 is current against merge a4a2538 (PR232, integration CI green).
-Notification ownership/lifecycle scope and boundaries are in
-AI_HANDOFF/DECISIONS/DEFERRED_WORK. APP-READY-068 implementation has 924 local
-tests (911+9 transport lifecycle+4 account isolation), clean analyzer/diff and
-unchanged lock; independent review found no blocker, exact-head Android/iOS CI
-remains pending.
+APP-READY-068 is merged as PR #233 at `84856725171f49ee1731b5ade7a4aedc6286c7ac`.
+Exact-head Android, iOS simulator, and integration CI passed; the final suite had
+924 tests and no removals/skips. Notification ownership/lifecycle scope and
+boundaries are in AI_HANDOFF/DECISIONS/DEFERRED_WORK.
+APP-READY-069 is the active isolated auth/onboarding repair. Its 87 focused tests
+and 926-test full suite pass; analyzer is clean. The test inventory is 924 +2,
+with one renamed/reasserted patient-readiness test and no test removals/skips.
+Final diff and remote review remain. See AI_HANDOFF and CODEBASE_STATUS for exact
+scope. Do not begin APP-READY-070 until 069 is completed and the user continues.
 APP-READY-067 is done with reviewed Android/iOS and post-merge CI. Remaining
 full-program gates are open. Entries below are historical.
 
@@ -110,7 +113,7 @@ user-confirmed Paystack activation remain unfinished; use the queue above it.
 | Product direction | **Phase 1 consultation marketplace** - broad social/content/readings/emergency/creator modules leave the active mainline in ordered slices |
 | Archive checkpoint | **APP-P1-001A complete** - branch `archive/pre-phase1-broad-ui-2026-07-22` and annotated tag `pre-phase1-broad-ui-2026-07-22` resolve to `3e04d6e` |
 | Integration base | `31ed6ae8d2627a5aae6c1c5b5fb5eb6798911593` - APP-READY-060 PR #226 merged in `Carenetmed/Mobile-App`; final PR and integration push passed both lanes with 734 tests |
-| NEXT task | **APP-READY-062** - verify notification claim fencing and admin confirmation-context repairs in separate repositories, then continue remaining pre-device gates |
+| Active task | **APP-READY-069** - complete auth/onboarding integrity repairs and full verification |
 | Last completed | **APP-READY-061** - reconciled current source and read-only cloud evidence; identified bounded worker/admin defects and remaining crash-reporting, locale, deployment, monitoring, provider and device gates |
 | Latest Web admin surface | `Carenetmed/Web-Developers` PR #7 merged at `bcb7742af0ba6749da9d0a45f694bc6e79755206`; tests/browser journey/lint/build/container preflight passed; source only, not hosted/deployed |
 | Cloud posture | Read-only check 2026-10-13: SQL STOPPED/NEVER with backups/PITR/deletion protection and encrypted connector enforcement; Scheduler PAUSED; Cloud Run no minimum scale; Monitoring policies/channels absent. No cloud changes |

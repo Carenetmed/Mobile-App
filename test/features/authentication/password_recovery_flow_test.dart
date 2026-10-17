@@ -508,9 +508,9 @@ void main() {
         find.textContaining('Verification link is missing'),
         findsOneWidget,
       );
-      final backToEmail = find.text('Back to account email');
-      await tester.ensureVisible(backToEmail);
-      expect(backToEmail, findsOneWidget);
+      final returnToSignIn = find.text('Return to sign in');
+      await tester.ensureVisible(returnToSignIn);
+      expect(returnToSignIn, findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

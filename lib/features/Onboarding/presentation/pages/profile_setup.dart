@@ -115,7 +115,7 @@ class _PatientOnboardingSetupPageState
                   _isCatalogReady
                       ? (state) => setState(() => _selectedState = state)
                       : null,
-              validator: (state) => state == null ? 'State is required' : null,
+              validator: (_) => null,
             ),
             SizedBox(height: 14.h),
             _CatalogSelect<OnboardingCountry>(
@@ -147,9 +147,7 @@ class _PatientOnboardingSetupPageState
                       ? (interest) =>
                           setState(() => _selectedHealthInterest = interest)
                       : null,
-              validator:
-                  (interest) =>
-                      interest == null ? 'Health interest is required' : null,
+              validator: (_) => null,
             ),
             SizedBox(height: 16.h),
             _ReadinessProgressCard(
@@ -199,9 +197,11 @@ class _PatientOnboardingSetupPageState
       }
       setState(() {
         _catalog = catalog;
-        if (!preserveFormInput) {
-          _applyPatientProfile(profile, catalog);
-        }
+        _applyPatientProfile(
+          profile,
+          catalog,
+          preserveExistingInput: preserveFormInput,
+        );
         _readiness = readiness;
         _isLoadingCatalog = false;
         _catalogLoadFailed = false;
@@ -227,33 +227,45 @@ class _PatientOnboardingSetupPageState
 
   void _applyPatientProfile(
     PatientProfile? profile,
-    OnboardingCatalog catalog,
-  ) {
+    OnboardingCatalog catalog, {
+    bool preserveExistingInput = false,
+  }) {
     if (profile == null) {
       return;
     }
-    _nameController.text = profile.name;
-    _cityController.text = profile.city ?? '';
+    if (!preserveExistingInput || _nameController.text.trim().isEmpty) {
+      _nameController.text = profile.name;
+    }
+    if (!preserveExistingInput || _cityController.text.trim().isEmpty) {
+      _cityController.text = profile.city ?? '';
+    }
     final dateOfBirth = profile.dateOfBirth;
-    if (dateOfBirth != null) {
+    if (dateOfBirth != null &&
+        (!preserveExistingInput || _dateOfBirth == null)) {
       _dateOfBirth = dateOfBirth.toUtc();
       _dateOfBirthController.text = _formatDate(dateOfBirth);
     }
-    _selectedCountry = _byCode(
-      catalog.countries,
-      profile.country,
-      (x) => x.code,
-    );
-    _selectedState = _byCode(
-      catalog.nigeriaStates,
-      profile.state,
-      (x) => x.code,
-    );
-    _selectedHealthInterest = _byCode(
-      catalog.patientHealthInterestCatalog,
-      profile.healthInterests,
-      (x) => x.code,
-    );
+    if (!preserveExistingInput || _selectedCountry == null) {
+      _selectedCountry = _byCode(
+        catalog.countries,
+        profile.country,
+        (x) => x.code,
+      );
+    }
+    if (!preserveExistingInput || _selectedState == null) {
+      _selectedState = _byCode(
+        catalog.nigeriaStates,
+        profile.state,
+        (x) => x.code,
+      );
+    }
+    if (!preserveExistingInput || _selectedHealthInterest == null) {
+      _selectedHealthInterest = _byCode(
+        catalog.patientHealthInterestCatalog,
+        profile.healthInterests,
+        (x) => x.code,
+      );
+    }
   }
 
   Future<void> _pickDateOfBirth() async {
@@ -590,9 +602,11 @@ class _ProfessionalOnboardingSetupPageState
       }
       setState(() {
         _catalog = catalog;
-        if (!preserveFormInput) {
-          _applyProfessionalProfile(profile, catalog);
-        }
+        _applyProfessionalProfile(
+          profile,
+          catalog,
+          preserveExistingInput: preserveFormInput,
+        );
         _readiness = readiness;
         _isLoadingCatalog = false;
         _catalogLoadFailed = false;
@@ -618,35 +632,51 @@ class _ProfessionalOnboardingSetupPageState
 
   void _applyProfessionalProfile(
     ProfessionalProfile? profile,
-    OnboardingCatalog catalog,
-  ) {
+    OnboardingCatalog catalog, {
+    bool preserveExistingInput = false,
+  }) {
     if (profile == null) {
       return;
     }
-    _legalNameController.text = profile.legalName ?? '';
-    _displayNameController.text = profile.displayName;
-    _specialtyController.text = profile.specialty ?? '';
-    _licenseNumberController.text = profile.licenseNumber ?? '';
-    _qualificationsController.text = profile.qualifications ?? '';
-    _yearsController.text = profile.yearsOfExperience?.toString() ?? '';
-    _practiceNameController.text = profile.practiceName ?? '';
-    _practiceAddressController.text = profile.practiceAddress ?? '';
-    _practiceCityController.text = profile.practiceCity ?? '';
-    _selectedProfession = _byCode(
-      catalog.professionalCatalog,
-      profile.category,
-      (x) => x.code,
+    void setIfUntouched(TextEditingController controller, String value) {
+      if (!preserveExistingInput || controller.text.trim().isEmpty) {
+        controller.text = value;
+      }
+    }
+
+    setIfUntouched(_legalNameController, profile.legalName ?? '');
+    setIfUntouched(_displayNameController, profile.displayName);
+    setIfUntouched(_specialtyController, profile.specialty ?? '');
+    setIfUntouched(_licenseNumberController, profile.licenseNumber ?? '');
+    setIfUntouched(_qualificationsController, profile.qualifications ?? '');
+    setIfUntouched(
+      _yearsController,
+      profile.yearsOfExperience?.toString() ?? '',
     );
-    _selectedState = _byCode(
-      catalog.nigeriaStates,
-      profile.practiceState,
-      (x) => x.code,
-    );
-    _selectedCountry = _byCode(
-      catalog.countries,
-      profile.practiceCountry,
-      (x) => x.code,
-    );
+    setIfUntouched(_practiceNameController, profile.practiceName ?? '');
+    setIfUntouched(_practiceAddressController, profile.practiceAddress ?? '');
+    setIfUntouched(_practiceCityController, profile.practiceCity ?? '');
+    if (!preserveExistingInput || _selectedProfession == null) {
+      _selectedProfession = _byCode(
+        catalog.professionalCatalog,
+        profile.category,
+        (x) => x.code,
+      );
+    }
+    if (!preserveExistingInput || _selectedState == null) {
+      _selectedState = _byCode(
+        catalog.nigeriaStates,
+        profile.practiceState,
+        (x) => x.code,
+      );
+    }
+    if (!preserveExistingInput || _selectedCountry == null) {
+      _selectedCountry = _byCode(
+        catalog.countries,
+        profile.practiceCountry,
+        (x) => x.code,
+      );
+    }
   }
 
   Future<void> _saveProfessionalProfile() async {

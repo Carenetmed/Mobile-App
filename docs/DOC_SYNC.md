@@ -26,23 +26,25 @@ backend authorization remain unchanged. PR #236 merged as `d25c810`; PR and
 post-merge integration CI passed 928 tests, analyzer, APK, Android release lint,
 signing, and environment checks. The full profile-management widget file was
 blocked locally by a Flutter root-isolate failure, while focused tests passed.
-APP-READY-072 is complete. APP-READY-073 is next: verify canonical OAuth app
-associations and finish only the supported iOS callback wiring. The Android
-package/SHA-1 and iOS bundle association remain absent from the copied console
-details; Firebase app-config API reads return 403 for the current CLI principal.
-Keep the backend Web-client audience and provider authority unchanged.
+APP-READY-072 is complete. APP-READY-073 is in progress: canonical Firebase
+SDK config now confirms distinct iOS client/scheme pairs for staging and
+production, wired through all six iOS flavor configurations and the Info.plist
+callback. The configuration guard, analyzer, and full 928-test suite pass
+locally; Mac simulator CI and exact-head review remain pending. Android staging
+package/debug SHA-1 is confirmed; Android production OAuth remains a
+release-signing gate. Keep the backend Web-client audience and provider
+authority unchanged.
 
 APP-READY-068 is merged as PR #233 at `84856725171f49ee1731b5ade7a4aedc6286c7ac`.
 APP-READY-069 is merged as PR #234 at `4e3bfb3d011b112f4d4e22052448154d2dd6abf4`;
 reviewed-head PR CI and post-merge integration CI passed with 926 tests, analyzer,
 debug APK, release lint, and protected release gates green. Its test inventory is
 924 +2, with one renamed/reasserted patient-readiness test and no removals/skips.
-APP-READY-070 audit is complete with console evidence classifying the Web, Android, and one
-iOS OAuth client; the iOS reverse URL scheme is known. The evidence omits
-Android package/SHA and iOS bundle association and does not establish a second
-iOS client for the other flavor. Do not wire iOS config until both flavor
-clients and their bundle associations are confirmed. See AI_HANDOFF and
-CODEBASE_STATUS for the remaining evidence.
+APP-READY-070's initial console evidence classified the Web, Android, and one
+iOS OAuth client but omitted Android package/SHA and iOS bundle associations.
+APP-READY-073 later resolved the associations through canonical Firebase SDK
+config reads and wired separate iOS callback values for both bundles. See
+AI_HANDOFF and CODEBASE_STATUS for current CI/device gates.
 Read-only staging liveness/readiness probes on 2026-10-17 returned `/health: ok`
 and `/health/ready: unavailable` (database/migrations unavailable; email,
 `googleAuth`, and verification-storage provider checks `ok`). Cause is unknown;

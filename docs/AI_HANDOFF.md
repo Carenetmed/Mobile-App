@@ -98,9 +98,11 @@ iOS. The iOS client ID is
 `599365440227-dct2dkdh0tj79an085ocmghpgv6dic82.apps.googleusercontent.com`;
 its reverse URL scheme is
 `com.googleusercontent.apps.599365440227-dct2dkdh0tj79an085ocmghpgv6dic82`.
-The copied details omit the Android package/SHA and iOS bundle ID, and show
-only one iOS client, so they do not prove a client exists for both
-`com.carenet.app.staging` and `com.carenet.app`. Repository flavor IDs are
+The copied details omitted the Android package/SHA and iOS bundle ID, and showed
+only one iOS client, so the initial audit did not prove a client existed for
+both `com.carenet.app.staging` and `com.carenet.app`. APP-READY-073 later
+verified both iOS bundle associations through Firebase SDK config reads.
+Repository flavor IDs are
 `com.carenet.app.staging` (staging) and `com.carenet.app` (production); the
 recorded local debug SHA-1 is
 `79:DC:39:4B:88:BF:0B:C5:3F:C9:A1:DC:08:1F:F7:09:E4:6D:95:53`. These are
@@ -196,19 +198,31 @@ admin-specific staging smoke remain. This was read-only: no account was
 provisioned, no cloud resource was changed, and no protected worktree or archive
 ref was touched.
 
-### APP-READY-073 Canonical Google OAuth App Association And iOS Callback (Next)
+### APP-READY-073 Canonical Google OAuth App Association And iOS Callback (In Progress; Local Verification Passed)
 
-The canonical project number matches the supplied Web, Android, and one iOS
-client IDs, but the console text does not show the Android package/SHA-1 or iOS
-bundle association and provides only one iOS client for the staging and
-production bundle IDs. Firebase Management API reads for registered app
-configuration return 403 to the current CLI principal. Verify the existing
-client associations and obtain the missing flavor-specific iOS client before
-changing app configuration. Keep the Web client as the backend ID-token
-audience; do not change OAuth provider authority or use the old
-`carenet-175b7` Firebase config. After metadata is verified, implement only the
-smallest environment-specific iOS client ID and reverse-URL-scheme wiring and
-prove staging Google sign-in without claiming iOS device readiness.
+Read-only Firebase SDK-config inspection succeeded with the canonical project
+as a per-request quota project; global gcloud configuration was not modified.
+Firebase now confirms staging bundle `com.carenet.app.staging` has iOS client
+`599365440227-kbjtm738r7gs46tir1tcohieqb931n97.apps.googleusercontent.com` and
+reverse scheme
+`com.googleusercontent.apps.599365440227-kbjtm738r7gs46tir1tcohieqb931n97`.
+Production remains paired with its own `com.carenet.app` client and scheme.
+Android staging's package/debug SHA-1 association is confirmed; Android
+production still lacks its release-signing-specific client and remains a later
+gate. The Web client remains the backend ID-token audience. Exact associations
+are in `GOOGLE_SIGN_IN_SETUP_PREREQUISITES.md`.
+
+`ios/Runner/Info.plist` now reads the native Google client ID and reversed URL
+scheme from flavor build settings. All Debug/Profile/Release staging configs
+use only staging values, and the production configs use only production
+values. The existing iOS flavor checker verifies all six config pairs and both
+Info.plist substitutions. Dart continues passing the Web client as
+`serverClientId`; no provider authority, backend audience, dependency, Firebase
+project setting, or secret changed. `flutter analyze`, the full 928-test suite,
+the iOS config guard, and `git diff --check` pass; `pubspec.lock` is unchanged.
+Local Xcode builds are unavailable on this Windows host. Mac simulator CI for
+both flavors and exact-head PR checks remain gates. Even green simulator CI
+does not prove Apple signing or physical-device/provider acceptance.
 
 ### APP-READY-067 Auth Attempt Ownership And Bounded Reads (Done)
 
@@ -786,10 +800,10 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-067 | Order authentication attempts and conditional commits; bound secure-session reads without releasing native write ownership | M+ | **DONE** - PR232 merge a4a2538;911 tests; Android/iOS and integration CI passed |
 | APP-READY-068 | Isolate foreground notification presentation by backend account ownership and retire late/disposed Firebase transport listeners | M+ | **DONE** - PR #233 merged at `8485672`; Android, iOS simulator, and integration CI green; 924 tests |
 | APP-READY-069 | Repair evidenced authentication verification-link, booking-intent recovery, route-stack, and onboarding readiness/prefill defects | M | **DONE** - PR #234 merged at `4e3bfb3d011b112f4d4e22052448154d2dd6abf4`; post-merge CI passed |
-| APP-READY-070 | Audit and classify canonical-project Google OAuth client IDs, then specify the smallest iOS Google Sign-In source/configuration repair without changing provider authority | S | **DONE - AUDIT; CLIENT ASSOCIATIONS STILL REQUIRED FOR CONFIGURATION** |
+| APP-READY-070 | Audit and classify canonical-project Google OAuth client IDs, then specify the smallest iOS Google Sign-In source/configuration repair without changing provider authority | S | **DONE - INITIAL AUDIT; ASSOCIATIONS LATER VERIFIED IN APP-READY-073** |
 | APP-READY-071 | Preserve professional-verification authorization semantics: map HTTP 401 to unauthenticated and 403 to forbidden, with regression tests for safe user messaging; do not change upload/backend behavior | S | **DONE** - PR #236 merged as `d25c810`; PR and integration CI green, 928 tests |
 | APP-READY-072 | Audit professional verification administration: existing backend authority, review workflow, operator access, and smallest safe admin-surface scope | S | **DONE - READ-ONLY AUDIT; ADMIN HOSTING, OPERATOR PROVISIONING, AND STAGING SMOKE REMAIN OPEN** |
-| APP-READY-073 | Verify canonical Google OAuth app associations and complete the smallest flavor-specific iOS callback configuration; retain backend Web-client audience and keep provider authority unchanged | M | **NEXT - WAITING FOR ANDROID PACKAGE/SHA-1 AND IOS BUNDLE ASSOCIATION EVIDENCE; FIREBASE APP-CONFIG API RETURNS 403** |
+| APP-READY-073 | Verify canonical Google OAuth app associations and complete the smallest flavor-specific iOS callback configuration; retain backend Web-client audience and keep provider authority unchanged | M | **IN PROGRESS - BOTH IOS FLAVOR CLIENTS WIRED; LOCAL ANALYZE/928 TESTS/GUARD PASS; MAC CI AND EXACT-HEAD REVIEW PENDING** |
 
 ### APP-READY-055 implementation evidence
 

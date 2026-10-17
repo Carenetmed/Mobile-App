@@ -218,8 +218,45 @@ Web client as the backend ID-token audience/server client.
 On 2026-10-17, the authenticated gcloud principal could describe the canonical
 Firebase project. `gcloud iam oauth-clients list` returned no workforce OAuth
 client resources and is not evidence about standard Google Auth Platform
-credentials. Firebase Management API reads for both registered iOS SDK configs
-returned 403 for the current principal. No OAuth/Firebase setting, secret, or
-app config file was changed. Confirm the iOS client's bundle association and
-create/locate a matching iOS client for the other bundle before implementing
-flavor-specific callback config.
+credentials. Initial Firebase Management API reads returned 403 because the
+request lacked a quota project; APP-READY-073 later succeeded by sending the
+canonical project in the per-request `x-goog-user-project` header. No global
+gcloud/ADC setting was changed. The exact app/client associations are recorded
+below.
+
+## APP-READY-073 canonical Firebase SDK config inspection (2026-10-17)
+
+The Firebase Management API SDK-config reads used
+`x-goog-user-project: project-a96784ee-811c-46ab-a7b` and did not modify global
+gcloud/ADC settings. They confirm:
+
+| App | Firebase app ID | App identifier | Google OAuth config |
+| --- | --- | --- | --- |
+| Android staging | `1:599365440227:android:fb589a833cd2e8b251abd6` | `com.carenet.app.staging` | Android client `599365440227-nu3bf67posvqpcd6uc38bubqu9rl28q4.apps.googleusercontent.com`, debug SHA-1 `79dc394b88bf0bc53fc9a1dc081ff709e46d9553`; Web client also present |
+| Android production | `1:599365440227:android:7fbb7d5e3784327751abd6` | `com.carenet.app` | Web client present; no Android-specific client in the config |
+| iOS staging | `1:599365440227:ios:6680baeffacc0ce051abd6` | `com.carenet.app.staging` | iOS client `599365440227-kbjtm738r7gs46tir1tcohieqb931n97.apps.googleusercontent.com`; reverse scheme `com.googleusercontent.apps.599365440227-kbjtm738r7gs46tir1tcohieqb931n97` |
+| iOS production | `1:599365440227:ios:fac1f0bd4f73677051abd6` | `com.carenet.app` | iOS client `599365440227-dct2dkdh0tj79an085ocmghpgv6dic82.apps.googleusercontent.com`; reverse scheme `com.googleusercontent.apps.599365440227-dct2dkdh0tj79an085ocmghpgv6dic82` |
+
+The Web client remains
+`599365440227-2q9l9capubk9bhmqslhsfliuve5u3ne6.apps.googleusercontent.com`
+and remains the backend ID-token audience/server client ID. Do not substitute
+the old-project `carenet-175b7` config. The Android production-specific OAuth
+client remains a later release-signing gate until upload/Play fingerprints are
+available; this does not invalidate the verified staging debug client.
+
+Firebase now returns both flavor-specific iOS IDs and schemes, and the source
+configuration uses each only for its matching bundle. `Info.plist` consumes
+`GOOGLE_SIGN_IN_IOS_CLIENT_ID` and
+`GOOGLE_SIGN_IN_IOS_REVERSED_CLIENT_ID`; all six flavor xcconfigs define the
+matching pair. The local configuration guard, Flutter analyzer, and 928-test
+suite pass. Mac simulator CI remains pending. No Firebase OAuth setting,
+secret, API audience, or cloud resource was changed by the source wiring.
+
+### Completed staging-console action
+
+The user created the staging iOS client for bundle ID
+`com.carenet.app.staging` in the canonical project. A subsequent Firebase
+Management API SDK-config read confirmed the client ID and reverse scheme above.
+The production iOS client remains paired only with `com.carenet.app`. Google's
+[iOS Sign-In integration guide](https://developers.google.com/identity/sign-in/ios/start-integrating)
+documents the native iOS client and reversed-client-ID callback scheme.

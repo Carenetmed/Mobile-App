@@ -97,6 +97,39 @@ Future<void> _pumpWithRoutes(
 
 void main() {
   group('Sign up flow', () {
+    testWidgets('booking intent read failure fails closed and can retry', (
+      tester,
+    ) async {
+      var reads = 0;
+      await _pumpWithRoutes(
+        tester,
+        home: SignUpRoleSelectionPage(
+          hasPendingBookingIntent: () async {
+            reads++;
+            if (reads == 1) throw StateError('secure storage unavailable');
+            return true;
+          },
+        ),
+      );
+
+      expect(
+        find.text(
+          'Could not restore your appointment request. Please try again.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('How will you use CareNet?'), findsNothing);
+      expect(find.text('Professional'), findsNothing);
+
+      await tester.tap(find.text('Retry'));
+      await tester.pumpAndSettle();
+
+      expect(reads, 2);
+      expect(find.text('Create a patient account'), findsOneWidget);
+      expect(find.text('Professional'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('credential fields expose password-manager and keyboard hints', (
       tester,
     ) async {

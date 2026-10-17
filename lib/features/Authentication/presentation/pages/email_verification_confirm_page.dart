@@ -173,12 +173,12 @@ class _EmailVerificationConfirmPageState
                             ),
                             SizedBox(height: 16.h),
                             CarenetButton(
-                              label: 'Back to account email',
+                              label: 'Return to sign in',
                               type: CarenetButtonType.outline,
                               onPressed: () {
                                 Navigator.pushReplacementNamed(
                                   context,
-                                  RouteName.editEmail,
+                                  RouteName.signInEmail,
                                 );
                               },
                             ),

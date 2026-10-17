@@ -24,6 +24,7 @@ class SignUpRoleSelectionPage extends StatefulWidget {
     this.authRepository,
     this.googleIdTokenProvider,
     this.onboardingRepository,
+    this.hasPendingBookingIntent,
   });
 
   final String? initialEmail;
@@ -32,6 +33,7 @@ class SignUpRoleSelectionPage extends StatefulWidget {
   final AuthRepository? authRepository;
   final GoogleIdTokenProvider? googleIdTokenProvider;
   final OnboardingRepository? onboardingRepository;
+  final Future<bool> Function()? hasPendingBookingIntent;
 
   @override
   State<SignUpRoleSelectionPage> createState() =>
@@ -42,7 +44,9 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
   SignUpRole? _selectedRole;
   bool _isSubmitting = false;
   bool _checkingBookingIntent = true;
+  bool _bookingIntentLoadInFlight = false;
   bool _bookingPatientOnly = false;
+  bool _bookingIntentLoadFailed = false;
   String? _error;
 
   AuthRepository get _authRepository =>
@@ -63,14 +67,35 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
   }
 
   Future<void> _loadBookingBoundary() async {
-    final pending = await BookingResumeNavigator.hasPendingIntent();
-    if (!mounted) {
-      return;
+    if (_bookingIntentLoadInFlight) return;
+    _bookingIntentLoadInFlight = true;
+    if (!_checkingBookingIntent && mounted) {
+      setState(() {
+        _checkingBookingIntent = true;
+        _bookingIntentLoadFailed = false;
+        _error = null;
+      });
     }
-    setState(() {
-      _bookingPatientOnly = pending;
-      _checkingBookingIntent = false;
-    });
+    try {
+      final pending = await (widget.hasPendingBookingIntent ??
+          BookingResumeNavigator.hasPendingIntent)();
+      if (!mounted) return;
+      setState(() {
+        _bookingPatientOnly = pending;
+        _checkingBookingIntent = false;
+        _bookingIntentLoadFailed = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _checkingBookingIntent = false;
+        _bookingIntentLoadFailed = true;
+        _error =
+            'Could not restore your appointment request. Please try again.';
+      });
+    } finally {
+      _bookingIntentLoadInFlight = false;
+    }
   }
 
   bool get _passwordSignUpFlow =>
@@ -206,6 +231,12 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
               SizedBox(height: 16.h),
               if (_checkingBookingIntent)
                 const Center(child: CircularProgressIndicator())
+              else if (_bookingIntentLoadFailed)
+                _BookingIntentRecovery(
+                  message: _error!,
+                  onRetry: _loadBookingBoundary,
+                  onCancel: () => Navigator.of(context).maybePop(),
+                )
               else if (_bookingPatientOnly && selectedRole == null)
                 _PatientBookingRoleStep(
                   isSubmitting: _isSubmitting,
@@ -239,6 +270,36 @@ class _SignUpRoleSelectionPageState extends State<SignUpRoleSelectionPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _BookingIntentRecovery extends StatelessWidget {
+  const _BookingIntentRecovery({
+    required this.message,
+    required this.onRetry,
+    required this.onCancel,
+  });
+
+  final String message;
+  final VoidCallback onRetry;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Semantics(liveRegion: true, child: Text(message, style: _bodyStyle())),
+        SizedBox(height: 16.h),
+        CarenetButton(label: 'Retry', onPressed: onRetry),
+        SizedBox(height: 10.h),
+        CarenetButton(
+          label: 'Go back',
+          onPressed: onCancel,
+          type: CarenetButtonType.outline,
+        ),
+      ],
     );
   }
 }

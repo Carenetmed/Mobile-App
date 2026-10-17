@@ -51,6 +51,14 @@ Phase 1 destination. It no longer exits into `communityAgreement`. The legacy
 chain remains registered for conservative cleanup but is not part of the active
 Phase 1 flow.
 
+Successful sign-in/sign-up fallback navigation clears obsolete auth forms from
+the route stack. A missing email-verification token returns to canonical sign-in
+so the user can authenticate and request a fresh link from Account. Patient
+onboarding requires only backend readiness fields (`name` and `country`); state
+and primary health interest are optional catalog-backed profile values. When a
+catalog/profile load is retried, persisted fields fill blank controls without
+replacing non-empty values already entered during the failed load.
+
 Booking intent carries only the selected professional/time and idempotency
 context. It expires after 24 hours, binds to the authenticated account, never
 grants patient authority, and requires explicit confirmation after auth/onboarding

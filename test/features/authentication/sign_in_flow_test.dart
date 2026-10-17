@@ -10,6 +10,7 @@ import 'package:app_t/features/Authentication/domain/entities/auth_session.dart'
 import 'package:app_t/features/Authentication/domain/entities/auth_user.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/sign_in_phone.dart';
+import 'package:app_t/features/Home/domain/services/booking_resume_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -120,6 +121,37 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Enter email'), findsOneWidget);
     });
+
+    testWidgets(
+      'successful sign in without booking intent clears login route',
+      (tester) async {
+        await sl.reset();
+        sl.registerSingleton<BookingResumeService>(
+          _NoPendingBookingResumeService(),
+        );
+        addTearDown(() async => sl.reset());
+
+        final repository = _FakeAuthRepository();
+        await _pumpWithRoutes(
+          tester,
+          home: SignInEmail(
+            authRepository: repository,
+            googleIdTokenProvider: _disabledGoogleProvider,
+          ),
+        );
+
+        final fields = find.byType(EditableText);
+        await tester.enterText(fields.at(0), 'patient@example.com');
+        await tester.enterText(fields.at(1), 'password123');
+        await tester.tap(find.text('Continue'));
+        await tester.pumpAndSettle();
+
+        expect(repository.loginCalls, 1);
+        expect(find.text('dashboard'), findsOneWidget);
+        final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+        expect(navigator.canPop(), isFalse);
+      },
+    );
 
     testWidgets('sign-in form fits compact width with 2x text', (tester) async {
       await _pumpWithRoutes(
@@ -430,6 +462,18 @@ class _FakeGoogleIdTokenProvider implements GoogleIdTokenProvider {
     }
     return idToken ?? 'google-id-token';
   }
+}
+
+class _NoPendingBookingResumeService implements BookingResumeService {
+  @override
+  Future<bool> hasPendingIntent() async => false;
+
+  @override
+  Future<BookingResumeDecision> resolveAfterAuthentication() async =>
+      const BookingResumeDecision(target: BookingResumeTarget.none);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 AuthSession _session() {

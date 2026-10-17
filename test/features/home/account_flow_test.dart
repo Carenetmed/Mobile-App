@@ -1262,8 +1262,8 @@ void main() {
             accountRepository: repository,
           ),
           routes: <String, WidgetBuilder>{
-            RouteName.editEmail: (_) =>
-                const Scaffold(body: Text('edit-email')),
+            RouteName.signInEmail: (_) =>
+                const Scaffold(body: Text('sign-in-email')),
           },
         ),
       ),
@@ -1273,10 +1273,10 @@ void main() {
     expect(find.textContaining('Verification link is missing'), findsOneWidget);
     expect(repository.confirmEmailVerificationCalls, 0);
 
-    await tester.tap(find.text('Back to account email'));
+    await tester.tap(find.text('Return to sign in'));
     await tester.pumpAndSettle();
 
-    expect(find.text('edit-email'), findsOneWidget);
+    expect(find.text('sign-in-email'), findsOneWidget);
   });
 
   testWidgets('email verification confirm shows safe token failure', (

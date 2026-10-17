@@ -8,14 +8,23 @@
 ## Authority (if two docs seem to conflict)
 
 APP-READY-068 is merged as PR #233 at `84856725171f49ee1731b5ade7a4aedc6286c7ac`.
-Exact-head Android, iOS simulator, and integration CI passed; the final suite had
-924 tests and no removals/skips. Notification ownership/lifecycle scope and
-boundaries are in AI_HANDOFF/DECISIONS/DEFERRED_WORK.
-APP-READY-069 is the active isolated auth/onboarding repair. Its 87 focused tests
-and 926-test full suite pass; analyzer is clean. The test inventory is 924 +2,
-with one renamed/reasserted patient-readiness test and no test removals/skips.
-Final diff and remote review remain. See AI_HANDOFF and CODEBASE_STATUS for exact
-scope. Do not begin APP-READY-070 until 069 is completed and the user continues.
+APP-READY-069 is merged as PR #234 at `4e3bfb3d011b112f4d4e22052448154d2dd6abf4`;
+reviewed-head PR CI and post-merge integration CI passed with 926 tests, analyzer,
+debug APK, release lint, and protected release gates green. Its test inventory is
+924 +2, with one renamed/reasserted patient-readiness test and no removals/skips.
+APP-READY-070 audit is complete with console evidence classifying the Web, Android, and one
+iOS OAuth client; the iOS reverse URL scheme is known. The evidence omits
+Android package/SHA and iOS bundle association and does not establish a second
+iOS client for the other flavor. Do not wire iOS config until both flavor
+clients and their bundle associations are confirmed. See AI_HANDOFF and
+CODEBASE_STATUS for the remaining evidence.
+Read-only staging liveness/readiness probes on 2026-10-17 returned `/health: ok`
+and `/health/ready: unavailable` (database/migrations unavailable; email,
+`googleAuth`, and verification-storage provider checks `ok`). Cause is unknown;
+read-only Cloud SQL inspection shows the referenced staging instance is stopped
+with activation policy `NEVER`, explaining the database-dependent readiness
+failure. Keep it off except during an explicitly scheduled staging smoke window;
+no cloud service was started or changed.
 APP-READY-067 is done with reviewed Android/iOS and post-merge CI. Remaining
 full-program gates are open. Entries below are historical.
 

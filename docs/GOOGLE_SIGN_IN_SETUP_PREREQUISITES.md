@@ -184,3 +184,42 @@ This setup does not claim:
 - iOS Google sign-in is proven
 - release signing is ready
 - production OAuth consent/app verification is complete
+
+## APP-READY-070 iOS configuration audit (2026-10-17)
+
+The canonical Firebase project `project-a96784ee-811c-46ab-a7b` resolves to
+project number `599365440227`. Console evidence supplied on 2026-10-17
+classifies
+`599365440227-2q9l9capubk9bhmqslhsfliuve5u3ne6.apps.googleusercontent.com` as
+Web application,
+`599365440227-nu3bf67posvqpcd6uc38bubqu9rl28q4.apps.googleusercontent.com` as
+Android, and the following ID as iOS:
+`599365440227-dct2dkdh0tj79an085ocmghpgv6dic82.apps.googleusercontent.com` and
+its exact reverse URL scheme is
+`com.googleusercontent.apps.599365440227-dct2dkdh0tj79an085ocmghpgv6dic82`.
+The copied details omit the Android package/SHA and iOS bundle ID; only one iOS
+client is shown, so the evidence does not establish coverage for both
+`com.carenet.app.staging` and `com.carenet.app`. The repository Android
+identifiers are `com.carenet.app.staging` and `com.carenet.app`; its recorded
+local debug SHA-1 is
+`79:DC:39:4B:88:BF:0B:C5:3F:C9:A1:DC:08:1F:F7:09:E4:6D:95:53`. These do not
+prove the console Android client's configured package/fingerprint.
+
+The registered iOS apps are `com.carenet.app.staging` and `com.carenet.app`.
+The shared `ios/Runner/Info.plist` currently has no `GIDClientID` or
+`CFBundleURLTypes`, and no GoogleService-Info.plist is checked in. Flutter
+passes the separately configured Web server client ID through
+`GoogleSignIn.initialize(serverClientId: ...)`; this does not provide the iOS
+app client ID or callback URL scheme. The smallest source repair, after client
+metadata is verified, is environment-specific iOS client IDs for the two
+bundle IDs plus each client's exact reversed-client-ID URL scheme. Retain the
+Web client as the backend ID-token audience/server client.
+
+On 2026-10-17, the authenticated gcloud principal could describe the canonical
+Firebase project. `gcloud iam oauth-clients list` returned no workforce OAuth
+client resources and is not evidence about standard Google Auth Platform
+credentials. Firebase Management API reads for both registered iOS SDK configs
+returned 403 for the current principal. No OAuth/Firebase setting, secret, or
+app config file was changed. Confirm the iOS client's bundle association and
+create/locate a matching iOS client for the other bundle before implementing
+flavor-specific callback config.

@@ -5,9 +5,10 @@
 The mobile verification client now preserves the HTTP distinction: 401 is
 unauthenticated and 403 is forbidden. The verification UI gives separate safe
 messages and does not clear or challenge a valid session for a permission
-denial. This does not change backend role policy, document upload/storage,
+denial. PR #236 is merged at `d25c810` with green PR and integration CI (928
+tests). This does not change backend role policy, document upload/storage,
 verification readiness, or admin review authority. Admin verification workflow
-and operator access require a separate audit before implementation.
+and operator access require the APP-READY-072 audit before implementation.
 
 ## Auth And Onboarding Integrity (APP-READY-069; Merged)
 

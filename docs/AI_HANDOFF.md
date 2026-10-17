@@ -139,7 +139,7 @@ database-dependent readiness failure and is consistent with keeping staging
 SQL off between smoke windows. Do not start it without an explicitly scheduled
 test window. No cloud service was started or changed.
 
-### APP-READY-071 Verification Authorization Semantics (Implemented; CI Pending)
+### APP-READY-071 Verification Authorization Semantics (Done; PR #236 Merged)
 
 The verification API client now maps HTTP 401 to `unauthorized` and HTTP 403 to
 `forbidden`. The existing verification UI therefore asks the user to sign in
@@ -151,7 +151,12 @@ unchanged. Local proof: repository tests 8/8, the new 403 widget regression 1/1,
 analyzer clean, and `git diff --check` clean. Running the entire large profile
 management widget file hit the local Flutter runner's root-isolate timeout; the
 focused new test and an existing verification error widget test both passed.
-Exact-head CI remains the complete-suite gate. No dependency or lockfile change.
+PR #236 merged reviewed head `054d2da71e3426d5926ac8cb6f21b20d167e3ec6` as
+`d25c810e5275b8a5b084b2e99766f6fe66033524`. PR CI `39019115901` and
+post-merge integration CI `39021212587` passed: 928 tests, analyzer, debug APK,
+Android release lint, signing, and release-environment checks. The 926-test
+base gained 2 focused tests; none were removed, skipped, disabled, or weakened.
+No dependency, lockfile, backend, native, provider, or cloud change.
 
 ### APP-READY-067 Auth Attempt Ownership And Bounded Reads (Done)
 
@@ -730,7 +735,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-068 | Isolate foreground notification presentation by backend account ownership and retire late/disposed Firebase transport listeners | M+ | **DONE** - PR #233 merged at `8485672`; Android, iOS simulator, and integration CI green; 924 tests |
 | APP-READY-069 | Repair evidenced authentication verification-link, booking-intent recovery, route-stack, and onboarding readiness/prefill defects | M | **DONE** - PR #234 merged at `4e3bfb3d011b112f4d4e22052448154d2dd6abf4`; post-merge CI passed |
 | APP-READY-070 | Audit and classify canonical-project Google OAuth client IDs, then specify the smallest iOS Google Sign-In source/configuration repair without changing provider authority | S | **DONE - AUDIT; CLIENT ASSOCIATIONS STILL REQUIRED FOR CONFIGURATION** |
-| APP-READY-071 | Preserve professional-verification authorization semantics: map HTTP 401 to unauthenticated and 403 to forbidden, with regression tests for safe user messaging; do not change upload/backend behavior | S | **DONE - IMPLEMENTED; exact-head PR CI pending** |
+| APP-READY-071 | Preserve professional-verification authorization semantics: map HTTP 401 to unauthenticated and 403 to forbidden, with regression tests for safe user messaging; do not change upload/backend behavior | S | **DONE** - PR #236 merged as `d25c810`; PR and integration CI green, 928 tests |
 | APP-READY-072 | Audit professional verification administration: existing backend authority, review workflow, operator access, and smallest safe admin-surface scope | S | **NEXT** |
 
 ### APP-READY-055 implementation evidence

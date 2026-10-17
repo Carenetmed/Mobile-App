@@ -7,14 +7,30 @@
 
 ## Authority (if two docs seem to conflict)
 
+APP-READY-072 completed a read-only cross-repository audit. Backend main
+`43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b` contains JWT/role-guarded admin
+verification queue, signed-read, and transactional approve/reject routes plus
+a staging-only two-phase first-admin procedure. Web main
+`6e94fcd3ee44c881a2625918e179928a0f65b659` contains the separate protected
+console; exact-main CI run `38362609676` passed source/mock tests, lint, browser
+journey, build, and local container smoke. Neither source CI nor the recorded
+2026-07-12 non-admin staging smoke proves live admin operation. No operator
+provisioning was evidenced in repository records, but live DB state was not
+queried. The Web console is not hosted by the repository. Hosting/perimeter,
+operator approval/provisioning, and an admin-specific staging smoke remain.
+No code, account, cloud, protected-worktree, or archive-ref changes were made.
+
 APP-READY-071 preserves verification authorization meaning: 401 maps to
 unauthenticated, 403 to forbidden, with distinct safe UI messaging. Upload and
 backend authorization remain unchanged. PR #236 merged as `d25c810`; PR and
 post-merge integration CI passed 928 tests, analyzer, APK, Android release lint,
 signing, and environment checks. The full profile-management widget file was
 blocked locally by a Flutter root-isolate failure, while focused tests passed.
-APP-READY-072 is the audit-only next task for professional verification
-administration.
+APP-READY-072 is complete. APP-READY-073 is next: verify canonical OAuth app
+associations and finish only the supported iOS callback wiring. The Android
+package/SHA-1 and iOS bundle association remain absent from the copied console
+details; Firebase app-config API reads return 403 for the current CLI principal.
+Keep the backend Web-client audience and provider authority unchanged.
 
 APP-READY-068 is merged as PR #233 at `84856725171f49ee1731b5ade7a4aedc6286c7ac`.
 APP-READY-069 is merged as PR #234 at `4e3bfb3d011b112f4d4e22052448154d2dd6abf4`;

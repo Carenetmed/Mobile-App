@@ -1,5 +1,28 @@
 # Codebase status
 
+## APP-READY-072 - Professional Verification Administration Audit (Done; Read-Only)
+
+Backend main `43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b` exposes the guarded
+admin verification queue, eligible-document signed read, and approve/reject
+decision routes. JWT/role guards require `ADMIN` or `SUPER_ADMIN`; decisions
+are limited to the latest completed pending evidence and update document,
+aggregate professional status, and audit data transactionally. The staging
+first-admin procedure is preview-first and two-phase with explicit TTY
+confirmation and revalidation. Repository records say no operator identity was
+selected and provisioning was not run; this audit did not query the live DB.
+
+The Web console is present on main `6e94fcd3ee44c881a2625918e179928a0f65b659`.
+Its exact-main CI run `38362609676` passed, including mock-backed browser tests,
+lint, build, and local container smoke. The Web repository documents that the
+console is not hosted/deployed there; no staging admin flow was proven. The
+recorded 2026-07-12 backend smoke did not include admin operations. Operational
+gates remain private hosting/perimeter, explicit operator approval/provisioning,
+and a controlled admin staging smoke. No account or cloud resource was changed.
+
+Next: APP-READY-073, verify exact OAuth package/bundle associations in the
+canonical project and complete iOS callback configuration only after the
+missing Android package/SHA-1 and iOS bundle evidence is available.
+
 ## APP-READY-071 - Verification Authorization Semantics (Done; PR #236 Merged)
 
 Verification API HTTP 401 maps to `AuthFailureType.unauthorized`; HTTP 403 maps

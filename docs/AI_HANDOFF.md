@@ -18,6 +18,58 @@
 
 ## Current production-readiness continuation
 
+### APP-READY-075 Reminder And Schedules Accessibility (Done; PR #240 Merged)
+
+PR #240 merged as `0e0a65b268d7561f2376c846b24a52045cbf2854` from final
+reviewed head `f8593aaba297c36ede61a61a379417398ecbfce1`. Exact-head CI
+`39064828444` and post-merge integration CI `39066131745` passed. The suite is
+930 tests (928-test base plus two direct-route accessibility tests); analyzer,
+debug APK, Android release lint, signing, and release-environment checks passed.
+The Reminder and Schedules screens remain deferred/read-only: no persistence,
+schedule mutation, sharing, or notification delivery was activated. Local full
+suite execution could not complete on Windows because of C: temporary-space and
+test-isolate startup failures; the exact-head and integration CI suites passed.
+
+### APP-READY-076 Readiness Handoff Reconciliation (Done; Read-Only)
+
+Reconciled stale handoff entries after APP-READY-073 PR #239 and APP-READY-075
+PR #240 merged. PR #239's iOS/Flutter CI and integration runs passed; PR #240's
+final-head and integration CI passed 930 tests, analyzer, debug APK, and
+Android release policy checks. The correct private Web repository is
+`Carenetmed/Web-Developers`, not `ridwanmullick/carenet-web`; its current main
+is `8dc563435fb78be47c977a73a2311a377aed671e`, with the protected `/admin`
+console and container preflight present but no deployed image.
+
+Read-only cloud inventory on 2026-10-18 found only the staging backend Cloud Run
+service; `carenet-staging-postgres` was `STOPPED` with activation policy `NEVER`,
+and both Cloud Scheduler jobs were `PAUSED`. No cloud resource was changed.
+
+### APP-READY-077 Staging Admin Console Gate (Next; User Decisions Required)
+
+Choose the exact first staging operator and access perimeter, and approve (or
+defer) one explicitly timed database/provisioning window. The candidate account
+must already be active, email-verified PATIENT, have no patient or professional
+profile and no deletion request, and must not conflict with any existing admin.
+The backend CLI first previews without writes; `prepare --apply` requires an
+interactive phrase and suspends/revokes the candidate; wait at least 16 minutes;
+then preview and explicitly approve `activate --apply` only after the
+eligibility recheck. The candidate then signs in fresh. Never use this procedure
+in production.
+
+Recommended low-fixed-cost option for user approval: deploy the existing Web
+container to a new request-billed Cloud Run service with minimum instances zero
+and direct IAP on its `run.app` endpoint, avoiding load-balancer resources.
+Google documents direct IAP support for Cloud Run and no-charge IAP for supported
+Google Cloud-hosted resources; Cloud Run usage can exceed its free tier, and
+artifact storage, logs, and network transfer may still incur charges. See
+[Cloud Run IAP configuration](https://docs.cloud.google.com/run/docs/securing/identity-aware-proxy-cloud-run),
+[IAP pricing](https://cloud.google.com/iap/pricing), and
+[Cloud Run pricing](https://cloud.google.com/run/pricing). A custom domain is
+not required for an initial IAP-protected `run.app` staging smoke; do not add a
+load balancer or leave the service public as a convenience. Obtain explicit
+approval for the operator account, IAP-allowed Google identity, service
+deployment, and exact SQL on/off window before any cloud mutation.
+
 ### APP-READY-068 Notification Account Isolation And Transport Lifecycle (Done; PR #233 Merged)
 
 PR #233 merged as `84856725171f49ee1731b5ade7a4aedc6286c7ac` from reviewed head
@@ -181,15 +233,19 @@ does not claim current database state. The recorded 2026-07-12 staging smoke
 covers health/readiness, patient registration/login, public professionals, and
 patient profiles, not admin login or review operations.
 
-The separate Web console is merged on main at
-`6e94fcd3ee44c881a2625918e179928a0f65b659`. It validates active,
+The separate Web console is in `Carenetmed/Web-Developers` main at
+`8dc563435fb78be47c977a73a2311a377aed671e`; historical merge
+`6e94fcd3ee44c881a2625918e179928a0f65b659` is part of that history. It validates active,
 email-verified `ADMIN`/`SUPER_ADMIN` identity, keeps access tokens in memory,
 uses an HttpOnly/SameSite Strict refresh cookie, same-origin API proxy checks,
 no-store responses, and an on-demand short-lived signed document preview.
-Exact-main Web PR CI run `38362609676` passed tests, lint, Chromium browser
-journey, production build, and local container smoke. Those checks use mock
-backend data and do not prove staging or cloud behavior. The repository has no
-deployment record and its docs say the console is not hosted by the repo.
+Web PR #9 merged at `8dc563435fb78be47c977a73a2311a377aed671e`; its exact-head
+CI `39061542203` and main CI `39061797496` passed. The container preflight and
+browser tests use local/mock services and do not prove staging or cloud
+behavior. The current Web documentation confirms that the
+container image is not pushed or deployed. The read-only 2026-10-18 project
+inventory found no admin Cloud Run service; SQL remains stopped/NEVER and both
+schedulers remain paused.
 
 Conclusion: the review API and console source are implemented and CI-tested,
 but operational admin review is not proven usable. Private hosting/perimeter
@@ -198,7 +254,16 @@ admin-specific staging smoke remain. This was read-only: no account was
 provisioned, no cloud resource was changed, and no protected worktree or archive
 ref was touched.
 
-### APP-READY-073 Canonical Google OAuth App Association And iOS Callback (In Progress; Local Verification Passed)
+### APP-READY-073 Canonical Google OAuth App Association And iOS Callback (Done; PR #239 Merged)
+
+PR #239 reviewed head `9beadb5863712c93210552fa0d2e80f052e98019` merged as
+`4cfe18d73cd142f2c3f1f39c1cddddd407b0351a`. Exact-head Flutter CI
+`39033607614`, iOS simulator CI `39033607610`, and post-merge integration runs
+`39034721058`/`39034721104` passed. The 928-test suite remained intact. Staging
+and production iOS client/scheme associations are wired to their matching
+flavors; backend Web-client audience and provider authority are unchanged.
+Simulator builds do not prove Apple signing or physical-device Google sign-in.
+Android production OAuth remains a release-signing-specific gate.
 
 Read-only Firebase SDK-config inspection succeeded with the canonical project
 as a per-request quota project; global gcloud configuration was not modified.
@@ -218,11 +283,9 @@ use only staging values, and the production configs use only production
 values. The existing iOS flavor checker verifies all six config pairs and both
 Info.plist substitutions. Dart continues passing the Web client as
 `serverClientId`; no provider authority, backend audience, dependency, Firebase
-project setting, or secret changed. `flutter analyze`, the full 928-test suite,
-the iOS config guard, and `git diff --check` pass; `pubspec.lock` is unchanged.
-Local Xcode builds are unavailable on this Windows host. Mac simulator CI for
-both flavors and exact-head PR checks remain gates. Even green simulator CI
-does not prove Apple signing or physical-device/provider acceptance.
+project setting, or secret changed. Local Xcode builds are unavailable on this
+Windows host. Even green simulator CI does not prove Apple signing or
+physical-device/provider acceptance.
 
 ### APP-READY-067 Auth Attempt Ownership And Bounded Reads (Done)
 
@@ -802,9 +865,11 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-069 | Repair evidenced authentication verification-link, booking-intent recovery, route-stack, and onboarding readiness/prefill defects | M | **DONE** - PR #234 merged at `4e3bfb3d011b112f4d4e22052448154d2dd6abf4`; post-merge CI passed |
 | APP-READY-070 | Audit and classify canonical-project Google OAuth client IDs, then specify the smallest iOS Google Sign-In source/configuration repair without changing provider authority | S | **DONE - INITIAL AUDIT; ASSOCIATIONS LATER VERIFIED IN APP-READY-073** |
 | APP-READY-071 | Preserve professional-verification authorization semantics: map HTTP 401 to unauthenticated and 403 to forbidden, with regression tests for safe user messaging; do not change upload/backend behavior | S | **DONE** - PR #236 merged as `d25c810`; PR and integration CI green, 928 tests |
-| APP-READY-072 | Audit professional verification administration: existing backend authority, review workflow, operator access, and smallest safe admin-surface scope | S | **DONE - READ-ONLY AUDIT; ADMIN HOSTING, OPERATOR PROVISIONING, AND STAGING SMOKE REMAIN OPEN** |
-| APP-READY-073 | Verify canonical Google OAuth app associations and complete the smallest flavor-specific iOS callback configuration; retain backend Web-client audience and keep provider authority unchanged | M | **IN PROGRESS - BOTH IOS FLAVOR CLIENTS WIRED; LOCAL ANALYZE/928 TESTS/GUARD PASS; MAC CI AND EXACT-HEAD REVIEW PENDING** |
-| APP-READY-075 | Add direct-route compact-width/enlarged-text checks for the deferred Reminder and Schedules screens; expose the schedule disclosure state accessibly without activating reminder persistence or delivery | S | **DONE - PR #240 exact-head CI run 39063530270 passed; 930 tests (928 + 2), analyze, APK, release lint, and policy regressions green** |
+| APP-READY-072 | Audit professional verification administration: existing backend authority, review workflow, operator access, and smallest safe admin-surface scope | S | **DONE - READ-ONLY; staging host/operator/provision/smoke gate remains open** |
+| APP-READY-073 | Verify canonical Google OAuth app associations and complete the smallest flavor-specific iOS callback configuration; retain backend Web-client audience and keep provider authority unchanged | M | **DONE - PR #239 merged at `4cfe18d`; exact-head Android/iOS CI and integration runs passed** |
+| APP-READY-075 | Add direct-route compact-width/enlarged-text checks for the deferred Reminder and Schedules screens; expose the schedule disclosure state accessibly without activating reminder persistence or delivery | S | **DONE - PR #240 merged at `0e0a65b`; final-head and integration CI passed 930 tests (928 + 2)** |
+| APP-READY-076 | Reconcile APP-READY-073/075 merge evidence and current staging admin-console source/cloud posture without mutation | S | **DONE** - read-only reconciliation; archive/worktree state unchanged |
+| APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **NEXT** - decisions required before any cloud mutation |
 
 ### APP-READY-055 implementation evidence
 

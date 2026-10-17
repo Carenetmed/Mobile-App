@@ -1,16 +1,15 @@
 ﻿# CareNet project documentation
 
-Current: APP-READY-068 notification account isolation and Firebase transport
-lifecycle, based on `a4a2538` (APP-READY-067 PR232 merged). Local verification:
-924 tests, analyzer/diff clean, lock unchanged; independent review and exact-head
-Android/iOS CI pending. See AI_HANDOFF, DECISIONS and DEFERRED_WORK; provider
-delivery and physical shared-device notification acceptance remain open.
-
-Previous: APP-READY-066 session-recovery integrity against merged PR230 `1f091d28`.
-See AI_HANDOFF, DECISIONS and DEFERRED_WORK for scope and verification gates.
-Local838 tests/analyzer/static checks pass; unchanged native CI remains required.
-The older next-065 backend drift task is resolved by BE-P1-043/PR142. Historical
-source counts below do not imply current operational or full-program completion.
+Current: APP-READY-075 merged as PR #240 at `0e0a65b268d7561f2376c846b24a52045cbf2854`.
+Final-head and integration CI passed all 930 tests, analyzer, Android debug APK,
+release lint, signing, and environment gates. APP-READY-073 is also merged; see
+`AI_HANDOFF.md`, `CODEBASE_STATUS.md`, and `DOC_SYNC.md` for exact proof.
+APP-READY-076 reconciled the current readiness handoff. APP-READY-077 is next:
+staging verification-admin hosting/operator readiness,
+which requires explicit user choices before any cloud mutation. Production
+OAuth/release signing, live provider proof, admin staging operation, final
+Paystack activation, and physical-device acceptance remain separate gates.
+Historical checkpoint notes below do not supersede the current handoff.
 
 **You do not need any old chat.** Everything required to continue this project lives in this `docs/` folder and in the codebase.
 

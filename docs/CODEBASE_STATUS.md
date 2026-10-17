@@ -2,17 +2,29 @@
 
 ## APP-READY-075 - Deferred Reminder/Schedules Accessibility Follow-Up
 
-PR #240 reviewed head `4c3c9c1a15bd6da9eede751d221efaa07ecd468a` passed
-exact-head CI run `39063530270`: 930 tests (the 928-test base plus two new
-tests), analyze, staging
-debug APK, Android release lint, release-signing regression, and release
-environment regression. Direct widget coverage exercises Reminder and
-Schedules at 320x568 with 2x text. Reminder selection and the date-specific
-empty state remain usable; the read-only event disclosure exposes a named
-button with expanded/collapsed semantics. No reminder persistence, schedule
-mutation, sharing, or notification delivery was activated. Local full-suite
-execution was blocked by this Windows host's C: free-space/test-isolate issue;
-the exact-head CI suite passed.
+PR #240 merged as `0e0a65b268d7561f2376c846b24a52045cbf2854` from final
+reviewed head `f8593aaba297c36ede61a61a379417398ecbfce1`. Final-head CI
+`39064828444` and integration CI `39066131745` passed 930 tests (the 928-test
+base plus two new tests), analyzer, staging debug APK, Android release lint,
+release-signing regression, and release-environment regression. Direct widget
+coverage exercises Reminder and Schedules at 320x568 with 2x text. Reminder
+selection and the date-specific empty state remain usable; the read-only event
+disclosure exposes a named button with expanded/collapsed semantics. No reminder
+persistence, schedule mutation, sharing, or notification delivery was
+activated. Local full-suite execution was blocked by this Windows host's C:
+free-space/test-isolate issue; final-head and integration CI passed.
+
+## APP-READY-076 - Readiness Handoff Reconciliation (Done; Read-Only)
+
+Corrected the production-readiness continuation after APP-READY-073 PR #239
+and APP-READY-075 PR #240 merged. Verified their final and integration CI
+evidence, and verified the admin console source is in
+`Carenetmed/Web-Developers` main `8dc563435fb78be47c977a73a2311a377aed671e`,
+not `ridwanmullick/carenet-web`. Web main has CI-tested console/container
+preflight but explicitly does not push or deploy the image. Read-only GCP
+inventory found only the staging backend service; SQL is STOPPED/NEVER and both
+Scheduler jobs are PAUSED. No cloud resource, account, or archive ref changed.
+APP-READY-077 is the next decision-gated staging admin operation.
 
 ## APP-READY-072 - Professional Verification Administration Audit (Done; Read-Only)
 
@@ -25,21 +37,44 @@ first-admin procedure is preview-first and two-phase with explicit TTY
 confirmation and revalidation. Repository records say no operator identity was
 selected and provisioning was not run; this audit did not query the live DB.
 
-The Web console is present on main `6e94fcd3ee44c881a2625918e179928a0f65b659`.
-Its exact-main CI run `38362609676` passed, including mock-backed browser tests,
-lint, build, and local container smoke. The Web repository documents that the
-console is not hosted/deployed there; no staging admin flow was proven. The
-recorded 2026-07-12 backend smoke did not include admin operations. Operational
-gates remain private hosting/perimeter, explicit operator approval/provisioning,
-and a controlled admin staging smoke. No account or cloud resource was changed.
+The Web console is in `Carenetmed/Web-Developers` main at
+`8dc563435fb78be47c977a73a2311a377aed671e`; historical merge
+`6e94fcd3ee44c881a2625918e179928a0f65b659` is part of that history. The Web
+PR #9 exact-head CI `39061542203` and main CI `39061797496` passed. The
+repository includes mock-backed browser tests, a multi-stage container, and a
+container preflight; its current documentation explicitly says the image is
+not pushed or deployed. The read-only 2026-10-18 cloud inventory found only the
+staging backend Cloud Run service. `carenet-staging-postgres` was `STOPPED` with
+activation policy `NEVER`, and both staging Scheduler jobs were `PAUSED`. No
+admin staging flow is proven. Operational gates remain host/perimeter selection,
+explicit operator approval/provisioning, and a controlled admin staging smoke.
+No account or cloud resource was changed.
 
-APP-READY-073 is in progress. Firebase SDK config reads confirm the staging
-iOS client/scheme for `com.carenet.app.staging` and the separate production
-client/scheme for `com.carenet.app`; both are wired through flavor-specific
-Xcode settings into `Info.plist`. The configuration guard, analyzer, and full
-928-test suite pass locally. Mac simulator CI and exact-head PR review remain
-pending; this does not prove Apple signing or device Google sign-in. Android
-production OAuth remains a release-signing gate.
+## APP-READY-073 - Google OAuth iOS Callback Configuration (Done; PR #239 Merged)
+
+PR #239 reviewed head `9beadb5863712c93210552fa0d2e80f052e98019` merged as
+`4cfe18d73cd142f2c3f1f39c1cddddd407b0351a`. Exact-head Flutter CI
+`39033607614`, iOS simulator CI `39033607610`, and integration runs
+`39034721058`/`39034721104` passed. The 928-test suite remained intact. Firebase
+SDK configuration confirms distinct staging and production iOS client/scheme
+pairs, wired through each flavor's Xcode configuration into `Info.plist`. The
+backend Web-client audience and provider authority are unchanged. Simulator CI
+does not prove Apple signing or physical-device Google sign-in. Android
+production OAuth remains a release-signing-specific gate.
+
+## APP-READY-077 - Staging Admin Console Gate (Next; User Decisions Required)
+
+The correct Web source is `Carenetmed/Web-Developers` main
+`8dc563435fb78be47c977a73a2311a377aed671e`; the console exists but is not
+deployed. Backend main `43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b` has a
+staging-only two-phase first-admin CLI. The candidate must already be an active,
+email-verified PATIENT without patient/professional profile or deletion request;
+the CLI must preview, require exact interactive confirmation, prepare in a
+suspended state, wait at least 16 minutes, then independently revalidate and
+activate. No candidate was selected. User approval is required for the exact
+operator identity/role, host/perimeter, and time-boxed SQL window. Direct Cloud
+Run IAP may avoid load-balancer resources; this is a recommendation only, not an
+approved deployment. No cloud action may occur before approval.
 
 ## APP-READY-071 - Verification Authorization Semantics (Done; PR #236 Merged)
 

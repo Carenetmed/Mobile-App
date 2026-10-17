@@ -2,13 +2,17 @@
 
 ## APP-READY-075 - Deferred Reminder/Schedules Accessibility Follow-Up
 
-Direct widget coverage exercises Reminder and Schedules at 320x568 with 2x
-text. The Reminder calendar remains selectable and its date-specific empty
-state scrolls into view. The read-only schedule event disclosure exposes a
-named button with expanded/collapsed semantics. This is accessibility evidence
-only: it does not activate generic reminder/schedule persistence, sharing, or
-notification delivery. Focused tests pass; full regression and CI remain
-pending.
+PR #240 reviewed head `4c3c9c1a15bd6da9eede751d221efaa07ecd468a` passed
+exact-head CI run `39063530270`: 930 tests (the 928-test base plus two new
+tests), analyze, staging
+debug APK, Android release lint, release-signing regression, and release
+environment regression. Direct widget coverage exercises Reminder and
+Schedules at 320x568 with 2x text. Reminder selection and the date-specific
+empty state remain usable; the read-only event disclosure exposes a named
+button with expanded/collapsed semantics. No reminder persistence, schedule
+mutation, sharing, or notification delivery was activated. Local full-suite
+execution was blocked by this Windows host's C: free-space/test-isolate issue;
+the exact-head CI suite passed.
 
 ## APP-READY-072 - Professional Verification Administration Audit (Done; Read-Only)
 

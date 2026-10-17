@@ -32,12 +32,16 @@ feedback and regression coverage for Account actions; PR #205 merged at
 `ebe50184dcd3063ec9c138e2b6b127cc08bab8a0`, with 623 CI-passing tests. These
 bounded changes are not a whole-app accessibility sign-off.
 
-APP-READY-075 adds direct compact-width/2x-text checks for the separately
-registered Reminder and deferred Schedules calendar screens. Reminder date
-selection and the honest empty state remain usable. The read-only schedule
-event disclosure exposes a named button with expanded/collapsed semantics. No
-reminder persistence, schedule mutation, sharing, or notification delivery was
-added; full-suite and CI evidence is pending.
+APP-READY-075 PR #240 reviewed head `4c3c9c1` passed exact-head CI run
+`39063530270`: 930 tests (928 + 2), analysis, staging debug APK, Android
+release lint, and release configuration regressions. Direct compact-width/
+2x-text checks cover the separately registered Reminder and deferred Schedules
+calendar screens. Reminder date selection and the honest empty state remain
+usable. The read-only event disclosure exposes a named button with
+expanded/collapsed semantics. No reminder persistence, schedule mutation,
+sharing, or notification delivery was added. Local full-suite execution was
+blocked by host temporary-storage/isolate startup, so the green exact-head CI
+run is the complete-suite proof.
 
 This foundation does not certify every screen. Active screens still need
 route-by-route checks for contrast, semantics, focus order, keyboard operation,

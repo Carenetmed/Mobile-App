@@ -773,6 +773,32 @@ void main() {
     expect(find.text('Verification documents'), findsOneWidget);
   });
 
+  testWidgets(
+    'forbidden verification access is not presented as sign-in failure',
+    (tester) async {
+      await _pumpManageProfile(
+        tester,
+        verificationRepository: _FakeVerificationRepository(
+          failure: const AuthFailure(
+            type: AuthFailureType.forbidden,
+            message: 'raw authorization details',
+            statusCode: 403,
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Verification'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('This account cannot manage verification.'),
+        findsOneWidget,
+      );
+      expect(find.text('Please sign in again.'), findsNothing);
+      expect(find.text('raw authorization details'), findsNothing);
+    },
+  );
+
   testWidgets('verification readiness shows safe requirement error', (
     tester,
   ) async {

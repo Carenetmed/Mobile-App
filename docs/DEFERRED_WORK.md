@@ -1,5 +1,14 @@
 # Deferred work and backend replacement map
 
+## Verification Authorization Presentation (APP-READY-071)
+
+The mobile verification client now preserves the HTTP distinction: 401 is
+unauthenticated and 403 is forbidden. The verification UI gives separate safe
+messages and does not clear or challenge a valid session for a permission
+denial. This does not change backend role policy, document upload/storage,
+verification readiness, or admin review authority. Admin verification workflow
+and operator access require a separate audit before implementation.
+
 ## Auth And Onboarding Integrity (APP-READY-069; Merged)
 
 PR #234 is merged with 926 passing tests and green post-merge CI. Missing

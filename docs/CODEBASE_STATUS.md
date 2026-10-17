@@ -1,5 +1,16 @@
 # Codebase status
 
+## APP-READY-071 - Verification Authorization Semantics (Implemented; CI Pending)
+
+Verification API HTTP 401 maps to `AuthFailureType.unauthorized`; HTTP 403 maps
+to `AuthFailureType.forbidden`. The existing UI presents separate safe copy and
+does not turn an authenticated permission denial into a sign-in prompt. Focused
+proof: 8 verification repository tests, the new forbidden-message widget test,
+analyzer clean, and diff check clean. The complete large profile-management
+widget file could not run locally because Flutter's test runner failed to create
+a root isolate; focused tests pass and exact-head CI is pending. No upload,
+storage, backend, dependency, or lockfile behavior changed.
+
 ## APP-READY-068 - Notification Account Isolation (Done; PR #233 Merged)
 
 Post-merge integration is `84856725171f49ee1731b5ade7a4aedc6286c7ac`, PR #233

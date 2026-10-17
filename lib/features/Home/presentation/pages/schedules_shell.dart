@@ -138,53 +138,64 @@ class _ScheduleCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          InkWell(
+          Semantics(
+            key: const Key('schedule-event-disclosure'),
+            container: true,
+            button: true,
+            label: 'Doctors Without Border Event details',
+            expanded: detailsExpanded,
+            explicitChildNodes: true,
             onTap: onToggleDetails,
-            borderRadius: BorderRadius.circular(8.r),
-            child: Padding(
-              padding: EdgeInsets.all(16.r),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Doctors Without Border Event',
-                          style: TextStyle(
-                            fontFamily: AppFonts.montserrat,
-                            fontSize: 15.sp,
-                            fontWeight: FontWeight.w600,
-                            color: CarenetColors.neutral700,
-                          ),
-                        ),
-                        SizedBox(height: 8.h),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 10.w,
-                            vertical: 4.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: CarenetColors.success200,
-                            borderRadius: BorderRadius.circular(4.r),
-                          ),
-                          child: Text(
-                            'Active',
-                            style: TextStyle(
-                              fontFamily: AppFonts.montserrat,
-                              fontSize: 12.sp,
-                              color: CarenetColors.success100,
+            child: ExcludeSemantics(
+              child: InkWell(
+                onTap: onToggleDetails,
+                borderRadius: BorderRadius.circular(8.r),
+                child: Padding(
+                  padding: EdgeInsets.all(16.r),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Doctors Without Border Event',
+                              style: TextStyle(
+                                fontFamily: AppFonts.montserrat,
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                                color: CarenetColors.neutral700,
+                              ),
                             ),
-                          ),
+                            SizedBox(height: 8.h),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10.w,
+                                vertical: 4.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: CarenetColors.success200,
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                              child: Text(
+                                'Active',
+                                style: TextStyle(
+                                  fontFamily: AppFonts.montserrat,
+                                  fontSize: 12.sp,
+                                  color: CarenetColors.success100,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Icon(
+                        detailsExpanded ? Icons.expand_less : Icons.expand_more,
+                        color: CarenetColors.neutral500,
+                      ),
+                    ],
                   ),
-                  Icon(
-                    detailsExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: CarenetColors.neutral500,
-                  ),
-                ],
+                ),
               ),
             ),
           ),

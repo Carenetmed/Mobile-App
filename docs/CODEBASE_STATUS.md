@@ -1,5 +1,15 @@
 # Codebase status
 
+## APP-READY-075 - Deferred Reminder/Schedules Accessibility Follow-Up
+
+Direct widget coverage exercises Reminder and Schedules at 320x568 with 2x
+text. The Reminder calendar remains selectable and its date-specific empty
+state scrolls into view. The read-only schedule event disclosure exposes a
+named button with expanded/collapsed semantics. This is accessibility evidence
+only: it does not activate generic reminder/schedule persistence, sharing, or
+notification delivery. Focused tests pass; full regression and CI remain
+pending.
+
 ## APP-READY-072 - Professional Verification Administration Audit (Done; Read-Only)
 
 Backend main `43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b` exposes the guarded

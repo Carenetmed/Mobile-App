@@ -158,6 +158,58 @@ Android release lint, signing, and release-environment checks. The 926-test
 base gained 2 focused tests; none were removed, skipped, disabled, or weakened.
 No dependency, lockfile, backend, native, provider, or cloud change.
 
+### APP-READY-072 Professional Verification Administration Audit (Done; Read-Only)
+
+Backend main was audited at `43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b`.
+The verification admin controller exposes `GET /admin/verifications`,
+`GET /admin/verifications/:documentId/read-url`, and
+`POST /admin/verifications/:documentId/decision`, guarded by JWT plus
+`ADMIN`/`SUPER_ADMIN` roles. Queue data is bounded; a short-lived document read
+URL is issued only for eligible current evidence and is not written to audit
+records. Only `APPROVED` and `REJECTED` decisions are accepted. A serializable
+transaction protects the latest pending evidence decision and keeps document,
+aggregate professional status, and audit event consistent.
+
+The backend first-admin CLI is staging-only, preview-first, requires an
+explicit TTY confirmation, and uses a two-phase prepare/activate process with
+eligibility revalidation; it has no public bootstrap endpoint. Repository
+records state that no operator identity was selected and the CLI was not run.
+This is repository evidence only; no live database was queried, so this audit
+does not claim current database state. The recorded 2026-07-12 staging smoke
+covers health/readiness, patient registration/login, public professionals, and
+patient profiles, not admin login or review operations.
+
+The separate Web console is merged on main at
+`6e94fcd3ee44c881a2625918e179928a0f65b659`. It validates active,
+email-verified `ADMIN`/`SUPER_ADMIN` identity, keeps access tokens in memory,
+uses an HttpOnly/SameSite Strict refresh cookie, same-origin API proxy checks,
+no-store responses, and an on-demand short-lived signed document preview.
+Exact-main Web PR CI run `38362609676` passed tests, lint, Chromium browser
+journey, production build, and local container smoke. Those checks use mock
+backend data and do not prove staging or cloud behavior. The repository has no
+deployment record and its docs say the console is not hosted by the repo.
+
+Conclusion: the review API and console source are implemented and CI-tested,
+but operational admin review is not proven usable. Private hosting/perimeter
+protection, explicit operator selection and staging-only provisioning, and an
+admin-specific staging smoke remain. This was read-only: no account was
+provisioned, no cloud resource was changed, and no protected worktree or archive
+ref was touched.
+
+### APP-READY-073 Canonical Google OAuth App Association And iOS Callback (Next)
+
+The canonical project number matches the supplied Web, Android, and one iOS
+client IDs, but the console text does not show the Android package/SHA-1 or iOS
+bundle association and provides only one iOS client for the staging and
+production bundle IDs. Firebase Management API reads for registered app
+configuration return 403 to the current CLI principal. Verify the existing
+client associations and obtain the missing flavor-specific iOS client before
+changing app configuration. Keep the Web client as the backend ID-token
+audience; do not change OAuth provider authority or use the old
+`carenet-175b7` Firebase config. After metadata is verified, implement only the
+smallest environment-specific iOS client ID and reverse-URL-scheme wiring and
+prove staging Google sign-in without claiming iOS device readiness.
+
 ### APP-READY-067 Auth Attempt Ownership And Bounded Reads (Done)
 
 Base is PR231 merge `e63471a652cbf9672f5b3e1ef41537ec3cfd076d`.
@@ -736,7 +788,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-069 | Repair evidenced authentication verification-link, booking-intent recovery, route-stack, and onboarding readiness/prefill defects | M | **DONE** - PR #234 merged at `4e3bfb3d011b112f4d4e22052448154d2dd6abf4`; post-merge CI passed |
 | APP-READY-070 | Audit and classify canonical-project Google OAuth client IDs, then specify the smallest iOS Google Sign-In source/configuration repair without changing provider authority | S | **DONE - AUDIT; CLIENT ASSOCIATIONS STILL REQUIRED FOR CONFIGURATION** |
 | APP-READY-071 | Preserve professional-verification authorization semantics: map HTTP 401 to unauthenticated and 403 to forbidden, with regression tests for safe user messaging; do not change upload/backend behavior | S | **DONE** - PR #236 merged as `d25c810`; PR and integration CI green, 928 tests |
-| APP-READY-072 | Audit professional verification administration: existing backend authority, review workflow, operator access, and smallest safe admin-surface scope | S | **NEXT** |
+| APP-READY-072 | Audit professional verification administration: existing backend authority, review workflow, operator access, and smallest safe admin-surface scope | S | **DONE - READ-ONLY AUDIT; ADMIN HOSTING, OPERATOR PROVISIONING, AND STAGING SMOKE REMAIN OPEN** |
+| APP-READY-073 | Verify canonical Google OAuth app associations and complete the smallest flavor-specific iOS callback configuration; retain backend Web-client audience and keep provider authority unchanged | M | **NEXT - WAITING FOR ANDROID PACKAGE/SHA-1 AND IOS BUNDLE ASSOCIATION EVIDENCE; FIREBASE APP-CONFIG API RETURNS 403** |
 
 ### APP-READY-055 implementation evidence
 

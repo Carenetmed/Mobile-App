@@ -9,10 +9,12 @@
 
 APP-READY-071 preserves verification authorization meaning: 401 maps to
 unauthenticated, 403 to forbidden, with distinct safe UI messaging. Upload and
-backend authorization remain unchanged. Focused repository and widget tests
-pass; the complete profile-management widget file was blocked locally by a
-Flutter root-isolate failure, so exact-head CI remains required. APP-READY-072
-is an audit-only next task for professional verification administration.
+backend authorization remain unchanged. PR #236 merged as `d25c810`; PR and
+post-merge integration CI passed 928 tests, analyzer, APK, Android release lint,
+signing, and environment checks. The full profile-management widget file was
+blocked locally by a Flutter root-isolate failure, while focused tests passed.
+APP-READY-072 is the audit-only next task for professional verification
+administration.
 
 APP-READY-068 is merged as PR #233 at `84856725171f49ee1731b5ade7a4aedc6286c7ac`.
 APP-READY-069 is merged as PR #234 at `4e3bfb3d011b112f4d4e22052448154d2dd6abf4`;

@@ -255,6 +255,49 @@ void main() {
       );
     });
 
+    test(
+      'verification preserves distinct 401 and 403 authorization meaning',
+      () async {
+        final unauthorizedRepository = _repository(
+          apiAdapter: _QueueAdapter(<_QueuedResponse>[
+            _QueuedResponse.json(const <String, dynamic>{}, statusCode: 401),
+          ]),
+          withSession: true,
+        );
+        final forbiddenRepository = _repository(
+          apiAdapter: _QueueAdapter(<_QueuedResponse>[
+            _QueuedResponse.json(const <String, dynamic>{}, statusCode: 403),
+          ]),
+          withSession: true,
+        );
+
+        await expectLater(
+          unauthorizedRepository.documents(),
+          throwsA(
+            isA<AuthFailure>()
+                .having(
+                  (failure) => failure.type,
+                  'type',
+                  AuthFailureType.unauthorized,
+                )
+                .having((failure) => failure.statusCode, 'statusCode', 401),
+          ),
+        );
+        await expectLater(
+          forbiddenRepository.documents(),
+          throwsA(
+            isA<AuthFailure>()
+                .having(
+                  (failure) => failure.type,
+                  'type',
+                  AuthFailureType.forbidden,
+                )
+                .having((failure) => failure.statusCode, 'statusCode', 403),
+          ),
+        );
+      },
+    );
+
     test('pre-cancelled upload makes no API or storage request', () async {
       final adapter = _QueueAdapter(<_QueuedResponse>[]);
       final repository = _repository(apiAdapter: adapter, withSession: true);

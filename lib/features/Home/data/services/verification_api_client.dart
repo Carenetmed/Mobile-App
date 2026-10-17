@@ -156,10 +156,17 @@ class VerificationApiClient {
         statusCode: statusCode,
       );
     }
-    if (statusCode == 401 || statusCode == 403) {
+    if (statusCode == 401) {
       return AuthFailure(
         type: AuthFailureType.unauthorized,
         message: 'Please sign in again.',
+        statusCode: statusCode,
+      );
+    }
+    if (statusCode == 403) {
+      return AuthFailure(
+        type: AuthFailureType.forbidden,
+        message: 'This account cannot manage verification.',
         statusCode: statusCode,
       );
     }

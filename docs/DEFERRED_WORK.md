@@ -20,17 +20,18 @@ readiness (`name` and `country`); retry prefill restores backend values without
 replacing non-empty typed input. This repairs form/navigation behavior only and
 does not complete Google provider acceptance.
 
-## Google OAuth iOS Callback Configuration (APP-READY-070 Audit Complete)
+## Google OAuth iOS Callback Configuration (APP-READY-073; Source Wired, CI/Device Gates Open)
 
-The canonical Firebase project and project number are confirmed. Console
-evidence identifies a Web client, an Android client, and one iOS client with a
-known reverse URL scheme. The Android package/SHA and iOS bundle association
-were omitted, and a second iOS client for the other canonical bundle ID is not
-evidenced. The Flutter provider still lacks iOS `GIDClientID` and callback
-configuration. Obtain/confirm the missing app associations and create or locate
-the other iOS client before wiring flavor-specific configuration. Never install
-the old-project Firebase files or guess a callback scheme. Apple
-signing/hardware/provider proof remains a separate release gate.
+The canonical Firebase SDK config confirms separate iOS OAuth client IDs and
+reversed callback schemes for staging `com.carenet.app.staging` and production
+`com.carenet.app`. Flavor-specific Xcode configs feed those values to the
+native `Info.plist`; do not cross-use clients. Dart retains the Web client as
+`serverClientId` for backend ID-token verification. The iOS config guard,
+analyzer, and 928-test suite pass locally; Mac simulator CI remains pending.
+This does not prove signed or physical-device Google sign-in. Android
+production's certificate-bound client also remains a separate release gate.
+Never install the old-project Firebase files or change the backend audience
+without a separate decision.
 
 ## Notification Provider Late Work And Native Delivery (APP-READY-068)
 

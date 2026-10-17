@@ -19,9 +19,13 @@ recorded 2026-07-12 backend smoke did not include admin operations. Operational
 gates remain private hosting/perimeter, explicit operator approval/provisioning,
 and a controlled admin staging smoke. No account or cloud resource was changed.
 
-Next: APP-READY-073, verify exact OAuth package/bundle associations in the
-canonical project and complete iOS callback configuration only after the
-missing Android package/SHA-1 and iOS bundle evidence is available.
+APP-READY-073 is in progress. Firebase SDK config reads confirm the staging
+iOS client/scheme for `com.carenet.app.staging` and the separate production
+client/scheme for `com.carenet.app`; both are wired through flavor-specific
+Xcode settings into `Info.plist`. The configuration guard, analyzer, and full
+928-test suite pass locally. Mac simulator CI and exact-head PR review remain
+pending; this does not prove Apple signing or device Google sign-in. Android
+production OAuth remains a release-signing gate.
 
 ## APP-READY-071 - Verification Authorization Semantics (Done; PR #236 Merged)
 

@@ -63,11 +63,15 @@ $expected = @{
     bundle = 'com.carenet.app.staging'
     display = 'CareNet Staging'
     firebase = '1:599365440227:ios:6680baeffacc0ce051abd6'
+    googleClient = '599365440227-kbjtm738r7gs46tir1tcohieqb931n97.apps.googleusercontent.com'
+    googleScheme = 'com.googleusercontent.apps.599365440227-kbjtm738r7gs46tir1tcohieqb931n97'
   }
   production = @{
     bundle = 'com.carenet.app'
     display = 'CareNet'
     firebase = '1:599365440227:ios:fac1f0bd4f73677051abd6'
+    googleClient = '599365440227-dct2dkdh0tj79an085ocmghpgv6dic82.apps.googleusercontent.com'
+    googleScheme = 'com.googleusercontent.apps.599365440227-dct2dkdh0tj79an085ocmghpgv6dic82'
   }
 }
 
@@ -90,6 +94,12 @@ foreach ($flavor in $expected.Keys) {
     }
     if (-not $podfile.Contains("'$configuration'")) {
       throw "CocoaPods configuration $configuration is not mapped."
+    }
+    $configurationFile = Join-Path $PSScriptRoot "../ios/Flutter/$configuration.xcconfig"
+    $nativeConfig = Get-Content -Raw $configurationFile
+    if (-not $nativeConfig.Contains("GOOGLE_SIGN_IN_IOS_CLIENT_ID = $($expected[$flavor].googleClient)") -or
+        -not $nativeConfig.Contains("GOOGLE_SIGN_IN_IOS_REVERSED_CLIENT_ID = $($expected[$flavor].googleScheme)")) {
+      throw "$configuration has a missing or mismatched Google iOS client/callback scheme."
     }
   }
 
@@ -124,5 +134,9 @@ if (-not $displayNameKey) { throw 'Info.plist must use the flavor-specific displ
 if (-not $info.OuterXml.Contains('$(APP_DISPLAY_NAME)')) {
   throw 'Info.plist does not read APP_DISPLAY_NAME from the selected configuration.'
 }
+if (-not $info.OuterXml.Contains('$(GOOGLE_SIGN_IN_IOS_CLIENT_ID)') -or
+    -not $info.OuterXml.Contains('$(GOOGLE_SIGN_IN_IOS_REVERSED_CLIENT_ID)')) {
+  throw 'Info.plist must read flavor-specific Google iOS client and callback values.'
+}
 
-Write-Output 'iOS staging/production schemes, bundle IDs, display names, and CocoaPods mappings are consistent.'
+Write-Output 'iOS staging/production schemes, bundle IDs, Google OAuth callbacks, display names, and CocoaPods mappings are consistent.'

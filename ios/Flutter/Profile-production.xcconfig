@@ -1,2 +1,4 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.profile-production.xcconfig"
 #include "Generated.xcconfig"
+GOOGLE_SIGN_IN_IOS_CLIENT_ID = 599365440227-dct2dkdh0tj79an085ocmghpgv6dic82.apps.googleusercontent.com
+GOOGLE_SIGN_IN_IOS_REVERSED_CLIENT_ID = com.googleusercontent.apps.599365440227-dct2dkdh0tj79an085ocmghpgv6dic82

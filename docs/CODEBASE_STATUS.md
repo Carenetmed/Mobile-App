@@ -1,5 +1,19 @@
 # Codebase status
 
+## APP-READY-075 - Deferred Reminder/Schedules Accessibility Follow-Up
+
+PR #240 reviewed head `4c3c9c1a15bd6da9eede751d221efaa07ecd468a` passed
+exact-head CI run `39063530270`: 930 tests (the 928-test base plus two new
+tests), analyze, staging
+debug APK, Android release lint, release-signing regression, and release
+environment regression. Direct widget coverage exercises Reminder and
+Schedules at 320x568 with 2x text. Reminder selection and the date-specific
+empty state remain usable; the read-only event disclosure exposes a named
+button with expanded/collapsed semantics. No reminder persistence, schedule
+mutation, sharing, or notification delivery was activated. Local full-suite
+execution was blocked by this Windows host's C: free-space/test-isolate issue;
+the exact-head CI suite passed.
+
 ## APP-READY-072 - Professional Verification Administration Audit (Done; Read-Only)
 
 Backend main `43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b` exposes the guarded

@@ -804,6 +804,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-071 | Preserve professional-verification authorization semantics: map HTTP 401 to unauthenticated and 403 to forbidden, with regression tests for safe user messaging; do not change upload/backend behavior | S | **DONE** - PR #236 merged as `d25c810`; PR and integration CI green, 928 tests |
 | APP-READY-072 | Audit professional verification administration: existing backend authority, review workflow, operator access, and smallest safe admin-surface scope | S | **DONE - READ-ONLY AUDIT; ADMIN HOSTING, OPERATOR PROVISIONING, AND STAGING SMOKE REMAIN OPEN** |
 | APP-READY-073 | Verify canonical Google OAuth app associations and complete the smallest flavor-specific iOS callback configuration; retain backend Web-client audience and keep provider authority unchanged | M | **IN PROGRESS - BOTH IOS FLAVOR CLIENTS WIRED; LOCAL ANALYZE/928 TESTS/GUARD PASS; MAC CI AND EXACT-HEAD REVIEW PENDING** |
+| APP-READY-075 | Add direct-route compact-width/enlarged-text checks for the deferred Reminder and Schedules screens; expose the schedule disclosure state accessibly without activating reminder persistence or delivery | S | **DONE - PR #240 exact-head CI run 39063530270 passed; 930 tests (928 + 2), analyze, APK, release lint, and policy regressions green** |
 
 ### APP-READY-055 implementation evidence
 

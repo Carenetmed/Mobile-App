@@ -7,8 +7,11 @@ unauthenticated and 403 is forbidden. The verification UI gives separate safe
 messages and does not clear or challenge a valid session for a permission
 denial. PR #236 is merged at `d25c810` with green PR and integration CI (928
 tests). This does not change backend role policy, document upload/storage,
-verification readiness, or admin review authority. Admin verification workflow
-and operator access require the APP-READY-072 audit before implementation.
+verification readiness, or admin review authority. APP-READY-072 audited the
+backend review contract and Web console; staging hosting/perimeter, explicit
+first-operator approval/provisioning, and a controlled admin smoke remain open.
+Do not start Cloud SQL or deploy the console before the explicit identity,
+perimeter, and time-boxed operation decisions are recorded.
 
 ## Auth And Onboarding Integrity (APP-READY-069; Merged)
 
@@ -20,18 +23,18 @@ readiness (`name` and `country`); retry prefill restores backend values without
 replacing non-empty typed input. This repairs form/navigation behavior only and
 does not complete Google provider acceptance.
 
-## Google OAuth iOS Callback Configuration (APP-READY-073; Source Wired, CI/Device Gates Open)
+## Google OAuth iOS Callback Configuration (APP-READY-073; Merged, Device Gates Open)
 
 The canonical Firebase SDK config confirms separate iOS OAuth client IDs and
 reversed callback schemes for staging `com.carenet.app.staging` and production
 `com.carenet.app`. Flavor-specific Xcode configs feed those values to the
 native `Info.plist`; do not cross-use clients. Dart retains the Web client as
-`serverClientId` for backend ID-token verification. The iOS config guard,
-analyzer, and 928-test suite pass locally; Mac simulator CI remains pending.
-This does not prove signed or physical-device Google sign-in. Android
-production's certificate-bound client also remains a separate release gate.
-Never install the old-project Firebase files or change the backend audience
-without a separate decision.
+`serverClientId` for backend ID-token verification. PR #239 and post-merge
+integration CI passed; both iOS flavor simulator builds passed. This does not
+prove Apple signing or physical-device Google sign-in. Android production's
+certificate-bound client also remains a separate release gate. Never install
+the old-project Firebase files or change the backend audience without a separate
+decision.
 
 ## Notification Provider Late Work And Native Delivery (APP-READY-068)
 

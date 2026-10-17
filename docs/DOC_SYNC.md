@@ -1,24 +1,40 @@
 # Documentation sync index
 
-**Last audited:** 2026-10-17
+**Last audited:** 2026-10-18
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 ---
 
 ## Authority (if two docs seem to conflict)
 
-APP-READY-072 completed a read-only cross-repository audit. Backend main
-`43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b` contains JWT/role-guarded admin
-verification queue, signed-read, and transactional approve/reject routes plus
-a staging-only two-phase first-admin procedure. Web main
-`6e94fcd3ee44c881a2625918e179928a0f65b659` contains the separate protected
-console; exact-main CI run `38362609676` passed source/mock tests, lint, browser
-journey, build, and local container smoke. Neither source CI nor the recorded
-2026-07-12 non-admin staging smoke proves live admin operation. No operator
-provisioning was evidenced in repository records, but live DB state was not
-queried. The Web console is not hosted by the repository. Hosting/perimeter,
-operator approval/provisioning, and an admin-specific staging smoke remain.
-No code, account, cloud, protected-worktree, or archive-ref changes were made.
+Current integration is `0e0a65b268d7561f2376c846b24a52045cbf2854` after PR #240.
+Final-head PR CI `39064828444` and integration CI `39066131745` passed 930 tests,
+analyzer, staging APK, Android release lint, signing, and release-environment
+checks. The 928-test base gained two Reminder/Schedules accessibility tests; no
+tests were removed, skipped, disabled, or weakened. See `AI_HANDOFF.md` and
+`CODEBASE_STATUS.md` for exact scope and local full-suite limitation.
+
+APP-READY-073 is complete: PR #239 merged at `4cfe18d73cd142f2c3f1f39c1cddddd407b0351a`;
+Flutter PR CI, both-flavor iOS simulator CI, and both integration runs passed.
+Distinct iOS OAuth callback pairs are wired; Apple signing/device proof and
+Android production release-certificate OAuth remain open. Provider authority
+and the backend Web-client audience were unchanged.
+
+APP-READY-072's correct Web console source is `Carenetmed/Web-Developers` main
+`8dc563435fb78be47c977a73a2311a377aed671e`, not `ridwanmullick/carenet-web`.
+Its PR #9 exact-head CI `39061542203` and main CI `39061797496` passed. The
+console and container preflight exist, but Web docs say the image is not pushed
+or deployed. Backend main `43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b`
+provides a staging-only, preview-first two-phase administrator procedure. A
+read-only 2026-10-18 cloud inventory found only the backend Cloud Run service;
+staging SQL is `STOPPED`/`NEVER` and both Scheduler jobs are `PAUSED`. No cloud
+mutation occurred. APP-READY-076 reconciled these sources. APP-READY-077 is next
+and requires user decisions for the
+exact first operator identity/role, access perimeter, and time-boxed SQL window
+before any deployment, provisioning, or database start.
+
+Historical checkpoints below are retained for context; they do not supersede
+the current status above.
 
 APP-READY-071 preserves verification authorization meaning: 401 maps to
 unauthenticated, 403 to forbidden, with distinct safe UI messaging. Upload and
@@ -26,12 +42,9 @@ backend authorization remain unchanged. PR #236 merged as `d25c810`; PR and
 post-merge integration CI passed 928 tests, analyzer, APK, Android release lint,
 signing, and environment checks. The full profile-management widget file was
 blocked locally by a Flutter root-isolate failure, while focused tests passed.
-APP-READY-072 is complete. APP-READY-073 is in progress: canonical Firebase
-SDK config now confirms distinct iOS client/scheme pairs for staging and
-production, wired through all six iOS flavor configurations and the Info.plist
-callback. The configuration guard, analyzer, and full 928-test suite pass
-locally; Mac simulator CI and exact-head review remain pending. Android staging
-package/debug SHA-1 is confirmed; Android production OAuth remains a
+APP-READY-073 later resolved the iOS OAuth associations and is now merged; see
+the current APP-READY-073 record below this historical checkpoint. Android
+staging package/debug SHA-1 is confirmed; Android production OAuth remains a
 release-signing gate. Keep the backend Web-client audience and provider
 authority unchanged.
 

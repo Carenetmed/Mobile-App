@@ -44,6 +44,37 @@ Read-only cloud inventory on 2026-10-18 found only the staging backend Cloud Run
 service; `carenet-staging-postgres` was `STOPPED` with activation policy `NEVER`,
 and both Cloud Scheduler jobs were `PAUSED`. No cloud resource was changed.
 
+### APP-READY-078 Account Email Verification Reachability (Source Complete; Integration Pending)
+
+The Account email row now opens the existing backend-backed verification
+screen. It displays authenticated `AuthUser.email` and `emailVerified`, and
+offers a verification request only while the backend reports the address
+unverified. The router resolves `editEmail` to this screen instead of the
+deferred placeholder. The page no longer reads local demo identity or hardcodes
+“Verified”. Registration itself still does not request a verification email or
+block onboarding; whether verification must be mandatory at signup is an
+unresolved product/backend policy decision. Request copy says the API accepted
+the request, not that delivery is guaranteed. Token-confirm behavior is
+unchanged.
+
+Focused `account_flow_test.dart`: 44 passed. Full Flutter suite: 933 passed
+(930-test base plus three net new tests; the old deferred-route expectation was
+replaced with active route coverage). Targeted analyzer: clean. No dependencies,
+backend, provider, cloud, native config, or lockfile changes. Work is on local
+isolated branch `slice/APP-READY-EMAIL-VERIFICATION`; it has not been committed,
+pushed, merged, or installed on the phone. Manual check: Account > Email address;
+confirm the real address/status, request a link when unverified, follow the link,
+then refresh Account to confirm the backend status changes.
+
+The first no-flavor debug command emitted staging and production APKs but
+Flutter did not recognize the multi-flavor output. The canonical explicit
+staging command, `flutter build apk --debug --flavor staging --no-pub`, passed
+after dependencies were fetched into an E:-resident Pub cache with the lockfile
+enforced. The staging debug APK is at
+`build/app/outputs/flutter-apk/app-staging-debug.apk`. No Gradle project
+configuration, dependency, or lockfile change was needed. This remains a local
+build only; CI and physical-device verification are still pending.
+
 ### APP-READY-077 Staging Admin Console Gate (Next; User Decisions Required)
 
 Choose the exact first staging operator and access perimeter, and approve (or
@@ -869,6 +900,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-073 | Verify canonical Google OAuth app associations and complete the smallest flavor-specific iOS callback configuration; retain backend Web-client audience and keep provider authority unchanged | M | **DONE - PR #239 merged at `4cfe18d`; exact-head Android/iOS CI and integration runs passed** |
 | APP-READY-075 | Add direct-route compact-width/enlarged-text checks for the deferred Reminder and Schedules screens; expose the schedule disclosure state accessibly without activating reminder persistence or delivery | S | **DONE - PR #240 merged at `0e0a65b`; final-head and integration CI passed 930 tests (928 + 2)** |
 | APP-READY-076 | Reconcile APP-READY-073/075 merge evidence and current staging admin-console source/cloud posture without mutation | S | **DONE** - read-only reconciliation; archive/worktree state unchanged |
+| APP-READY-078 | Make the existing backend email-verification request reachable from authenticated Account and render backend-owned email/status | S | **DONE - LOCAL SOURCE ONLY** - branch `slice/APP-READY-EMAIL-VERIFICATION`; 44 focused and 933 full tests, targeted analyzer clean; integration/phone install pending |
 | APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **NEXT** - decisions required before any cloud mutation |
 
 ### APP-READY-055 implementation evidence

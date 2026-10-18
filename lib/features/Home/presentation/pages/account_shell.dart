@@ -571,7 +571,16 @@ class _AccountShellPageState extends State<AccountShellPage> {
                   icon: Icons.mail_outline,
                   title: 'Email address',
                   subtitle: accountEmail ?? 'Unavailable',
-                  onTap: null,
+                  status: _isLoadingCurrentAccount || _currentAccount == null
+                      ? null
+                      : _currentAccount!.emailVerified
+                      ? 'Verified'
+                      : 'Not verified',
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    RouteName.editEmail,
+                    arguments: _accountRepository,
+                  ),
                 ),
                 _AccountTile(
                   icon: Icons.logout,
@@ -1424,6 +1433,7 @@ class _AccountTile extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.status,
     this.subtitleLiveRegion = false,
     required this.onTap,
   });
@@ -1431,6 +1441,7 @@ class _AccountTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String? status;
   final bool subtitleLiveRegion;
   final VoidCallback? onTap;
 
@@ -1456,14 +1467,32 @@ class _AccountTile extends StatelessWidget {
         ),
         subtitle: Semantics(
           liveRegion: subtitleLiveRegion,
-          child: Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: FontSizes.footer4,
-              fontFamily: AppFonts.montserrat,
-              fontWeight: FontWeight.w400,
-              color: AppColors.primaryBlue11,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: FontSizes.footer4,
+                  fontFamily: AppFonts.montserrat,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.primaryBlue11,
+                ),
+              ),
+              if (status != null)
+                Text(
+                  status!,
+                  style: TextStyle(
+                    fontSize: FontSizes.footer4,
+                    fontFamily: AppFonts.montserrat,
+                    fontWeight: FontWeight.w600,
+                    color: status == 'Verified'
+                        ? AppColors.primaryBlue5
+                        : Colors.deepOrange,
+                  ),
+                ),
+            ],
           ),
         ),
         trailing: onTap == null

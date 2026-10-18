@@ -311,12 +311,24 @@ This lane intentionally stops here: adjacent blueprint screens (`/confirm-code-i
 ## Flow Z - Edit Email - Phase 27
 
 ```
-account -> addEmail -> editEmail -> changeEmail
+account -> editEmail -> emailVerificationConfirm(token)
 ```
 
-Current scope: `editEmail` is now a registered route based on the blueprint `/edit-email` screen. The Add Email route exposes a `Review current email` handoff. The screen shows the current local email as verified, hands `Edit email` to the existing `changeEmail` draft route, and keeps `Remove email` locked because removing an account email needs re-authentication, recovery rules, account-session updates, and account persistence.
+Current scope: the Account `Email address` row opens `editEmail`. The screen
+loads the authenticated email and verification state from `AccountRepository`;
+it offers the existing request endpoint only when the backend says the email is
+unverified. Following the transient verification link opens
+`emailVerificationConfirm(token)`, which refreshes the current account on
+success. Registration does not currently require or automatically request
+verification. Changing or removing the account email remains deferred because
+those mutations need re-authentication, recovery rules, account-session updates,
+and account persistence.
 
-This lane intentionally stops here: removing an email from an account can affect sign-in, recovery, auditability, and session safety. It requires password re-authentication, recovery rules, account-session updates, audit/security notifications, and account persistence before it can be implemented honestly (see `DECISIONS.md` D024).
+This lane intentionally stops before email changes/removal: both can affect
+sign-in, recovery, auditability, and session safety. They require password
+re-authentication, recovery rules, account-session updates, audit/security
+notifications, and account persistence before they can be implemented honestly
+(see `DECISIONS.md` D024).
 
 ## Flow AA - Enter Password To Save - Phase 28
 

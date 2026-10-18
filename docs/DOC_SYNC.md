@@ -3,6 +3,13 @@
 **Last audited:** 2026-10-18
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
+APP-READY-078 source work on `slice/APP-READY-EMAIL-VERIFICATION` makes the
+existing email-verification request reachable through Account and uses only
+backend `AuthUser.email`/`emailVerified` state. Local verification passed 44
+focused Account tests, 933 full tests, and targeted analysis. The branch is not
+yet committed, merged, or installed. Signup verification remains non-blocking
+under the current implementation; whether to require it is unresolved.
+
 ---
 
 ## Authority (if two docs seem to conflict)

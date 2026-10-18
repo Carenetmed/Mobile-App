@@ -21,6 +21,9 @@ The detailed KEEP/ADAPT/DEFER/DELETE table is maintained separately below.
 > `account` opens from the header avatar, and no drawer is active. Its identity,
 > role, status, and email come only from the authenticated account endpoint;
 > seeded `AccountLocalStore` values are not rendered or used as fallback.
+> The Account `Email address` row opens the registered `editEmail` verification
+> screen, which displays backend-owned email/verification state and can request
+> a verification link when unverified. Email change/removal remain deferred.
 > Patients edit the existing backend patient profile and professionals enter
 > backend professional management. Local PIN, phone, email mutation,
 > deactivation drafts fail closed. `deleteAccount` now resolves to the canonical

@@ -9,6 +9,8 @@ import 'package:app_t/features/Authentication/presentation/pages/sign_up_role_se
 import 'package:app_t/features/Authentication/presentation/pages/enter_email.dart';
 import 'package:app_t/features/Authentication/presentation/pages/email_verification_confirm_page.dart';
 import 'package:app_t/features/Authentication/presentation/pages/reset_password_confirm_page.dart';
+import 'package:app_t/features/Home/presentation/pages/edit_email_shell.dart';
+import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Consultation/presentation/pages/consultation_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_description_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
@@ -122,6 +124,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         settings,
         EmailVerificationConfirmPage(token: args is String ? args : null),
       );
+    case RouteName.editEmail:
+      final args = settings.arguments;
+      return _page(
+        settings,
+        EditEmailShellPage(
+          accountRepository: args is AccountRepository ? args : null,
+        ),
+      );
     case RouteName.medicalEdit:
       return _page(settings, const DeferredFeaturePage());
     case RouteName.dashboard:
@@ -221,7 +231,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case RouteName.addPhoneNumber:
     case RouteName.confirmPhoneNumber:
     case RouteName.addEmail:
-    case RouteName.editEmail:
     case RouteName.changeEmail:
     case RouteName.enterPasswordToSave:
     case RouteName.password:

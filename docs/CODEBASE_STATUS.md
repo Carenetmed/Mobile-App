@@ -26,6 +26,30 @@ inventory found only the staging backend service; SQL is STOPPED/NEVER and both
 Scheduler jobs are PAUSED. No cloud resource, account, or archive ref changed.
 APP-READY-077 is the next decision-gated staging admin operation.
 
+## APP-READY-078 - Account Email Verification Reachability (PR Open; Device Check Pending)
+
+The Account `Email address` row now opens `editEmail` through the named router.
+The screen reads the authenticated account from `AccountRepository`, shows its
+backend email and `emailVerified` value, and offers the existing verification
+request API only when the backend reports the address unverified. Initial load
+errors are retryable; refresh failures retain the last successful account
+value. The request result is described as accepted by the API, not guaranteed
+delivered. The confirmation deep-link/token implementation is unchanged.
+Registration does not currently force or automatically request email
+verification; whether it should gate signup/onboarding is unresolved and needs
+a product/backend policy decision.
+
+Branch `slice/APP-READY-EMAIL-VERIFICATION` is based on
+`4d95b1cc25aef8d65974f27c5d51782b918e6ba9`. Focused account tests pass (44),
+the full suite passes (933: 930 baseline plus three net new tests, replacing the
+old expectation that `editEmail` was deferred), and targeted analysis is clean.
+The staging debug APK also builds with the canonical explicit-flavor command
+after using an E:-resident Pub cache; `pubspec.lock` is unchanged. No backend,
+dependency, cloud/provider, or native configuration change. Commit
+`2af9856e69fcea0dc9869b5c6f548d6c1bd69232` is pushed in PR #242. Latest head
+`2fd4925dc58f60362d175fd1933a969c02cac52d` passed GitHub Actions. The PR
+remains open/unmerged and physical-device verification remains pending.
+
 ## APP-READY-072 - Professional Verification Administration Audit (Done; Read-Only)
 
 Backend main `43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b` exposes the guarded
@@ -116,7 +140,7 @@ be cancelled.
 
 Base: merged integration `84856725171f49ee1731b5ade7a4aedc6286c7ac`; branch
 `slice/APP-READY-069-auth-onboarding-ux`. Fixes the missing verification-link
-route to deferred `editEmail`, signup's indefinite booking-intent restore error,
+route to the then-deferred `editEmail`, signup's indefinite booking-intent restore error,
 stale auth routes under the dashboard after normal authentication fallback, and
 patient onboarding validators stricter than backend readiness. Patient backend
 required fields are name and country; state and health interest remain optional.
@@ -693,7 +717,7 @@ not override the `APP-P1` product boundary.
 | Q&A slice | The Post tab now hosts a real local Q&A feed with seeded questions, local follow toggles, and a working `qAAsk` form that validates question-style prompts and returns saved local questions back into the feed; the blueprint-backed answer lane now works locally through `qAAnswerRequests` -> `qAAnswerForYou` -> `commentAnswer`, with saved local answers feeding back into answer drafts. The Q&A lane intentionally stops here before the mixed `q-a-post` composer/distribution flow |
 | Account slice | The dashboard drawer `Profile` row now routes into a real local `account` screen with account rows and working `deleteAccount` plus `settings` handoffs. `Settings & Profile` now supports local validation and local save for core profile fields, while delete/deactivate remains an explicit local seam until real auth-change and destructive account APIs exist. The account lane intentionally stops here before public profile, scheduling, and auth-security flows |
 | Account current read | Account can read `AccountRepository.currentAccount` for safe display-only identity fields. Backend account email/status can replace local display when available; failures show a safe message and keep local display. Profile editing, delete/deactivate, phone/email drafts, password, and security mutations remain local/deferred |
-| Email verification request/confirm | The current email review screen can call `AccountRepository.requestEmailVerification` for the signed-in account. `emailVerificationConfirm` can complete verification only when opened with a transient verification token, then attempts current-account refresh if a session exists. Production app-link setup remains deferred |
+| Email verification request/confirm | Account -> Email address opens a backend-backed screen that reads authenticated email and verification state, and offers `AccountRepository.requestEmailVerification` only when unverified. API acceptance is not proof of delivery. `emailVerificationConfirm` requires a transient token and refreshes current account state. Signup does not force verification; mandatory signup gating remains undecided. Production app-link/device proof remains separate |
 | Auth/session/account regression | The current backend-ready auth/account frontend boundary has a focused regression pass covering auth infrastructure, email sign-in, email sign-up completion, session restore, logout/session clear, password reset request boundary, current account read, and email verification request. Remaining auth/account gaps stay deferred instead of being faked |
 | Next integration lane | After the auth/session/account regression pass, the next selected lane is workflow guardrail restoration. `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` are referenced by authoritative docs but missing from this checkout, so restore those before more auth/account wiring or another backend contract group |
 | Workflow guardrails | `WORKING_AGREEMENT.md`, `TASK_TEMPLATE.md`, and `DEFINITION_OF_DONE.md` are restored and match the current one-slice, honest-backend-ready workflow. Future work should read those docs before implementation |
@@ -826,9 +850,9 @@ not override the `APP-P1` product boundary.
 | Add phone number scope boundary | The add-phone lane intentionally stops after the local phone-entry draft. OTP/SMS delivery, code verification, phone uniqueness checks, password re-authentication, rate limiting, account-session updates, recovery rules, and account persistence remain deferred until auth backend/provider contracts exist (`DECISIONS.md` D020) |
 | Confirm phone number slice | `confirmPhoneNumber` is now a registered route from Add Phone Number -> Open confirmation step. It validates a local phone confirmation draft and shows a ready-for-backend-OTP-verification summary without sending OTP or changing account phone state |
 | Confirm phone number scope boundary | The confirm-phone-number lane intentionally stops after the local confirmation draft. OTP/SMS delivery, code confirmation, phone uniqueness checks, session updates, rate limiting, audit/security notifications, and account persistence remain deferred until auth backend/provider contracts exist (`DECISIONS.md` D026) |
-| Add email slice | `addEmail` is now a registered route from Account -> Email address. It validates a local email-entry draft and shows a ready-for-email-verification summary without changing the account email address or pretending to send a verification email |
+| Add email slice | Legacy `addEmail` retains its local draft source but is not the Account email entry. The active Account `Email address` row opens backend-owned `editEmail`; `addEmail` must not alter the authenticated account email |
 | Add email scope boundary | The add-email lane intentionally stops after the local email-entry draft. Verification email delivery, code confirmation, email uniqueness checks, password re-authentication, rate limiting, account-session updates, recovery/security notifications, and account persistence remain deferred until auth backend/provider contracts exist (`DECISIONS.md` D022) |
-| Edit email slice | `editEmail` is now a registered route from Add Email -> Review current email. It shows the current email as verified, hands Edit email to `changeEmail`, and keeps Remove email locked/deferred until account-security backend rules exist |
+| Edit email slice | `editEmail` is registered to a backend-backed verification screen. It displays the authenticated account email and actual verification state, and can request verification for an unverified address. Email change/removal remain deferred |
 | Edit email scope boundary | The edit-email lane intentionally stops after the local current-email management route. Email removal, password re-authentication, recovery rules, account-session updates, audit/security notifications, and account persistence remain deferred until auth backend/provider contracts exist (`DECISIONS.md` D024) |
 | Enter password to save slice | `enterPasswordToSave` is now a registered route from Edit Email -> Review password step. It validates a local password entry and shows a ready-for-backend-reauthentication summary without verifying the password, saving account changes, or mutating account state |
 | Enter password to save scope boundary | The enter-password-to-save lane intentionally stops after the local password-entry validation route. Real password verification, session/device checks, rate limiting, audit/security notifications, account mutation unlocks, and account persistence remain deferred until auth backend/provider contracts exist (`DECISIONS.md` D025) |

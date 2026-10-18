@@ -104,6 +104,7 @@ Future<void> _pumpAccount(
       designSize: _phoneSize,
       builder: (_, __) => MaterialApp(
         theme: ThemeData(splashFactory: NoSplash.splashFactory),
+        onGenerateRoute: generateRoute,
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaler: textScaler),
           child: child!,
@@ -1124,18 +1125,84 @@ void main() {
     );
     expect(find.text('Change your email address'), findsNothing);
   });
-  testWidgets('direct local email-review route fails closed', (tester) async {
-    await _pumpDashboard(tester);
-    Navigator.of(
-      tester.element(find.byType(Dashboard)),
-    ).pushNamed(RouteName.editEmail);
+  testWidgets('account email opens backend-backed verification flow', (
+    tester,
+  ) async {
+    final accountRepository = _FakeAccountRepository(
+      user: const AuthUser(
+        id: 'patient-1',
+        email: 'patient@carenet.app',
+        role: 'PATIENT',
+        status: 'ACTIVE',
+        emailVerified: false,
+      ),
+    );
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: accountRepository,
+    );
+
+    expect(find.text('Not verified'), findsOneWidget);
+    await tester.tap(find.text('Email address'));
     await tester.pumpAndSettle();
 
-    expect(
-      find.textContaining('not available in CareNet Phase 1'),
-      findsOneWidget,
+    expect(find.text('patient@carenet.app'), findsOneWidget);
+    expect(find.text('Not verified'), findsOneWidget);
+    expect(find.text('Send verification email'), findsOneWidget);
+  });
+
+  testWidgets('verified account does not offer another verification request', (
+    tester,
+  ) async {
+    final repository = _FakeAccountRepository(
+      user: const AuthUser(
+        id: 'patient-1',
+        email: 'patient@carenet.app',
+        role: 'PATIENT',
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
     );
-    expect(find.text('Review current email'), findsNothing);
+    await _pumpEditEmail(tester, repository: repository);
+
+    expect(find.text('Verified'), findsOneWidget);
+    expect(find.text('Send verification email'), findsNothing);
+  });
+
+  testWidgets('email account load can be retried', (tester) async {
+    final repository = _FakeAccountRepository(
+      failure: const AuthFailure(
+        type: AuthFailureType.unknown,
+        message: 'Could not load your account details.',
+      ),
+    );
+    await _pumpEditEmail(tester, repository: repository);
+
+    expect(find.text('Could not load your account details.'), findsOneWidget);
+    repository.failure = null;
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+
+    expect(repository.currentAccountCalls, 2);
+    expect(find.text('backend-user@carenet.app'), findsOneWidget);
+    expect(find.text('Send verification email'), findsOneWidget);
+  });
+
+  testWidgets('direct edit email route opens verification screen', (tester) async {
+    final accountRepository = _FakeAccountRepository();
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: accountRepository,
+    );
+    Navigator.of(
+      tester.element(find.byType(AccountShellPage)),
+    ).pushNamed(RouteName.editEmail, arguments: accountRepository);
+    await tester.pumpAndSettle();
+
+    expect(find.text('backend-user@carenet.app'), findsOneWidget);
+    expect(find.text('Send verification email'), findsOneWidget);
   });
   testWidgets('review current email requests verification through repository', (
     tester,
@@ -1147,9 +1214,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.requestEmailVerificationCalls, 1);
-    expect(find.textContaining('Verification email requested'), findsOneWidget);
     expect(
-      find.textContaining('secure token from the email link'),
+      find.textContaining('verification request was accepted'),
       findsOneWidget,
     );
   });
@@ -1158,7 +1224,7 @@ void main() {
     'review current email shows verification request failure safely',
     (tester) async {
       final repository = _FakeAccountRepository(
-        failure: const AuthFailure(
+        verificationFailure: const AuthFailure(
           type: AuthFailureType.unauthorized,
           message: 'Please sign in again.',
         ),
@@ -1432,7 +1498,7 @@ class _FakeAccountRepository implements AccountRepository {
   @override
   Future<void> requestEmailVerification() async {
     requestEmailVerificationCalls += 1;
-    final failure = this.failure;
+    final failure = verificationFailure ?? this.failure;
     if (failure != null) {
       throw failure;
     }

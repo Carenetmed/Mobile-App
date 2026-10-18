@@ -44,7 +44,7 @@ Read-only cloud inventory on 2026-10-18 found only the staging backend Cloud Run
 service; `carenet-staging-postgres` was `STOPPED` with activation policy `NEVER`,
 and both Cloud Scheduler jobs were `PAUSED`. No cloud resource was changed.
 
-### APP-READY-078 Account Email Verification Reachability (Source Complete; Integration Pending)
+### APP-READY-078 Account Email Verification Reachability (PR Open; Device Check Pending)
 
 The Account email row now opens the existing backend-backed verification
 screen. It displays authenticated `AuthUser.email` and `emailVerified`, and
@@ -59,12 +59,15 @@ unchanged.
 
 Focused `account_flow_test.dart`: 44 passed. Full Flutter suite: 933 passed
 (930-test base plus three net new tests; the old deferred-route expectation was
-replaced with active route coverage). Targeted analyzer: clean. No dependencies,
-backend, provider, cloud, native config, or lockfile changes. Work is on local
-isolated branch `slice/APP-READY-EMAIL-VERIFICATION`; it has not been committed,
-pushed, merged, or installed on the phone. Manual check: Account > Email address;
-confirm the real address/status, request a link when unverified, follow the link,
-then refresh Account to confirm the backend status changes.
+replaced with active route coverage). Repository-wide analyzer is clean, and
+`flutter build apk --debug --flavor staging --no-pub` passed. No dependencies,
+backend, provider, cloud, native config, or lockfile changes. Commit
+`2af9856e69fcea0dc9869b5c6f548d6c1bd69232` is pushed on
+`slice/APP-READY-EMAIL-VERIFICATION` in PR #242. GitHub Actions passed on that
+head; the PR remains open/unmerged and the phone check is pending. Manual check:
+Account > Email address; confirm the real address/status, request a link when
+unverified, follow the link, then refresh Account to confirm the backend status
+changes.
 
 The first no-flavor debug command emitted staging and production APKs but
 Flutter did not recognize the multi-flavor output. The canonical explicit
@@ -900,7 +903,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-073 | Verify canonical Google OAuth app associations and complete the smallest flavor-specific iOS callback configuration; retain backend Web-client audience and keep provider authority unchanged | M | **DONE - PR #239 merged at `4cfe18d`; exact-head Android/iOS CI and integration runs passed** |
 | APP-READY-075 | Add direct-route compact-width/enlarged-text checks for the deferred Reminder and Schedules screens; expose the schedule disclosure state accessibly without activating reminder persistence or delivery | S | **DONE - PR #240 merged at `0e0a65b`; final-head and integration CI passed 930 tests (928 + 2)** |
 | APP-READY-076 | Reconcile APP-READY-073/075 merge evidence and current staging admin-console source/cloud posture without mutation | S | **DONE** - read-only reconciliation; archive/worktree state unchanged |
-| APP-READY-078 | Make the existing backend email-verification request reachable from authenticated Account and render backend-owned email/status | S | **DONE - LOCAL SOURCE ONLY** - branch `slice/APP-READY-EMAIL-VERIFICATION`; 44 focused and 933 full tests, targeted analyzer clean; integration/phone install pending |
+| APP-READY-078 | Make the existing backend email-verification request reachable from authenticated Account and render backend-owned email/status | S | **PR #242 OPEN** - head `2af9856`; 44 focused and 933 full tests, full analyzer, staging debug APK, and exact-head GitHub CI passed; merge/device check pending |
 | APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **NEXT** - decisions required before any cloud mutation |
 
 ### APP-READY-055 implementation evidence

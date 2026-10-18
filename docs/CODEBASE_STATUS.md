@@ -26,7 +26,7 @@ inventory found only the staging backend service; SQL is STOPPED/NEVER and both
 Scheduler jobs are PAUSED. No cloud resource, account, or archive ref changed.
 APP-READY-077 is the next decision-gated staging admin operation.
 
-## APP-READY-078 - Account Email Verification Reachability (Local Source; Integration Pending)
+## APP-READY-078 - Account Email Verification Reachability (PR Open; Device Check Pending)
 
 The Account `Email address` row now opens `editEmail` through the named router.
 The screen reads the authenticated account from `AccountRepository`, shows its
@@ -45,9 +45,10 @@ the full suite passes (933: 930 baseline plus three net new tests, replacing the
 old expectation that `editEmail` was deferred), and targeted analysis is clean.
 The staging debug APK also builds with the canonical explicit-flavor command
 after using an E:-resident Pub cache; `pubspec.lock` is unchanged. No backend,
-dependency, cloud/provider, or native configuration change. CI and physical
-device verification remain pending. This source is not yet committed, merged,
-or installed.
+dependency, cloud/provider, or native configuration change. Commit
+`2af9856e69fcea0dc9869b5c6f548d6c1bd69232` is pushed in PR #242, and its exact
+head passed GitHub Actions. The PR remains open/unmerged and physical-device
+verification remains pending.
 
 ## APP-READY-072 - Professional Verification Administration Audit (Done; Read-Only)
 

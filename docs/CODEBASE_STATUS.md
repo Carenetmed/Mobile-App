@@ -46,9 +46,9 @@ old expectation that `editEmail` was deferred), and targeted analysis is clean.
 The staging debug APK also builds with the canonical explicit-flavor command
 after using an E:-resident Pub cache; `pubspec.lock` is unchanged. No backend,
 dependency, cloud/provider, or native configuration change. Commit
-`2af9856e69fcea0dc9869b5c6f548d6c1bd69232` is pushed in PR #242, and its exact
-head passed GitHub Actions. The PR remains open/unmerged and physical-device
-verification remains pending.
+`2af9856e69fcea0dc9869b5c6f548d6c1bd69232` is pushed in PR #242. Latest head
+`2fd4925dc58f60362d175fd1933a969c02cac52d` passed GitHub Actions. The PR
+remains open/unmerged and physical-device verification remains pending.
 
 ## APP-READY-072 - Professional Verification Administration Audit (Done; Read-Only)
 

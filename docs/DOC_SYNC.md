@@ -7,10 +7,10 @@ APP-READY-078 on `slice/APP-READY-EMAIL-VERIFICATION` makes the existing
 email-verification request reachable through Account and uses only backend
 `AuthUser.email`/`emailVerified` state. Local verification passed 44 focused
 Account tests, 933 full tests, repository-wide analysis, and a staging debug
-APK build. PR #242 is open; GitHub Actions passed on head `2af9856`, but the PR
-is not merged and phone verification is pending. Signup verification remains
-non-blocking under the current implementation; whether to require it is
-unresolved.
+APK build. PR #242 is open; GitHub Actions passed on latest head `2fd4925`, but
+the PR is not merged and phone verification is pending. Signup verification
+remains non-blocking under the current implementation; whether to require it
+is unresolved.
 
 ---
 

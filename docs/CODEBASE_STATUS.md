@@ -1,5 +1,26 @@
 # Codebase status
 
+## APP-READY-081 - Signed Android Auth-Link Association
+
+The previous live association matched source but trusted the same debug key
+for both packages. APP-READY-081 binds each package to its own protected upload
+certificate from `ANDROID_RELEASE_SIGNING.md`, with two static regression
+tests. No application/auth/backend/dependency behavior changes. Hosting deploy,
+served association checks, CI, and real-device automatic verification are
+distinct gates; do not treat a prior manual device link-selection override as
+automatic verification. Play distribution certificates remain unregistered in
+this association until their approved identities are available.
+Focused public-link tests pass (3), full suite passes (942, +2 from 940;
+existing tests unchanged), and analyzer is clean. CI/deployment are pending.
+
+APP-READY-080 is partial: operator password setup, IAP access, application login
+and queue access succeeded. Web PR #10 fixed origin validation; PR #11 added
+authenticated document Download. Web main `8dfbaada9d4a55d7e0781bca7ae9e97cc40a117e`
+and staging revision `carenet-admin-staging-00006-55n` are live with green CI.
+The 63-byte smoke PDF failed preview; no document decision was made. Valid-file
+preview and actual operator download remain unproved. This supersedes earlier
+password-setup-pending notes below, not the remaining admin acceptance gate.
+
 ## APP-READY-079 - Readiness-Aware Sign-In And Session Restore (Done; PR #243 Merged)
 
 Base: `f8aea76957d242f8c23d35f20f4f6d66a28408bd` (PR #242 merge). Normal

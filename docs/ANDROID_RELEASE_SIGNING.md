@@ -49,6 +49,10 @@ This configuration and provisioning are not release acceptance. Before
 distribution, verify the final APK/AAB certificate, register Play signing
 certificates and prove Google identity and upgrade behavior on signed builds.
 Play App Signing's distribution certificate differs from the upload certificate.
+Hosting's Android App Links association names these separate approved upload
+certificates, not a debug key (APP-READY-081). Add each approved Play
+distribution certificate to its matching package before Play release. Source
+tests cannot prove automatic link opening on an installed device.
 Do not replace an existing distribution identity without an approved migration.
 Never attach signing material to a PR or ordinary build artifact.
 

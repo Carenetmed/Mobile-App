@@ -3,6 +3,22 @@
 **Last audited:** 2026-10-19
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
+APP-READY-081 starts from PR #244 merge `c5a1358` (940 tests). It corrects
+Hosting's Android App Links certificates to the separate approved staging and
+production upload keys; two new static tests cover exact package/certificate
+mapping and JSON/cache/static-page serving policy. No existing tests change.
+See `FIREBASE_ENVIRONMENTS.md` and `ANDROID_RELEASE_SIGNING.md`; automatic
+device verification and Play distribution certificates remain open gates.
+Local focused tests pass (3), full Flutter suite passes (942: exactly two added,
+none removed/renamed), and analyzer is clean. CI/deployment are pending.
+
+APP-READY-080 is partial, not waiting for password setup: operator screenshots
+prove application login and queue access. Web PR #10 fixed proxy-origin login;
+PR #11 added safe authenticated Download. Both are merged with green CI, and
+admin revision `00006-55n` is ready at 100% traffic. The 63-byte smoke PDF did
+not preview; valid-file preview and actual operator download remain unproved.
+No document decision was made. Older setup-pending notes below are historical.
+
 APP-READY-079 is complete at integration
 `94f20dc1beea79f3773c7c846a40dd32bc415a67`: ordinary email/Google sign-in and
 authenticated startup now consult backend account readiness when there is no
@@ -16,7 +32,7 @@ and is not part of this slice.
 
 APP-READY-078 PR #242 is merged at the current integration SHA. Account email
 state remains backend-owned; physical-device verification-link completion is
-still pending. The current baseline is 933 Flutter tests.
+still pending. That baseline was 933; APP-READY-079 raised it to 940 tests.
 
 APP-READY-077 staging setup is complete: the console is deployed behind IAP
 and its first staging super-administrator was provisioned. The password-reset

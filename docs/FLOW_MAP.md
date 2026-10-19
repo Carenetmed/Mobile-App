@@ -45,8 +45,16 @@ Approved primary navigation:
 - Notifications: header bell, never a primary bottom-navigation item.
 - Profile/Account: header avatar, never a primary bottom-navigation item.
 
-Patient setup now refreshes backend account readiness and enters its resolved
-Phase 1 destination. It no longer exits into `communityAgreement`. The legacy
+After normal email/Google sign-in and authenticated session restoration, the app
+checks backend account readiness when no booking intent is pending. The existing
+readiness resolver routes incomplete patients to patient setup and professionals
+to the backend-selected application or verification step. Role mismatches,
+unsupported roles, and transient readiness failures do not change or clear the
+session; the role-aware dashboard remains the safe fallback. Booking-intent
+resume remains its separate, patient-only path. Signup and patient setup keep
+their existing readiness flow. Patient setup refreshes backend readiness and
+enters its resolved Phase 1 destination; it no longer exits into
+`communityAgreement`. The legacy
 `communityAgreement -> notificationAgreement -> medicalAgreement -> medicalEdit`
 chain remains registered for conservative cleanup but is not part of the active
 Phase 1 flow.

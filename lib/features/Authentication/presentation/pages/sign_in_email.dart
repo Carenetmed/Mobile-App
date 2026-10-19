@@ -109,6 +109,7 @@ class _SignInEmailState extends State<SignInEmail> {
       await BookingResumeNavigator.afterAuthentication(
         context,
         fallbackRoute: RouteName.dashboard,
+        resolveReadinessWhenNoIntent: true,
       );
     } on AuthFailure catch (failure) {
       if (!mounted) {
@@ -148,6 +149,7 @@ class _SignInEmailState extends State<SignInEmail> {
       await BookingResumeNavigator.afterAuthentication(
         context,
         fallbackRoute: RouteName.dashboard,
+        resolveReadinessWhenNoIntent: true,
       );
     } on AuthFailure catch (failure) {
       if (!mounted) {

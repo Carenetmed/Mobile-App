@@ -110,7 +110,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (resumeService != null) {
       try {
         final decision = await resumeService
-            .resolveAfterAuthentication()
+            .resolveAfterAuthentication(resolveReadinessWhenNoIntent: true)
             .timeout(widget.bookingResumeTimeout);
         if (!mounted) return;
         if (decision.target == BookingResumeTarget.professionalDetail &&
@@ -123,6 +123,11 @@ class _SplashScreenState extends State<SplashScreen> {
         }
         if (decision.target == BookingResumeTarget.patientOnboarding) {
           _replaceWith(RouteName.patientOnboardingSetup);
+          return;
+        }
+        if (decision.target == BookingResumeTarget.readinessRoute &&
+            decision.routeName != null) {
+          _replaceWith(decision.routeName!);
           return;
         }
         if (decision.target == BookingResumeTarget.authentication) {

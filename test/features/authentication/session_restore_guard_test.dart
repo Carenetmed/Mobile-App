@@ -57,6 +57,9 @@ Future<void> _pumpSplash(
                   (_) => const Scaffold(body: Text('onboarding')),
               RouteName.patientOnboardingSetup:
                   (_) => const Scaffold(body: Text('patient setup')),
+              RouteName.professionalVerificationDocuments:
+                  (_) =>
+                      const Scaffold(body: Text('professional verification')),
               RouteName.specialistDetails:
                   (context) => Scaffold(
                     body: Text(
@@ -273,6 +276,78 @@ void main() {
       },
     );
 
+    testWidgets('restored patient with incomplete setup resumes onboarding', (
+      tester,
+    ) async {
+      final session = _session();
+      final sessionStore = InMemorySessionStore()..save(session);
+      final resumeService = BookingResumeService(
+        bookingIntentStore: InMemoryBookingIntentStore(),
+        sessionStore: sessionStore,
+        onboardingRepository: _ReadyPatientOnboardingRepository(
+          sessionStore: sessionStore,
+          readiness: const AccountReadiness(
+            account: ReadinessAccount(
+              role: 'PATIENT',
+              status: 'ACTIVE',
+              emailVerified: true,
+            ),
+            patient: PatientReadiness(
+              profileStatus: 'INCOMPLETE',
+              requiredFields: <String>['name'],
+            ),
+            nextAction: 'PATIENT_SETUP',
+            requiredActions: <String>['PATIENT_name'],
+          ),
+        ),
+      );
+
+      await _pumpSplash(
+        tester,
+        repository: _FakeAuthRepository(session: session),
+        bookingResumeService: resumeService,
+      );
+      await tester.pump(const Duration(milliseconds: 801));
+      await tester.pumpAndSettle();
+
+      expect(find.text('patient setup'), findsOneWidget);
+      expect(find.text('dashboard'), findsNothing);
+    });
+
+    testWidgets('restored professional resumes backend-selected verification', (
+      tester,
+    ) async {
+      final session = _session(role: 'PROFESSIONAL');
+      final sessionStore = InMemorySessionStore()..save(session);
+      final resumeService = BookingResumeService(
+        bookingIntentStore: InMemoryBookingIntentStore(),
+        sessionStore: sessionStore,
+        onboardingRepository: _ReadyPatientOnboardingRepository(
+          sessionStore: sessionStore,
+          readiness: const AccountReadiness(
+            account: ReadinessAccount(
+              role: 'PROFESSIONAL',
+              status: 'ACTIVE',
+              emailVerified: true,
+            ),
+            nextAction: 'PROFESSIONAL_UPLOAD_EVIDENCE',
+            requiredActions: <String>[],
+          ),
+        ),
+      );
+
+      await _pumpSplash(
+        tester,
+        repository: _FakeAuthRepository(session: session),
+        bookingResumeService: resumeService,
+      );
+      await tester.pump(const Duration(milliseconds: 801));
+      await tester.pumpAndSettle();
+
+      expect(find.text('professional verification'), findsOneWidget);
+      expect(find.text('dashboard'), findsNothing);
+    });
+
     testWidgets('bounded booking recovery cannot strand app startup', (
       tester,
     ) async {
@@ -362,26 +437,29 @@ class _ReadyPatientOnboardingRepository extends OnboardingRepository {
   _ReadyPatientOnboardingRepository({
     required super.sessionStore,
     this.readinessCompleter,
+    this.readiness,
   }) : super(apiClient: _UnusedOnboardingApiClient());
 
   final Completer<AccountReadiness>? readinessCompleter;
+  final AccountReadiness? readiness;
 
   @override
   Future<AccountReadiness> accountReadiness() async {
     if (readinessCompleter case final completer?) return completer.future;
-    return const AccountReadiness(
-      account: ReadinessAccount(
-        role: 'PATIENT',
-        status: 'ACTIVE',
-        emailVerified: true,
-      ),
-      patient: PatientReadiness(
-        profileStatus: 'COMPLETE',
-        requiredFields: <String>[],
-      ),
-      nextAction: 'DASHBOARD',
-      requiredActions: <String>[],
-    );
+    return readiness ??
+        const AccountReadiness(
+          account: ReadinessAccount(
+            role: 'PATIENT',
+            status: 'ACTIVE',
+            emailVerified: true,
+          ),
+          patient: PatientReadiness(
+            profileStatus: 'COMPLETE',
+            requiredFields: <String>[],
+          ),
+          nextAction: 'DASHBOARD',
+          requiredActions: <String>[],
+        );
   }
 }
 
@@ -432,7 +510,9 @@ class _CountingBookingResumeService implements BookingResumeService {
   int resolveCalls = 0;
 
   @override
-  Future<BookingResumeDecision> resolveAfterAuthentication() async {
+  Future<BookingResumeDecision> resolveAfterAuthentication({
+    bool resolveReadinessWhenNoIntent = false,
+  }) async {
     resolveCalls += 1;
     return const BookingResumeDecision(target: BookingResumeTarget.none);
   }
@@ -444,6 +524,7 @@ class _CountingBookingResumeService implements BookingResumeService {
 AuthSessionModel _session({
   String accessToken = 'access',
   String userId = 'user-1',
+  String role = 'PATIENT',
 }) {
   return AuthSessionModel(
     accessToken: accessToken,
@@ -453,7 +534,7 @@ AuthSessionModel _session({
     user: AuthUser(
       id: userId,
       email: 'patient@example.com',
-      role: 'PATIENT',
+      role: role,
       status: 'ACTIVE',
       emailVerified: false,
     ),

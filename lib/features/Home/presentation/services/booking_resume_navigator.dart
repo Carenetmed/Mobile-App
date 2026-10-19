@@ -16,6 +16,7 @@ class BookingResumeNavigator {
   static Future<void> afterAuthentication(
     BuildContext context, {
     required String fallbackRoute,
+    bool resolveReadinessWhenNoIntent = false,
   }) async {
     if (!sl.isRegistered<BookingResumeService>()) {
       Navigator.of(
@@ -26,7 +27,9 @@ class BookingResumeNavigator {
 
     BookingResumeDecision decision;
     try {
-      decision = await sl<BookingResumeService>().resolveAfterAuthentication();
+      decision = await sl<BookingResumeService>().resolveAfterAuthentication(
+        resolveReadinessWhenNoIntent: resolveReadinessWhenNoIntent,
+      );
     } catch (_) {
       if (!context.mounted) {
         return;
@@ -53,6 +56,12 @@ class BookingResumeNavigator {
           RouteName.patientOnboardingSetup,
           (route) => false,
         );
+        return;
+      case BookingResumeTarget.readinessRoute:
+        final routeName = decision.routeName;
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(routeName ?? fallbackRoute, (route) => false);
         return;
       case BookingResumeTarget.incompatibleRole:
         await showDialog<void>(

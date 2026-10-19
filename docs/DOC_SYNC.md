@@ -1,27 +1,36 @@
 # Documentation sync index
 
-**Last audited:** 2026-10-18
+**Last audited:** 2026-10-19
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
-APP-READY-078 on `slice/APP-READY-EMAIL-VERIFICATION` makes the existing
-email-verification request reachable through Account and uses only backend
-`AuthUser.email`/`emailVerified` state. Local verification passed 44 focused
-Account tests, 933 full tests, repository-wide analysis, and a staging debug
-APK build. PR #242 is open; GitHub Actions passed on latest head `2fd4925`, but
-the PR is not merged and phone verification is pending. Signup verification
-remains non-blocking under the current implementation; whether to require it
-is unresolved.
+APP-READY-079 is in progress on base
+`f8aea76957d242f8c23d35f20f4f6d66a28408bd`: ordinary email/Google sign-in and
+authenticated startup now consult backend account readiness when there is no
+booking intent, then use the existing role-aware readiness resolver. Pending
+booking recovery remains unchanged. Focused tests pass (61), the full suite
+passes (940, +7 from the 933 baseline), analyzer is clean, and the staging debug
+APK builds. GitHub CI remains outstanding. Signup email-verification policy
+remains unresolved and is not part of this slice.
+
+APP-READY-078 PR #242 is merged at the current integration SHA. Account email
+state remains backend-owned; physical-device verification-link completion is
+still pending. The current baseline is 933 Flutter tests.
+
+APP-READY-077 staging setup is complete: the console is deployed behind IAP
+and its first staging super-administrator was provisioned. The password-reset
+request was accepted by Resend, but mailbox delivery/password setup still needs
+operator confirmation. Cloud SQL remains running because the staging service
+depends on it; temporary local proxies are stopped. No production provider was
+activated.
 
 ---
 
 ## Authority (if two docs seem to conflict)
 
-Current integration is `0e0a65b268d7561f2376c846b24a52045cbf2854` after PR #240.
-Final-head PR CI `39064828444` and integration CI `39066131745` passed 930 tests,
-analyzer, staging APK, Android release lint, signing, and release-environment
-checks. The 928-test base gained two Reminder/Schedules accessibility tests; no
-tests were removed, skipped, disabled, or weakened. See `AI_HANDOFF.md` and
-`CODEBASE_STATUS.md` for exact scope and local full-suite limitation.
+Current integration is `f8aea76957d242f8c23d35f20f4f6d66a28408bd` after PR #242.
+The current baseline is 933 Flutter tests. APP-READY-079 must preserve the full
+test inventory and reconcile all additions against this base. See
+`AI_HANDOFF.md` and `CODEBASE_STATUS.md` for active work and current status.
 
 APP-READY-073 is complete: PR #239 merged at `4cfe18d73cd142f2c3f1f39c1cddddd407b0351a`;
 Flutter PR CI, both-flavor iOS simulator CI, and both integration runs passed.
@@ -36,11 +45,11 @@ console and container preflight exist, but Web docs say the image is not pushed
 or deployed. Backend main `43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b`
 provides a staging-only, preview-first two-phase administrator procedure. A
 read-only 2026-10-18 cloud inventory found only the backend Cloud Run service;
-staging SQL is `STOPPED`/`NEVER` and both Scheduler jobs are `PAUSED`. No cloud
-mutation occurred. APP-READY-076 reconciled these sources. APP-READY-077 is next
-and requires user decisions for the
-exact first operator identity/role, access perimeter, and time-boxed SQL window
-before any deployment, provisioning, or database start.
+staging SQL was `STOPPED`/`NEVER` and both Scheduler jobs were `PAUSED` at that
+historical checkpoint. APP-READY-076 reconciled those sources; the later
+APP-READY-077 operation deployed the staging console behind IAP and provisioned
+its first operator. Historical checkpoints below remain historical and do not
+override the current status above.
 
 Historical checkpoints below are retained for context; they do not supersede
 the current status above.

@@ -11,7 +11,19 @@ CareNet uses Firebase/GCP project `project-a96784ee-811c-46ab-a7b` as the canoni
 | Staging | iOS | `com.carenet.app.staging` | `1:599365440227:ios:6680baeffacc0ce051abd6` |
 | Production | iOS | `com.carenet.app` | `1:599365440227:ios:fac1f0bd4f73677051abd6` |
 
-The staging Android app has the current debug SHA-1 and SHA-256 certificates. Upload and Play App Signing certificates remain release-signing gates and must be registered before production distribution.
+The matching Android upload certificates are registered in Firebase; see
+`ANDROID_RELEASE_SIGNING.md` for the approved public fingerprints. Hosting's
+`/.well-known/assetlinks.json` binds staging and production separately to those
+certificates (APP-READY-081), not to a shared debug certificate. Debug-signed
+builds are intentionally not verified handlers for these links. No credential
+or private signing material is part of the association file.
+
+Play App Signing uses a different distribution certificate. Its approved
+fingerprints must be added to the correct package before Play distribution;
+neither production release readiness nor automatic Android link opening is
+proved by this source configuration alone. Verify the served JSON and repeat
+Android domain verification on the actual signed release candidate. Prior
+device user-selection overrides are not automatic domain-verification proof.
 
 ## Android builds
 

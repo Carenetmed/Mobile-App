@@ -19,8 +19,8 @@
 ## Current production-readiness continuation
 
 Current mobile integration: `feature/frontend-milestone` at
-`94f20dc1beea79f3773c7c846a40dd32bc415a67` (APP-READY-079/PR #243 merge);
-current baseline: 940 Flutter tests. Protected dirty worktrees and pre-Phase-1 archive refs must
+`c5a13587f6fd37ff01efa5b66bbacad27d4287dd` (PR #244 documentation merge);
+pre-slice baseline: 940 Flutter tests. Protected dirty worktrees and pre-Phase-1 archive refs must
 remain untouched. Use isolated worktrees. Keep Cloud SQL running only while
 the staging backend/admin service depends on it; do not stop a required service.
 
@@ -44,10 +44,34 @@ APP-READY-077's source/deployment/first-operator setup is complete. The Web
 console is deployed behind Cloud Run IAP; the first staging super-administrator
 was provisioned through the backend's two-phase operator procedure. Backend
 revision `carenet-backend-staging-00013-svp` is at 100% traffic and readiness
-returned HTTP 200. The password-reset request was accepted by Resend, but
-mailbox delivery/password setup still needs confirmation. IAP access and CareNet
-application login are separate. No production payment/provider activation
-occurred; temporary local proxies are stopped.
+returned HTTP 200. The operator completed password setup and application login;
+screenshots prove SUPER ADMIN access and the verification queue. IAP access and
+CareNet application login are separate. Web PR #10 fixed canonical-origin
+validation, and PR #11 added authenticated document downloads. Web main is
+`8dfbaada9d4a55d7e0781bca7ae9e97cc40a117e`; both PR and post-merge CI passed.
+Admin revision `carenet-admin-staging-00006-55n` serves 100% traffic. Its
+Download button is deployed; actual operator download remains unproved. The
+63-byte integrity-smoke PDF failed browser preview; its content has not been
+validated. Do not approve/reject it or declare safe preview complete. No
+production payment/provider activation occurred; temporary local proxies are
+stopped.
+
+### APP-READY-081 Auth-Link Signing Association (In Progress)
+
+Goal: make hosted Android links trust each flavor's approved upload certificate
+instead of the shared debug certificate. Scope: static association, two
+configuration tests, canonical signing/Firebase/status documentation. No auth,
+router, backend, native, dependency, or legal-page behavior changes. All nine
+live Hosting files matched this base before editing. The installed Firebase
+CLI includes `.well-known/assetlinks.json` under the existing ignore rules;
+no ignore-rule change is needed. Run targeted tests, analyzer/full CI, inspect
+the diff, merge, then deploy Hosting only and check the live association.
+Phone automatic-verification and Play signing remain separate gates.
+
+Local verification: focused public-link tests 3/3; full Flutter suite 942/942
+(940 base plus two new tests in `hosted_app_links_test.dart`, none removed or
+renamed); analyzer clean; dependency lock unchanged. Independent read-only diff
+review found no blockers. CI/native build and Hosting deployment are pending.
 
 ### APP-READY-075 Reminder And Schedules Accessibility (Done; PR #240 Merged)
 
@@ -924,7 +948,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-078 | Make the existing backend email-verification request reachable from authenticated Account and render backend-owned email/status | S | **DONE** - PR #242 merged at `f8aea76`; 933-test suite and CI passed; physical-device link verification remains pending |
 | APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **DONE** - IAP-protected staging console deployed and first super-administrator provisioned; operator browser smoke pending |
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
-| APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **NEXT** - requires operator password setup and browser sign-in; record any UI/API gap without mutating a review decision |
+| APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - operator login/queue proved; Download deployed in Web PR #11; valid-file preview/download proof remains open |
+| APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **NEXT** - implementation and two static regressions; verify CI and deployed Hosting association |
 
 ### APP-READY-055 implementation evidence
 

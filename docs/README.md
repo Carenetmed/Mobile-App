@@ -1,6 +1,13 @@
 ﻿# CareNet project documentation
 
-Current: APP-READY-075 merged as PR #240 at `0e0a65b268d7561f2376c846b24a52045cbf2854`.
+Current continuation: APP-READY-081 corrects signed Android auth-link trust.
+Its base is PR #244 merge `c5a1358` (940-test baseline); see `AI_HANDOFF.md`,
+`FIREBASE_ENVIRONMENTS.md`, and `ANDROID_RELEASE_SIGNING.md`. Admin login/queue
+and the deployed Download feature are proved separately from valid-file
+preview acceptance, which remains partial. Older checkpoint summaries below
+are historical. Payments remain the final explicit-confirmation gate.
+
+Historical: APP-READY-075 merged as PR #240 at `0e0a65b268d7561f2376c846b24a52045cbf2854`.
 Final-head and integration CI passed all 930 tests, analyzer, Android debug APK,
 release lint, signing, and environment gates. APP-READY-073 is also merged; see
 `AI_HANDOFF.md`, `CODEBASE_STATUS.md`, and `DOC_SYNC.md` for exact proof.

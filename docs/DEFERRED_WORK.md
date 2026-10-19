@@ -1,5 +1,19 @@
 # Deferred work and backend replacement map
 
+## Current Auth-Link And Admin Gates (APP-READY-080/081)
+
+Hosted auth links now name the separate approved Android upload certificates
+instead of the shared debug key. Automatic signed-device verification and Play
+distribution certificate registration remain explicit release gates. Do not
+count a manual Android link-selection override as automatic verification.
+
+Admin hosting, first-operator setup, IAP login, application login and queue
+access are complete. Web PR #11 adds authenticated Download, now deployed.
+The tiny smoke PDF did not preview; its validity and actual operator download
+have not been proved. Keep valid-document preview/recovery acceptance open;
+do not approve/reject it merely to clear a gate. Earlier provisioning-pending
+notes below are historical.
+
 ## Verification Authorization Presentation (APP-READY-071)
 
 The mobile verification client now preserves the HTTP distinction: 401 is

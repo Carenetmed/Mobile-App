@@ -2,6 +2,13 @@
 
 ## Current Auth-Link And Admin Gates (APP-READY-080/081)
 
+APP-READY-081 is merged through PR #245 at `1ab1075` and deployed as Hosting
+version `3eed605e5b2bc4cc`. Exact-head CI, all 942 tests and live association/
+unchanged-page checks pass. Integration CI remains a separate pending check
+at this proof checkpoint. APP-READY-082 owns cost-conscious operational alerts:
+an approved email channel exists, but no alert policies, uptime probes or
+delivery acceptance are claimed. Both scheduled jobs remain paused.
+
 Hosted auth links now name the separate approved Android upload certificates
 instead of the shared debug key. Automatic signed-device verification and Play
 distribution certificate registration remain explicit release gates. Do not

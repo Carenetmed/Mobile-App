@@ -1,6 +1,7 @@
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/storage/booking_intent_store.dart';
+import 'package:app_t/features/Onboarding/domain/services/onboarding_readiness_route_resolver.dart';
 
 import '../entities/booking_intent.dart';
 
@@ -9,14 +10,20 @@ enum BookingResumeTarget {
   authentication,
   patientOnboarding,
   professionalDetail,
+  readinessRoute,
   incompatibleRole,
 }
 
 class BookingResumeDecision {
-  const BookingResumeDecision({required this.target, this.intent});
+  const BookingResumeDecision({
+    required this.target,
+    this.intent,
+    this.routeName,
+  });
 
   final BookingResumeTarget target;
   final BookingIntent? intent;
+  final String? routeName;
 }
 
 class BookingResumeService {
@@ -31,14 +38,21 @@ class BookingResumeService {
   final BookingIntentStore _bookingIntentStore;
   final SessionStore _sessionStore;
   final OnboardingRepository _onboardingRepository;
+  final OnboardingReadinessRouteResolver _readinessRouteResolver =
+      const OnboardingReadinessRouteResolver();
 
   Future<bool> hasPendingIntent() async {
     return await _bookingIntentStore.read() != null;
   }
 
-  Future<BookingResumeDecision> resolveAfterAuthentication() async {
+  Future<BookingResumeDecision> resolveAfterAuthentication({
+    bool resolveReadinessWhenNoIntent = false,
+  }) async {
     final intent = await _bookingIntentStore.read();
     if (intent == null) {
+      if (resolveReadinessWhenNoIntent) {
+        return _resolveAccountReadiness();
+      }
       return const BookingResumeDecision(target: BookingResumeTarget.none);
     }
 
@@ -94,6 +108,33 @@ class BookingResumeService {
               ? BookingResumeTarget.patientOnboarding
               : BookingResumeTarget.professionalDetail,
       intent: boundIntent,
+    );
+  }
+
+  Future<BookingResumeDecision> _resolveAccountReadiness() async {
+    final session = await _sessionStore.read();
+    if (session == null) {
+      return const BookingResumeDecision(target: BookingResumeTarget.none);
+    }
+
+    final role = session.user.role.trim().toUpperCase();
+    if (role != 'PATIENT' && role != 'PROFESSIONAL') {
+      return const BookingResumeDecision(target: BookingResumeTarget.none);
+    }
+
+    final readiness = await _onboardingRepository.accountReadiness();
+    if (readiness.account.role.trim().toUpperCase() != role ||
+        readiness.account.status.trim().toUpperCase() != 'ACTIVE') {
+      return const BookingResumeDecision(target: BookingResumeTarget.none);
+    }
+
+    final routeName = _readinessRouteResolver.resolve(
+      readiness: readiness,
+      fallbackRole: role,
+    );
+    return BookingResumeDecision(
+      target: BookingResumeTarget.readinessRoute,
+      routeName: routeName,
     );
   }
 }

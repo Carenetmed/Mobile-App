@@ -135,6 +135,82 @@ void main() {
         expect(await store.read(), isNull);
       },
     );
+
+    test(
+      'ordinary authenticated resume does not fetch readiness by default',
+      () async {
+        final repository = _FakeOnboardingRepository(incomplete: true);
+        final service = _resumeService(
+          store: InMemoryBookingIntentStore(),
+          sessionStore: _sessionStore(role: 'PATIENT'),
+          onboardingRepository: repository,
+        );
+
+        final decision = await service.resolveAfterAuthentication();
+
+        expect(decision.target, BookingResumeTarget.none);
+        expect(repository.calls, 0);
+      },
+    );
+
+    test('ordinary patient resume follows backend setup readiness', () async {
+      final repository = _FakeOnboardingRepository(incomplete: true);
+      final service = _resumeService(
+        store: InMemoryBookingIntentStore(),
+        sessionStore: _sessionStore(role: 'PATIENT'),
+        onboardingRepository: repository,
+      );
+
+      final decision = await service.resolveAfterAuthentication(
+        resolveReadinessWhenNoIntent: true,
+      );
+
+      expect(decision.target, BookingResumeTarget.readinessRoute);
+      expect(decision.routeName, RouteName.patientOnboardingSetup);
+      expect(repository.calls, 1);
+    });
+
+    test(
+      'professional readiness resumes at its backend-selected route',
+      () async {
+        final repository = _FakeOnboardingRepository(
+          role: 'PROFESSIONAL',
+          nextAction: 'PROFESSIONAL_UPLOAD_EVIDENCE',
+        );
+        final service = _resumeService(
+          store: InMemoryBookingIntentStore(),
+          sessionStore: _sessionStore(role: 'PROFESSIONAL'),
+          onboardingRepository: repository,
+        );
+
+        final decision = await service.resolveAfterAuthentication(
+          resolveReadinessWhenNoIntent: true,
+        );
+
+        expect(decision.target, BookingResumeTarget.readinessRoute);
+        expect(decision.routeName, RouteName.professionalVerificationDocuments);
+      },
+    );
+
+    test('readiness role or account status mismatch fails closed', () async {
+      for (final repository in <_FakeOnboardingRepository>[
+        _FakeOnboardingRepository(role: 'PROFESSIONAL'),
+        _FakeOnboardingRepository(status: 'SUSPENDED'),
+      ]) {
+        final service = _resumeService(
+          store: InMemoryBookingIntentStore(),
+          sessionStore: _sessionStore(role: 'PATIENT'),
+          onboardingRepository: repository,
+        );
+
+        final decision = await service.resolveAfterAuthentication(
+          resolveReadinessWhenNoIntent: true,
+        );
+
+        expect(decision.target, BookingResumeTarget.none);
+        expect(decision.routeName, isNull);
+      }
+    });
   });
 
   group('Professional booking controller', () {
@@ -804,11 +880,17 @@ class _FakeSchedulingRepository implements SchedulingRepository {
 class _FakeOnboardingRepository implements OnboardingRepository {
   _FakeOnboardingRepository({
     this.incomplete = false,
+    this.role = 'PATIENT',
+    this.status = 'ACTIVE',
+    this.nextAction,
     this.failures = const <Object?>[],
     this.readinessCompleter,
   });
 
   final bool incomplete;
+  final String role;
+  final String status;
+  final String? nextAction;
   final List<Object?> failures;
   final Completer<AccountReadiness>? readinessCompleter;
   int calls = 0;
@@ -823,25 +905,36 @@ class _FakeOnboardingRepository implements OnboardingRepository {
     if (pending != null) {
       return pending.future;
     }
-    return _completeReadiness(incomplete: incomplete);
+    return _completeReadiness(
+      incomplete: incomplete,
+      role: role,
+      status: status,
+      nextAction: nextAction,
+    );
   }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-AccountReadiness _completeReadiness({bool incomplete = false}) {
+AccountReadiness _completeReadiness({
+  bool incomplete = false,
+  String role = 'PATIENT',
+  String status = 'ACTIVE',
+  String? nextAction,
+}) {
   return AccountReadiness(
-    account: const ReadinessAccount(
-      role: 'PATIENT',
-      status: 'ACTIVE',
-      emailVerified: true,
-    ),
-    patient: PatientReadiness(
-      profileStatus: incomplete ? 'INCOMPLETE' : 'COMPLETE',
-      requiredFields: incomplete ? const <String>['name'] : const <String>[],
-    ),
-    nextAction: incomplete ? 'PATIENT_SETUP' : 'PATIENT_BOOKING_GATE',
+    account: ReadinessAccount(role: role, status: status, emailVerified: true),
+    patient:
+        role == 'PATIENT'
+            ? PatientReadiness(
+              profileStatus: incomplete ? 'INCOMPLETE' : 'COMPLETE',
+              requiredFields:
+                  incomplete ? const <String>['name'] : const <String>[],
+            )
+            : null,
+    nextAction:
+        nextAction ?? (incomplete ? 'PATIENT_SETUP' : 'PATIENT_BOOKING_GATE'),
     requiredActions: incomplete ? const <String>['PATIENT_name'] : const [],
   );
 }

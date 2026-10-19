@@ -1,5 +1,37 @@
 # Codebase status
 
+## APP-READY-079 - Readiness-Aware Sign-In And Session Restore (In Progress)
+
+Base: `f8aea76957d242f8c23d35f20f4f6d66a28408bd` (PR #242 merge). Normal
+email/Google sign-in and authenticated startup now request backend account
+readiness when there is no pending booking intent, then use the existing
+readiness route resolver for patient setup or professional verification.
+Booking-intent recovery remains first and unchanged. Navigation requires the
+readiness role to match the authenticated session role and the backend account
+to be active; unsupported, mismatched, or failed readiness falls back without
+clearing the session or granting authority. Email-verification gating remains
+an unresolved policy and is not changed here.
+
+Focused resume/startup/sign-in tests pass (61). Full suite passes (940: the
+933-test base plus seven new tests); repository-wide analysis and the explicit
+staging debug APK build pass. The new tests cover no-intent readiness routing,
+role/status mismatch, patient setup, professional verification, and the
+sign-in/startup entry points. No tests were removed, disabled, or skipped. PR
+CI remains outstanding. No dependency, lockfile, backend, provider, native, or
+cloud changes are in scope.
+
+## Current Staging Admin And Account State (Supersedes Earlier Audits)
+
+APP-READY-077's previously pending setup is now complete: the staging Web
+admin console is deployed behind Cloud Run IAP, and the first staging
+super-administrator was provisioned through the backend's two-phase operator
+procedure. The backend staging service runs revision
+`carenet-backend-staging-00013-svp` at 100% traffic; `/health/ready` returned
+HTTP 200 after promotion. The password-reset request was accepted by Resend;
+delivery and password setup still require the operator to check the configured
+mailbox. Cloud SQL remains running because the staging API/admin require it;
+temporary local proxies were stopped. No production provider was activated.
+
 ## APP-READY-075 - Deferred Reminder/Schedules Accessibility Follow-Up
 
 PR #240 merged as `0e0a65b268d7561f2376c846b24a52045cbf2854` from final
@@ -24,9 +56,11 @@ not `ridwanmullick/carenet-web`. Web main has CI-tested console/container
 preflight but explicitly does not push or deploy the image. Read-only GCP
 inventory found only the staging backend service; SQL is STOPPED/NEVER and both
 Scheduler jobs are PAUSED. No cloud resource, account, or archive ref changed.
-APP-READY-077 is the next decision-gated staging admin operation.
+APP-READY-077 was the next decision-gated staging admin operation at that
+historical checkpoint; the later deployment and provisioning are recorded
+above and below.
 
-## APP-READY-078 - Account Email Verification Reachability (PR Open; Device Check Pending)
+## APP-READY-078 - Account Email Verification Reachability (Merged; Device Check Pending)
 
 The Account `Email address` row now opens `editEmail` through the named router.
 The screen reads the authenticated account from `AccountRepository`, shows its
@@ -46,9 +80,9 @@ old expectation that `editEmail` was deferred), and targeted analysis is clean.
 The staging debug APK also builds with the canonical explicit-flavor command
 after using an E:-resident Pub cache; `pubspec.lock` is unchanged. No backend,
 dependency, cloud/provider, or native configuration change. Commit
-`2af9856e69fcea0dc9869b5c6f548d6c1bd69232` is pushed in PR #242. Latest head
-`2fd4925dc58f60362d175fd1933a969c02cac52d` passed GitHub Actions. The PR
-remains open/unmerged and physical-device verification remains pending.
+PR #242 merged into this integration at `f8aea76957d242f8c23d35f20f4f6d66a28408bd`.
+The merged CI baseline is 933 tests; physical-device verification of Account
+email status and verification-link completion remains pending.
 
 ## APP-READY-072 - Professional Verification Administration Audit (Done; Read-Only)
 
@@ -86,19 +120,15 @@ backend Web-client audience and provider authority are unchanged. Simulator CI
 does not prove Apple signing or physical-device Google sign-in. Android
 production OAuth remains a release-signing-specific gate.
 
-## APP-READY-077 - Staging Admin Console Gate (Next; User Decisions Required)
+## APP-READY-077 - Staging Admin Console Gate (Done)
 
-The correct Web source is `Carenetmed/Web-Developers` main
-`8dc563435fb78be47c977a73a2311a377aed671e`; the console exists but is not
-deployed. Backend main `43836bbe2b07b0c4a8e8f1b3fd64bd1ca26a5e0b` has a
-staging-only two-phase first-admin CLI. The candidate must already be an active,
-email-verified PATIENT without patient/professional profile or deletion request;
-the CLI must preview, require exact interactive confirmation, prepare in a
-suspended state, wait at least 16 minutes, then independently revalidate and
-activate. No candidate was selected. User approval is required for the exact
-operator identity/role, host/perimeter, and time-boxed SQL window. Direct Cloud
-Run IAP may avoid load-balancer resources; this is a recommendation only, not an
-approved deployment. No cloud action may occur before approval.
+The Web admin source is `Carenetmed/Web-Developers` main
+`8dc563435fb78be47c977a73a2311a377aed671e`. The staging console is deployed
+behind IAP, and the first staging super-administrator was provisioned using the
+preview/prepare/wait/revalidate/activate process. This closes source deployment
+and initial operator provisioning, but does not prove the operator has
+completed password setup or that professional-verification review has passed
+an end-to-end browser/device smoke. Production admin access remains separate.
 
 ## APP-READY-071 - Verification Authorization Semantics (Done; PR #236 Merged)
 

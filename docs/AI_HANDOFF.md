@@ -18,6 +18,35 @@
 
 ## Current production-readiness continuation
 
+Current mobile integration: `feature/frontend-milestone` at
+`f8aea76957d242f8c23d35f20f4f6d66a28408bd` (PR #242 merge); current baseline:
+933 Flutter tests. Protected dirty worktrees and pre-Phase-1 archive refs must
+remain untouched. Use isolated worktrees. Keep Cloud SQL running only while
+the staging backend/admin service depends on it; do not stop a required service.
+
+### APP-READY-079 Readiness-Aware Sign-In And Session Restore (In Progress)
+
+Branch `slice/APP-READY-079-auth-readiness-resume` checks backend account
+readiness after ordinary email/Google sign-in and authenticated startup only
+when no booking intent is pending. It uses the existing readiness resolver;
+session/readiness role mismatch and inactive readiness fail closed without
+clearing the session. Booking-intent recovery and signup readiness remain
+unchanged. Email-verification gating remains an unresolved product/backend
+decision. Focused tests pass (61), the full suite passes at 940 (+7 over the
+933-test base), analysis is clean, and the staging debug APK builds. No tests
+were removed or skipped. GitHub CI remains outstanding.
+
+### Current staging admin state
+
+APP-READY-077's source/deployment/first-operator setup is complete. The Web
+console is deployed behind Cloud Run IAP; the first staging super-administrator
+was provisioned through the backend's two-phase operator procedure. Backend
+revision `carenet-backend-staging-00013-svp` is at 100% traffic and readiness
+returned HTTP 200. The password-reset request was accepted by Resend, but
+mailbox delivery/password setup still needs confirmation. IAP access and CareNet
+application login are separate. No production payment/provider activation
+occurred; temporary local proxies are stopped.
+
 ### APP-READY-075 Reminder And Schedules Accessibility (Done; PR #240 Merged)
 
 PR #240 merged as `0e0a65b268d7561f2376c846b24a52045cbf2854` from final
@@ -30,7 +59,7 @@ schedule mutation, sharing, or notification delivery was activated. Local full
 suite execution could not complete on Windows because of C: temporary-space and
 test-isolate startup failures; the exact-head and integration CI suites passed.
 
-### APP-READY-076 Readiness Handoff Reconciliation (Done; Read-Only)
+### APP-READY-076 Readiness Handoff Reconciliation (Done; Historical Snapshot)
 
 Reconciled stale handoff entries after APP-READY-073 PR #239 and APP-READY-075
 PR #240 merged. PR #239's iOS/Flutter CI and integration runs passed; PR #240's
@@ -44,7 +73,7 @@ Read-only cloud inventory on 2026-10-18 found only the staging backend Cloud Run
 service; `carenet-staging-postgres` was `STOPPED` with activation policy `NEVER`,
 and both Cloud Scheduler jobs were `PAUSED`. No cloud resource was changed.
 
-### APP-READY-078 Account Email Verification Reachability (PR Open; Device Check Pending)
+### APP-READY-078 Account Email Verification Reachability (Done; PR #242 Merged)
 
 The Account email row now opens the existing backend-backed verification
 screen. It displays authenticated `AuthUser.email` and `emailVerified`, and
@@ -62,10 +91,9 @@ Focused `account_flow_test.dart`: 44 passed. Full Flutter suite: 933 passed
 replaced with active route coverage). Repository-wide analyzer is clean, and
 `flutter build apk --debug --flavor staging --no-pub` passed. No dependencies,
 backend, provider, cloud, native config, or lockfile changes. Commit
-`2af9856e69fcea0dc9869b5c6f548d6c1bd69232` is pushed on
-`slice/APP-READY-EMAIL-VERIFICATION` in PR #242. The latest documentation
-follow-up head `2fd4925dc58f60362d175fd1933a969c02cac52d` passed GitHub Actions;
-the PR remains open/unmerged and the phone check is pending. Manual check:
+PR #242 merged at `f8aea76957d242f8c23d35f20f4f6d66a28408bd`; its 933-test
+baseline and GitHub Actions passed. Physical-device verification remains
+pending. Manual check:
 Account > Email address; confirm the real address/status, request a link when
 unverified, follow the link, then refresh Account to confirm the backend status
 changes.
@@ -79,31 +107,18 @@ enforced. The staging debug APK is at
 configuration, dependency, or lockfile change was needed. This remains a local
 build only; CI and physical-device verification are still pending.
 
-### APP-READY-077 Staging Admin Console Gate (Next; User Decisions Required)
+### APP-READY-077 Staging Admin Console Gate (Done; Browser Smoke Pending)
 
-Choose the exact first staging operator and access perimeter, and approve (or
-defer) one explicitly timed database/provisioning window. The candidate account
-must already be active, email-verified PATIENT, have no patient or professional
-profile and no deletion request, and must not conflict with any existing admin.
-The backend CLI first previews without writes; `prepare --apply` requires an
-interactive phrase and suspends/revokes the candidate; wait at least 16 minutes;
-then preview and explicitly approve `activate --apply` only after the
-eligibility recheck. The candidate then signs in fresh. Never use this procedure
-in production.
+The console is deployed behind IAP and the first staging super-administrator
+has been provisioned using the preview/prepare/wait/revalidate/activate process.
+Browser-level review and authenticated queue/document-preview smoke still need
+the operator to finish password setup and sign in. Never use the staging
+provisioning procedure in production.
 
-Recommended low-fixed-cost option for user approval: deploy the existing Web
-container to a new request-billed Cloud Run service with minimum instances zero
-and direct IAP on its `run.app` endpoint, avoiding load-balancer resources.
-Google documents direct IAP support for Cloud Run and no-charge IAP for supported
-Google Cloud-hosted resources; Cloud Run usage can exceed its free tier, and
-artifact storage, logs, and network transfer may still incur charges. See
-[Cloud Run IAP configuration](https://docs.cloud.google.com/run/docs/securing/identity-aware-proxy-cloud-run),
-[IAP pricing](https://cloud.google.com/iap/pricing), and
-[Cloud Run pricing](https://cloud.google.com/run/pricing). A custom domain is
-not required for an initial IAP-protected `run.app` staging smoke; do not add a
-load balancer or leave the service public as a convenience. Obtain explicit
-approval for the operator account, IAP-allowed Google identity, service
-deployment, and exact SQL on/off window before any cloud mutation.
+The deployed service uses a request-billed Cloud Run endpoint with direct IAP;
+no load balancer was added. Cloud SQL remains running because staging depends on
+it. Continue to avoid unnecessary services and stop temporary proxies after
+each operation.
 
 ### APP-READY-068 Notification Account Isolation And Transport Lifecycle (Done; PR #233 Merged)
 
@@ -904,8 +919,10 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-073 | Verify canonical Google OAuth app associations and complete the smallest flavor-specific iOS callback configuration; retain backend Web-client audience and keep provider authority unchanged | M | **DONE - PR #239 merged at `4cfe18d`; exact-head Android/iOS CI and integration runs passed** |
 | APP-READY-075 | Add direct-route compact-width/enlarged-text checks for the deferred Reminder and Schedules screens; expose the schedule disclosure state accessibly without activating reminder persistence or delivery | S | **DONE - PR #240 merged at `0e0a65b`; final-head and integration CI passed 930 tests (928 + 2)** |
 | APP-READY-076 | Reconcile APP-READY-073/075 merge evidence and current staging admin-console source/cloud posture without mutation | S | **DONE** - read-only reconciliation; archive/worktree state unchanged |
-| APP-READY-078 | Make the existing backend email-verification request reachable from authenticated Account and render backend-owned email/status | S | **PR #242 OPEN** - head `2fd4925`; 44 focused and 933 full tests, full analyzer, staging debug APK, and exact-head GitHub CI passed; merge/device check pending |
-| APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **NEXT** - decisions required before any cloud mutation |
+| APP-READY-078 | Make the existing backend email-verification request reachable from authenticated Account and render backend-owned email/status | S | **DONE** - PR #242 merged at `f8aea76`; 933-test suite and CI passed; physical-device link verification remains pending |
+| APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **DONE** - IAP-protected staging console deployed and first super-administrator provisioned; operator browser smoke pending |
+| APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **IN PROGRESS** - 61 focused tests, 940 full tests, analyzer and staging APK pass; PR CI pending |
+| APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **NEXT** - requires operator password setup and browser sign-in; record any UI/API gap without mutating a review decision |
 
 ### APP-READY-055 implementation evidence
 

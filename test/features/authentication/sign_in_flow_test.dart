@@ -39,6 +39,8 @@ Future<void> _pumpWithRoutes(
             routes: {
               RouteName.dashboard:
                   (_) => const Scaffold(body: Text('dashboard')),
+              RouteName.patientOnboardingSetup:
+                  (_) => const Scaffold(body: Text('patient setup')),
               RouteName.enterEmail:
                   (_) => const Scaffold(body: Text('Enter email')),
               RouteName.signInPhone:
@@ -126,9 +128,8 @@ void main() {
       'successful sign in without booking intent clears login route',
       (tester) async {
         await sl.reset();
-        sl.registerSingleton<BookingResumeService>(
-          _NoPendingBookingResumeService(),
-        );
+        final resumeService = _NoPendingBookingResumeService();
+        sl.registerSingleton<BookingResumeService>(resumeService);
         addTearDown(() async => sl.reset());
 
         final repository = _FakeAuthRepository();
@@ -148,10 +149,42 @@ void main() {
 
         expect(repository.loginCalls, 1);
         expect(find.text('dashboard'), findsOneWidget);
+        expect(resumeService.lastReadinessFlag, isTrue);
         final navigator = tester.state<NavigatorState>(find.byType(Navigator));
         expect(navigator.canPop(), isFalse);
       },
     );
+
+    testWidgets('sign in routes to backend readiness destination', (
+      tester,
+    ) async {
+      await sl.reset();
+      sl.registerSingleton<BookingResumeService>(
+        _NoPendingBookingResumeService(
+          decision: const BookingResumeDecision(
+            target: BookingResumeTarget.readinessRoute,
+            routeName: RouteName.patientOnboardingSetup,
+          ),
+        ),
+      );
+      addTearDown(() async => sl.reset());
+
+      final fields = find.byType(EditableText);
+      await _pumpWithRoutes(
+        tester,
+        home: SignInEmail(
+          authRepository: _FakeAuthRepository(),
+          googleIdTokenProvider: _disabledGoogleProvider,
+        ),
+      );
+      await tester.enterText(fields.at(0), 'patient@example.com');
+      await tester.enterText(fields.at(1), 'password123');
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('patient setup'), findsOneWidget);
+      expect(find.text('dashboard'), findsNothing);
+    });
 
     testWidgets('sign-in form fits compact width with 2x text', (tester) async {
       await _pumpWithRoutes(
@@ -286,6 +319,11 @@ void main() {
     testWidgets(
       'sign in email Google button authenticates with backend token',
       (tester) async {
+        await sl.reset();
+        final resumeService = _NoPendingBookingResumeService();
+        sl.registerSingleton<BookingResumeService>(resumeService);
+        addTearDown(() async => sl.reset());
+
         final repository = _FakeAuthRepository();
         await _pumpWithRoutes(
           tester,
@@ -303,6 +341,7 @@ void main() {
         expect(repository.googleSignInCalls, 1);
         expect(repository.lastGoogleIdToken, 'id-token');
         expect(find.text('dashboard'), findsOneWidget);
+        expect(resumeService.lastReadinessFlag, isTrue);
       },
     );
 
@@ -465,12 +504,25 @@ class _FakeGoogleIdTokenProvider implements GoogleIdTokenProvider {
 }
 
 class _NoPendingBookingResumeService implements BookingResumeService {
+  _NoPendingBookingResumeService({
+    this.decision = const BookingResumeDecision(
+      target: BookingResumeTarget.none,
+    ),
+  });
+
+  final BookingResumeDecision decision;
+  bool? lastReadinessFlag;
+
   @override
   Future<bool> hasPendingIntent() async => false;
 
   @override
-  Future<BookingResumeDecision> resolveAfterAuthentication() async =>
-      const BookingResumeDecision(target: BookingResumeTarget.none);
+  Future<BookingResumeDecision> resolveAfterAuthentication({
+    bool resolveReadinessWhenNoIntent = false,
+  }) async {
+    lastReadinessFlag = resolveReadinessWhenNoIntent;
+    return decision;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

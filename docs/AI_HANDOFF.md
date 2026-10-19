@@ -19,12 +19,12 @@
 ## Current production-readiness continuation
 
 Current mobile integration: `feature/frontend-milestone` at
-`f8aea76957d242f8c23d35f20f4f6d66a28408bd` (PR #242 merge); current baseline:
-933 Flutter tests. Protected dirty worktrees and pre-Phase-1 archive refs must
+`94f20dc1beea79f3773c7c846a40dd32bc415a67` (APP-READY-079/PR #243 merge);
+current baseline: 940 Flutter tests. Protected dirty worktrees and pre-Phase-1 archive refs must
 remain untouched. Use isolated worktrees. Keep Cloud SQL running only while
 the staging backend/admin service depends on it; do not stop a required service.
 
-### APP-READY-079 Readiness-Aware Sign-In And Session Restore (In Progress)
+### APP-READY-079 Readiness-Aware Sign-In And Session Restore (Done; PR #243 Merged)
 
 Branch `slice/APP-READY-079-auth-readiness-resume` checks backend account
 readiness after ordinary email/Google sign-in and authenticated startup only
@@ -34,7 +34,9 @@ clearing the session. Booking-intent recovery and signup readiness remain
 unchanged. Email-verification gating remains an unresolved product/backend
 decision. Focused tests pass (61), the full suite passes at 940 (+7 over the
 933-test base), analysis is clean, and the staging debug APK builds. No tests
-were removed or skipped. GitHub CI remains outstanding.
+were removed or skipped. PR #243 reviewed head `6b97c72e742c4635a879f99570b50fb31483d91e`
+merged at `94f20dc1beea79f3773c7c846a40dd32bc415a67`. PR CI `39203627650` and
+post-merge integration CI `39205075146` passed.
 
 ### Current staging admin state
 
@@ -921,7 +923,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-076 | Reconcile APP-READY-073/075 merge evidence and current staging admin-console source/cloud posture without mutation | S | **DONE** - read-only reconciliation; archive/worktree state unchanged |
 | APP-READY-078 | Make the existing backend email-verification request reachable from authenticated Account and render backend-owned email/status | S | **DONE** - PR #242 merged at `f8aea76`; 933-test suite and CI passed; physical-device link verification remains pending |
 | APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **DONE** - IAP-protected staging console deployed and first super-administrator provisioned; operator browser smoke pending |
-| APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **IN PROGRESS** - 61 focused tests, 940 full tests, analyzer and staging APK pass; PR CI pending |
+| APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **NEXT** - requires operator password setup and browser sign-in; record any UI/API gap without mutating a review decision |
 
 ### APP-READY-055 implementation evidence

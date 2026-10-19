@@ -1,6 +1,6 @@
 # Codebase status
 
-## APP-READY-079 - Readiness-Aware Sign-In And Session Restore (In Progress)
+## APP-READY-079 - Readiness-Aware Sign-In And Session Restore (Done; PR #243 Merged)
 
 Base: `f8aea76957d242f8c23d35f20f4f6d66a28408bd` (PR #242 merge). Normal
 email/Google sign-in and authenticated startup now request backend account
@@ -17,8 +17,10 @@ Focused resume/startup/sign-in tests pass (61). Full suite passes (940: the
 staging debug APK build pass. The new tests cover no-intent readiness routing,
 role/status mismatch, patient setup, professional verification, and the
 sign-in/startup entry points. No tests were removed, disabled, or skipped. PR
-CI remains outstanding. No dependency, lockfile, backend, provider, native, or
-cloud changes are in scope.
+#243 reviewed head `6b97c72e742c4635a879f99570b50fb31483d91e` merged at
+`94f20dc1beea79f3773c7c846a40dd32bc415a67`; PR CI `39203627650` and integration
+CI `39205075146` passed. No dependency, lockfile, backend, provider, native, or
+cloud changes were in scope.
 
 ## Current Staging Admin And Account State (Supersedes Earlier Audits)
 

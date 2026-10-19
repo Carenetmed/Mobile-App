@@ -3,14 +3,16 @@
 **Last audited:** 2026-10-19
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
-APP-READY-079 is in progress on base
-`f8aea76957d242f8c23d35f20f4f6d66a28408bd`: ordinary email/Google sign-in and
+APP-READY-079 is complete at integration
+`94f20dc1beea79f3773c7c846a40dd32bc415a67`: ordinary email/Google sign-in and
 authenticated startup now consult backend account readiness when there is no
 booking intent, then use the existing role-aware readiness resolver. Pending
 booking recovery remains unchanged. Focused tests pass (61), the full suite
 passes (940, +7 from the 933 baseline), analyzer is clean, and the staging debug
-APK builds. GitHub CI remains outstanding. Signup email-verification policy
-remains unresolved and is not part of this slice.
+APK builds. PR #243 head `6b97c72e742c4635a879f99570b50fb31483d91e` merged as
+`94f20dc1beea79f3773c7c846a40dd32bc415a67`; PR CI `39203627650` and integration
+CI `39205075146` passed. Signup email-verification policy remains unresolved
+and is not part of this slice.
 
 APP-READY-078 PR #242 is merged at the current integration SHA. Account email
 state remains backend-owned; physical-device verification-link completion is
@@ -27,9 +29,9 @@ activated.
 
 ## Authority (if two docs seem to conflict)
 
-Current integration is `f8aea76957d242f8c23d35f20f4f6d66a28408bd` after PR #242.
-The current baseline is 933 Flutter tests. APP-READY-079 must preserve the full
-test inventory and reconcile all additions against this base. See
+Current integration is `94f20dc1beea79f3773c7c846a40dd32bc415a67` after PR #243.
+The current baseline is 940 Flutter tests. APP-READY-079 added seven tests to
+the 933-test base; none were removed, skipped, or disabled. See
 `AI_HANDOFF.md` and `CODEBASE_STATUS.md` for active work and current status.
 
 APP-READY-073 is complete: PR #239 merged at `4cfe18d73cd142f2c3f1f39c1cddddd407b0351a`;

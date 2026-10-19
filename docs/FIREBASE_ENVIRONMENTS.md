@@ -25,6 +25,13 @@ proved by this source configuration alone. Verify the served JSON and repeat
 Android domain verification on the actual signed release candidate. Prior
 device user-selection overrides are not automatic domain-verification proof.
 
+APP-READY-081 PR #245 merged at `1ab1075`. Hosting version `3eed605e5b2bc4cc`
+was published on 2026-10-19T16:48:29Z with only the association content changed.
+Direct GET verified HTTP 200, application/json, max-age=300, exact reviewed
+mapping and unchanged remaining source pages/assets. Both upload certificate
+registrations were independently read back from Firebase. This is deployment
+proof, not automatic signed-device or Play release acceptance.
+
 ## Android builds
 
 Use `--flavor staging` for staging and `--flavor production` for production. The package IDs and launcher labels differ, so both apps can coexist on one device.

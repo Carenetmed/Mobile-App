@@ -3,14 +3,26 @@
 **Last audited:** 2026-10-19
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
-APP-READY-081 starts from PR #244 merge `c5a1358` (940 tests). It corrects
+APP-READY-081 merged as PR #245 at `1ab1075c34cb71ce1f1b2e1b12d0f606c728cfeb`
+from PR #244 merge `c5a1358` (940 tests). It corrects
 Hosting's Android App Links certificates to the separate approved staging and
 production upload keys; two new static tests cover exact package/certificate
 mapping and JSON/cache/static-page serving policy. No existing tests change.
 See `FIREBASE_ENVIRONMENTS.md` and `ANDROID_RELEASE_SIGNING.md`; automatic
 device verification and Play distribution certificates remain open gates.
 Local focused tests pass (3), full Flutter suite passes (942: exactly two added,
-none removed/renamed), and analyzer is clean. CI/deployment are pending.
+none removed/renamed), analyzer is clean, and the staging debug APK builds.
+Exact-head CI `39281499795` attempt 2 passed every gate on reviewed head
+`edbd6f17b477b098845e06874659f8a6200017ba`; attempt 1 hit a corrupt Android SDK
+download, not a source/test defect. Integration CI `39288540689` is pending.
+Hosting version `3eed605e5b2bc4cc` is deployed: exact reviewed association,
+HTTP 200 JSON/cache policy, preserved config/file hashes, and unchanged eight
+other source pages/assets were verified. No phone automatic-opening claim.
+
+The next gate is APP-READY-082 passive operational alerting. The approved email
+channel exists, but policy acceptance and actual delivery are not proved.
+Schedulers remain paused; no uptime check was created. Fresh SQL backup
+`1792427900036` succeeded on October 19; no restore or continuous RPO claim.
 
 APP-READY-080 is partial, not waiting for password setup: operator screenshots
 prove application login and queue access. Web PR #10 fixed proxy-origin login;
@@ -45,9 +57,10 @@ activated.
 
 ## Authority (if two docs seem to conflict)
 
-Current integration is `94f20dc1beea79f3773c7c846a40dd32bc415a67` after PR #243.
-The current baseline is 940 Flutter tests. APP-READY-079 added seven tests to
-the 933-test base; none were removed, skipped, or disabled. See
+Current integration is `1ab1075c34cb71ce1f1b2e1b12d0f606c728cfeb` after PR #245.
+The current baseline is 942 Flutter tests. APP-READY-079 added seven tests to
+the 933-test base and APP-READY-081 added two configuration tests; none were
+removed, skipped, or disabled. See
 `AI_HANDOFF.md` and `CODEBASE_STATUS.md` for active work and current status.
 
 APP-READY-073 is complete: PR #239 merged at `4cfe18d73cd142f2c3f1f39c1cddddd407b0351a`;

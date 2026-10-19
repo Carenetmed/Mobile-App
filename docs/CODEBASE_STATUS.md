@@ -1,6 +1,6 @@
 # Codebase status
 
-## APP-READY-081 - Signed Android Auth-Link Association
+## APP-READY-081 - Signed Android Auth-Link Association (Merged/Deployed)
 
 The previous live association matched source but trusted the same debug key
 for both packages. APP-READY-081 binds each package to its own protected upload
@@ -11,7 +11,24 @@ distinct gates; do not treat a prior manual device link-selection override as
 automatic verification. Play distribution certificates remain unregistered in
 this association until their approved identities are available.
 Focused public-link tests pass (3), full suite passes (942, +2 from 940;
-existing tests unchanged), and analyzer is clean. CI/deployment are pending.
+existing tests unchanged), analyzer is clean, and the staging debug APK builds.
+PR #245 reviewed head `edbd6f17b477b098845e06874659f8a6200017ba` passed CI
+`39281499795` attempt 2 and merged as `1ab1075`. The first attempt's corrupt
+Android SDK ZIP required an unchanged-source rerun. Integration run
+`39288540689` remains pending at this checkpoint.
+
+Hosting version `3eed605e5b2bc4cc` is deployed with exactly one content hash
+changed and existing config/other hashes preserved. Direct public GET confirms
+the reviewed JSON and five-minute cache policy; all eight other source pages
+and assets still return unchanged content. Firebase Management API read-back
+confirms both approved upload certificates on the matching app registrations.
+Phone automatic domain verification and Play release gates remain open.
+
+Staging operational follow-up: the approved email channel is provisioned, but
+no policies/uptime checks or delivery proof exist. Both schedulers remain
+paused. Backup `1792427900036` completed SUCCESSFUL at 16:40:11Z on October 19;
+gateway readiness returned 200 afterward. No restore, schema, traffic, payment
+or worker-schedule change occurred. APP-READY-082 owns cost-conscious alerting.
 
 APP-READY-080 is partial: operator password setup, IAP access, application login
 and queue access succeeded. Web PR #10 fixed origin validation; PR #11 added

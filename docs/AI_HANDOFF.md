@@ -19,8 +19,8 @@
 ## Current production-readiness continuation
 
 Current mobile integration: `feature/frontend-milestone` at
-`c5a13587f6fd37ff01efa5b66bbacad27d4287dd` (PR #244 documentation merge);
-pre-slice baseline: 940 Flutter tests. Protected dirty worktrees and pre-Phase-1 archive refs must
+`1ab1075c34cb71ce1f1b2e1b12d0f606c728cfeb` (APP-READY-081/PR #245 merge);
+current baseline: 942 Flutter tests. Protected dirty worktrees and pre-Phase-1 archive refs must
 remain untouched. Use isolated worktrees. Keep Cloud SQL running only while
 the staging backend/admin service depends on it; do not stop a required service.
 
@@ -56,7 +56,7 @@ validated. Do not approve/reject it or declare safe preview complete. No
 production payment/provider activation occurred; temporary local proxies are
 stopped.
 
-### APP-READY-081 Auth-Link Signing Association (In Progress)
+### APP-READY-081 Auth-Link Signing Association (Merged And Deployed)
 
 Goal: make hosted Android links trust each flavor's approved upload certificate
 instead of the shared debug certificate. Scope: static association, two
@@ -64,14 +64,44 @@ configuration tests, canonical signing/Firebase/status documentation. No auth,
 router, backend, native, dependency, or legal-page behavior changes. All nine
 live Hosting files matched this base before editing. The installed Firebase
 CLI includes `.well-known/assetlinks.json` under the existing ignore rules;
-no ignore-rule change is needed. Run targeted tests, analyzer/full CI, inspect
-the diff, merge, then deploy Hosting only and check the live association.
-Phone automatic-verification and Play signing remain separate gates.
+no ignore-rule change was needed. Phone automatic-verification and Play
+signing remain separate gates.
 
 Local verification: focused public-link tests 3/3; full Flutter suite 942/942
 (940 base plus two new tests in `hosted_app_links_test.dart`, none removed or
-renamed); analyzer clean; dependency lock unchanged. Independent read-only diff
-review found no blockers. CI/native build and Hosting deployment are pending.
+renamed); analyzer clean; staging debug APK builds; dependency lock unchanged.
+Independent read-only diff review found no blockers. Reviewed head
+`edbd6f17b477b098845e06874659f8a6200017ba` passed CI `39281499795` attempt 2,
+including release lint, signing and environment checks. Attempt 1 passed tests
+and analysis but failed downloading an Android SDK archive; source was unchanged
+for the successful rerun. PR #245 merged at `1ab1075`. Integration CI
+`39288540689` was still running when this proof was recorded.
+
+Hosting version `3eed605e5b2bc4cc`, release `1792428509839000`, published at
+2026-10-19T16:48:29Z. Finalized manifest verification preserved exact live config
+and all other file hashes. Direct GET returns 200 application/json, max-age=300,
+and the exact reviewed mapping; all eight other source pages/assets remain
+unchanged and return 200. Firebase Management API independently confirms both
+approved upload certificates are registered to the matching Android apps. The
+previous version `33e3db3f1cd6c394` remains available for rollback. Hosting REST
+used existing Google Cloud authentication; no secret was exported or logged.
+
+### Current Operational Follow-Up
+
+The operator approved a staging email-alert recipient. Its enabled email
+channel is `projects/project-a96784ee-811c-46ab-a7b/notificationChannels/8585658639310171247`;
+keep the personal address in cloud configuration, not public docs. Delivery is
+not proved. No alert policies or uptime checks exist; both schedulers remain
+paused. Do not invent a check ID to satisfy the existing monitoring generator,
+enable worker-silence alerts while deliberately paused, or start probes that
+wake otherwise idle services merely to get a green checklist.
+
+SQL remains running for the staging backend/admin. Fresh backup `1792427900036`
+is SUCCESSFUL at 2026-10-19T16:40:11.966Z; operation
+`2ed6bc40-09e4-4c51-9b6b-a7480000002f` is DONE without error. Gateway readiness
+returned HTTP 200 at 16:40:46Z. This is not fresh restore acceptance or a
+continuous RPO guarantee. No schema, service traffic, worker schedule or
+payment settings changed.
 
 ### APP-READY-075 Reminder And Schedules Accessibility (Done; PR #240 Merged)
 
@@ -949,7 +979,8 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **DONE** - IAP-protected staging console deployed and first super-administrator provisioned; operator browser smoke pending |
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - operator login/queue proved; Download deployed in Web PR #11; valid-file preview/download proof remains open |
-| APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **NEXT** - implementation and two static regressions; verify CI and deployed Hosting association |
+| APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; exact-head CI and Hosting manifest/live-content checks passed; integration CI pending at proof time |
+| APP-READY-082 | Configure cost-conscious staging operational alert policies and prove controlled delivery using the approved channel; use the owning backend/cloud boundaries and do not enable unnecessary probes or scheduled workers | M | **NEXT** - recipient/channel provisioned; policy/API acceptance and delivery still unproved |
 
 ### APP-READY-055 implementation evidence
 

@@ -1,5 +1,24 @@
 # Codebase status
 
+## APP-READY-082 - Operational Handoff (Partial)
+
+October 21 read-back confirms nine enabled alert policies, zero uptime checks,
+and three paused schedules. The controlled sanitized release-health alert has
+counter, OPEN incident and matching email-receipt proof. RTC dispatch/execution
+policy definitions are applied. One normal 16:10 UTC cron tick completed with
+the expected scheduler identity, exact job spec and an empty-work result.
+Useful provider cleanup, RTC failure-alert delivery and queue age remain
+unproved; one tick is not cadence reliability. Explicitly approved temporary
+organization deny-policy review made the access evaluation conclusive; the
+reviewer binding was then removed, preserving unrelated IAM. Future operations
+still require fresh authority checks, not a bypass of unknown results.
+`PHASE_1_OPERATIONAL_READINESS.md` owns the cross-repository evidence map.
+
+The serving API is `carenet-backend-staging-00014-jhw` at 100% traffic. This
+documentation-only reconciliation does not promote an image, activate a
+schedule, change the 942-test inventory or complete the readiness program.
+Backend source/CI and mobile runtime/deployment/device proof remain separate.
+
 ## APP-READY-081 - Signed Android Auth-Link Association (Merged/Deployed)
 
 The previous live association matched source but trusted the same debug key
@@ -15,7 +34,8 @@ existing tests unchanged), analyzer is clean, and the staging debug APK builds.
 PR #245 reviewed head `edbd6f17b477b098845e06874659f8a6200017ba` passed CI
 `39281499795` attempt 2 and merged as `1ab1075`. The first attempt's corrupt
 Android SDK ZIP required an unchanged-source rerun. Integration run
-`39288540689` remains pending at this checkpoint.
+`39288540689` passed on the exact integration commit. Documentation proof
+PR #246 subsequently merged at `51c3a2a`; runtime code is unchanged.
 
 Hosting version `3eed605e5b2bc4cc` is deployed with exactly one content hash
 changed and existing config/other hashes preserved. Direct public GET confirms
@@ -24,9 +44,9 @@ and assets still return unchanged content. Firebase Management API read-back
 confirms both approved upload certificates on the matching app registrations.
 Phone automatic domain verification and Play release gates remain open.
 
-Staging operational follow-up: the approved email channel is provisioned, but
-no policies/uptime checks or delivery proof exist. Both schedulers remain
-paused. Backup `1792427900036` completed SUCCESSFUL at 16:40:11Z on October 19;
+Staging operational follow-up is summarized above and in
+`PHASE_1_OPERATIONAL_READINESS.md`; earlier zero-policy observations below
+are historical. Backup `1792427900036` completed SUCCESSFUL at 16:40:11Z on October 19;
 gateway readiness returned 200 afterward. No restore, schema, traffic, payment
 or worker-schedule change occurred. APP-READY-082 owns cost-conscious alerting.
 
@@ -66,10 +86,10 @@ APP-READY-077's previously pending setup is now complete: the staging Web
 admin console is deployed behind Cloud Run IAP, and the first staging
 super-administrator was provisioned through the backend's two-phase operator
 procedure. The backend staging service runs revision
-`carenet-backend-staging-00013-svp` at 100% traffic; `/health/ready` returned
-HTTP 200 after promotion. The password-reset request was accepted by Resend;
-delivery and password setup still require the operator to check the configured
-mailbox. Cloud SQL remains running because the staging API/admin require it;
+`carenet-backend-staging-00014-jhw` at 100% traffic. The operator completed
+password setup, application login and queue access as recorded above. Valid-file
+preview and actual operator download are still unproved. Cloud SQL remains
+running because the staging API/admin require it;
 temporary local proxies were stopped. No production provider was activated.
 
 ## APP-READY-075 - Deferred Reminder/Schedules Accessibility Follow-Up

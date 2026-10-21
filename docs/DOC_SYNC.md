@@ -1,6 +1,6 @@
 # Documentation sync index
 
-**Last audited:** 2026-10-19
+**Last audited:** 2026-10-21
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 
 APP-READY-081 merged as PR #245 at `1ab1075c34cb71ce1f1b2e1b12d0f606c728cfeb`
@@ -14,14 +14,23 @@ Local focused tests pass (3), full Flutter suite passes (942: exactly two added,
 none removed/renamed), analyzer is clean, and the staging debug APK builds.
 Exact-head CI `39281499795` attempt 2 passed every gate on reviewed head
 `edbd6f17b477b098845e06874659f8a6200017ba`; attempt 1 hit a corrupt Android SDK
-download, not a source/test defect. Integration CI `39288540689` is pending.
+download, not a source/test defect. Integration CI `39288540689` passed on
+`1ab1075`; documentation proof PR #246 merged at `51c3a2a`.
 Hosting version `3eed605e5b2bc4cc` is deployed: exact reviewed association,
 HTTP 200 JSON/cache policy, preserved config/file hashes, and unchanged eight
 other source pages/assets were verified. No phone automatic-opening claim.
 
-The next gate is APP-READY-082 passive operational alerting. The approved email
-channel exists, but policy acceptance and actual delivery are not proved.
-Schedulers remain paused; no uptime check was created. Fresh SQL backup
+APP-READY-082 remains next and partially proved, not complete. Nine enabled
+policies and zero uptime checks were read back; all three schedules remain
+paused. One controlled sanitized release-health alert reached an OPEN incident
+and a matching email receipt. Do not generalize that receipt to RTC or all
+provider failures. `PHASE_1_OPERATIONAL_READINESS.md` owns the current evidence
+map and links to backend docs62/66 and PRs #158/#164. One later normal 16:10 UTC
+RTC tick completed successfully after explicitly approved temporary inherited
+deny-policy review. The reviewer and invocation bindings were removed; the
+schedule is paused. Useful cleanup, failure-alert delivery and queue age remain
+unproved. This update changes only documentation, adds or
+removes no tests, and does not activate a service or payment provider. SQL backup
 `1792427900036` succeeded on October 19; no restore or continuous RPO claim.
 
 APP-READY-080 is partial, not waiting for password setup: operator screenshots

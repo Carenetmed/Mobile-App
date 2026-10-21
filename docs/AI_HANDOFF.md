@@ -19,7 +19,7 @@
 ## Current production-readiness continuation
 
 Current mobile integration: `feature/frontend-milestone` at
-`1ab1075c34cb71ce1f1b2e1b12d0f606c728cfeb` (APP-READY-081/PR #245 merge);
+`51c3a2a3353dfe2c6544072300651ec4b23680a4` (APP-READY-081 proof/PR #246 merge);
 current baseline: 942 Flutter tests. Protected dirty worktrees and pre-Phase-1 archive refs must
 remain untouched. Use isolated worktrees. Keep Cloud SQL running only while
 the staging backend/admin service depends on it; do not stop a required service.
@@ -43,8 +43,8 @@ post-merge integration CI `39205075146` passed.
 APP-READY-077's source/deployment/first-operator setup is complete. The Web
 console is deployed behind Cloud Run IAP; the first staging super-administrator
 was provisioned through the backend's two-phase operator procedure. Backend
-revision `carenet-backend-staging-00013-svp` is at 100% traffic and readiness
-returned HTTP 200. The operator completed password setup and application login;
+revision `carenet-backend-staging-00014-jhw` is at 100% traffic. The operator
+completed password setup and application login;
 screenshots prove SUPER ADMIN access and the verification queue. IAP access and
 CareNet application login are separate. Web PR #10 fixed canonical-origin
 validation, and PR #11 added authenticated document downloads. Web main is
@@ -75,7 +75,8 @@ Independent read-only diff review found no blockers. Reviewed head
 including release lint, signing and environment checks. Attempt 1 passed tests
 and analysis but failed downloading an Android SDK archive; source was unchanged
 for the successful rerun. PR #245 merged at `1ab1075`. Integration CI
-`39288540689` was still running when this proof was recorded.
+`39288540689` passed on the exact `1ab1075` integration commit. PR #246
+subsequently merged the documentation proof without changing runtime code.
 
 Hosting version `3eed605e5b2bc4cc`, release `1792428509839000`, published at
 2026-10-19T16:48:29Z. Finalized manifest verification preserved exact live config
@@ -88,13 +89,16 @@ used existing Google Cloud authentication; no secret was exported or logged.
 
 ### Current Operational Follow-Up
 
-The operator approved a staging email-alert recipient. Its enabled email
-channel is `projects/project-a96784ee-811c-46ab-a7b/notificationChannels/8585658639310171247`;
-keep the personal address in cloud configuration, not public docs. Delivery is
-not proved. No alert policies or uptime checks exist; both schedulers remain
-paused. Do not invent a check ID to satisfy the existing monitoring generator,
-enable worker-silence alerts while deliberately paused, or start probes that
-wake otherwise idle services merely to get a green checklist.
+APP-READY-082 remains the one next task, with partial operational proof rather
+than an unconfigured alert channel. October 21 read-back confirms nine enabled
+policies, no uptime checks, and all three schedules paused. Six passive
+service/database/job policies and the sanitized release-health policy are
+joined by two RTC failure policies. A controlled release-health counter,
+OPEN incident, and matching alert receipt are proved; that is not failure-mail
+acceptance for every policy. Keep the approved personal recipient out of Git.
+See `PHASE_1_OPERATIONAL_READINESS.md` for owning backend proofs and remaining
+RTC, worker/provider, database, admin, release, support, and device gates.
+No recurring worker or unnecessary polling probe was enabled by this update.
 
 SQL remains running for the staging backend/admin. Fresh backup `1792427900036`
 is SUCCESSFUL at 2026-10-19T16:40:11.966Z; operation
@@ -980,7 +984,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - operator login/queue proved; Download deployed in Web PR #11; valid-file preview/download proof remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; exact-head CI and Hosting manifest/live-content checks passed; integration CI pending at proof time |
-| APP-READY-082 | Configure cost-conscious staging operational alert policies and prove controlled delivery using the approved channel; use the owning backend/cloud boundaries and do not enable unnecessary probes or scheduled workers | M | **NEXT** - recipient/channel provisioned; policy/API acceptance and delivery still unproved |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - nine policies read back; controlled release-health alert delivered; remaining operational/provider gates in `PHASE_1_OPERATIONAL_READINESS.md` |
 
 ### APP-READY-055 implementation evidence
 

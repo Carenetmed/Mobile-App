@@ -2,12 +2,14 @@
 
 Current: APP-READY-081 is merged through PR #245 at `1ab1075`; exact-head CI,
 942 tests, analyzer, Android APK/release checks and live Hosting checks passed.
-Integration CI remains pending at this proof checkpoint. See `AI_HANDOFF.md`,
+Integration CI also passed; PR #246 merged its proof at `51c3a2a`. See `AI_HANDOFF.md`,
 `FIREBASE_ENVIRONMENTS.md`, and `ANDROID_RELEASE_SIGNING.md`. Admin login/queue
 and the deployed Download feature are proved separately from valid-file
 preview acceptance, which remains partial. Older checkpoint summaries below
-are historical. APP-READY-082 operational alerting is next; the approved
-recipient/channel exists, but delivery is not proved. Payments remain the
+are historical. APP-READY-082 operational alerting remains partial: nine policies
+are applied, all three schedules are paused, and a controlled release-health
+alert has actual delivery proof. See `PHASE_1_OPERATIONAL_READINESS.md` for the
+owning backend evidence and remaining gates. Payments remain the
 final explicit-confirmation gate. Phone automatic auth-link verification is
 still separate from a correctly hosted certificate association.
 

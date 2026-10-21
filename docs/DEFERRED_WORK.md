@@ -4,10 +4,16 @@
 
 APP-READY-081 is merged through PR #245 at `1ab1075` and deployed as Hosting
 version `3eed605e5b2bc4cc`. Exact-head CI, all 942 tests and live association/
-unchanged-page checks pass. Integration CI remains a separate pending check
-at this proof checkpoint. APP-READY-082 owns cost-conscious operational alerts:
-an approved email channel exists, but no alert policies, uptime probes or
-delivery acceptance are claimed. Both scheduled jobs remain paused.
+unchanged-page checks pass. Integration CI `39288540689` also passed.
+APP-READY-082 owns cost-conscious operational alerts and remains partial:
+nine policies are applied, no uptime probes exist, and a controlled sanitized
+release-health alert has an OPEN incident and matching email-receipt proof.
+All three schedules are paused. Full operational/provider acceptance is not
+proved; see `PHASE_1_OPERATIONAL_READINESS.md`. One regular RTC tick completed
+with an empty-work result; useful cleanup, cadence reliability, RTC failure-mail
+delivery and queue age remain open. Approved temporary organization review
+resolved inherited deny-policy visibility for this proof and was removed
+afterward. Future unknown authorization results must still fail closed.
 
 Hosted auth links now name the separate approved Android upload certificates
 instead of the shared debug key. Automatic signed-device verification and Play

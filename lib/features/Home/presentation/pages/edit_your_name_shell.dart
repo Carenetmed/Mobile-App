@@ -5,7 +5,6 @@ import 'package:app_t/core/theme/textStyle.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/profile_repository.dart';
 import 'package:app_t/features/Home/domain/entities/professional_profile.dart';
-import 'package:app_t/features/Home/presentation/state/public_profile_local_store.dart';
 import 'package:app_t/shared/widgets/carenet_button.dart';
 import 'package:app_t/shared/widgets/carenet_text_field.dart';
 import 'package:flutter/material.dart';
@@ -60,7 +59,6 @@ class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
         _professionalProfile = profile;
         _isLoadingProfile = false;
         if (profile == null) {
-          _nameController.text = 'Dr. ${PublicProfileLocalStore.profile.name}';
           _profileStateMessage =
               'Professional profile has not been created yet.';
           return;
@@ -75,7 +73,6 @@ class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
       setState(() {
         _professionalProfile = null;
         _isLoadingProfile = false;
-        _nameController.text = 'Dr. ${PublicProfileLocalStore.profile.name}';
         _profileStateMessage = _safeProfileError(failure);
       });
     } catch (_) {
@@ -85,7 +82,6 @@ class _EditYourNameShellPageState extends State<EditYourNameShellPage> {
       setState(() {
         _professionalProfile = null;
         _isLoadingProfile = false;
-        _nameController.text = 'Dr. ${PublicProfileLocalStore.profile.name}';
         _profileStateMessage = 'Something went wrong. Please try again.';
       });
     }

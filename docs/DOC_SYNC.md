@@ -1,5 +1,17 @@
 # Documentation sync index
 
+## APP-READY-082A Scoped Sync
+
+The authorized source prerequisite removes local sample-name fallback only from
+the registered professional name editor. Runtime boundary is one screen plus a
+new canonical-router test file; existing profile tests remain intact. Companion
+handoff/status/deferred/decision notes distinguish this repair from the partial
+APP-READY-082 operational program. Local verification passes 51 focused tests
+and targeted analysis; full analysis, all 949 tests and staging debug APK also
+pass. Android lint and CI are pending; no cloud or physical-device proof is
+asserted by this source repair. Routes and flow are unchanged; seven tests are
+added and existing tests are untouched.
+
 **Last audited:** 2026-10-21
 **Purpose:** Single place to see which doc is authoritative for what, and known cross-doc rules.
 

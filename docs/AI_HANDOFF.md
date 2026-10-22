@@ -12,8 +12,12 @@ across the new route file, `manage_profile_flow_test.dart` and
 `profile_repository_test.dart`; targeted analysis of the changed screen/test
 reports no issues. Full analysis passes and the complete suite passes 949 tests
 (942 retained plus seven added; none removed or changed). The staging debug APK
-build passes. Android lint and exact-head/integration CI are pending;
-physical-device verification is not claimed.
+build and Android release lint pass. Local lint used an isolated dependency/
+transform cache, bounded JVM/workers and fresh task execution; ignored local
+SDK-path escaping was corrected without tracked native/build changes. Initial
+source-head CI `39773149140` passed all checks, including 949 tests. Final-head
+and integration evidence belongs to [PR #248](https://github.com/Carenetmed/Mobile-App/pull/248)
+and must be green before merge. Physical-device verification is not claimed.
 
 APP-READY-082 remains the sole NEXT row and partial. This source repair does
 not close restore, RTC, provider, admin, signing or physical-device acceptance.

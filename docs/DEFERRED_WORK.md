@@ -7,8 +7,10 @@ legacy stores/screens are not deleted or enabled. Backend profile creation,
 role-policy changes, broader account cleanup, new retry UX, and operational/
 provider/device acceptance remain out of scope. APP-READY-082 remains the sole
 next task and partial. Focused source verification passes 51 tests and targeted
-analysis. Full analysis, all 949 tests and staging debug APK pass. Android lint,
-CI and physical acceptance remain unverified here.
+analysis. Full analysis, all 949 tests, staging debug APK and local Android
+release lint pass; initial source-head CI `39773149140` also passes. Final-head/
+integration evidence remains a merge gate on PR #248; physical acceptance and
+the remaining operational program are separate and not claimed complete.
 
 ## Current Auth-Link And Admin Gates (APP-READY-080/081)
 

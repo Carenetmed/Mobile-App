@@ -13,6 +13,63 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Profile repository boundary', () {
+    for (final statusCode in <int>[401, 403]) {
+      test(
+        'real profile client preserves HTTP $statusCode failure semantics',
+        () async {
+          const internalMessage =
+              'Internal policy detail: patient row restricted';
+          final adapter = _FakeAdapter(
+            statusCode: statusCode,
+            responseJson: <String, dynamic>{'message': internalMessage},
+          );
+          final repository = _repository(adapter: adapter, withSession: true);
+
+          await expectLater(
+            repository.patientMe(),
+            throwsA(
+              isA<AuthFailure>()
+                  .having(
+                    (failure) => failure.type,
+                    'type',
+                    statusCode == 401
+                        ? AuthFailureType.unauthorized
+                        : AuthFailureType.forbidden,
+                  )
+                  .having(
+                    (failure) => failure.statusCode,
+                    'statusCode',
+                    statusCode,
+                  )
+                  .having(
+                    (failure) => failure.message,
+                    'safe message',
+                    statusCode == 401
+                        ? 'Please sign in again.'
+                        : 'This account does not have permission for this action.',
+                  )
+                  .having(
+                    (failure) => failure.toString(),
+                    'no internal body leak',
+                    isNot(contains(internalMessage)),
+                  )
+                  .having(
+                    (failure) => failure.shouldClearSession,
+                    'shouldClearSession',
+                    statusCode == 401,
+                  ),
+            ),
+          );
+          expect(adapter.requestCount, 1);
+          expect(adapter.lastOptions?.uri.path, '/patients/me');
+          expect(
+            adapter.lastOptions?.headers['Authorization'],
+            'Bearer access-token',
+          );
+        },
+      );
+    }
+
     test(
       'patient self-read sends bearer auth and treats 404 as empty profile',
       () async {

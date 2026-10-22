@@ -1,5 +1,16 @@
 # Documentation sync index
 
+## APP-READY-082B Scoped Sync
+
+Handoff, status, decisions and deferred work describe the same two-client
+permission-error correction. Focused tests must use actual HTTP status mapping,
+including the readiness repository's refresh boundary, rather than only typed
+UI fakes. Routes and backend contracts do not change. Local gates pass: 17
+focused tests, 953 full tests (949 retained plus four added), clean analysis,
+staging debug APK and 623 freshly executed release-lint tasks. No existing test
+assertion was removed or weakened. Exact-head and merged-result CI are still
+required; this prerequisite does not complete the readiness program.
+
 ## APP-READY-082A Scoped Sync
 
 The authorized source prerequisite removes local sample-name fallback only from

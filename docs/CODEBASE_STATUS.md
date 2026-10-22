@@ -1,5 +1,18 @@
 # Codebase status
 
+## APP-READY-082B - Permission Failure Classification
+
+Profile and Onboarding API clients now distinguish 403 `forbidden` from 401
+`unauthorized`, following the existing Auth client contract. This stops a
+permission denial being presented as a sign-in requirement and avoids the
+readiness repository's unauthorized-only refresh path. Backend permissions,
+session authority and 401 recovery are unchanged. Four actual-response
+regressions prove status/copy/session semantics, including zero refreshes, one
+readiness request and unchanged session contents/generation after 403. All 17
+focused and 953 full tests pass; analysis, staging debug APK and release lint
+also pass. The increase is exactly four tests over the retained 949. Exact-head
+and integration CI remain delivery gates, not evidence of full readiness.
+
 ## APP-READY-082A - Registered Profile Editor Identity
 
 The registered name editor no longer fills its name from retained local sample

@@ -16,6 +16,128 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('Onboarding repository boundary', () {
     test(
+      'real onboarding client preserves HTTP 401 unauthorized semantics',
+      () async {
+        const internalMessage =
+            'Internal authentication detail: token rejected';
+        final adapter = _FakeAdapter(
+          statusCodes: <int>[401],
+          responseJson: <String, dynamic>{'message': internalMessage},
+        );
+        final repository = _repository(adapter: adapter, withSession: true);
+
+        await expectLater(
+          repository.accountReadiness(),
+          throwsA(
+            isA<AuthFailure>()
+                .having(
+                  (failure) => failure.type,
+                  'type',
+                  AuthFailureType.unauthorized,
+                )
+                .having((failure) => failure.statusCode, 'statusCode', 401)
+                .having(
+                  (failure) => failure.message,
+                  'safe message',
+                  'Please sign in again.',
+                )
+                .having(
+                  (failure) => failure.toString(),
+                  'no internal body leak',
+                  isNot(contains(internalMessage)),
+                )
+                .having(
+                  (failure) => failure.shouldClearSession,
+                  'shouldClearSession',
+                  isTrue,
+                ),
+          ),
+        );
+        expect(adapter.options, hasLength(1));
+        expect(adapter.options.single.uri.path, '/account/readiness');
+        expect(
+          adapter.options.single.headers['Authorization'],
+          'Bearer access-token',
+        );
+      },
+    );
+
+    test(
+      'real onboarding HTTP 403 never refreshes or replays readiness and preserves the session',
+      () async {
+        const internalMessage =
+            'Internal policy detail: readiness permission denied';
+        final store = InMemorySessionStore();
+        final session = _session();
+        await store.save(session);
+        final before = (await store.capture())!;
+        final readinessAdapter = _FakeAdapter(
+          statusCodes: <int>[403],
+          responseJson: <String, dynamic>{'message': internalMessage},
+        );
+        final refreshAdapter = _FakeAdapter(
+          responseJson: <String, dynamic>{
+            ...session.toJson(),
+            'accessToken': 'unexpected-refreshed-access-token',
+            'refreshToken': 'unexpected-refreshed-refresh-token',
+          },
+        );
+        final repository = OnboardingRepository(
+          apiClient: OnboardingApiClient(
+            config: const CareNetApiConfig(baseUrl: 'http://127.0.0.1:8080'),
+            dio: Dio()..httpClientAdapter = readinessAdapter,
+          ),
+          sessionStore: store,
+          authRepository: AuthRepository(
+            apiClient: AuthApiClient(
+              config: const CareNetApiConfig(baseUrl: 'http://127.0.0.1:8080'),
+              dio: Dio()..httpClientAdapter = refreshAdapter,
+            ),
+            sessionStore: store,
+          ),
+        );
+
+        await expectLater(
+          repository.accountReadiness(),
+          throwsA(
+            isA<AuthFailure>()
+                .having(
+                  (failure) => failure.type,
+                  'type',
+                  AuthFailureType.forbidden,
+                )
+                .having((failure) => failure.statusCode, 'statusCode', 403)
+                .having(
+                  (failure) => failure.message,
+                  'safe permission message',
+                  'This account does not have permission for this action.',
+                )
+                .having(
+                  (failure) => failure.toString(),
+                  'no internal body leak',
+                  isNot(contains(internalMessage)),
+                )
+                .having(
+                  (failure) => failure.shouldClearSession,
+                  'shouldClearSession',
+                  isFalse,
+                ),
+          ),
+        );
+        expect(refreshAdapter.options, isEmpty);
+        expect(readinessAdapter.options, hasLength(1));
+        expect(readinessAdapter.options.single.uri.path, '/account/readiness');
+        expect(
+          readinessAdapter.options.single.headers['Authorization'],
+          'Bearer access-token',
+        );
+        final after = (await store.capture())!;
+        expect(after.generation, before.generation);
+        expect(after.session.toJson(), before.session.toJson());
+      },
+    );
+
+    test(
       'catalog read uses public backend route without auth headers',
       () async {
         final adapter = _FakeAdapter(

@@ -1,5 +1,32 @@
 # AI handoff - read this first
 
+## APP-READY-082A - Registered Profile Editor Identity Prerequisite
+
+Authorized bounded prerequisite within APP-READY-082, not a second next task.
+Only `edit_your_name_shell.dart` runtime changes: remove seeded local name
+fallbacks after missing profile or failed load; retain backend prefill, safe
+messages, display-name save and the null-profile save guard. Canonical-router
+regressions cover null profile, 401, 403, network/unexpected failure, missing DI
+and successful backend field preservation. Local verification passes: 51 tests
+across the new route file, `manage_profile_flow_test.dart` and
+`profile_repository_test.dart`; targeted analysis of the changed screen/test
+reports no issues. Full analysis passes and the complete suite passes 949 tests
+(942 retained plus seven added; none removed or changed). The staging debug APK
+build and Android release lint pass. Local lint used an isolated dependency/
+transform cache, bounded JVM/workers and fresh task execution; ignored local
+SDK-path escaping was corrected without tracked native/build changes. Initial
+source-head CI `39773149140` passed all checks, including 949 tests. Final-head
+and integration evidence belongs to [PR #248](https://github.com/Carenetmed/Mobile-App/pull/248)
+and must be green before merge. Physical-device verification is not claimed.
+
+APP-READY-082 remains the sole NEXT row and partial. This source repair does
+not close restore, RTC, provider, admin, signing or physical-device acceptance.
+No API/router/dependency/cloud/backend changes are included in this prerequisite.
+Later manual acceptance: open the registered name
+editor; verify failed loads show an empty name, valid loads show backend identity,
+and successful saving preserves category/specialty/bio. Device execution is not
+claimed. After this prerequisite, return to APP-READY-082's existing gates.
+
 **Mandatory:** `docs/WORKING_AGREEMENT.md` before writing code.
 **Also mandatory:** `docs/ARCHITECTURE_RULES.md` + `docs/TASK_TEMPLATE.md` before implementation.
 

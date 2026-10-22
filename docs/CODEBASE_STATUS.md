@@ -1,5 +1,21 @@
 # Codebase status
 
+## APP-READY-082A - Registered Profile Editor Identity
+
+The registered name editor no longer fills its name from retained local sample
+identity when professional profile loading returns null or fails. Backend
+prefill/save and the null-profile mutation guard remain unchanged. Seven new
+canonical-router cases cover null profile, 401/403, network/unexpected failure,
+missing DI and backend save-field preservation. The focused route/profile flow/
+repository group passes 51 tests; targeted analysis reports no issues. Existing
+tests are unchanged. Full analysis and all 949 tests pass (942 retained plus
+seven new cases); staging debug APK and local Android release lint pass. Initial
+source-head CI `39773149140` passes analysis, 949 tests, APK, lint, signing and
+environment regressions. Final-head/integration proof is attached to
+[PR #248](https://github.com/Carenetmed/Mobile-App/pull/248). No device acceptance
+is claimed. No tracked native configuration or dependency change was required.
+APP-READY-082 stays partial.
+
 ## APP-READY-082 - Operational Handoff (Partial)
 
 October 21 read-back confirms nine enabled alert policies, zero uptime checks,

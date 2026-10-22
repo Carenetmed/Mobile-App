@@ -1,5 +1,15 @@
 # Product & technical decisions
 
+## APP-READY-082A - No Sample Identity On Failed Profile Load
+
+Clarification of D136-D138, not a new product capability: only a successfully
+loaded backend professional profile may prefill the registered name editor.
+Null, unauthorized, forbidden, network, unexpected and missing-DI failures leave
+the field empty with existing safe messages. The null-profile save guard and
+preserved category/specialty/bio remain unchanged. Do not replace failure with
+seeded identity or broaden profile creation, routes, repositories or role policy.
+This is an authorized prerequisite within the still-partial APP-READY-082 task.
+
 ## APP-READY-068 Foreground Notification Ownership (2026-10-16)
 
 Treat FCM notification IDs as opaque hints. Before a foreground local

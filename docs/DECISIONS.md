@@ -1,5 +1,14 @@
 # Product & technical decisions
 
+## APP-READY-082B - Permission Denial Is Not Authentication Expiry
+
+Use the existing `AuthFailureType.forbidden` for HTTP 403 from Profile and
+Onboarding APIs. Preserve the status code and safe permission message, without
+returning backend internals. HTTP 401 retains its existing authentication
+classification. This corrects error handling, not backend authority: a denied
+request never grants a role, changes ownership or proves session expiry.
+Readiness must not refresh/replay merely because its request was forbidden.
+
 ## APP-READY-082A - No Sample Identity On Failed Profile Load
 
 Clarification of D136-D138, not a new product capability: only a successfully

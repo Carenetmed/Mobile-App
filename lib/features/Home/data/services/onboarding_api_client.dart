@@ -83,11 +83,18 @@ class OnboardingApiClient {
         statusCode: statusCode,
       );
     }
-    if (statusCode == 401 || statusCode == 403) {
+    if (statusCode == 401) {
       return AuthFailure(
         type: AuthFailureType.unauthorized,
         message: 'Please sign in again.',
         statusCode: statusCode,
+      );
+    }
+    if (statusCode == 403) {
+      return const AuthFailure(
+        type: AuthFailureType.forbidden,
+        message: 'This account does not have permission for this action.',
+        statusCode: 403,
       );
     }
     if (statusCode != null && statusCode >= 500) {

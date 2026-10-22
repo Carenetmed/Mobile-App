@@ -1,5 +1,22 @@
 # AI handoff - read this first
 
+## APP-READY-082B - Permission Error Boundary Prerequisite
+
+Within the still-partial APP-READY-082 task, distinguish real HTTP 403 permission
+denials from HTTP 401 authentication failures in Profile and Onboarding clients.
+The former combined mapping could show sign-in advice and make the readiness
+repository unnecessarily refresh and retry. Return the existing `forbidden`
+failure type for 403; preserve 401 recovery and backend-owned role authority.
+Scope: two client mappers, focused actual-response/repository tests and companion
+docs. No routes, DI, storage, backend, dependencies or lifecycle changes.
+Verification: 17 focused tests pass; complete analysis and all 953 tests pass
+(949 retained plus four added, no removed or weakened assertions). The full
+staging debug APK and freshly executed 623-task release lint pass. Local builds
+used an isolated cache and bounded JVM/workers; no tracked build changes or
+disabled checks. Independent diff review found no actionable issue. Exact-head
+and merged-result CI remain required before delivery. APP-READY-082 remains the
+sole NEXT row and partial; no device/provider/payment acceptance is claimed.
+
 ## APP-READY-082A - Registered Profile Editor Identity Prerequisite
 
 Authorized bounded prerequisite within APP-READY-082, not a second next task.

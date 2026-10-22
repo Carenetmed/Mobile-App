@@ -1,5 +1,15 @@
 # Deferred work and backend replacement map
 
+## APP-READY-082B Permission Boundary
+
+Correct only Profile/Onboarding 403 classification and prove readiness does not
+refresh/replay or clear the session for that denial. Do not redesign shared
+authentication, alter backend role decisions or broaden API schemas. Existing
+401 recovery and retained flows remain green. Local verification passes 17
+focused and 953 full tests, analysis, staging debug APK and release lint.
+Exact-head/integration CI and delivery remain pending; operational, provider,
+release-candidate and physical gates remain separate.
+
 ## APP-READY-082A Profile Editor Prerequisite
 
 Remove only the registered name editor's seeded identity fallbacks. Retained

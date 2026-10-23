@@ -12,6 +12,7 @@ import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart
 import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
 import 'package:app_t/features/Home/domain/entities/onboarding_catalog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -126,6 +127,78 @@ void main() {
         CareNetPublicLinks.privacy,
       ]);
     });
+    for (final failure in ['false', 'sync throw', 'async throw']) {
+      testWidgets('signup legal link handles $failure with fixed error', (
+        tester,
+      ) async {
+        final opened = <Uri>[];
+        await _pumpFinishSignUp(
+          tester,
+          publicLinkLauncher: (uri) {
+            opened.add(uri);
+            if (failure == 'false') return Future.value(false);
+            final error = PlatformException(
+              code: 'ACTIVITY_NOT_FOUND',
+              message: 'private-launcher-detail',
+            );
+            if (failure == 'sync throw') throw error;
+            return Future.error(error);
+          },
+        );
+        final link = find.byKey(const Key('sign-up-terms-link')).last;
+        await tester.ensureVisible(link);
+        await tester.tap(link);
+        await tester.pumpAndSettle();
+
+        expect(opened, [CareNetPublicLinks.terms]);
+        expect(
+          find.text('Could not open this page. Please try again.'),
+          findsOneWidget,
+        );
+        expect(find.textContaining('private-launcher-detail'), findsNothing);
+        expect(find.textContaining('ACTIVITY_NOT_FOUND'), findsNothing);
+        expect(find.byType(FinSignUp), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+
+    for (final completion in ['true', 'false', 'error']) {
+      testWidgets('signup legal link ignores $completion after disposal', (
+        tester,
+      ) async {
+        final pending = Completer<bool>();
+        final opened = <Uri>[];
+        await _pumpFinishSignUp(
+          tester,
+          publicLinkLauncher: (uri) {
+            opened.add(uri);
+            return pending.future;
+          },
+        );
+        final link = find.byKey(const Key('sign-up-privacy-link')).last;
+        await tester.ensureVisible(link);
+        await tester.tap(link);
+        await tester.pump();
+        expect(opened, [CareNetPublicLinks.privacy]);
+        await tester.pumpWidget(const SizedBox.shrink());
+
+        if (completion == 'error') {
+          pending.completeError(
+            PlatformException(
+              code: 'ACTIVITY_NOT_FOUND',
+              message: 'private-launcher-detail',
+            ),
+          );
+        } else {
+          pending.complete(completion == 'true');
+        }
+        await tester.pump();
+
+        expect(find.byType(SnackBar), findsNothing);
+        expect(tester.takeException(), isNull);
+      });
+    }
+
     testWidgets('blocks navigation when required fields are empty', (
       tester,
     ) async {

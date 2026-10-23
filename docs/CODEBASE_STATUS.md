@@ -1,5 +1,20 @@
 # Codebase status
 
+## APP-READY-082C - Public Link Error Containment
+
+Account and signup contain synchronous and asynchronous public-link launcher
+failures with the existing fixed safe message and mounted check. Successful
+launches remain unchanged; late completion after disposal must do nothing.
+Twelve additive tests cover false, synchronous throw, asynchronous failure and
+late success/false/error for both screens. All 69 focused tests and four-file
+analysis pass. Full analysis and all 965 tests pass (953 retained plus 12 added).
+Independent source/test review, staging debug APK and fresh release lint
+(623 executed tasks) pass. Earlier local SDK-path escaping failures were
+corrected only in ignored local.properties; no lint suppression or tracked build
+change. Exact-head and merged-result CI remain pending.
+No URLs, routes, dependencies, authentication or backend changes.
+This is a prerequisite within partial APP-READY-082, not program completion.
+
 ## APP-READY-082B - Permission Failure Classification
 
 Profile and Onboarding API clients now distinguish 403 `forbidden` from 401

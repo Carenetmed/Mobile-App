@@ -1,5 +1,16 @@
 # Deferred work and backend replacement map
 
+## APP-READY-082C Public Link Boundary
+
+Contain failed platform launches in Account and signup without changing public
+destinations. Browser/device acceptance, monitored support-contact confirmation,
+legal operational ownership and all wider readiness gates remain separate.
+Local verification passes: 69 focused tests, 965 full tests (953 retained plus
+12 added), analysis, staging debug APK and fresh 623-task release lint. Initial
+local path-escaping lint failures were repaired without tracked build changes.
+Independent source review passes; exact-head/integration CI remain pending.
+No provider or cloud configuration is changed.
+
 ## APP-READY-082B Permission Boundary
 
 Correct only Profile/Onboarding 403 classification and prove readiness does not

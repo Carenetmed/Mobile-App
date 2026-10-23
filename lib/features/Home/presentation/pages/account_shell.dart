@@ -93,7 +93,12 @@ class _AccountShellPageState extends State<AccountShellPage> {
 
   Future<void> _openPublicLink(Uri uri) async {
     final launcher = widget.publicLinkLauncher ?? CareNetPublicLinks.launch;
-    final opened = await launcher(uri);
+    bool opened;
+    try {
+      opened = await launcher(uri);
+    } catch (_) {
+      opened = false;
+    }
     if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

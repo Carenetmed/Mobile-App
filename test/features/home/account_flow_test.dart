@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' show SemanticsAction;
 
 import 'package:app_t/core/constants/navigators/router.dart';
@@ -30,6 +31,7 @@ import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/edit_email_shell.dart';
 import 'package:app_t/features/Home/presentation/state/account_local_store.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -401,6 +403,81 @@ void main() {
       CareNetPublicLinks.privacy,
     ]);
   });
+
+  for (final failure in ['false', 'sync throw', 'async throw']) {
+    testWidgets('account public link handles $failure with fixed error', (
+      tester,
+    ) async {
+      final opened = <Uri>[];
+      await _pumpAccount(
+        tester,
+        repository: _FakeAuthRepository(),
+        accountRepository: _FakeAccountRepository(),
+        publicLinkLauncher: (uri) {
+          opened.add(uri);
+          if (failure == 'false') return Future.value(false);
+          final error = PlatformException(
+            code: 'ACTIVITY_NOT_FOUND',
+            message: 'private-launcher-detail',
+          );
+          if (failure == 'sync throw') throw error;
+          return Future.error(error);
+        },
+      );
+
+      await tester.scrollUntilVisible(find.text('Support'), 300);
+      await tester.tap(find.text('Support'));
+      await tester.pumpAndSettle();
+
+      expect(opened, [CareNetPublicLinks.support]);
+      expect(
+        find.text('Could not open this page. Please try again.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('private-launcher-detail'), findsNothing);
+      expect(find.textContaining('ACTIVITY_NOT_FOUND'), findsNothing);
+      expect(find.byType(AccountShellPage), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  for (final completion in ['true', 'false', 'error']) {
+    testWidgets('account public link ignores $completion after disposal', (
+      tester,
+    ) async {
+      final pending = Completer<bool>();
+      final opened = <Uri>[];
+      await _pumpAccount(
+        tester,
+        repository: _FakeAuthRepository(),
+        accountRepository: _FakeAccountRepository(),
+        publicLinkLauncher: (uri) {
+          opened.add(uri);
+          return pending.future;
+        },
+      );
+      await tester.scrollUntilVisible(find.text('Support'), 300);
+      await tester.tap(find.text('Support'));
+      await tester.pump();
+      expect(opened, [CareNetPublicLinks.support]);
+      await tester.pumpWidget(const SizedBox.shrink());
+
+      if (completion == 'error') {
+        pending.completeError(
+          PlatformException(
+            code: 'ACTIVITY_NOT_FOUND',
+            message: 'private-launcher-detail',
+          ),
+        );
+      } else {
+        pending.complete(completion == 'true');
+      }
+      await tester.pump();
+
+      expect(find.byType(SnackBar), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('account area opens transactional notification preferences', (
     tester,

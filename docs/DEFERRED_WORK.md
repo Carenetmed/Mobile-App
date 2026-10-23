@@ -1,5 +1,14 @@
 # Deferred work and backend replacement map
 
+## APP-READY-082D Finance Feedback
+
+Add source-level success/error announcement semantics only. Real screen-reader
+acceptance, provider/payment activation, account/payout rules and broader
+operational readiness remain separate. Seven focused tests, full analysis,
+967 full tests, independent review, staging debug APK and fresh 623-task release
+lint pass. Exact-head/integration CI remain pending.
+No consent for payments or live money is implied by finance widget tests.
+
 ## APP-READY-082C Public Link Boundary
 
 Contain failed platform launches in Account and signup without changing public

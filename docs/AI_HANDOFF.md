@@ -1,5 +1,29 @@
 # AI handoff - read this first
 
+## APP-READY-082D - Finance Feedback Accessibility Prerequisite
+
+Within the still-partial APP-READY-082 task, expose existing asynchronous finance
+notices as live-region semantics. Scope: professional_finance_shell.dart,
+financial_flow_test.dart and canonical companion docs only. Prove success/error
+semantics with controlled repository responses before and after the repair;
+preserve existing calls, safe copy, finance authority and layout. No payment
+activation, provider, backend, dependency, route or financial-rule changes.
+Both new tests first failed on the unchanged screen's missing live-region flag.
+All seven focused tests, full analysis and all 967 tests pass (965 retained plus
+two added, no retained assertion changes). Independent source/test review passes.
+Staging debug APK and fresh release lint (623 executed tasks) pass. Local SDK
+escaping was corrected only in ignored local.properties after Flutter generation;
+no tracked native settings or lint checks changed. Exact-head/integration CI
+remain pending. APP-READY-082
+remains the sole NEXT row.
+Later manual acceptance: with a screen reader, update a consultation price and
+verify a single intelligible result announcement without moving focus
+unexpectedly. Physical accessibility and provider acceptance are not claimed.
+
+Prior APP-READY-082C delivered in PR250 at merge70e8fa9. Exact-head
+CI39938076363 and merged-result CI39939727885 passed all gates, including965
+tests. Its older pending-CI paragraphs below are historical.
+
 ## APP-READY-082C - Public Link Error Boundary Prerequisite
 
 Within the still-partial APP-READY-082 task, contain platform-launch failures

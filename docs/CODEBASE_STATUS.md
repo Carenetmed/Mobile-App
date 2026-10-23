@@ -1,5 +1,19 @@
 # Codebase status
 
+## APP-READY-082D - Finance Notice Accessibility
+
+In progress: finance success/error feedback needs live-region semantics. The
+bounded repair changes only notice presentation and additive widget tests;
+financial rules, repository calls and safe copy remain unchanged. Both new tests
+failed before the repair and pass afterward; all seven focused tests, full
+analysis and 967 full tests pass (965 retained plus two added). Independent
+review, staging debug APK and fresh 623-task release lint pass. Only ignored
+local SDK escaping was repaired; tracked native files and checks are unchanged.
+Exact-head/integration CI remain pending. APP-READY-082 and wider
+operational readiness remain partial.
+Prior link-error repair PR250 delivered at merge70e8fa9 with exact-head and
+merged-result CI green,965 passing tests. Older pending notes are historical.
+
 ## APP-READY-082C - Public Link Error Containment
 
 Account and signup contain synchronous and asynchronous public-link launcher

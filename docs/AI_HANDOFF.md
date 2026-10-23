@@ -1,5 +1,28 @@
 # AI handoff - read this first
 
+## APP-READY-082C - Public Link Error Boundary Prerequisite
+
+Within the still-partial APP-READY-082 task, contain platform-launch failures
+from Account and signup public links. Both a returned false and a thrown
+launcher exception must use the existing fixed user-safe snackbar. A completed
+launch must not show a failure. Preserve mounted checks after asynchronous
+completion and never display or log exception internals.
+
+Scope: account_shell.dart, sign_up_con.dart, their existing flow tests and
+canonical companion docs only. No URL, legal copy, authentication, route,
+dependency, provider or backend changes. Focused false/throw/disposal tests,
+full analysis/tests, staging debug APK, release lint and exact-head/integration
+CI are required. All 69 focused tests, full analysis and all 965 tests pass
+(953 retained plus 12 added; no retained test changes). Independent source/test
+review passes. Staging debug APK and fresh release lint (623 executed tasks)
+pass. An earlier lint run failed ignored local SDK-path escaping; corrected
+locally and rerun without suppressions or tracked build changes. CI remains
+pending. APP-READY-082 remains
+the sole NEXT row.
+Manual acceptance later: open signup legal and Account support/privacy/deletion
+links; verify success, safe failed-launch feedback and safe navigation away
+during a pending launch. No device acceptance is claimed here.
+
 ## APP-READY-082B - Permission Error Boundary Prerequisite
 
 Within the still-partial APP-READY-082 task, distinguish real HTTP 403 permission

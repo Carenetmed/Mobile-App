@@ -1,5 +1,17 @@
 # Documentation sync index
 
+## APP-READY-082C Scoped Sync
+
+Handoff, decisions and deferred work share the Account/signup public-link
+exception boundary. Only the existing fixed failure message may be shown, with
+mounted checks; URLs, auth and routes remain unchanged. All 69 focused tests,
+full analysis, 965 full tests and independent source/test review pass. Twelve
+tests are added; retained tests are unchanged. Staging debug APK and fresh
+623-task release lint pass. Ignored local SDK-path escaping was repaired after
+an initial failure; no tracked build changes or suppressed checks. Only
+exact-head/integration CI remain pending delivery gates.
+This prerequisite does not close APP-READY-082 or browser/device acceptance.
+
 ## APP-READY-082B Scoped Sync
 
 Handoff, status, decisions and deferred work describe the same two-client

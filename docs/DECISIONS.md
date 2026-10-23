@@ -1,5 +1,12 @@
 # Product & technical decisions
 
+## APP-READY-082C - Public Link Failures Stay Within The Screen
+
+Account and signup must treat launcher exceptions like a returned false: show
+the existing fixed failure message only while mounted. Do not expose platform
+errors, change destination URLs or treat launch success as proof a page loaded.
+This is error containment, not a change to legal/support ownership or auth.
+
 ## APP-READY-082B - Permission Denial Is Not Authentication Expiry
 
 Use the existing `AuthFailureType.forbidden` for HTTP 403 from Profile and

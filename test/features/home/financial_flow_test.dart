@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Home/data/repositories/financial_repository.dart';
@@ -173,6 +175,75 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
+
+  for (final succeeds in [true, false]) {
+    testWidgets(
+      'price update ${succeeds ? 'success' : 'safe error'} has one live-region message',
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        try {
+          final repository = _ControlledPriceRepository();
+          final controller = ProfessionalFinanceController(
+            repository: repository,
+          );
+          addTearDown(controller.dispose);
+          await _pump(
+            tester,
+            ProfessionalFinanceShellPage(controller: controller),
+          );
+
+          await tester.enterText(
+            find.byKey(const Key('consultation-price-input')),
+            '20000',
+          );
+          await tester.pump();
+          await tester.ensureVisible(
+            find.byKey(const Key('save-consultation-price')),
+          );
+          await tester.tap(find.byKey(const Key('save-consultation-price')));
+          await tester.pump();
+
+          const success = 'Consultation price updated.';
+          const safeError =
+              'Financial information could not be updated. Please try again.';
+          expect(repository.priceUpdates, [2000000]);
+          expect(controller.consultationPrice!.amountMinor, 1500000);
+          expect(find.text(success), findsNothing);
+          expect(find.text(safeError), findsNothing);
+          if (succeeds) {
+            repository.pendingPrice.complete(
+              const ConsultationPrice(amountMinor: 2000000, currency: 'NGN'),
+            );
+          } else {
+            repository.pendingPrice.completeError(
+              StateError('private-provider-detail'),
+            );
+          }
+          await tester.pumpAndSettle();
+          await tester.drag(find.byType(ListView), const Offset(0, 1200));
+          await tester.pumpAndSettle();
+
+          final message = succeeds ? success : safeError;
+          expect(repository.priceUpdates, [2000000]);
+          expect(
+            controller.consultationPrice!.amountMinor,
+            succeeds ? 2000000 : 1500000,
+          );
+          expect(find.text(message), findsOneWidget);
+          expect(find.text(succeeds ? safeError : success), findsNothing);
+          expect(find.textContaining('private-provider-detail'), findsNothing);
+          final notice = find.bySemanticsLabel(message);
+          expect(notice, findsOneWidget);
+          final data = tester.getSemantics(notice).getSemanticsData();
+          expect(data.label, message);
+          expect(data.flagsCollection.isLiveRegion, isTrue);
+          expect(tester.takeException(), isNull);
+        } finally {
+          semantics.dispose();
+        }
+      },
+    );
+  }
 
   testWidgets('bank details become resolvable only after valid input', (
     tester,
@@ -388,6 +459,17 @@ class _FinanceRepository implements FinancialRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _ControlledPriceRepository extends _FinanceRepository {
+  final pendingPrice = Completer<ConsultationPrice>();
+  final priceUpdates = <int>[];
+
+  @override
+  Future<ConsultationPrice> updateConsultationPrice(int amountMinor) {
+    priceUpdates.add(amountMinor);
+    return pendingPrice.future;
+  }
 }
 
 class _Launcher implements HostedCheckoutLauncher {

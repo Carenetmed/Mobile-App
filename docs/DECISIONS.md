@@ -1,5 +1,12 @@
 # Product & technical decisions
 
+## APP-READY-082D - Announce Finance Outcomes Without Changing Authority
+
+Expose the existing notice message once as a live region after asynchronous
+finance outcomes. Preserve the user-safe copy and backend-confirmed outcome;
+do not add optimistic financial success, automatic focus changes or provider
+activation. Widget semantics are not proof of physical screen-reader behavior.
+
 ## APP-READY-082C - Public Link Failures Stay Within The Screen
 
 Account and signup must treat launcher exceptions like a returned false: show

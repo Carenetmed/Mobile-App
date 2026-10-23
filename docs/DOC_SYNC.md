@@ -1,5 +1,15 @@
 # Documentation sync index
 
+## APP-READY-082D Scoped Sync
+
+Handoff/status, decisions and deferred work share the finance notice live-region
+boundary. Source behavior and tests must preserve existing repository calls,
+financial authority and safe messages. Seven focused and 967 full tests, analysis
+and independent review pass. Staging debug APK and fresh 623-task release lint
+pass; exact-head/integration CI remain pending. No
+device/provider claim. Prior PR250 final-head/main CI passed all gates with965
+tests; earlier pending snapshots below are historical.
+
 ## APP-READY-082C Scoped Sync
 
 Handoff, decisions and deferred work share the Account/signup public-link

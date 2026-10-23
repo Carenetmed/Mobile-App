@@ -1,5 +1,19 @@
 # APP-P1-021 Active-Route UX And Accessibility
 
+## APP-READY-082D Finance Feedback (In Progress)
+
+Controlled consultation-price outcomes reproduced a source accessibility defect:
+success and safe failure notices were visible but lacked live-region semantics.
+Both new tests failed specifically on that flag before the repair. `_Notice`
+now exposes its existing message once as a labelled live region, excluding
+duplicate child semantics. Existing backend-confirmed amounts, repository calls
+and safe copy remain unchanged. Seven focused tests pass (five retained plus
+two added); full analysis and all 967 tests pass. Independent source/test review
+passes. Staging debug APK and fresh release lint (623 executed tasks) pass;
+exact-head/integration CI remain pending. No TalkBack/VoiceOver,
+provider, payment or whole-app acceptance
+is implied; physical announcement behavior remains a later device check.
+
 ## Goal
 
 Close visual consistency and accessibility gaps across the active Phase 1

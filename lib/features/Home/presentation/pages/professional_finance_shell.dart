@@ -568,15 +568,21 @@ class _Notice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isError ? const Color(0xFFFFF1F0) : const Color(0xFFE8F5F2),
-        borderRadius: BorderRadius.circular(8),
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: message,
+      excludeSemantics: true,
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isError ? const Color(0xFFFFF1F0) : const Color(0xFFE8F5F2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(message),
       ),
-      child: Text(message),
     );
   }
 }

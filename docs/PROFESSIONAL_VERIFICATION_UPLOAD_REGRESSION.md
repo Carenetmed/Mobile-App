@@ -1,5 +1,27 @@
 # Professional Verification Upload Regression
 
+## APP-READY-082E - In-Flight Cancellation
+
+The added `cancelling an in-flight storage upload prevents completion` test
+uses the real repository, API client and Dio dispatch with a controlled adapter.
+It waits until the signed PUT enters `fetch`, cancels twice, requires the
+adapter's cancellation future to resolve and expects
+`VerificationUploadCancelled`. Only upload-init may reach the API; no
+upload-complete request may occur, including after the pending response is
+released during cleanup. Both synchronization and cleanup waits are bounded.
+
+The test fails with a five-second cancellation timeout when the production
+controller-to-Dio binding is temporarily removed. Restoring the unchanged
+production source passes all nine repository and 45 combined repository/profile
+tests. No existing test was removed or weakened. This proves the cancellation
+transport boundary, not real socket teardown, remote object deletion or cloud
+acceptance. Full analysis, all 968 tests (967 retained plus one added), staging
+debug APK and fresh 623-task release lint pass. The initial local lint failure
+was ignored Windows SDK path escaping, repaired without tracked build changes.
+Independent bounded review passes; reviewed-change and merged-result CI remain
+delivery gates. Physical/provider proof remains a separate approved fixture gate.
+The historical regression checkpoint below retains its original scope.
+
 Task: 52.80
 Date: 2026-07-15
 

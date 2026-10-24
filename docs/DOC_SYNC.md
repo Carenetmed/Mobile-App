@@ -1,5 +1,16 @@
 # Documentation sync index
 
+## APP-READY-082E Scoped Sync
+
+Handoff, status and deferred work share the test-only in-flight upload
+cancellation boundary. One new transport-adapter regression; no production,
+route, API, dependency or backend change. A disconnected cancellation binding
+fails the test; the existing implementation passes. Full analysis, 968 tests
+and staging debug APK pass; fresh release lint passes with 623 executed tasks
+after correcting only ignored local SDK path escaping. Reviewed-change and
+merged-result CI remain required. Real upload cancellation
+and storage cleanup still need separate approved fixture/device acceptance.
+
 ## APP-READY-082D Scoped Sync
 
 Handoff/status, decisions and deferred work share the finance notice live-region

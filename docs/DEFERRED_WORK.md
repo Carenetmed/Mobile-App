@@ -1,5 +1,13 @@
 # Deferred work and backend replacement map
 
+## APP-READY-082E Verification Cancellation Boundary
+
+Add evidence for the existing in-flight Dio cancellation connection and absence
+of upload-complete after cancellation. Do not infer actual socket teardown,
+server-side rollback, object deletion or provider/device acceptance from the
+controlled adapter test. No production code or upload protocol is changed.
+The broader readiness task and approved fixture/device gates remain open.
+
 ## APP-READY-082D Finance Feedback
 
 Add source-level success/error announcement semantics only. Real screen-reader

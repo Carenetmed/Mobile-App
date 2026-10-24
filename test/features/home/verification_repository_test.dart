@@ -318,6 +318,79 @@ void main() {
       expect(adapter.requests, isEmpty);
     });
 
+    test(
+      'cancelling an in-flight storage upload prevents completion',
+      () async {
+        final apiAdapter = _QueueAdapter(<_QueuedResponse>[
+          _QueuedResponse.json(<String, dynamic>{
+            'document': <String, dynamic>{
+              'id': 'cancelled-document',
+              'documentType': 'license',
+              'storageProvider': 'gcs',
+              'mimeType': 'application/pdf',
+              'fileSizeBytes': 3,
+              'status': 'PENDING',
+              'uploadedAt': '2026-07-15T08:00:00.000Z',
+            },
+            'upload': <String, dynamic>{
+              'signedUrl': 'https://storage.example/pending-upload',
+              'expiresInSeconds': 900,
+            },
+          }),
+        ]);
+        final uploadAdapter = _PendingUploadAdapter();
+        final controller = VerificationUploadController();
+        final repository = _repository(
+          apiAdapter: apiAdapter,
+          uploadAdapter: uploadAdapter,
+          withSession: true,
+        );
+        final upload = repository.uploadDocument(
+          VerificationUploadRequest(
+            documentType: 'license',
+            originalFileName: 'license.pdf',
+            mimeType: 'application/pdf',
+            fileBytes: const <int>[1, 2, 3],
+            controller: controller,
+          ),
+        );
+        final cancelled = expectLater(
+          upload,
+          throwsA(isA<VerificationUploadCancelled>()),
+        );
+
+        try {
+          final request = await uploadAdapter.started.future.timeout(
+            const Duration(seconds: 5),
+          );
+          expect(request.method, 'PUT');
+          expect(
+            request.uri.toString(),
+            'https://storage.example/pending-upload',
+          );
+          expect(request.headers.containsKey('Authorization'), isFalse);
+          controller.cancel();
+          controller.cancel();
+          await uploadAdapter.cancellationObserved.future.timeout(
+            const Duration(seconds: 5),
+          );
+        } finally {
+          uploadAdapter.succeed();
+          await cancelled.timeout(const Duration(seconds: 5));
+        }
+
+        expect(uploadAdapter.requests, hasLength(1));
+        expect(apiAdapter.requests, hasLength(1));
+        expect(apiAdapter.requests.single.uri.path, endsWith('/upload-init'));
+        expect(
+          apiAdapter.requests.any(
+            (request) => request.uri.path.endsWith('/upload-complete'),
+          ),
+          isFalse,
+        );
+      },
+    );
+
     test('missing backend config fails closed', () async {
       final repository = VerificationRepository(
         apiClient: VerificationApiClient(
@@ -367,7 +440,7 @@ void main() {
 
 VerificationRepository _repository({
   required _QueueAdapter apiAdapter,
-  _QueueAdapter? uploadAdapter,
+  HttpClientAdapter? uploadAdapter,
   required bool withSession,
 }) {
   final store = InMemorySessionStore();
@@ -447,5 +520,43 @@ class _QueueAdapter implements HttpClientAdapter {
         Headers.contentTypeHeader: <String>[Headers.jsonContentType],
       },
     );
+  }
+}
+
+class _PendingUploadAdapter implements HttpClientAdapter {
+  final started = Completer<RequestOptions>();
+  final cancellationObserved = Completer<void>();
+  final _response = Completer<ResponseBody>();
+  final requests = <RequestOptions>[];
+
+  void succeed() {
+    if (!_response.isCompleted) {
+      _response.complete(ResponseBody.fromString('{}', 200));
+    }
+  }
+
+  @override
+  void close({bool force = false}) => succeed();
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) {
+    requests.add(options);
+    cancelFuture?.then((_) {
+      cancellationObserved.complete();
+      if (!_response.isCompleted) {
+        _response.completeError(
+          DioException.requestCancelled(
+            requestOptions: options,
+            reason: 'Test upload cancelled.',
+          ),
+        );
+      }
+    });
+    started.complete(options);
+    return _response.future;
   }
 }

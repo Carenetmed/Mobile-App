@@ -1,5 +1,19 @@
 # Codebase status
 
+## APP-READY-082E - Verification Cancellation Coverage
+
+One additive repository regression observes cancellation after the storage PUT
+has entered the transport and proves upload-complete is not called. It fails
+when the existing cancellation binding is removed and passes when restored.
+All retained assertions and production files remain unchanged. Nine repository
+and 45 combined repository/profile tests pass. Full analysis, all 968 tests
+(967 retained plus one added), staging debug APK and fresh release lint pass
+(623 tasks executed). Initial ignored local SDK path escaping was corrected
+without tracked native changes or suppressed checks. PR/CI remain pending.
+This is coverage of the existing implementation, not a demonstrated
+runtime defect or proof of device/provider cancellation. APP-READY-082 remains
+partial. Prior PR251 delivered with final/integration CI green and 967 tests.
+
 ## APP-READY-082D - Finance Notice Accessibility
 
 In progress: finance success/error feedback needs live-region semantics. The

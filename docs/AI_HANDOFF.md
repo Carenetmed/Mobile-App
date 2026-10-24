@@ -1,5 +1,27 @@
 # AI handoff - read this first
 
+## APP-READY-082E - In-Flight Verification Cancellation Proof
+
+Within the sole NEXT task APP-READY-082, add transport-level cancellation
+coverage without changing runtime behavior. The new repository test waits for
+the signed PUT to reach Dio's adapter, cancels twice, observes its cancellation
+future and requires typed cancellation with no upload-complete request.
+Removing the existing cancellation binding made this test fail; restoring it
+passes. This proves the adapter boundary, not physical socket teardown, storage
+rollback or provider/device acceptance. The nine repository and 45 combined
+repository/profile tests pass. Full analysis reports no issues, all 968 tests
+pass (967 retained plus one added), and the staging debug APK builds. Fresh
+release lint passes with all 623 tasks executed. An initial lint run failed
+path escaping in ignored local.properties; only that local file was corrected,
+without suppressions or tracked native changes. PR/CI remain delivery gates.
+No production, dependency,
+backend or route change.
+Later manual acceptance: cancel a real in-flight verification upload on the
+approved staging fixture; confirm no completion or success notice. Fixture and
+device approval remain separate. APP-READY-082 stays partial and sole NEXT.
+Prior finance prerequisite PR251 merged at 0cdd87c with exact-head and
+integration CI green; its older pending statements below are historical.
+
 ## APP-READY-082D - Finance Feedback Accessibility Prerequisite
 
 Within the still-partial APP-READY-082 task, expose existing asynchronous finance

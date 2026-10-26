@@ -9,6 +9,112 @@ import 'package:flutter_test/flutter_test.dart';
 import 'messaging_test_fakes.dart';
 
 void main() {
+  test(
+    'deferred chat load suspends before starting realtime in background',
+    () async {
+      final page = Completer<ConversationPage>();
+      final repository = FakeMessagingRepository(
+        conversations: [conversationSummary()],
+      )..conversationsCompleter = page;
+      final realtime = FakeRealtimeConnection();
+      final controller = AppointmentChatController(
+        repository: repository,
+        realtime: realtime,
+        conversationId: 'conversation-1',
+        disconnectedPollInterval: const Duration(milliseconds: 5),
+      );
+      addTearDown(controller.dispose);
+      final loading = controller.load();
+      await Future<void>.delayed(Duration.zero);
+      expect(repository.conversationsCalls, 1);
+      expect(realtime.startCalls, 0);
+      await controller.onAppPaused();
+      page.complete(
+        ConversationPage(
+          conversations: [conversationSummary()],
+          hasMore: false,
+          serverTime: DateTime.utc(2026, 7, 26, 12),
+        ),
+      );
+      await loading;
+      expect(controller.detail, isNotNull);
+      expect(realtime.lifecycleCalls, ['suspend', 'suspend', 'start']);
+      expect(controller.realtimeConnected, isFalse);
+      final before = repository.messagesCalls;
+      realtime.stateController.add(false);
+      await Future<void>.delayed(const Duration(milliseconds: 18));
+      expect(repository.messagesCalls, before);
+      expect(realtime.resumeCalls, 0);
+      await controller.onAppResumed();
+      expect(repository.messagesCalls, greaterThan(before));
+      expect(realtime.lifecycleCalls.last, 'resume');
+    },
+  );
+
+  test(
+    'typed realtime owner pauses polling and resumes after HTTP catch-up',
+    () async {
+      final repository = FakeMessagingRepository(
+        conversations: [conversationSummary()],
+      );
+      final realtime = FakeRealtimeConnection();
+      final controller = AppointmentChatController(
+        repository: repository,
+        realtime: realtime,
+        conversationId: 'conversation-1',
+        disconnectedPollInterval: const Duration(milliseconds: 5),
+      );
+      addTearDown(controller.dispose);
+      await controller.load();
+      expect(realtime.owner?.userId, repository.userId);
+      expect(realtime.owner?.generation, repository.generation);
+      expect(realtime.owner?.role, repository.role);
+
+      await controller.onAppPaused();
+      expect(realtime.suspendCalls, 1);
+      final before = repository.messagesCalls;
+      realtime.stateController.add(false);
+      realtime.hintController.add(
+        const MessagingRealtimeHint(
+          type: 'message.created',
+          conversationId: 'conversation-1',
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 18));
+      expect(repository.messagesCalls, before);
+
+      await controller.onAppResumed();
+      expect(repository.messagesCalls, greaterThan(before));
+      expect(realtime.resumeCalls, 1);
+    },
+  );
+
+  test(
+    'missing session generation retains HTTP without starting realtime',
+    () async {
+      final repository = FakeMessagingRepository(
+        generation: null,
+        conversations: [conversationSummary()],
+        messages: [careMessage()],
+      );
+      final realtime = FakeRealtimeConnection();
+      final controller = AppointmentChatController(
+        repository: repository,
+        realtime: realtime,
+        conversationId: 'conversation-1',
+      );
+      addTearDown(controller.dispose);
+      await controller.load();
+      expect(controller.detail, isNotNull);
+      expect(controller.flyerController.messages, hasLength(1));
+      expect(realtime.startCalls, 0);
+      expect(realtime.owner, isNull);
+      final before = repository.messagesCalls;
+      await controller.catchUp();
+      expect(repository.messagesCalls, greaterThan(before));
+    },
+  );
+
   group('conversation list', () {
     test(
       'orders by last activity and unread does not override order',

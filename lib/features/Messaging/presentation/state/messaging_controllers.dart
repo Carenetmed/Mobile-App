@@ -44,21 +44,36 @@ class ConversationListController extends ChangeNotifier {
   String? _userId;
   Future<void>? _activeLoad;
   Future<void>? _activePage;
+  bool _refreshQueued = false;
   int _generation = 0;
   bool _disposed = false;
 
   Future<void> load({bool refresh = false}) {
+    if (_disposed) return Future<void>.value();
     final active = _activeLoad;
     if (active != null) {
+      if (refresh) _refreshQueued = true;
       return active;
     }
-    final future = _load(refresh: refresh);
-    _activeLoad = future;
-    return future.whenComplete(() {
-      if (identical(_activeLoad, future)) {
-        _activeLoad = null;
-      }
-    });
+    final completion = Completer<void>();
+    _activeLoad = completion.future;
+    unawaited(_drainLoads(refresh, completion));
+    return completion.future;
+  }
+
+  Future<void> _drainLoads(bool refresh, Completer<void> completion) async {
+    try {
+      do {
+        _refreshQueued = false;
+        await _load(refresh: refresh);
+        refresh = true;
+      } while (!_disposed && _refreshQueued);
+      completion.complete();
+    } catch (error, stack) {
+      completion.completeError(error, stack);
+    } finally {
+      if (identical(_activeLoad, completion.future)) _activeLoad = null;
+    }
   }
 
   Future<void> _load({required bool refresh}) async {
@@ -176,6 +191,7 @@ class ConversationListController extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _refreshQueued = false;
     _generation++;
     conversations = const <ConversationSummary>[];
     super.dispose();
@@ -248,6 +264,7 @@ class AppointmentChatController extends ChangeNotifier {
   bool isLoadingOlder = false;
   bool isSending = false;
   bool realtimeConnected = false;
+  bool _backgrounded = false;
   bool hasMoreBefore = false;
   List<PendingCareMessage> pendingMessages = const <PendingCareMessage>[];
 
@@ -341,7 +358,12 @@ class AppointmentChatController extends ChangeNotifier {
       detail = loadedDetail;
       _mergePage(results[1] as MessagePage, replace: true);
       await _syncFlyer();
-      _startRealtime(session.accessToken);
+      final realtimeIdentity = session.realtimeIdentity;
+      if (realtimeIdentity != null) {
+        await _startRealtime(realtimeIdentity);
+      } else {
+        _startPolling();
+      }
     } catch (error) {
       if (_accept(generation)) {
         errorMessage = safeMessagingFailure(error);
@@ -713,12 +735,14 @@ class AppointmentChatController extends ChangeNotifier {
     }
   }
 
-  void _startRealtime(String accessToken) {
+  Future<void> _startRealtime(MessagingRealtimeIdentity identity) async {
     if (_hintSubscription != null || _disposed) {
       return;
     }
     _hintSubscription = _realtime.hints.listen((hint) {
-      if (!_disposed && hint.conversationId == summary?.conversationId) {
+      if (!_disposed &&
+          !_backgrounded &&
+          hint.conversationId == summary?.conversationId) {
         catchUp();
       }
     });
@@ -726,8 +750,8 @@ class AppointmentChatController extends ChangeNotifier {
       if (_disposed) {
         return;
       }
-      realtimeConnected = connected;
-      if (connected) {
+      realtimeConnected = connected && !_backgrounded;
+      if (realtimeConnected) {
         _pollTimer?.cancel();
         _pollTimer = null;
         catchUp();
@@ -736,24 +760,42 @@ class AppointmentChatController extends ChangeNotifier {
       }
       _notify();
     });
-    _realtime.start(accessToken);
+    if (_backgrounded) {
+      await _realtime.suspend();
+    }
+    if (_disposed) return;
+    unawaited(_realtime.start(identity));
+    _startPolling();
   }
 
   void _startPolling() {
-    if (_disposed || _pollTimer != null || realtimeConnected) {
+    if (_disposed || _backgrounded || _pollTimer != null || realtimeConnected) {
       return;
     }
     _pollTimer = Timer.periodic(_pollInterval, (_) {
-      if (!_disposed && !realtimeConnected) {
+      if (!_disposed && !_backgrounded && !realtimeConnected) {
         catchUp();
       }
     });
   }
 
   Future<void> onAppResumed() async {
-    if (!_disposed) {
-      await catchUp();
-    }
+    if (_disposed) return;
+    _backgrounded = false;
+    await catchUp();
+    if (_disposed || _backgrounded) return;
+    await _realtime.resume();
+    _startPolling();
+  }
+
+  Future<void> onAppPaused() async {
+    if (_disposed) return;
+    _backgrounded = true;
+    _pollTimer?.cancel();
+    _pollTimer = null;
+    realtimeConnected = false;
+    _notify();
+    await _realtime.suspend();
   }
 
   bool _accept(int generation) => !_disposed && generation == _generation;

@@ -1,5 +1,29 @@
 # AI handoff - read this first
 
+## APP-READY-082F - Messaging Transport Readiness
+
+IN PROGRESS within the sole NEXT task APP-READY-082, not a new product task.
+Base `e9f21d4`/968 tests, clean isolated branch
+`slice/APP-READY-082F-messaging-realtime-ingress`. The filled Task Spec and
+selected configuration/session/protocol/file/verification boundaries are in
+`PHASE_1_MESSAGING_REALTIME.md`. Read it before editing feature code.
+Backend PR176 source/CI/image and public native negative-boundary proof are
+complete, but valid-session/device/message-delivery acceptance is not claimed.
+Repair gateway-derived sockets, premature connected state and captured-token
+reconnect using existing session-generation and shared refresh authority.
+No new messaging product feature, route, backend, dependency, native, payment,
+call or notification work. No existing account reset or forged token for proof.
+Prior APP-READY-082E PR252 delivered at this base with968 tests and green
+integration CI; its older pending wording below is historical. Full readiness
+and APP-READY-082 stay partial. Source implementation, independent review and
+final-source analysis, staging debug APK and all 1,126 tests pass after review
+repaired dropped inbox reconnect catch-up with a coalesced trailing fetch and
+two delayed-response tests. Inventory:
+968 retained plus 158 added; one obsolete HTTP-derived URL expectation renamed,
+no deleted/skipped tests. Repaired-source fresh release lint (623 executed
+tasks), protected signing regressions and all 30 environment probes pass.
+Signed staging artifacts and CI remain delivery gates.
+
 ## APP-READY-082E - In-Flight Verification Cancellation Proof
 
 Within the sole NEXT task APP-READY-082, add transport-level cancellation

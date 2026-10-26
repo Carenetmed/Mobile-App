@@ -2,7 +2,6 @@
 
 import 'dart:async';
 
-import 'package:app_t/core/config/carenet_api_config.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/core/presentation/carenet_presentation.dart';
@@ -35,6 +34,8 @@ class _MessagesPageState extends State<MessagesPage>
   ConversationListController? _controller;
   MessagingRealtimeConnection? _realtime;
   StreamSubscription<MessagingRealtimeHint>? _hintSubscription;
+  StreamSubscription<bool>? _stateSubscription;
+  bool _backgrounded = false;
 
   @override
   void initState() {
@@ -57,19 +58,25 @@ class _MessagesPageState extends State<MessagesPage>
   Future<void> _startRealtime(MessagingRepository repository) async {
     try {
       final session = await repository.requireSession();
-      if (!mounted) {
+      final identity = session.realtimeIdentity;
+      if (!mounted || identity == null) {
         return;
       }
-      final realtime =
-          widget.realtime ??
-          MessagingRealtimeClient(config: sl<CareNetApiConfig>());
+      final realtime = widget.realtime ?? sl<MessagingRealtimeConnection>();
       _realtime = realtime;
       _hintSubscription = realtime.hints.listen((_) {
-        if (mounted) {
+        if (mounted && !_backgrounded) {
           _controller?.load(refresh: true);
         }
       });
-      await realtime.start(session.accessToken);
+      _stateSubscription = realtime.connectionState.listen((connected) {
+        if (mounted && !_backgrounded && connected) {
+          _controller?.load(refresh: true);
+        }
+      });
+      if (_backgrounded) await realtime.suspend();
+      if (!mounted) return;
+      await realtime.start(identity);
     } catch (_) {
       // HTTP remains authoritative through resume and explicit refresh.
     }
@@ -84,7 +91,20 @@ class _MessagesPageState extends State<MessagesPage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _controller?.load(refresh: true);
+      _onAppResumed();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached) {
+      _backgrounded = true;
+      _realtime?.suspend();
+    }
+  }
+
+  Future<void> _onAppResumed() async {
+    _backgrounded = false;
+    await _controller?.load(refresh: true);
+    if (mounted && !_backgrounded) {
+      await _realtime?.resume();
     }
   }
 
@@ -92,6 +112,7 @@ class _MessagesPageState extends State<MessagesPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _hintSubscription?.cancel();
+    _stateSubscription?.cancel();
     _realtime?.dispose();
     _controller
       ?..removeListener(_onChanged)

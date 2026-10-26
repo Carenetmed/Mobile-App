@@ -1,5 +1,32 @@
 # Deferred work and backend replacement map
 
+## APP-READY-082F Messaging Transport Acceptance (IN PROGRESS)
+
+Source transport-readiness work follows `PHASE_1_MESSAGING_REALTIME.md` within
+the sole NEXT task APP-READY-082. It is not delivered and does not complete the
+readiness program. Final-source analysis, staging debug APK and all 1,126 tests
+(968 retained plus 158 additions) pass after the inbox catch-up repair.
+Diff checks pass. Repaired-source release environment
+checks pass all 30 probes and eight packaging graphs. Fresh release lint
+(623 executed tasks) and signing regressions pass. Signed staging artifacts and
+CI remain delivery gates.
+
+The standalone staging ingress has negative-boundary evidence only: health,
+unrelated HTTP rejection and missing/malformed/invalid authentication rejection.
+Valid patient/professional sessions, ACK-only status in a legitimate session,
+message delivery, token-expiry recovery, reconnect catch-up, logout/account
+switch, poor network and process restoration still need approved acceptance.
+Legitimate session/fixture consent and the approved final physical-device
+session remain separate gates. No production WSS host is approved; absent
+configuration retains honest HTTP/resume/manual-refresh fallback.
+
+Do not reset existing accounts or forge tokens to manufacture acceptance.
+Backend scan success does not mean zero findings: the documented unfixed HIGH
+finding remains governed by backend scan policy. Broader operational/provider
+gates remain open; payments are last, test-only and require separate explicit
+confirmation. This prerequisite does not expand attachments, rich chat,
+notifications, calls, routes, persistence, backend or native/dependency scope.
+
 ## APP-READY-082E Verification Cancellation Boundary
 
 Add evidence for the existing in-flight Dio cancellation connection and absence

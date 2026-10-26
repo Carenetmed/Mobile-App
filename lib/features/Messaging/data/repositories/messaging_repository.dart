@@ -3,6 +3,7 @@ import 'package:app_t/features/Authentication/data/storage/session_store.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 
 import '../../domain/entities/messaging_models.dart';
+import '../../domain/entities/messaging_realtime_session.dart';
 import '../services/messaging_api_client.dart';
 
 class MessagingRepository {
@@ -16,15 +17,15 @@ class MessagingRepository {
   final SessionStore _sessionStore;
 
   Future<MessagingSession> requireSession() async {
-    final session = await _sessionStore.read();
-    if (session == null || session.user.id.trim().isEmpty) {
+    final snapshot = await _sessionStore.capture();
+    if (snapshot == null || snapshot.session.user.id.trim().isEmpty) {
       throw const AuthFailure(
         type: AuthFailureType.unauthorized,
         message: 'Please sign in again.',
         statusCode: 401,
       );
     }
-    return MessagingSession(session);
+    return MessagingSession(snapshot.session, generation: snapshot.generation);
   }
 
   Future<ConversationPage> conversations({
@@ -107,9 +108,20 @@ class MessagingRepository {
 }
 
 class MessagingSession {
-  const MessagingSession(this._session);
+  const MessagingSession(this._session, {this.generation});
 
   final AuthSessionModel _session;
+  final String? generation;
+
+  MessagingRealtimeIdentity? get realtimeIdentity {
+    final currentGeneration = generation;
+    if (currentGeneration == null) return null;
+    return MessagingRealtimeIdentity(
+      userId: userId,
+      generation: currentGeneration,
+      role: role,
+    );
+  }
 
   String get userId => _session.user.id;
   String get role => _session.user.role;

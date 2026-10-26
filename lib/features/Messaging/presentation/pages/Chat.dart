@@ -1,6 +1,5 @@
 // ignore_for_file: file_names
 
-import 'package:app_t/core/config/carenet_api_config.dart';
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/features/Messaging/data/repositories/messaging_repository.dart';
@@ -33,9 +32,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     if (args != null) {
       _controller = AppointmentChatController(
         repository: widget.repository ?? sl<MessagingRepository>(),
-        realtime:
-            widget.realtime ??
-            MessagingRealtimeClient(config: sl<CareNetApiConfig>()),
+        realtime: widget.realtime ?? sl<MessagingRealtimeConnection>(),
         conversationId: args.conversationId,
         appointmentId: args.appointmentId,
       )..addListener(_onChanged);
@@ -58,6 +55,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _controller?.onAppResumed();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached) {
+      _controller?.onAppPaused();
     }
   }
 

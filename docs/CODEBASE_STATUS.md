@@ -1,5 +1,31 @@
 # Codebase status
 
+## APP-READY-082F - Messaging Transport Readiness (IN PROGRESS)
+
+Source work is in progress on `slice/APP-READY-082F-messaging-realtime-ingress`
+from `e9f21d4ac2e84a93c556d798a2184900e7a3ccf0` (968 passing baseline tests).
+This is a prerequisite within the sole NEXT task APP-READY-082, not delivered
+messaging transport or completion of the production-readiness program.
+`PHASE_1_MESSAGING_REALTIME.md` owns the selected contract: explicit optional
+staging WSS configuration, typed account/session-generation ownership, shared
+refresh coordination, ACK-only connected state, per-view connections and
+HTTP-authoritative reconnect/resume catch-up. Missing configuration retains
+HTTP/manual-refresh fallback; no production WSS host is approved.
+
+Backend PR176 and the 2026-10-25 standalone staging ingress negative-boundary
+proof are recorded in that contract. Health 200, unrelated HTTP 404 and rejected
+missing/malformed/invalid authentication do not prove a valid patient session,
+message delivery, physical-device behavior or production acceptance. Final-source
+analysis, staging debug APK, all 1,126 tests (968 retained plus 158 additions)
+and diff checks pass after repairing dropped inbox reconnect catch-up.
+Independent review's delayed-close refresh-dispatch race
+was repaired with three regressions. No tests were deleted or skipped; the
+obsolete HTTP-derived endpoint expectation was renamed without losing strict
+frame/sequence assertions. Repaired-source release lint (623 executed tasks),
+signing regressions, 30 environment probes and eight packaging graphs pass.
+Signed staging artifacts and CI remain pending for 082F.
+Legitimate fixture/session consent and later device acceptance remain open.
+
 ## APP-READY-082E - Verification Cancellation Coverage
 
 One additive repository regression observes cancellation after the storage PUT

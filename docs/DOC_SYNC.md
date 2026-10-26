@@ -1,5 +1,26 @@
 # Documentation sync index
 
+## APP-READY-082F Scoped Sync (IN PROGRESS)
+
+`PHASE_1_MESSAGING_REALTIME.md` is the selected transport-readiness contract;
+`PHASE_1_APPOINTMENT_MESSAGING.md` retains the appointment/HTTP/privacy handoff
+and now distinguishes the current explicit WSS contract from historical
+MSG-P1-007 verification. CODEBASE_STATUS, DECISIONS and DEFERRED_WORK share the
+same optional staging-only URL, session-generation/shared-refresh, ACK-only
+connection and HTTP catch-up boundary. No HTTP-derived socket or production
+host is approved. APP-READY-082 remains the sole NEXT task and partial; 082F
+is in progress, not delivered.
+
+The 968-test source base is historical baseline evidence. Final-source analysis,
+staging debug APK and all 1,126 tests (968 retained plus 158 additions) pass.
+Review repaired a dropped inbox reconnect refresh with two delayed-response
+tests. Diff checks pass; lifecycle races are covered. Repaired-source fresh
+release lint, signing regressions and environment gates pass. Signed staging
+artifacts and CI remain pending. Live evidence is limited to
+the documented standalone staging negative ingress boundary, not valid-session,
+message-delivery, device or production acceptance. This scoped sync does not
+change the parent AI_HANDOFF task table or the realtime task spec.
+
 ## APP-READY-082E Scoped Sync
 
 Handoff, status and deferred work share the test-only in-flight upload

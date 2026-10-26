@@ -1,5 +1,18 @@
 # Documentation sync index
 
+## APP-READY-082G Scoped Sync (IN PROGRESS)
+
+Handoff, realtime contract, status, decisions, deferred work and appointment
+messaging share the bounded foreground HTTP recovery boundary. The transport
+does not infer expiry from code1008; HTTP401 and the existing coordinator retain
+authority. No background polling, new API, role grant or session-store change.
+Targeted157PASS with an actual removed-emission RED/restored GREEN regression;
+27 added tests, full1,153PASS. Analyzer/debug APK/fresh623-task lint and protected
+signing/environment/backup/flavor gates pass. Independent review is clear;
+signed staging artifacts and CI remain pending. Prior
+082F delivery is PR253/merge8b8e9fc, reviewedaec4e8f, all PR/integration lanes green.
+The parent readiness task082 remains the sole NEXT and incomplete.
+
 ## APP-READY-082F Scoped Sync (IN PROGRESS)
 
 `PHASE_1_MESSAGING_REALTIME.md` is the selected transport-readiness contract;

@@ -1,5 +1,64 @@
 # Appointment Messaging Transport Readiness
 
+## APP-READY-082G Task Spec
+
+Status: IN PROGRESS, prerequisite within sole NEXT task APP-READY-082.
+Base: `8b8e9fc2747e0708df93e36f67f1059498baa520`, 1,126 passing tests.
+Branch: `slice/APP-READY-082G-messaging-http-recovery`.
+
+Goal: recover a foreground inbox after disconnection spans the token-expiry
+hint and expiry itself. Stored credentials alone cannot resolve a pre-ACK
+rejection; only an authenticated HTTP response may invoke existing 401 refresh.
+
+Selected contract:
+- A real auth frame sent without subsequent ACK may emit an owner-typed HTTP
+  recovery request when that attempt fails. No token or guessed failure cause.
+- No request for absent configuration, failure before auth dispatch, an
+  acknowledged connection closing, retirement, backgrounding or disposal.
+- The inbox accepts only its expected account/role/session generation, checks
+  current stored ownership with a bounded wait, and reloads through the existing
+  repository. At most one probe in flight and one admission per 30 foreground
+  seconds while continuously foregrounded; repeated requests coalesce. Pause
+  cancels the cooldown; the existing explicit resume reload remains independent.
+  Timers never initiate network work.
+- Pause/dispose fence pending reads, cancel cooldown timers and admit no new
+  probes. Ordinary manual/resume refresh and ACK catch-up remain supported.
+- Generic socket code1008 is not token-expiry authority. This recovery path never
+  directly refreshes or clears sessions. Existing explicit backend expiry-hint
+  handling is unchanged. No role invention, backend/protocol change or polling.
+
+Allowed files: existing realtime client and Messages page, messaging test fake,
+focused transport/inbox/auth-boundary tests and canonical handoff/status/docs.
+Do not change session storage/coordinator/interceptor, backend, dependencies,
+native source, routes, chat writes, appointments, payments, calls or notifications.
+Reuse existing repository, typed identity, loading/error states and visual tokens;
+no new visual surface. Preserve full test inventory and sole NEXT task082.
+
+Acceptance: reproduce the lost-hint recovery gap; prove pre-ACK-only signals,
+bounded owner-aware HTTP probes, canonical401 refresh and no refresh for403,
+cooldown/concurrency, disposal/pause/account fencing, and absent-config safety.
+Run targeted and full tests, analyzer, debug/signed staging artifacts, release
+lint/signing/environment gates, diff checks and exact-head/integration CI.
+Review/repair and merge only an unchanged green clean head. Valid-session,
+poor-network and physical-device acceptance remain explicitly separate.
+
+Implementation evidence: 157 targeted messaging tests pass. Removing the new
+recovery emission makes the real HTTP401 regression fail (expected one canonical
+refresh, observed zero); restoring it passes. Real coordinator/interceptor tests
+prove401 rotates once with generation preserved, whereas403/503 preserve tokens
+without direct refresh. Test inventory adds27: client13, inbox flow10, HTTP/real
+transport integration4. Expected full suite1,153 =1,126 retained +27 additions;
+no removed, renamed, skipped or weakened tests. All1,153 tests and analyzer pass;
+staging debug APK, fresh623-task release lint, protected signing regressions,
+30 environment probes/eight packaging graphs, backup25negative probes and iOS
+flavor source checks pass. Independent source/test review reports no unresolved
+findings. Signed staging artifacts and exact-head/integration CI remain delivery
+gates; none of this replaces live session/provider/device acceptance.
+
+082F source was delivered through PR253 at this base, reviewed `aec4e8f`;
+both PR and integration Android/iOS CI passed with1,126 tests. Its older
+pending-CI text below is as-at-commit history, not current delivery status.
+
 ## APP-READY-082F Task Spec
 
 Status: IN PROGRESS, prerequisite within the sole NEXT task APP-READY-082.

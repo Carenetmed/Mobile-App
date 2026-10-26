@@ -1,5 +1,22 @@
 # Phase 1 Appointment-Linked Messaging
 
+## APP-READY-082G - Lost Expiry-Hint Recovery
+
+Within partial readiness task082, add bounded foreground HTTP recovery when a
+real socket auth attempt fails before ACK. A typed owner request is only a hint;
+the current account/generation is checked before repository reload, and only
+HTTP401 may invoke canonical refresh. No policy-close interpretation, local
+sign-out or background polling. Five-second ownership deadline, one in flight,
+30-second foreground cooldown, and pause/disposal fencing apply. Existing
+manual/resume and authenticated reconnect catch-up remain intact. Targeted157
+tests pass, including401/403/503 authority and removed-signal RED/restored GREEN.
+Full1,153 tests, analyzer/debug APK, fresh623-task release lint and signing/
+environment/backup/flavor gates pass. Signed artifacts and CI remain pending;
+complete contract in PHASE_1_MESSAGING_REALTIME.md.
+082F source delivered at8b8e9fc through PR253 with all PR/integration CI green;
+historical pending notes below do not override that proof. Operational/provider
+and later physical acceptance remain separate and unclaimed.
+
 **Capability:** `MSG-P1-007`
 **Backend authority:** `4e3e49df6490798374b245d6061f849ca02e6b4f`
 **Flutter base:** `0f6b6109a7bc9cb305edc636fb447dc0add9b771`

@@ -1,5 +1,21 @@
 # Deferred work and backend replacement map
 
+## APP-READY-082G Recovery Acceptance (IN PROGRESS)
+
+The confirmed lost-expiry-hint source gap is being repaired with bounded,
+foreground, owner-aware HTTP recovery after failed pre-ACK authentication.
+157 messaging tests pass; the real401 regression fails without the signal and
+passes restored. Full1,153 tests, analyzer, debug APK, fresh623-task lint and
+signing/environment/backup/flavor gates pass. Signed artifacts and CI remain
+delivery gates; the independent source review is clear.
+Do not infer full operational acceptance from these fakes/adapters. Legitimate
+session/message delivery, poor-network/process restoration and later physical
+device proof remain required. No permission to reset accounts or forge tokens.
+No backend/protocol, persistence, dependencies, native, payment, RTC or provider
+change; payments remain last/test-only with final separate explicit approval.
+082F source delivered in PR253, all PR/integration lanes green; its pending
+source-delivery wording below is historical, not a reason to duplicate that work.
+
 ## APP-READY-082F Messaging Transport Acceptance (IN PROGRESS)
 
 Source transport-readiness work follows `PHASE_1_MESSAGING_REALTIME.md` within

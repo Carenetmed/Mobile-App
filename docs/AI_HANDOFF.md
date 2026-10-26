@@ -1,5 +1,21 @@
 # AI handoff - read this first
 
+## APP-READY-082G - Foreground Messaging HTTP Recovery
+
+IN PROGRESS within sole NEXT task APP-READY-082. Clean isolated branch
+`slice/APP-READY-082G-messaging-http-recovery`, base `8b8e9fc`/1,126 tests.
+Filled Task Spec: `PHASE_1_MESSAGING_REALTIME.md`. Close the confirmed lost-expiry-
+hint inbox gap with bounded owner-aware HTTP recovery after failed pre-ACK auth,
+not guessed socket-error refresh or background polling. Source/storage/backend/
+dependency/route boundaries and full verification gates are in that spec.
+All1,153 tests (1,126 retained+27 added), analyzer, staging debug APK, fresh
+release lint623tasks, signing/environment/backup/flavor gates pass. The401
+regression fails without recovery emission and passes restored. Independent
+review is clear. Signed artifacts and CI remain delivery gates.
+082F source delivered in PR253, reviewed `aec4e8f`, merged at this base; all
+PR/integration CI lanes green. Its older pending text below is historical.
+Full readiness, legitimate session/provider and later device proof remain open.
+
 ## APP-READY-082F - Messaging Transport Readiness
 
 IN PROGRESS within the sole NEXT task APP-READY-082, not a new product task.

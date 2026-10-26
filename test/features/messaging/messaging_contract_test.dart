@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:app_t/core/config/carenet_api_config.dart';
+import 'package:app_t/core/config/messaging_realtime_config.dart';
 import 'package:app_t/features/Messaging/data/services/messaging_realtime_client.dart';
+import 'package:app_t/features/Messaging/data/services/messaging_realtime_session_provider.dart';
 import 'package:app_t/features/Messaging/domain/entities/messaging_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -93,19 +94,38 @@ void main() {
     );
   });
 
-  test('socket URL derives from API base and never contains token', () {
-    final client = MessagingRealtimeClient(
-      config: const CareNetApiConfig(
-        baseUrl: 'https://staging-api.example.test/api',
-      ),
-    );
+  test(
+    'socket uses explicit canonical staging endpoint without token',
+    () async {
+      final client = MessagingRealtimeClient(
+        config: _config,
+        sessions: _Sessions(),
+      );
 
-    expect(
-      client.endpoint.toString(),
-      'wss://staging-api.example.test/messaging',
-    );
-    expect(client.endpoint?.query, isEmpty);
-  });
+      expect(client.endpoint.toString(), _config.url);
+      expect(client.endpoint?.query, isEmpty);
+      await client.dispose();
+    },
+  );
+
+  test(
+    'missing explicit socket endpoint makes no connection attempt',
+    () async {
+      var attempts = 0;
+      final client = MessagingRealtimeClient(
+        config: const MessagingRealtimeConfig(environment: 'staging', url: ''),
+        sessions: _Sessions(),
+        channelFactory: (_) {
+          attempts++;
+          throw StateError('unexpected connection');
+        },
+      );
+      await client.start(_identity);
+      expect(client.endpoint, isNull);
+      expect(attempts, 0);
+      await client.dispose();
+    },
+  );
 
   test(
     'socket sends strict auth frame without resume or token in URL',
@@ -113,23 +133,25 @@ void main() {
       final channel = _FakeWebSocketChannel();
       Uri? capturedUri;
       final client = MessagingRealtimeClient(
-        config: const CareNetApiConfig(baseUrl: 'http://localhost:3000'),
+        config: _config,
+        sessions: _Sessions(),
         channelFactory: (uri) {
           capturedUri = uri;
           return channel;
         },
       );
 
-      await client.start('secret-access-token');
+      await client.start(_identity);
       await Future<void>.delayed(Duration.zero);
 
-      expect(capturedUri.toString(), 'ws://localhost:3000/messaging');
+      expect(capturedUri.toString(), _config.url);
       expect(capturedUri?.query, isEmpty);
       final frame =
           jsonDecode(channel.sent.single as String) as Map<String, dynamic>;
       expect(frame, <String, dynamic>{
         'type': 'auth',
         'accessToken': 'secret-access-token',
+        'protocolVersion': 1,
       });
       expect(frame.containsKey('resume'), isFalse);
       await client.dispose();
@@ -139,12 +161,18 @@ void main() {
   test('malformed and unknown-version hints are ignored safely', () async {
     final channel = _FakeWebSocketChannel();
     final client = MessagingRealtimeClient(
-      config: const CareNetApiConfig(baseUrl: 'http://localhost:3000'),
+      config: _config,
+      sessions: _Sessions(),
       channelFactory: (_) => channel,
     );
     final hints = <MessagingRealtimeHint>[];
     final subscription = client.hints.listen(hints.add);
-    await client.start('access-token');
+    await client.start(_identity);
+
+    channel.addIncoming(
+      jsonEncode({'protocolVersion': 1, 'eventType': 'auth.accepted'}),
+    );
+    await Future<void>.delayed(Duration.zero);
 
     channel.addIncoming('not-json');
     channel.addIncoming(
@@ -159,13 +187,13 @@ void main() {
         'protocolVersion': 1,
         'eventType': 'message.created',
         'conversationId': 'conversation-1',
-        'sequence': '2',
+        'sequence': '9007199254740993',
       }),
     );
     await Future<void>.delayed(Duration.zero);
 
     expect(hints, hasLength(1));
-    expect(hints.single.sequence, BigInt.two);
+    expect(hints.single.sequence, BigInt.parse('9007199254740993'));
     await subscription.cancel();
     await client.dispose();
   });
@@ -173,7 +201,8 @@ void main() {
   test('reconnect remains serialized and stops after disposal', () async {
     final channels = <_FakeWebSocketChannel>[];
     final client = MessagingRealtimeClient(
-      config: const CareNetApiConfig(baseUrl: 'http://localhost:3000'),
+      config: _config,
+      sessions: _Sessions(),
       initialReconnectDelay: const Duration(milliseconds: 2),
       maximumReconnectDelay: const Duration(milliseconds: 4),
       random: Random(1),
@@ -183,7 +212,7 @@ void main() {
         return channel;
       },
     );
-    await client.start('access-token');
+    await client.start(_identity);
     expect(channels, hasLength(1));
 
     await channels.single.closeIncoming();
@@ -197,20 +226,46 @@ void main() {
   });
 
   test('failed pre-auth connection is closed before retry', () async {
-    final failed = _FakeWebSocketChannel(
-      ready: Future<void>.error(StateError('connection failed')),
-    );
+    final ready = Completer<void>();
+    final failed = _FakeWebSocketChannel(ready: ready.future);
     final client = MessagingRealtimeClient(
-      config: const CareNetApiConfig(baseUrl: 'http://localhost:3000'),
+      config: _config,
+      sessions: _Sessions(),
       initialReconnectDelay: const Duration(seconds: 1),
       channelFactory: (_) => failed,
     );
 
-    await client.start('access-token');
+    final starting = client.start(_identity);
+    await Future<void>.delayed(Duration.zero);
+    ready.completeError(StateError('connection failed'));
+    await starting;
 
     await expectLater(failed.sink.done, completes);
     await client.dispose();
   });
+}
+
+const _config = MessagingRealtimeConfig(
+  environment: 'staging',
+  url: 'wss://carenet-messaging-staging-tkgduhftha-el.a.run.app/messaging',
+);
+const _identity = MessagingRealtimeIdentity(
+  userId: 'patient',
+  generation: 'generation-1',
+  role: 'PATIENT',
+);
+
+class _Sessions implements MessagingRealtimeSessionProvider {
+  @override
+  Future<MessagingRealtimeCredentials?> read() async =>
+      const MessagingRealtimeCredentials(
+        identity: _identity,
+        accessToken: 'secret-access-token',
+      );
+  @override
+  Future<MessagingRealtimeCredentials?> refresh(
+    MessagingRealtimeCredentials expected,
+  ) async => read();
 }
 
 class _FakeWebSocketChannel implements WebSocketChannel {

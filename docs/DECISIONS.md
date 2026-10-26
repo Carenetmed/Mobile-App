@@ -1,5 +1,34 @@
 # Product & technical decisions
 
+## APP-READY-082F - Explicit Session-Owned Messaging Transport
+
+Selected contract, IN PROGRESS, within the sole NEXT task APP-READY-082; not a
+new messaging product or a delivered readiness gate. See
+`PHASE_1_MESSAGING_REALTIME.md` for backend evidence and the full boundary.
+Use only explicit optional `CARENET_MESSAGING_WS_URL`, never a URL derived
+from the HTTP gateway. A nonblank URL requires exact `staging`, WSS, the exact
+`carenet-messaging-staging-tkgduhftha-el.a.run.app` host and `/messaging` path,
+with no credentials, query, fragment, encoded alternate path or non-443 port.
+Blank configuration disables realtime without preventing HTTP fallback. No
+production WSS host is approved; nonblank production configuration fails closed.
+
+Connections are per view. Callers pass typed user/session-generation intent,
+not reusable raw tokens; credentials come from existing SessionStore snapshots
+and SessionRefreshCoordinator authority. Missing generation cannot manufacture
+socket authority. Only backend `auth.accepted` protocolVersion 1 permits
+connected state or hints. Refresh/reconnect must retain the expected owner,
+reread current credentials and retire stale transports; no second auth frame
+or parallel refresh owner. Suspend in background, stop fallback polling there,
+and catch up through HTTP on foreground/reconnect. Hints never persist messages.
+
+Backend negative-boundary evidence is not valid-session, delivery or device
+acceptance. Final-source analysis, 1,126 tests, staging debug APK, fresh release
+lint, signing regressions and environment gates pass after repairing dropped
+reconnect catch-up with one coalesced trailing inbox load. Signed-artifact and
+CI gates remain separate from approved legitimate fixture/device proof. No
+account reset or forged token may manufacture proof.
+Payments remain last, test-only and subject to separate explicit confirmation.
+
 ## APP-READY-082D - Announce Finance Outcomes Without Changing Authority
 
 Expose the existing notice message once as a live region after asynchronous

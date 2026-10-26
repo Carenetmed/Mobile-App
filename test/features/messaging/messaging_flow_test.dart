@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' show SemanticsAction;
 
 import 'package:app_t/core/constants/navigators/routeName.dart';
@@ -13,6 +14,140 @@ import 'messaging_test_fakes.dart';
 import '../notifications/notification_test_fakes.dart';
 
 void main() {
+  testWidgets(
+    'inbox ACK during initial load queues one fresh request for repeated ACKs and hints',
+    (tester) async {
+      final initial = Completer<ConversationPage>();
+      final fresh = Completer<ConversationPage>();
+      final repository =
+          FakeMessagingRepository()..conversationsCompleter = initial;
+      final realtime = FakeRealtimeConnection();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: MessagesPage(repository: repository, realtime: realtime),
+        ),
+      );
+      await tester.pump();
+      expect(repository.conversationsCalls, 1);
+      expect(realtime.startCalls, 1);
+
+      for (var i = 0; i < 3; i++) {
+        realtime.stateController.add(true);
+        realtime.hintController.add(
+          const MessagingRealtimeHint(
+            type: 'message.created',
+            conversationId: 'conversation-1',
+          ),
+        );
+      }
+      await tester.pump();
+      expect(repository.conversationsCalls, 1);
+
+      repository.conversationsCompleter = fresh;
+      initial.complete(
+        ConversationPage(
+          conversations: [conversationSummary(counterpartName: 'Old snapshot')],
+          hasMore: false,
+          serverTime: DateTime.utc(2026, 7, 26, 12),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+      expect(repository.conversationsCalls, 2);
+      expect(find.text('Old snapshot'), findsOneWidget);
+      expect(find.text('Fresh snapshot'), findsNothing);
+
+      fresh.complete(
+        ConversationPage(
+          conversations: [
+            conversationSummary(counterpartName: 'Fresh snapshot'),
+          ],
+          hasMore: false,
+          serverTime: DateTime.utc(2026, 7, 26, 12, 1),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(repository.conversationsCalls, 2);
+      expect(find.text('Fresh snapshot'), findsOneWidget);
+      expect(find.text('Old snapshot'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  testWidgets('inbox disposal cancels refresh queued behind initial load', (
+    tester,
+  ) async {
+    final initial = Completer<ConversationPage>();
+    final repository =
+        FakeMessagingRepository()..conversationsCompleter = initial;
+    final realtime = FakeRealtimeConnection();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MessagesPage(repository: repository, realtime: realtime),
+      ),
+    );
+    await tester.pump();
+    expect(repository.conversationsCalls, 1);
+    expect(realtime.startCalls, 1);
+    realtime.stateController.add(true);
+    realtime.hintController.add(
+      const MessagingRealtimeHint(
+        type: 'message.created',
+        conversationId: 'conversation-1',
+      ),
+    );
+    await tester.pump();
+    expect(repository.conversationsCalls, 1);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    expect(realtime.disposed, isTrue);
+    initial.complete(
+      ConversationPage(
+        conversations: [conversationSummary(counterpartName: 'Old snapshot')],
+        hasMore: false,
+        serverTime: DateTime.utc(2026, 7, 26, 12),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(repository.conversationsCalls, 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('inbox reconnect catches up and lifecycle suspends transport', (
+    tester,
+  ) async {
+    final repository = FakeMessagingRepository(
+      conversations: [conversationSummary()],
+    );
+    final realtime = FakeRealtimeConnection();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MessagesPage(repository: repository, realtime: realtime),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(realtime.owner?.generation, repository.generation);
+    final before = repository.conversationsCalls;
+    realtime.stateController.add(true);
+    await tester.pumpAndSettle();
+    expect(repository.conversationsCalls, greaterThan(before));
+
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    expect(realtime.suspendCalls, greaterThanOrEqualTo(1));
+    final paused = repository.conversationsCalls;
+    realtime.stateController.add(true);
+    await tester.pump();
+    expect(repository.conversationsCalls, paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(repository.conversationsCalls, greaterThan(paused));
+    expect(realtime.resumeCalls, 1);
+    await tester.pumpWidget(const SizedBox.shrink());
+    expect(realtime.disposed, isTrue);
+  });
+
   testWidgets('empty backend list shows honest appointment-linked state', (
     tester,
   ) async {

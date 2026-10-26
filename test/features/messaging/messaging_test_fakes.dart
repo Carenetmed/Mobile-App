@@ -10,6 +10,7 @@ class FakeMessagingRepository implements MessagingRepository {
   FakeMessagingRepository({
     this.userId = 'patient-user',
     this.role = 'PATIENT',
+    this.generation = 'fixture-generation',
     List<ConversationSummary>? conversations,
     ConversationDetail? detail,
     List<CareMessage>? messages,
@@ -19,6 +20,7 @@ class FakeMessagingRepository implements MessagingRepository {
 
   String userId;
   String role;
+  String? generation;
   List<ConversationSummary> conversationsValue;
   ConversationDetail detailValue;
   List<CareMessage> messagesValue;
@@ -62,6 +64,7 @@ class FakeMessagingRepository implements MessagingRepository {
           emailVerified: true,
         ),
       ),
+      generation: generation,
     );
   }
 
@@ -190,7 +193,11 @@ class FakeRealtimeConnection implements MessagingRealtimeConnection {
   final StreamController<bool> stateController =
       StreamController<bool>.broadcast();
   bool disposed = false;
-  String? startedToken;
+  MessagingRealtimeIdentity? owner;
+  int startCalls = 0;
+  int suspendCalls = 0;
+  int resumeCalls = 0;
+  final List<String> lifecycleCalls = <String>[];
 
   @override
   Stream<bool> get connectionState => stateController.stream;
@@ -199,8 +206,22 @@ class FakeRealtimeConnection implements MessagingRealtimeConnection {
   Stream<MessagingRealtimeHint> get hints => hintController.stream;
 
   @override
-  Future<void> start(String accessToken) async {
-    startedToken = accessToken;
+  Future<void> start(MessagingRealtimeIdentity identity) async {
+    lifecycleCalls.add('start');
+    owner = identity;
+    startCalls++;
+  }
+
+  @override
+  Future<void> suspend() async {
+    lifecycleCalls.add('suspend');
+    suspendCalls++;
+  }
+
+  @override
+  Future<void> resume() async {
+    lifecycleCalls.add('resume');
+    resumeCalls++;
   }
 
   @override

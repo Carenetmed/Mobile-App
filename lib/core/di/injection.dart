@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../config/app_environment.dart';
+import '../config/messaging_realtime_config.dart';
 import '../diagnostics/diagnostic_consent_store.dart';
 import '../diagnostics/diagnostic_preferences_controller.dart';
 import '../diagnostics/release_health_api_client.dart';
@@ -35,6 +36,8 @@ import '../../features/Home/data/storage/payment_checkout_intent_store.dart';
 import '../../features/Home/domain/services/booking_resume_service.dart';
 import '../../features/Messaging/data/repositories/messaging_repository.dart';
 import '../../features/Messaging/data/services/messaging_api_client.dart';
+import '../../features/Messaging/data/services/messaging_realtime_client.dart';
+import '../../features/Messaging/data/services/messaging_realtime_session_provider.dart';
 import '../../features/Notifications/data/repositories/notification_repository.dart';
 import '../../features/Notifications/data/services/firebase_notification_transport.dart';
 import '../../features/Notifications/data/services/notification_api_client.dart';
@@ -183,6 +186,26 @@ Future<void> configureDependencies() async {
   if (!sl.isRegistered<MessagingApiClient>()) {
     sl.registerLazySingleton<MessagingApiClient>(
       () => MessagingApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
+    );
+  }
+  if (!sl.isRegistered<MessagingRealtimeConfig>()) {
+    sl.registerLazySingleton<MessagingRealtimeConfig>(
+      MessagingRealtimeConfig.fromEnvironment,
+    );
+  }
+  if (!sl.isRegistered<MessagingRealtimeSessionProvider>()) {
+    sl.registerLazySingleton<MessagingRealtimeSessionProvider>(
+      () => StoredMessagingRealtimeSessionProvider(
+        coordinator: sl<SessionRefreshCoordinator>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<MessagingRealtimeConnection>()) {
+    sl.registerFactory<MessagingRealtimeConnection>(
+      () => MessagingRealtimeClient(
+        config: sl<MessagingRealtimeConfig>(),
+        sessions: sl<MessagingRealtimeSessionProvider>(),
+      ),
     );
   }
   if (!sl.isRegistered<NotificationApiClient>()) {

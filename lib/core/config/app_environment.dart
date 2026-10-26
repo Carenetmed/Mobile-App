@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'messaging_realtime_config.dart';
+
 enum CareNetEnvironment { staging, production }
 
 class AppEnvironmentConfig {
@@ -9,6 +11,7 @@ class AppEnvironmentConfig {
     required this.firebaseProjectId,
     required this.firebaseAppId,
     required this.googleServerClientId,
+    this.messagingWsUrl = '',
   });
 
   static const String canonicalFirebaseProjectId =
@@ -46,6 +49,7 @@ class AppEnvironmentConfig {
       googleServerClientId: const String.fromEnvironment(
         'GOOGLE_SIGN_IN_SERVER_CLIENT_ID',
       ),
+      messagingWsUrl: const String.fromEnvironment('CARENET_MESSAGING_WS_URL'),
     );
   }
 
@@ -54,6 +58,7 @@ class AppEnvironmentConfig {
   final String firebaseProjectId;
   final String firebaseAppId;
   final String googleServerClientId;
+  final String messagingWsUrl;
 
   List<String> validationErrors({required bool requireProviders}) {
     final errors = <String>[];
@@ -91,6 +96,14 @@ class AppEnvironmentConfig {
     }
     if (requireProviders && googleServerClientId.trim().isEmpty) {
       errors.add('GOOGLE_SIGN_IN_SERVER_CLIENT_ID is required.');
+    }
+    if (messagingWsUrl.trim().isNotEmpty) {
+      errors.addAll(
+        MessagingRealtimeConfig(
+          environment: environment.name,
+          url: messagingWsUrl,
+        ).validationErrors(),
+      );
     }
     return errors;
   }

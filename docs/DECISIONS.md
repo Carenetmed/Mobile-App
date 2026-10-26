@@ -1,5 +1,18 @@
 # Product & technical decisions
 
+## APP-READY-082G - HTTP Authority After Lost Expiry Hints
+
+Repair missed-expiry-hint foreground inbox recovery using a typed account-bound
+signal after a real auth dispatch fails before ACK. Never classify generic
+code1008 as expired credentials or clear/refresh a session from that code.
+Only the existing authenticated HTTP request/interceptor may perform401 refresh;
+403 and server failures preserve their existing distinct semantics. One reload
+in flight and a 30-second foreground cooldown bound probes, with a five-second
+ownership read and lifecycle/generation fences. No repeating polling timer.
+Pause cancels cooldown; normal resume reload remains independent. Existing
+explicit backend auth.expiring handling is retained. No backend/storage/dependency
+or navigation change. The filled contract is PHASE_1_MESSAGING_REALTIME.md.
+
 ## APP-READY-082F - Explicit Session-Owned Messaging Transport
 
 Selected contract, IN PROGRESS, within the sole NEXT task APP-READY-082; not a

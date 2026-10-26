@@ -192,6 +192,8 @@ class FakeRealtimeConnection implements MessagingRealtimeConnection {
       StreamController<MessagingRealtimeHint>.broadcast();
   final StreamController<bool> stateController =
       StreamController<bool>.broadcast();
+  final StreamController<MessagingRealtimeIdentity> recoveryController =
+      StreamController<MessagingRealtimeIdentity>.broadcast();
   bool disposed = false;
   MessagingRealtimeIdentity? owner;
   int startCalls = 0;
@@ -201,6 +203,9 @@ class FakeRealtimeConnection implements MessagingRealtimeConnection {
 
   @override
   Stream<bool> get connectionState => stateController.stream;
+  @override
+  Stream<MessagingRealtimeIdentity> get recoveryRequests =>
+      recoveryController.stream;
 
   @override
   Stream<MessagingRealtimeHint> get hints => hintController.stream;
@@ -229,6 +234,7 @@ class FakeRealtimeConnection implements MessagingRealtimeConnection {
     disposed = true;
     await hintController.close();
     await stateController.close();
+    await recoveryController.close();
   }
 }
 

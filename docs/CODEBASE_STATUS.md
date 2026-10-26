@@ -1,5 +1,24 @@
 # Codebase status
 
+## APP-READY-082G - Foreground Realtime Recovery (IN PROGRESS)
+
+Within sole NEXT task082, base `8b8e9fc`/1,126 tests. Failed real pre-ACK auth
+attempts emit owner-typed recovery requests; inbox admission is foreground-only,
+generation/role/account checked, bounded to a five-second ownership read and one
+in-flight HTTP reload with a 30-second cooldown. No timer initiates traffic.
+Generic socket rejection is not token-expiry authority; the retained repository
+and HTTP401 coordinator alone own token refresh. No backend/protocol, storage,
+dependency, native, route, message-write or product changes.
+
+157 targeted messaging tests pass, including real Dio/coordinator401-versus403/
+503 proof. The401 regression fails if emission is removed and passes restored.
+Full inventory1,153 =1,126 retained+27 additions passes, no removed/renamed/skipped
+tests. Analyzer, staging debug APK, fresh release lint623tasks, protected signing,
+30environmentprobes/eightgraphs, backup25probes and iOS flavor checks pass.
+Independent review is clear; signed artifacts and CI remain delivery gates. 082F source
+delivered in PR253 with both PR/integration CI lanes green; its older pending
+text below is historical. Real session/provider/device readiness remains open.
+
 ## APP-READY-082F - Messaging Transport Readiness (IN PROGRESS)
 
 Source work is in progress on `slice/APP-READY-082F-messaging-realtime-ingress`

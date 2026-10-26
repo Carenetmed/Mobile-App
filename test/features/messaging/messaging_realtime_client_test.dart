@@ -28,6 +28,166 @@ const _deadline = Duration(seconds: 2);
 const _retry = Duration(milliseconds: 100);
 
 void main() {
+  test('pre-ACK close requests recovery for exact owner without refresh', () {
+    fakeAsync((clock) {
+      final h = _Harness(clock)..start();
+      expect(h.channels.single.sent, hasLength(1));
+      expect(h.recoveries, isEmpty);
+      h.channels.single.incoming.close();
+      clock.flushMicrotasks();
+      expect(h.recoveries, hasLength(1));
+      expect(h.recoveries.single.userId, _owner.userId);
+      expect(h.recoveries.single.generation, _owner.generation);
+      expect(h.recoveries.single.role, _owner.role);
+      expect(h.sessions.refreshes, 0);
+      expect(h.states, [false]);
+      h.retry();
+      expect(h.channels, hasLength(2));
+      expect(h.recoveries, hasLength(1));
+      expect(h.sessions.refreshes, 0);
+      h.dispose();
+    });
+  });
+
+  test('pre-ACK error and done request recovery only once per attempt', () {
+    fakeAsync((clock) {
+      final h = _Harness(clock)..start();
+      final old = h.channels.single;
+      old.incoming.addError(StateError('ambiguous transport rejection'));
+      old.incoming.close();
+      clock.flushMicrotasks();
+      expect(h.recoveries, [_owner]);
+      expect(old.output.closes, 1);
+      expect(h.sessions.refreshes, 0);
+      h.retry();
+      expect(h.channels, hasLength(2));
+      h.channels.last.incoming.close();
+      clock.flushMicrotasks();
+      expect(h.recoveries, [_owner, _owner]);
+      expect(h.sessions.refreshes, 0);
+      h.dispose();
+    });
+  });
+
+  test('ACK deadline requests recovery once without direct refresh', () {
+    fakeAsync((clock) {
+      final h = _Harness(clock)..start();
+      final old = h.channels.single;
+      clock.elapse(_deadline);
+      clock.flushMicrotasks();
+      expect(h.recoveries, [_owner]);
+      old.incoming.close();
+      clock.flushMicrotasks();
+      expect(h.recoveries, [_owner]);
+      expect(h.sessions.refreshes, 0);
+      h.dispose();
+    });
+  });
+
+  test('missing endpoint never requests recovery or refresh', () {
+    fakeAsync((clock) {
+      final h = _Harness(
+        clock,
+        config: const MessagingRealtimeConfig(environment: 'staging', url: ''),
+      )..start();
+      clock.elapse(const Duration(minutes: 1));
+      expect(h.channels, isEmpty);
+      expect(h.recoveries, isEmpty);
+      expect(h.sessions.refreshes, 0);
+      h.dispose();
+    });
+  });
+
+  for (final failure in ['factory', 'send', 'ready error', 'ready deadline']) {
+    test('$failure before auth send does not request recovery', () {
+      fakeAsync((clock) {
+        final h = _Harness(clock);
+        final ready = Completer<void>();
+        h.failFactory = failure == 'factory';
+        h.failSend = failure == 'send';
+        if (failure.startsWith('ready')) h.nextReady = ready.future;
+        h.start();
+        if (failure == 'ready error') {
+          ready.completeError(StateError('handshake failed'));
+        } else if (failure == 'ready deadline') {
+          clock.elapse(_deadline);
+        }
+        clock.flushMicrotasks();
+        for (final channel in h.channels) {
+          expect(channel.sent, isEmpty);
+        }
+        expect(h.recoveries, isEmpty);
+        expect(h.sessions.refreshes, 0);
+        h.dispose();
+        if (failure == 'ready deadline') {
+          ready.complete();
+          clock.flushMicrotasks();
+          expect(h.recoveries, isEmpty);
+        }
+      });
+    });
+  }
+
+  test('post-ACK closure does not request recovery or refresh', () {
+    fakeAsync((clock) {
+      final h = _Harness(clock)..start();
+      h.frame('auth.accepted');
+      h.channels.single.incoming.close();
+      clock.flushMicrotasks();
+      expect(h.recoveries, isEmpty);
+      expect(h.sessions.refreshes, 0);
+      h.dispose();
+    });
+  });
+
+  for (final transition in ['suspend', 'dispose', 'owner replacement']) {
+    test('$transition retires pre-ACK attempt without recovery', () {
+      fakeAsync((clock) {
+        final h = _Harness(clock)..start();
+        final old = h.channels.single;
+        expect(old.sent, hasLength(1));
+        if (transition == 'suspend') {
+          h.client.suspend();
+        } else if (transition == 'dispose') {
+          h.client.dispose();
+        } else {
+          const next = MessagingRealtimeCredentials(
+            identity: MessagingRealtimeIdentity(
+              userId: 'patient',
+              generation: 'replacement',
+              role: 'PATIENT',
+            ),
+            accessToken: 'replacement-token',
+          );
+          h.sessions.current = next;
+          h.client.start(next.identity);
+        }
+        clock.flushMicrotasks();
+        old.incoming.close();
+        clock.flushMicrotasks();
+        expect(h.recoveries, isEmpty);
+        expect(h.sessions.refreshes, 0);
+        h.dispose();
+        expect(h.recoveries, isEmpty);
+      });
+    });
+  }
+
+  test(
+    'session invalidation during ACK validation does not request recovery',
+    () {
+      fakeAsync((clock) {
+        final h = _Harness(clock)..start();
+        h.sessions.current = null;
+        h.frame('auth.accepted');
+        expect(h.channels.single.output.closes, 1);
+        expect(h.recoveries, isEmpty);
+        expect(h.sessions.refreshes, 0);
+        h.dispose();
+      });
+    },
+  );
+
   test('only protocol v1 ACK enables connected and hint delivery', () {
     fakeAsync((clock) {
       final h = _Harness(clock)..start();
@@ -751,9 +911,9 @@ void main() {
 }
 
 class _Harness {
-  _Harness(this.clock) {
+  _Harness(this.clock, {MessagingRealtimeConfig config = _config}) {
     client = MessagingRealtimeClient(
-      config: _config,
+      config: config,
       sessions: sessions,
       initialReconnectDelay: _retry,
       maximumReconnectDelay: _retry,
@@ -776,12 +936,15 @@ class _Harness {
     );
     client.connectionState.listen(states.add);
     client.hints.listen(hints.add);
+    recoverySubscription = client.recoveryRequests.listen(recoveries.add);
   }
   final FakeAsync clock;
   final sessions = _Sessions();
   final channels = <_Channel>[];
   final states = <bool>[];
   final hints = <MessagingRealtimeHint>[];
+  final recoveries = <MessagingRealtimeIdentity>[];
+  late final StreamSubscription<MessagingRealtimeIdentity> recoverySubscription;
   late final MessagingRealtimeClient client;
   Future<void>? nextReady;
   bool failFactory = false, failSend = false;
@@ -805,6 +968,8 @@ class _Harness {
     client.dispose().then((_) => done = true);
     clock.flushMicrotasks();
     expect(done, true);
+    recoverySubscription.cancel();
+    clock.flushMicrotasks();
   }
 }
 

@@ -35,6 +35,10 @@ class _MessagesPageState extends State<MessagesPage>
   MessagingRealtimeConnection? _realtime;
   StreamSubscription<MessagingRealtimeHint>? _hintSubscription;
   StreamSubscription<bool>? _stateSubscription;
+  StreamSubscription<MessagingRealtimeIdentity>? _recoverySubscription;
+  Timer? _recoveryCooldown;
+  bool _recovering = false;
+  int _lifecycleVersion = 0;
   bool _backgrounded = false;
 
   @override
@@ -74,11 +78,47 @@ class _MessagesPageState extends State<MessagesPage>
           _controller?.load(refresh: true);
         }
       });
+      _recoverySubscription = realtime.recoveryRequests.listen((expected) {
+        if (expected.matches(identity)) {
+          unawaited(_recoverThroughHttp(repository, expected));
+        }
+      });
       if (_backgrounded) await realtime.suspend();
       if (!mounted) return;
       await realtime.start(identity);
     } catch (_) {
       // HTTP remains authoritative through resume and explicit refresh.
+    }
+  }
+
+  Future<void> _recoverThroughHttp(
+    MessagingRepository repository,
+    MessagingRealtimeIdentity expected,
+  ) async {
+    if (!mounted || _backgrounded || _recovering || _recoveryCooldown != null) {
+      return;
+    }
+    _recovering = true;
+    final version = _lifecycleVersion;
+    _recoveryCooldown = Timer(const Duration(seconds: 30), () {
+      _recoveryCooldown = null;
+    });
+    try {
+      final session = await repository.requireSession().timeout(
+        const Duration(seconds: 5),
+      );
+      if (!mounted ||
+          _backgrounded ||
+          version != _lifecycleVersion ||
+          session.realtimeIdentity?.matches(expected) != true) {
+        return;
+      }
+      // Repository HTTP execution owns 401 refresh and all account authority.
+      await _controller?.load(refresh: true);
+    } catch (_) {
+      // Explicit refresh/resume remain available; never infer a session failure.
+    } finally {
+      _recovering = false;
     }
   }
 
@@ -96,6 +136,9 @@ class _MessagesPageState extends State<MessagesPage>
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.detached) {
       _backgrounded = true;
+      _lifecycleVersion++;
+      _recoveryCooldown?.cancel();
+      _recoveryCooldown = null;
       _realtime?.suspend();
     }
   }
@@ -113,6 +156,9 @@ class _MessagesPageState extends State<MessagesPage>
     WidgetsBinding.instance.removeObserver(this);
     _hintSubscription?.cancel();
     _stateSubscription?.cancel();
+    _recoverySubscription?.cancel();
+    _recoveryCooldown?.cancel();
+    _lifecycleVersion++;
     _realtime?.dispose();
     _controller
       ?..removeListener(_onChanged)

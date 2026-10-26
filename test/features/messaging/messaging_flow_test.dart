@@ -6,6 +6,7 @@ import 'package:app_t/features/Messaging/presentation/pages/Messages.dart';
 import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
 import 'package:app_t/features/Messaging/domain/entities/messaging_models.dart';
 import 'package:app_t/features/Messaging/data/services/messaging_realtime_client.dart';
+import 'package:app_t/features/Messaging/data/repositories/messaging_repository.dart';
 import 'package:app_t/features/Messaging/presentation/state/messaging_controllers.dart';
 import 'package:app_t/features/Notifications/presentation/state/notification_coordinator.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,164 @@ import 'messaging_test_fakes.dart';
 import '../notifications/notification_test_fakes.dart';
 
 void main() {
+  testWidgets('pre-ACK recovery reloads inbox without a connected event', (
+    tester,
+  ) async {
+    final repository = FakeMessagingRepository();
+    final realtime = FakeRealtimeConnection();
+    await _showRecoveryInbox(tester, repository, realtime);
+    expect(repository.conversationsCalls, 1);
+    realtime.recoveryController.add(realtime.owner!);
+    await tester.pumpAndSettle();
+    expect(repository.conversationsCalls, 2);
+    await tester.pump(const Duration(seconds: 35));
+    expect(repository.conversationsCalls, 2);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets(
+    'recovery cooldown and in-flight work coalesce repeated signals',
+    (tester) async {
+      final repository = FakeMessagingRepository();
+      final realtime = FakeRealtimeConnection();
+      await _showRecoveryInbox(tester, repository, realtime);
+      final held = Completer<ConversationPage>();
+      repository.conversationsCompleter = held;
+      for (var i = 0; i < 8; i++) {
+        realtime.recoveryController.add(realtime.owner!);
+      }
+      await tester.pump();
+      await tester.pump();
+      expect(repository.conversationsCalls, 2);
+      await tester.pump(const Duration(seconds: 31));
+      realtime.recoveryController.add(realtime.owner!);
+      await tester.pump();
+      expect(repository.conversationsCalls, 2);
+      held.complete(
+        ConversationPage(
+          conversations: const [],
+          hasMore: false,
+          serverTime: DateTime.utc(2026, 10, 27),
+        ),
+      );
+      await tester.pumpAndSettle();
+      realtime.recoveryController.add(realtime.owner!);
+      await tester.pumpAndSettle();
+      expect(repository.conversationsCalls, 3);
+      realtime.recoveryController.add(realtime.owner!);
+      await tester.pumpAndSettle();
+      expect(repository.conversationsCalls, 3);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
+  for (final change in ['account', 'generation', 'role', 'logout']) {
+    testWidgets('recovery fails closed after $change change', (tester) async {
+      final repository = FakeMessagingRepository();
+      final realtime = FakeRealtimeConnection();
+      await _showRecoveryInbox(tester, repository, realtime);
+      switch (change) {
+        case 'account':
+          repository.userId = 'other-user';
+        case 'generation':
+          repository.generation = 'other-generation';
+        case 'role':
+          repository.role = 'UNKNOWN';
+        case 'logout':
+          repository.sessionError = StateError('session removed');
+      }
+      realtime.recoveryController.add(realtime.owner!);
+      await tester.pumpAndSettle();
+      expect(repository.conversationsCalls, 1);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+
+  testWidgets('unrelated recovery owner cannot trigger a repository reload', (
+    tester,
+  ) async {
+    final repository = FakeMessagingRepository();
+    final realtime = FakeRealtimeConnection();
+    await _showRecoveryInbox(tester, repository, realtime);
+    realtime.recoveryController.add(
+      const MessagingRealtimeIdentity(
+        userId: 'unrelated',
+        generation: 'other',
+        role: 'PATIENT',
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(repository.conversationsCalls, 1);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('pause and resume fence a pending recovery ownership read', (
+    tester,
+  ) async {
+    final repository = _RecoveryReadRepository();
+    final realtime = FakeRealtimeConnection();
+    await _showRecoveryInbox(tester, repository, realtime);
+    final session = await repository.requireSession();
+    final held = Completer<MessagingSession>();
+    repository.nextRead = held;
+    realtime.recoveryController.add(realtime.owner!);
+    await tester.pump();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    realtime.recoveryController.add(realtime.owner!);
+    await tester.pump();
+    expect(repository.conversationsCalls, 1);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(repository.conversationsCalls, 2);
+    held.complete(session);
+    await tester.pumpAndSettle();
+    expect(repository.conversationsCalls, 2);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('disposed inbox cannot act on a late recovery ownership read', (
+    tester,
+  ) async {
+    final repository = _RecoveryReadRepository();
+    final realtime = FakeRealtimeConnection();
+    await _showRecoveryInbox(tester, repository, realtime);
+    final session = await repository.requireSession();
+    final held = Completer<MessagingSession>();
+    repository.nextRead = held;
+    realtime.recoveryController.add(realtime.owner!);
+    await tester.pump();
+    await tester.pumpWidget(const SizedBox.shrink());
+    held.complete(session);
+    await tester.pumpAndSettle();
+    expect(repository.conversationsCalls, 1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'recovery ownership deadline contains late errors and allows retry',
+    (tester) async {
+      final repository = _RecoveryReadRepository();
+      final realtime = FakeRealtimeConnection();
+      await _showRecoveryInbox(tester, repository, realtime);
+      final held = Completer<MessagingSession>();
+      repository.nextRead = held;
+      realtime.recoveryController.add(realtime.owner!);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 6));
+      held.completeError(StateError('late private storage failure'));
+      await tester.pumpAndSettle();
+      expect(repository.conversationsCalls, 1);
+      expect(tester.takeException(), isNull);
+      await tester.pump(const Duration(seconds: 25));
+      realtime.recoveryController.add(realtime.owner!);
+      await tester.pumpAndSettle();
+      expect(repository.conversationsCalls, 2);
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
+
   testWidgets(
     'inbox ACK during initial load queues one fresh request for repeated ACKs and hints',
     (tester) async {
@@ -354,4 +513,26 @@ void main() {
     expect(find.textContaining('Circle'), findsNothing);
     expect(find.textContaining('podcast'), findsNothing);
   });
+}
+
+Future<void> _showRecoveryInbox(
+  WidgetTester tester,
+  FakeMessagingRepository repository,
+  FakeRealtimeConnection realtime,
+) async {
+  await tester.pumpWidget(
+    MaterialApp(home: MessagesPage(repository: repository, realtime: realtime)),
+  );
+  await tester.pumpAndSettle();
+}
+
+class _RecoveryReadRepository extends FakeMessagingRepository {
+  Completer<MessagingSession>? nextRead;
+
+  @override
+  Future<MessagingSession> requireSession() {
+    final pending = nextRead;
+    nextRead = null;
+    return pending?.future ?? super.requireSession();
+  }
 }

@@ -24,6 +24,7 @@ class MessagingRealtimeHint {
 abstract class MessagingRealtimeConnection {
   Stream<MessagingRealtimeHint> get hints;
   Stream<bool> get connectionState;
+  Stream<MessagingRealtimeIdentity> get recoveryRequests;
   Future<void> start(MessagingRealtimeIdentity identity);
   Future<void> suspend();
   Future<void> resume();
@@ -78,6 +79,7 @@ class MessagingRealtimeClient implements MessagingRealtimeConnection {
   final Random _random;
   final _hints = StreamController<MessagingRealtimeHint>.broadcast();
   final _states = StreamController<bool>.broadcast();
+  final _recovery = StreamController<MessagingRealtimeIdentity>.broadcast();
   MessagingRealtimeIdentity? _owner;
   _RealtimeAttempt? _attempt;
   Future<void>? _connecting, _closing, _refreshing;
@@ -90,6 +92,8 @@ class MessagingRealtimeClient implements MessagingRealtimeConnection {
   Stream<MessagingRealtimeHint> get hints => _hints.stream;
   @override
   Stream<bool> get connectionState => _states.stream;
+  @override
+  Stream<MessagingRealtimeIdentity> get recoveryRequests => _recovery.stream;
   Uri? get endpoint => _config.endpoint;
 
   @override
@@ -187,6 +191,7 @@ class MessagingRealtimeClient implements MessagingRealtimeConnection {
           'protocolVersion': 1,
         }),
       );
+      attempt.authSent = true;
     } catch (_) {
       if (_owns(attempt)) _disconnect(attempt);
     }
@@ -383,6 +388,10 @@ class MessagingRealtimeClient implements MessagingRealtimeConnection {
 
   void _disconnect(_RealtimeAttempt attempt) {
     if (!identical(_attempt, attempt) || attempt.retired) return;
+    // Only HTTP can establish whether this was expired authentication or policy.
+    if (_owns(attempt) && attempt.authSent && !attempt.authenticated) {
+      _recovery.add(attempt.owner);
+    }
     _retire(attempt);
     _emit(false);
     _scheduleReconnect();
@@ -486,6 +495,7 @@ class MessagingRealtimeClient implements MessagingRealtimeConnection {
     await Future.wait<void>(<Future<void>>[
       _hints.close(),
       _states.close(),
+      _recovery.close(),
     ]).timeout(_closeTimeout, onTimeout: () => <void>[]);
   }
 }
@@ -502,6 +512,7 @@ class _RealtimeAttempt {
   Future<void>? closing;
   Timer? acknowledgement, ownerCheck;
   bool retired = false, authenticated = false, renewing = false;
+  bool authSent = false;
   int pendingFrames = 0;
 }
 

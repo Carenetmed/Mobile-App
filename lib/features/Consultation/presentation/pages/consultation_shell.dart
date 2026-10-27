@@ -480,91 +480,148 @@ class _ActiveConsultation extends StatelessWidget {
     final isVideo = controller.mode == ConsultationMode.video;
     final isProfessional =
         controller.viewerRole == ConsultationParticipantRole.professional;
-    return Stack(
-      children: [
-        Positioned.fill(
-          child:
-              isVideo
-                  ? RtcVideoView(
-                    track: controller.room.remoteVideo,
-                    placeholder: _RemotePlaceholder(
-                      present: controller.room.remoteParticipantPresent,
-                    ),
-                  )
-                  : _AudioStage(
-                    present: controller.room.remoteParticipantPresent,
-                  ),
-        ),
-        Positioned(
-          top: 12,
-          left: 12,
-          right: 12,
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _LiveStatus(
-                      reconnecting:
-                          controller.room.connectionState ==
-                          RtcConnectionState.reconnecting,
-                      participantPresent:
-                          controller.room.remoteParticipantPresent,
-                    ),
-                    const SizedBox(height: 6),
-                    _ConsultationCountdown(
-                      projection: controller.projection!,
-                      active: true,
-                    ),
-                    if (controller.room.remoteParticipantPresent) ...[
-                      const SizedBox(height: 6),
-                      _RemoteMediaStatus(
-                        microphoneEnabled:
-                            controller.room.remoteMicrophoneEnabled,
-                        cameraEnabled:
-                            !isVideo || controller.room.remoteCameraEnabled,
+    return ColoredBox(
+      color: const Color(0xFF0B1514),
+      child: LayoutBuilder(
+        builder:
+            (context, bounds) => Column(
+              children: [
+                ConstrainedBox(
+                  key: const Key('consultation-active-status'),
+                  constraints: BoxConstraints(maxHeight: bounds.maxHeight * .2),
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _LiveStatus(
+                                  reconnecting:
+                                      controller.room.connectionState ==
+                                      RtcConnectionState.reconnecting,
+                                  participantPresent:
+                                      controller.room.remoteParticipantPresent,
+                                ),
+                                const SizedBox(height: 6),
+                                _ConsultationCountdown(
+                                  projection: controller.projection!,
+                                  active: true,
+                                ),
+                                if (controller
+                                    .room
+                                    .remoteParticipantPresent) ...[
+                                  const SizedBox(height: 6),
+                                  _RemoteMediaStatus(
+                                    microphoneEnabled:
+                                        controller.room.remoteMicrophoneEnabled,
+                                    cameraEnabled:
+                                        !isVideo ||
+                                        controller.room.remoteCameraEnabled,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          IconButton.filledTonal(
+                            tooltip: 'Report issue',
+                            onPressed: onReport,
+                            icon: const Icon(Icons.report_problem_outlined),
+                          ),
+                        ],
                       ),
-                    ],
-                  ],
+                    ),
+                  ),
                 ),
-              ),
-              IconButton.filledTonal(
-                tooltip: 'Report issue',
-                onPressed: onReport,
-                icon: const Icon(Icons.report_problem_outlined),
-              ),
-            ],
-          ),
-        ),
-        if (isVideo)
-          Positioned(
-            right: 14,
-            bottom: 116,
-            width: 112,
-            height: 156,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: ColoredBox(
-                color: const Color(0xFF22312F),
-                child: RtcVideoView(
-                  track: controller.room.localVideo,
-                  mirror: true,
+                Expanded(
+                  child: SizedBox.expand(
+                    key: const Key('consultation-media-stage'),
+                    child: LayoutBuilder(
+                      builder: (context, media) {
+                        final stage =
+                            isVideo
+                                ? RtcVideoView(
+                                  track: controller.room.remoteVideo,
+                                  placeholder: _RemotePlaceholder(
+                                    present:
+                                        controller
+                                            .room
+                                            .remoteParticipantPresent,
+                                  ),
+                                )
+                                : _AudioStage(
+                                  present:
+                                      controller.room.remoteParticipantPresent,
+                                );
+                        if (!isVideo ||
+                            media.maxWidth < 280 ||
+                            media.maxHeight < 180) {
+                          return stage;
+                        }
+                        final preview = ClipRRect(
+                          key: const Key('consultation-local-preview'),
+                          borderRadius: BorderRadius.circular(8),
+                          child: ColoredBox(
+                            color: const Color(0xFF22312F),
+                            child: RtcVideoView(
+                              track: controller.room.localVideo,
+                              mirror: true,
+                            ),
+                          ),
+                        );
+                        if (controller.room.remoteVideo == null) {
+                          return Row(
+                            children: [
+                              Expanded(child: stage),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: SizedBox(
+                                  width: 112,
+                                  height: 156,
+                                  child: preview,
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+                        return Stack(
+                          children: [
+                            Positioned.fill(child: stage),
+                            Positioned(
+                              right: 12,
+                              bottom: 12,
+                              width: 112,
+                              height: 156,
+                              child: preview,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ),
-              ),
+                ConstrainedBox(
+                  key: const Key('consultation-call-controls'),
+                  constraints: BoxConstraints(
+                    maxHeight: bounds.maxHeight * .65,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
+                      child: _CallControls(
+                        controller: controller,
+                        endLabel: isProfessional ? 'End' : 'Leave',
+                        onEnd: isProfessional ? onEnd : onLeave,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        Positioned(
-          left: 12,
-          right: 12,
-          bottom: 16,
-          child: _CallControls(
-            controller: controller,
-            endLabel: isProfessional ? 'End' : 'Leave',
-            onEnd: isProfessional ? onEnd : onLeave,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -659,11 +716,17 @@ class _CallControls extends StatelessWidget {
                         controller.setCameraEnabled(!controller.cameraEnabled),
               ),
             _CallButton(
-              label: controller.room.speakerEnabled ? 'Speaker' : 'Earpiece',
+              label: controller.room.speakerEnabled ? 'Preferred' : 'Automatic',
+              semanticLabel: 'Prefer speaker',
+              tooltip:
+                  controller.room.speakerEnabled
+                      ? 'Use automatic audio routing'
+                      : 'Prefer speaker',
+              toggled: controller.room.speakerEnabled,
               icon:
                   controller.room.speakerEnabled
                       ? Icons.volume_up
-                      : Icons.hearing,
+                      : Icons.settings_voice,
               onPressed:
                   () => controller.setSpeakerEnabled(
                     !controller.room.speakerEnabled,
@@ -688,38 +751,49 @@ class _CallButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     this.destructive = false,
+    this.semanticLabel,
+    this.tooltip,
+    this.toggled,
   });
 
   final String label;
   final IconData icon;
   final VoidCallback onPressed;
   final bool destructive;
+  final String? semanticLabel;
+  final String? tooltip;
+  final bool? toggled;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: label,
+      label: semanticLabel ?? label,
+      toggled: toggled,
       onTap: onPressed,
       child: ExcludeSemantics(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton.filled(
-              tooltip: label,
-              style: IconButton.styleFrom(
-                backgroundColor:
-                    destructive ? const Color(0xFFD84545) : Colors.white12,
-                foregroundColor: Colors.white,
+        child: SizedBox(
+          width: (MediaQuery.sizeOf(context).width / 2 - 36).clamp(80, 160),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton.filled(
+                tooltip: tooltip ?? label,
+                style: IconButton.styleFrom(
+                  backgroundColor:
+                      destructive ? const Color(0xFFD84545) : Colors.white12,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: onPressed,
+                icon: Icon(icon),
               ),
-              onPressed: onPressed,
-              icon: Icon(icon),
-            ),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white, fontSize: 11),
-            ),
-          ],
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white, fontSize: 11),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -819,20 +893,32 @@ class _RemotePlaceholder extends StatelessWidget {
     return ColoredBox(
       color: const Color(0xFF0B1514),
       child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircleAvatar(
-              radius: 48,
-              backgroundColor: Color(0xFF203A35),
-              child: Icon(Icons.person_outline, size: 54, color: Colors.white),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircleAvatar(
+                  radius: 48,
+                  backgroundColor: Color(0xFF203A35),
+                  child: Icon(
+                    Icons.person_outline,
+                    size: 54,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  present
+                      ? 'Camera is off'
+                      : 'Waiting for the other participant',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              present ? 'Camera is off' : 'Waiting for the other participant',
-              style: const TextStyle(color: Colors.white),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -849,20 +935,26 @@ class _AudioStage extends StatelessWidget {
     return ColoredBox(
       color: const Color(0xFF0B1514),
       child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircleAvatar(
-              radius: 58,
-              backgroundColor: Color(0xFF1F5147),
-              child: Icon(Icons.call, size: 52, color: Colors.white),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircleAvatar(
+                  radius: 58,
+                  backgroundColor: Color(0xFF1F5147),
+                  child: Icon(Icons.call, size: 52, color: Colors.white),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  present ? 'Connected' : 'Waiting for the other participant',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Text(
-              present ? 'Connected' : 'Waiting for the other participant',
-              style: const TextStyle(color: Colors.white, fontSize: 18),
-            ),
-          ],
+          ),
         ),
       ),
     );

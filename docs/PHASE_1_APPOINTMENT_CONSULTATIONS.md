@@ -1,5 +1,62 @@
 # Phase 1 Appointment-Linked Consultations
 
+## APP-READY-082H Task Spec
+
+Status: IN PROGRESS within sole NEXT task APP-READY-082.
+Base: `09138624c64c87f327c17f4ca8a43db2c3187daf`, 1,153 passing tests.
+Branch: `slice/APP-READY-082H-consultation-audio-permissions`.
+
+Goal: stop requesting an unnecessary Android Bluetooth grant during ordinary
+media preparation, and represent speaker preference without claiming an observed
+output device. Existing backend join authority and SDK-owned routing stay intact.
+
+Installed LiveKit2.9.0 owns Android audio-session management and its pinned
+AudioSwitch implementation uses AudioManager routing APIs. Ordinary phone audio
+does not require the removed unconditional Bluetooth permission prompt. The exposed
+WebRTC output-list/selection path is disabled by LiveKit's audio ownership; do
+not invent devices, add a competing audio manager or build a false chooser.
+Existing native declarations and SDK policy remain unchanged. If a future
+feature genuinely invokes protected Bluetooth APIs, require contextual permission
+and handle denial/API-level semantics before that operation, not on every join.
+
+Allowed files: consultation_permission_service.dart, consultation_shell.dart,
+direct permission-channel and existing controller/widget tests, canonical docs.
+Do not change RTC adapter, controller/lifecycle, backend, native manifests,
+dependencies, routes, payments, notifications or message behavior. Reuse existing
+controls, tokens, responsive wrapping and accessible tap actions.
+
+Behavior: request/check microphone, and camera only for VIDEO; preserve denial,
+restriction and settings behavior. Use compact Preferred / Automatic captions;
+expose a stable Prefer speaker semantics label with its true
+preference toggle state. A preference is not observed routing or forced output.
+Keep the current non-forced SDK setter and automatic headset priority.
+
+Largest-text validation exposed overflow in the active audio stage. The active
+view now separates scrollable status and control bands from the remaining media
+area. Captions wrap in bounded control widths; enlarged controls remain reachable
+by scrolling, without reducing text scale. The local video preview stays inside
+the media area and is omitted when that area is too small. This is presentation
+repair only, not a change to tracks, participant authority or SDK audio policy.
+
+Host coverage adds14 permission-channel tests and2 role-specific widget tests
+(both AUDIO and VIDEO), retaining the existing compact control regression. The
+new tests exercise pointer and semantics preference actions at3.2x text and
+assert non-overlapping status/media/control bounds. These tests do not prove
+physical audio output, Android permission dialogs or Bluetooth headset behavior.
+
+Acceptance: direct method-channel request/check/status/settings tests; patient
+and professional preference toggle/semantics/compact enlarged-text tests; preserve
+all existing permission, RTC adapter, lifecycle and authority regressions. Run
+targeted/full suite, analyzer, Android debug/signed artifacts, release lint/signing/
+environment/static gates, diff/inventory review and applicable PR/integration CI.
+No deleted/skipped/weakened tests. Normal merge only unchanged reviewed green
+head. Physical API-level, denial, headset/hot-plug and actual audio proof stays
+in the approved final device session; host tests do not claim Android dialogs.
+
+APP-READY-082G delivered through PR254 at this base, reviewed `1751ca8`; PR and
+integration CI passed with1,153 tests. Its source recovery gap is repaired, not
+permission/provider/device acceptance or completion of the full readiness program.
+
 `CALL-P1-009` adds paid appointment-linked VIDEO and AUDIO consultations
 without creating a separate Calls destination. CareNet remains the authority
 for appointment eligibility, payment, participant role, timing, admission,

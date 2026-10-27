@@ -1,5 +1,16 @@
 # Product & technical decisions
 
+## APP-READY-082H - Media Permissions And Audio Preference
+
+Keep LiveKit as Android audio-session owner; do not use its disabled WebRTC
+device-selection path to invent a chooser. Ordinary calls request only required
+microphone/camera access. Retain native SDK declarations and the existing
+non-forced speaker-preference setter. Preferred/Automatic captions and a stable
+Prefer speaker toggle describe preference, never observed output. Protect enlarged
+text with distinct scrollable status/control bands and bounded caption widths,
+without changing RTC authority, tracks or lifecycle. Physical routing remains
+an explicit later acceptance gate.
+
 ## APP-READY-082G - HTTP Authority After Lost Expiry Hints
 
 Repair missed-expiry-hint foreground inbox recovery using a typed account-bound

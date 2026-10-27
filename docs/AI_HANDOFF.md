@@ -1,5 +1,22 @@
 # AI handoff - read this first
 
+## APP-READY-082H - Consultation Audio Permission Policy
+
+IN PROGRESS within sole NEXT task082. Clean isolated branch
+`slice/APP-READY-082H-consultation-audio-permissions`, base `0913862`/1,153 tests.
+Filled Task Spec in PHASE_1_APPOINTMENT_CONSULTATIONS.md: remove unnecessary
+Bluetooth join prompt, retain microphone/camera and SDK-owned routing, label
+speaker preference truthfully with accessible toggle semantics. No RTC authority,
+controller/adapter, backend, native/dependency or navigation changes.
+Largest-text overflow is repaired in the active shell with separated status,
+media and scrollable control bands. All1,169 tests (1,153 retained+16 new),
+targeted65, analyzer, debug APK, fresh623-task release lint and local protected
+signing/environment/backup/flavor checks pass. Parent and independent static
+review found no actionable issues. Signed artifacts and CI remain delivery gates.
+APP-READY-082G source delivered in PR254, reviewed1751ca8/merged0913862; PR and
+integration CI green. Its older pending notes below are historical. Full
+readiness and live provider/device acceptance remain incomplete.
+
 ## APP-READY-082G - Foreground Messaging HTTP Recovery
 
 IN PROGRESS within sole NEXT task APP-READY-082. Clean isolated branch

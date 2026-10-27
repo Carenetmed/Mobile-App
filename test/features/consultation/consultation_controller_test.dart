@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:app_t/features/Authentication/data/models/auth_session_model.dart';
 import 'package:app_t/features/Authentication/data/storage/session_store.dart';
@@ -15,6 +16,115 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  for (final role in ['PATIENT', 'PROFESSIONAL']) {
+    testWidgets('audio preference is truthful and accessible for $role', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.binding.setSurfaceSize(const Size(320, 568));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      for (final mode in ConsultationMode.values) {
+        final store = InMemorySessionStore();
+        await store.save(_session(role: role));
+        final room = _Room();
+        final gateway = _Gateway(_projection(canJoin: true, mode: mode))
+          ..grantRole =
+              role == 'PROFESSIONAL'
+                  ? ConsultationParticipantRole.professional
+                  : ConsultationParticipantRole.patient;
+        final controller = ConsultationController(
+          appointmentId: 'appointment-1',
+          repository: gateway,
+          sessionStore: store,
+          permissionService: _Permissions(),
+          room: room,
+          pollingInterval: const Duration(days: 1),
+          now: () => DateTime.utc(2026, 7, 30, 10),
+        );
+        await controller.initialize();
+        await controller.prepareMedia();
+        await controller.join();
+        expect(controller.isConnected, isTrue);
+        await tester.pumpWidget(
+          MaterialApp(
+            home: MediaQuery(
+              data: const MediaQueryData(
+                size: Size(320, 568),
+                textScaler: TextScaler.linear(3.2),
+              ),
+              child: ConsultationShellPage(
+                appointmentId: 'appointment-1',
+                controller: controller,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final audio = find.bySemanticsLabel('Prefer speaker');
+        expect(audio, findsOneWidget);
+        final status = tester.getRect(
+          find.byKey(const Key('consultation-active-status')),
+        );
+        final media = tester.getRect(
+          find.byKey(const Key('consultation-media-stage')),
+        );
+        final controls = tester.getRect(
+          find.byKey(const Key('consultation-call-controls')),
+        );
+        expect(status.bottom, lessThanOrEqualTo(media.top));
+        expect(media.bottom, lessThanOrEqualTo(controls.top));
+        expect(media.height, greaterThan(0));
+        expect(controls.bottom, lessThanOrEqualTo(568));
+        await tester.ensureVisible(audio);
+        await tester.pumpAndSettle();
+        expect(find.text('Preferred'), findsOneWidget);
+        expect(
+          tester
+              .getSemantics(audio)
+              .getSemanticsData()
+              .flagsCollection
+              .isToggled,
+          ui.Tristate.isTrue,
+        );
+        expect(tester.getRect(audio).left, greaterThanOrEqualTo(0));
+        expect(tester.getRect(audio).right, lessThanOrEqualTo(320));
+        expect(tester.getRect(audio).bottom, lessThanOrEqualTo(568));
+        await tester.tap(find.byTooltip('Use automatic audio routing'));
+        await tester.pumpAndSettle();
+        expect(room.speakerEnabled, isFalse);
+        expect(find.text('Automatic'), findsOneWidget);
+        expect(find.text('Earpiece'), findsNothing);
+        expect(find.textContaining('Bluetooth connected'), findsNothing);
+        expect(
+          tester
+              .getSemantics(audio)
+              .getSemanticsData()
+              .flagsCollection
+              .isToggled,
+          ui.Tristate.isFalse,
+        );
+        expect(
+          tester
+              .getSemantics(audio)
+              .getSemanticsData()
+              .hasAction(SemanticsAction.tap),
+          isTrue,
+        );
+        tester.binding.renderViews.single.owner!.semanticsOwner!.performAction(
+          tester.getSemantics(audio).id,
+          SemanticsAction.tap,
+        );
+        await tester.pumpAndSettle();
+        expect(room.speakerEnabled, isTrue);
+        expect(find.text('Preferred'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+        controller.dispose();
+      }
+      semantics.dispose();
+    });
+  }
+
   test(
     'refresh cannot rebind an open consultation to another account',
     () async {
@@ -991,7 +1101,7 @@ void main() {
       room.notifyListeners();
       await tester.pumpAndSettle();
 
-      for (final label in <String>['Mute', 'Speaker', 'Leave']) {
+      for (final label in <String>['Mute', 'Prefer speaker', 'Leave']) {
         final control = find.bySemanticsLabel(label);
         expect(control, findsOneWidget);
         expect(

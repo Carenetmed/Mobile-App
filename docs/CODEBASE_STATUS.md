@@ -1,5 +1,20 @@
 # Codebase status
 
+## APP-READY-082H - Consultation Audio Permission Policy (IN PROGRESS)
+
+Base0913862/1,153 tests. Ordinary media preparation requests microphone and,
+for VIDEO only, camera; it no longer requests Bluetooth connection permission.
+SDK-owned routing remains unchanged. The accessible speaker control represents
+preference, not an observed earpiece/headset. Active status/media/control regions
+are separated, with scrollable enlarged captions and no text-scale cap.
+Targeted65 tests, full1,169 tests (1,153 retained+16 added), analyzer and diff
+checks pass. Staging debug APK, fresh623-task release lint, protected signing,
+30 environment probes/eight packaging graphs, backup25 and iOS configuration
+checks pass. Signed artifacts and CI remain delivery gates. Parent and
+independent static review found no actionable issues; no device proof is claimed.
+Physical routing/permissions and full readiness remain open. 082G delivered in
+PR254/merge0913862 with green PR/integration CI; older pending notes are historical.
+
 ## APP-READY-082G - Foreground Realtime Recovery (IN PROGRESS)
 
 Within sole NEXT task082, base `8b8e9fc`/1,126 tests. Failed real pre-ACK auth

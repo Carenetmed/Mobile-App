@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:app_t/features/Home/domain/entities/appointment_summary.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -44,9 +42,6 @@ class DeviceConsultationPermissionService
         mode == ConsultationMode.video
             ? await Permission.camera.request()
             : PermissionStatus.granted;
-    if (Platform.isAndroid) {
-      await Permission.bluetoothConnect.request();
-    }
     return ConsultationPermissionResult(
       microphone: _state(microphone),
       camera: _state(camera),

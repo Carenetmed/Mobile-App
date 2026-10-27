@@ -1,5 +1,16 @@
 # Documentation sync index
 
+## APP-READY-082H Scoped Sync (IN PROGRESS)
+
+Consultation contract, handoff, status, decisions and deferred work describe the
+same narrow media-permission and truthful speaker-preference repair. Enlarged
+text exposed a real active-stage overflow, repaired inside the existing shell.
+Targeted65/full1,169 tests, analyzer, debug APK, fresh623-task lint and protected
+signing/environment/backup/flavor gates pass. Signed artifacts and CI remain
+delivery gates. Independent static review is clear. The parent task082 remains
+incomplete. Prior082G
+delivery is PR254/merge0913862, reviewed1751ca8, PR/integration CI green.
+
 ## APP-READY-082G Scoped Sync (IN PROGRESS)
 
 Handoff, realtime contract, status, decisions, deferred work and appointment

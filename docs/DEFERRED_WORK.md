@@ -1,5 +1,18 @@
 # Deferred work and backend replacement map
 
+## APP-READY-082H Permission And Routing Acceptance (IN PROGRESS)
+
+Host channel tests and patient/professional widget tests cover permission mapping,
+truthful audio preference and enlarged-text geometry, not Android OS dialogs or
+physical audio routes. Keep API-level denial/settings, headset insertion/removal,
+Bluetooth and interrupted-call proof for the approved final device session.
+Future protected Bluetooth operations need contextual permission before use;
+do not restore an unconditional join-time prompt. Native declarations remain.
+All1,169 tests, analyzer, debug APK, fresh release lint and local release guards
+pass; signed artifacts and CI gates stay open. No cloud,
+provider, payment or device operation is authorized by these source results.
+Prior082G delivered through PR254, all applicable PR/integration CI green.
+
 ## APP-READY-082G Recovery Acceptance (IN PROGRESS)
 
 The confirmed lost-expiry-hint source gap is being repaired with bounded,

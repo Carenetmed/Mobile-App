@@ -1,5 +1,22 @@
 # Codebase status
 
+## APP-READY-083 - Current repository README
+
+The root README now describes the implemented role-aware Phase 1 marketplace
+instead of the obsolete frontend-only prototype. It names backend-owned active
+surfaces, separates retained deferred source from active product authority, and
+keeps production, provider, store, iOS, and physical-device acceptance open.
+The contribution target is the current `feature/frontend-milestone` integration
+branch. `PRODUCTION_README_CURRENT_STATE.md` records the exact truthfulness and
+scope boundary, with executable README regressions for current wording and local
+links. This documentation-only slice changes no runtime source, route,
+dependency, native project, environment, signing, backend, or cloud behavior.
+Four focused README contract tests and all 1,173 Flutter tests pass, an exact
+increase of four over the retained 1,169-test source inventory. Flutter analysis
+reports no issues, the canonical staging debug APK builds, and diff checks pass.
+Independent review found and repaired an overstatement about the historical
+route table plus weak/wrapping-sensitive assertions; final re-review passes.
+
 ## APP-READY-082H - Consultation Audio Permission Policy (IN PROGRESS)
 
 Base0913862/1,153 tests. Ordinary media preparation requests microphone and,

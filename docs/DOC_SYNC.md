@@ -1,5 +1,23 @@
 # Documentation sync index
 
+## APP-READY-083 Scoped Sync
+
+The root README, codebase status, and
+`PRODUCTION_README_CURRENT_STATE.md` now share the same current-state boundary:
+CareNet has backend-owned Phase 1 marketplace behavior, while production
+infrastructure, providers, store governance, iOS acceptance, physical-device
+acceptance, and final Paystack activation remain separate gates. The README no
+longer presents historical frontend-only limitations as current architecture
+and now points pull requests at `feature/frontend-milestone`. No runtime,
+dependency, route, native, environment, signing, backend, or cloud change is in
+scope.
+
+Verification passes: four focused README contract tests, all 1,173 Flutter
+tests (1,169 retained plus four additions), analyzer, canonical staging debug
+APK, and diff checks. Independent review's route-authority and test-strength
+findings were repaired and the final re-review passes. PR and merged-result CI
+remain delivery gates.
+
 ## APP-READY-082H Scoped Sync (IN PROGRESS)
 
 Consultation contract, handoff, status, decisions and deferred work describe the

@@ -1,5 +1,16 @@
 # Codebase status
 
+## APP-READY-085 - Notification Preference Accessible Names (IN PROGRESS)
+
+Notification preference switches now include their category in the accessible
+name, for example `Appointments: Push`, while retaining the visible channel
+labels and native switch actions. One added widget test activates all fourteen
+category/channel controls through semantics and checks that only the intended
+preference changes. The twelve focused tests, all 1,177 full-suite tests,
+analyzer and independent review pass. The baseline 1,176 tests remain retained;
+one regression is added. Staging debug APK passes; CI remains a delivery gate. No notification
+delivery or repository contract changes.
+
 ## APP-READY-084 - Executable Route Authority (IN PROGRESS)
 
 `RouteName.values` now provides one complete 79-identifier inventory. The

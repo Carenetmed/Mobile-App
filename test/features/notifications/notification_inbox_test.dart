@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:ui' show SemanticsAction;
+import 'dart:ui' show SemanticsAction, SemanticsActionEvent;
 
 import 'package:app_t/features/Messaging/presentation/pages/Notification.dart';
 import 'package:app_t/features/Notifications/domain/entities/notification_models.dart';
@@ -296,6 +296,79 @@ void main() {
     expect(find.text('Appointments'), findsOneWidget);
     semantics.dispose();
   });
+
+  testWidgets(
+    'preference controls name their category and change only that channel',
+    (tester) async {
+      final semantics = tester.ensureSemantics();
+      tester.view.physicalSize = const Size(600, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final repository = FakeNotificationRepository();
+      final original = List<NotificationPreference>.of(
+        repository.preferenceValues,
+      );
+      await tester.pumpWidget(
+        MaterialApp(home: NotificationPreferencesPage(repository: repository)),
+      );
+      await tester.pumpAndSettle();
+
+      for (final category in NotificationCategory.values) {
+        for (final channel in ['Push', 'Email']) {
+          final label = '${category.label}: $channel';
+          final control = find.bySemanticsLabel(label);
+          await tester.scrollUntilVisible(
+            find.text(category.label),
+            160,
+            scrollable: find.byType(Scrollable).last,
+          );
+          expect(control, findsOneWidget);
+          await tester.ensureVisible(control);
+          await tester.pumpAndSettle();
+          final node = tester.getSemantics(control);
+          expect(
+            node.getSemanticsData().hasAction(SemanticsAction.tap),
+            isTrue,
+          );
+          tester.binding.performSemanticsAction(
+            SemanticsActionEvent(
+              nodeId: node.id,
+              viewId: tester.view.viewId,
+              type: SemanticsAction.tap,
+            ),
+          );
+          await tester.pumpAndSettle();
+          for (final before in original) {
+            final after = repository.preferenceValues.singleWhere(
+              (value) => value.category == before.category,
+            );
+            expect(
+              after.pushEnabled,
+              before.category == category && channel == 'Push'
+                  ? !before.pushEnabled
+                  : before.pushEnabled,
+            );
+            expect(
+              after.emailEnabled,
+              before.category == category && channel == 'Email'
+                  ? !before.emailEnabled
+                  : before.emailEnabled,
+            );
+          }
+          final restoreNode = tester.getSemantics(find.bySemanticsLabel(label));
+          tester.binding.performSemanticsAction(
+            SemanticsActionEvent(
+              nodeId: restoreNode.id,
+              viewId: tester.view.viewId,
+              type: SemanticsAction.tap,
+            ),
+          );
+          await tester.pumpAndSettle();
+        }
+      }
+      semantics.dispose();
+    },
+  );
 
   testWidgets('preferences remain reachable at compact width with 2x text', (
     tester,

@@ -1,3 +1,5 @@
+import 'package:unorm_dart/unorm_dart.dart' as unicode;
+
 class Validators {
   static const Set<String> _knownWeakPasswords = <String>{
     'password',
@@ -59,11 +61,13 @@ class Validators {
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter your password';
-    } else if (value.length < 15) {
+    }
+    final normalized = unicode.nfc(value);
+    if (normalized.length < 15) {
       return 'Password must be at least 15 characters long';
-    } else if (value.length > 128) {
+    } else if (normalized.length > 128) {
       return 'Password must be no more than 128 characters long';
-    } else if (_knownWeakPasswords.contains(value.toLowerCase())) {
+    } else if (_knownWeakPasswords.contains(normalized.toLowerCase())) {
       return 'Choose a less common password';
     }
     return null;
@@ -77,7 +81,7 @@ class Validators {
       return 'Please enter your password';
     } else if (validatePassword(value) case final error?) {
       return error;
-    } else if (value != password) {
+    } else if (unicode.nfc(value) != unicode.nfc(password)) {
       return 'Passwords do not match';
     }
     return null;

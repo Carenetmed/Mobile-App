@@ -36,8 +36,6 @@ const _activeTypes = <String, String>{
   RouteName.chat: 'ChatPage',
   RouteName.notification: 'NotificationsPage',
   RouteName.notificationPreferences: 'NotificationPreferencesPage',
-  RouteName.reminder: 'ReminderShellPage',
-  RouteName.schedules: 'SchedulesShellPage',
   RouteName.selectedDates: 'SelectedDatesShellPage',
 };
 
@@ -58,6 +56,8 @@ const _aliasTypes = <String, String>{
 };
 
 const _deferredRoutes = <String>{
+  RouteName.reminder,
+  RouteName.schedules,
   RouteName.medicalEdit,
   RouteName.readings,
   RouteName.healthRecord,

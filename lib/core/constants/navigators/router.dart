@@ -20,8 +20,6 @@ import 'package:app_t/features/Home/presentation/pages/edit_professional_details
 import 'package:app_t/features/Home/presentation/pages/edit_your_name_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/professional_verification_documents_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/professional_finance_shell.dart';
-import 'package:app_t/features/Home/presentation/pages/reminder_shell.dart';
-import 'package:app_t/features/Home/presentation/pages/schedules_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/selected_dates_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/search_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/specialist_details_shell.dart';
@@ -205,12 +203,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _page(settings, const NotificationsPage());
     case RouteName.notificationPreferences:
       return _page(settings, const NotificationPreferencesPage());
-    case RouteName.reminder:
-      return _page(settings, const ReminderShellPage());
-    case RouteName.schedules:
-      return _page(settings, const SchedulesShellPage());
     case RouteName.selectedDates:
       return _page(settings, const SelectedDatesShellPage());
+    case RouteName.reminder:
+    case RouteName.schedules:
     case RouteName.readings:
     case RouteName.healthRecord:
     case RouteName.manageReadings:

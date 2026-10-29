@@ -9,6 +9,73 @@ $podfile = Get-Content -Raw $podfilePath
 $info = [xml](Get-Content -Raw $infoPath)
 $frameworkInfo = [xml](Get-Content -Raw (Join-Path $PSScriptRoot '../ios/Flutter/AppFrameworkInfo.plist'))
 
+function Assert-OrientationContract([xml]$Plist, [string]$FlutterSource) {
+  $calls = [regex]::Matches($FlutterSource, '(?s)SystemChrome\.setPreferredOrientations\(\s*\[(.*?)\]\s*\)')
+  if ($calls.Count -ne 1) { throw 'Expected one explicit Flutter startup orientation list.' }
+  $flutterOrientations = @([regex]::Matches($calls[0].Groups[1].Value, 'DeviceOrientation\.(\w+)') |
+    ForEach-Object { $_.Groups[1].Value })
+  if ($flutterOrientations.Count -ne 2 -or
+      @($flutterOrientations | Sort-Object -Unique).Count -ne 2 -or
+      'portraitUp' -cnotin $flutterOrientations -or 'portraitDown' -cnotin $flutterOrientations) {
+    throw 'Flutter startup must retain the portraitUp/portraitDown contract.'
+  }
+  $nativeNames = @{ portraitUp = 'UIInterfaceOrientationPortrait'; portraitDown = 'UIInterfaceOrientationPortraitUpsideDown' }
+  $expectedPhone = @($flutterOrientations | ForEach-Object { $nativeNames[$_] })
+  $phoneArrays = $Plist.SelectNodes('/plist/dict/key[.="UISupportedInterfaceOrientations"]/following-sibling::*[1][self::array]')
+  if ($phoneArrays.Count -ne 1) { throw 'Expected one iPhone orientation array.' }
+  $phone = @($phoneArrays[0].SelectNodes('*') | ForEach-Object { $_.InnerText })
+  if ($phone.Count -ne 2 -or @($phone | Sort-Object -Unique).Count -ne 2 -or
+      @(Compare-Object $expectedPhone $phone -CaseSensitive).Count -ne 0) {
+    throw 'iPhone native orientations must match Flutter startup portrait orientations.'
+  }
+
+  # iPad multitasking requires all orientations; do not opt out to enforce a phone-only lock.
+  $ipadArrays = $Plist.SelectNodes('/plist/dict/key[.="UISupportedInterfaceOrientations~ipad"]/following-sibling::*[1][self::array]')
+  if ($ipadArrays.Count -ne 1) { throw 'Expected one iPad orientation array.' }
+  $ipad = @($ipadArrays[0].SelectNodes('*') | ForEach-Object { $_.InnerText })
+  $expectedIpad = @($expectedPhone) + @('UIInterfaceOrientationLandscapeLeft', 'UIInterfaceOrientationLandscapeRight')
+  if ($ipad.Count -ne 4 -or @($ipad | Sort-Object -Unique).Count -ne 4 -or
+      @(Compare-Object $expectedIpad $ipad -CaseSensitive).Count -ne 0 -or
+      $Plist.SelectSingleNode('/plist/dict/key[.="UIRequiresFullScreen"]/following-sibling::*[1][self::true]')) {
+    throw 'Preserve all four iPad multitasking orientations without requiring full screen.'
+  }
+}
+
+$flutterMain = Get-Content -Raw (Join-Path $PSScriptRoot '../lib/main.dart')
+Assert-OrientationContract $info $flutterMain
+
+# Exercise regressions in memory without changing native or Flutter source files.
+$orientationProbes = 0
+foreach ($key in @('UISupportedInterfaceOrientations', 'UISupportedInterfaceOrientations~ipad')) {
+  [xml]$changed = $info.CloneNode($true)
+  $array = $changed.SelectSingleNode("/plist/dict/key[.='$key']/following-sibling::*[1]")
+  if ($key -eq 'UISupportedInterfaceOrientations') {
+    $array.LastChild.InnerText = 'UIInterfaceOrientationLandscapeLeft'
+  } else {
+    [void]$array.RemoveChild($array.LastChild)
+  }
+  $rejected = $false
+  try { Assert-OrientationContract $changed $flutterMain } catch { $rejected = $true }
+  if (-not $rejected) { throw "Orientation guard accepted regressed $key." }
+  $orientationProbes++
+}
+$rejected = $false
+try {
+  Assert-OrientationContract $info ($flutterMain.Replace('DeviceOrientation.portraitDown', 'DeviceOrientation.landscapeLeft'))
+} catch { $rejected = $true }
+if (-not $rejected) { throw 'Orientation guard accepted Flutter landscape drift.' }
+$orientationProbes++
+[xml]$changed = $info.CloneNode($true)
+$fullScreenKey = $changed.CreateElement('key')
+$fullScreenKey.InnerText = 'UIRequiresFullScreen'
+[void]$changed.plist.dict.AppendChild($fullScreenKey)
+[void]$changed.plist.dict.AppendChild($changed.CreateElement('true'))
+$rejected = $false
+try { Assert-OrientationContract $changed $flutterMain } catch { $rejected = $true }
+if (-not $rejected) { throw 'Orientation guard accepted an iPad full-screen opt-out.' }
+$orientationProbes++
+Write-Output "iOS/Flutter orientation contract and $orientationProbes negative regression probes passed."
+
 $flavorConfigurations = @(
   'Debug-staging', 'Profile-staging', 'Release-staging',
   'Debug-production', 'Profile-production', 'Release-production'

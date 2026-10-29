@@ -1,5 +1,21 @@
 # AI handoff - read this first
 
+## APP-READY-084 - Executable Route Authority
+
+IN PROGRESS on clean isolated branch
+`slice/APP-READY-084-route-authority-recovery`, base `900e5ae`/1,173 tests.
+`RouteName.values` inventories all 79 identifiers and one exhaustive test proves
+exact active widgets, approved aliases, fail-closed deferred routes, the
+reserved `login` route and unknown-route behavior. `ROUTES.md` is corrected to
+match runtime authority. No route mapping, dependency, native, backend or cloud
+change. Analyzer, seven targeted tests, all 1,176 full-suite tests, staging debug
+APK and independent review pass. CI remains a delivery gate. The six-file slice was reconstructed from
+recorded patches in `E:\CareNetWorktrees\mobile-route-recovery` after F: became
+unreadable. Further filesystem recovery is separate from implementation. The
+integration branch is now protected with strict
+required Flutter CI, PRs, conversation resolution, admin enforcement and no
+force-push/deletion. Staging Cloud SQL is stopped while unused.
+
 ## APP-READY-082H - Consultation Audio Permission Policy
 
 IN PROGRESS within sole NEXT task082. Clean isolated branch

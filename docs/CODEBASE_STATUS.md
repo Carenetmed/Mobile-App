@@ -1,5 +1,21 @@
 # Codebase status
 
+## APP-READY-084 - Executable Route Authority (IN PROGRESS)
+
+`RouteName.values` now provides one complete 79-identifier inventory. The
+executable route contract partitions every identifier exactly once into an
+active exact widget, approved compatibility alias, fail-closed deferred route,
+or the deliberately reserved `login` value. It also proves unknown routes fail
+closed. The canonical route table now describes actual `generateRoute`
+resolution instead of naming disconnected seeded screens. No route mapping,
+navigation contract, dependency, native project, backend or cloud behavior is
+changed. Three focused tests are added over the retained 1,173-test baseline;
+analyzer, seven targeted route tests and all 1,176 full-suite tests pass. No
+existing tests were removed or changed. Staging debug APK and independent
+review pass; CI remains a delivery gate. The slice was reconstructed from
+recorded patches on E: after the F:
+worktree became unreadable; filesystem recovery remains separate.
+
 ## APP-READY-083 - Current repository README
 
 The root README now describes the implemented role-aware Phase 1 marketplace

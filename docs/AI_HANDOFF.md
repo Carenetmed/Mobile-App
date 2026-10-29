@@ -1,5 +1,17 @@
 # AI handoff - read this first
 
+## APP-READY-085 - Notification Preference Accessible Names
+
+IN PROGRESS on `slice/APP-READY-085-notification-preference-labels`, base
+`a3f42bc`/1,176 tests. The active preference switches previously exposed only
+repeated Push/Email names. Category-qualified names now distinguish all fourteen
+controls while preserving native switch behavior. Twelve focused tests, all
+1,177 full-suite tests, analyzer and independent review pass. One regression is
+added over the retained baseline. Staging debug APK passes; CI remains a delivery gate. No provider
+activation or backend changes.
+APP-READY-084 was merged through PR #257 at this base with all PR CI gates green;
+its older pending notes below are historical. Integration CI is still running.
+
 ## APP-READY-084 - Executable Route Authority
 
 IN PROGRESS on clean isolated branch

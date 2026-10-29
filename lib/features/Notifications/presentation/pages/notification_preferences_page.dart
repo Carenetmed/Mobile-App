@@ -105,7 +105,11 @@ class _NotificationPreferencesPageState
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Push'),
+                title: Semantics(
+                  label: '${preference.category.label}: Push',
+                  excludeSemantics: true,
+                  child: const Text('Push'),
+                ),
                 value: preference.pushEnabled,
                 onChanged:
                     _controller.isSaving
@@ -117,7 +121,11 @@ class _NotificationPreferencesPageState
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Email'),
+                title: Semantics(
+                  label: '${preference.category.label}: Email',
+                  excludeSemantics: true,
+                  child: const Text('Email'),
+                ),
                 value: preference.emailEnabled,
                 onChanged:
                     _controller.isSaving

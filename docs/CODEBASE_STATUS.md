@@ -1,5 +1,27 @@
 # Codebase status
 
+## APP-READY-086 - Readiness Alignment (IN PROGRESS)
+
+Password validation uses NFC normalization for the 15-128 UTF-16 code-unit
+length bounds, weak-password check, and confirmation comparison, with
+`unorm_dart` pinned to `0.3.2`. Input is not rewritten. Five new password
+regression tests cover canonical equivalence, length boundaries, confirmation,
+and retained UTF-16/ASCII weak-password behavior.
+
+`reminder` and `schedules` now fail closed through `DeferredFeaturePage`;
+`selectedDates` remains the unchanged backend-owned professional Schedule
+surface. The iPhone plist now declares portrait and portrait upside-down,
+aligned with Flutter startup. All four iPad orientations remain preserved,
+without a full-screen opt-out. The native checker guards this contract with
+four in-memory negative regression probes.
+
+Eight targeted tests (five password tests plus three route-contract tests) and
+the native iOS configuration checker passed. The analyzer, all 1,182 Flutter
+tests (1,177 base plus five additions, no removals), and diff check passed.
+The staging debug APK build passed; independent diff review found no concrete
+defects. CI verification remains outstanding; no full readiness or device
+acceptance is claimed.
+
 ## APP-READY-085 - Notification Preference Accessible Names (IN PROGRESS)
 
 Notification preference switches now include their category in the accessible

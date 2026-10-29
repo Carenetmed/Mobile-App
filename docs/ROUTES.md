@@ -1,6 +1,6 @@
 # CareNet — canonical routes
 
-Live inventory at APP-READY-084: `RouteName.values` defines 79 identifiers; 78
+Live inventory at APP-READY-086: `RouteName.values` defines 79 identifiers; 78
 are registered in `generateRoute`, with `login` intentionally reserved and
 unwired. An executable route contract partitions every identifier into an exact
 active widget, approved compatibility alias, fail-closed deferred destination,
@@ -51,6 +51,10 @@ The detailed KEEP/ADAPT/DEFER/DELETE table is maintained separately below.
 > `appointmentDetail` requires an exact appointment ID and resolves it only from
 > the backend-owned list for the current account. Professional `selectedDates`
 > manages recurring `/availability/me` rules and never generates patient slots.
+
+APP-READY-086 routes `reminder` and `schedules` to `DeferredFeaturePage`;
+their retained local screens are not active product surfaces. `selectedDates`
+remains the unchanged backend-owned professional Schedule destination.
 
 All navigation uses **`RouteName`** constants and **`generateRoute`** in `lib/core/constants/navigators/router.dart`.
 
@@ -139,8 +143,8 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `message` | `message` | `ChatPage` fail-closed compatibility alias; no seeded conversation | `lib/features/Messaging/presentation/pages/Chat.dart` |
 | `notification` | `notification` | `NotificationsPage` (authenticated durable inbox) | `lib/features/Messaging/presentation/pages/Notification.dart` |
 | `notificationPreferences` | `notificationPreferences` | `NotificationPreferencesPage` | `lib/features/Notifications/presentation/pages/notification_preferences_page.dart` |
-| `reminder` | `reminder` | `ReminderShellPage` | `lib/features/Home/presentation/pages/reminder_shell.dart` |
-| `schedules` | `schedules` | `SchedulesShellPage` | `lib/features/Home/presentation/pages/schedules_shell.dart` |
+| `reminder` | `reminder` | `DeferredFeaturePage` | `lib/core/routing/deferred_feature_page.dart` |
+| `schedules` | `schedules` | `DeferredFeaturePage` | `lib/core/routing/deferred_feature_page.dart` |
 | `selectedDates` | `selectedDates` | `SelectedDatesShellPage` (professional recurring availability) | `lib/features/Home/presentation/pages/selected_dates_shell.dart` |
 
 ## Not registered yet

@@ -1,5 +1,28 @@
 # AI handoff - read this first
 
+## APP-READY-086 - Readiness Alignment
+
+IN PROGRESS. Password validation and confirmation compare NFC-normalized
+values using exactly pinned `unorm_dart: 0.3.2`, retaining the backend's
+15-128 UTF-16 code-unit bounds and weak-password rules without rewriting input.
+Five new password tests cover normalization and retained validation behavior.
+
+`reminder` and `schedules` resolve to `DeferredFeaturePage`, not their retained
+local shells. Do not confuse these deferred routes with `selectedDates`: the
+backend-owned professional Schedule/recurring availability surface is unchanged.
+The iPhone plist's portrait and portrait upside-down orientations now match
+Flutter startup; all four iPad orientations remain intact without requiring
+full screen. The native checker includes four in-memory negative probes for
+iPhone drift, missing iPad orientation, Flutter drift, and full-screen opt-out.
+
+Eight targeted tests (five new password tests and three existing route-contract
+tests), all 1,182 Flutter tests (1,177 base plus five additions, no removals),
+the analyzer, diff check, native iOS configuration checker, and staging debug
+APK build passed. Independent diff review found no concrete defects. CI
+verification for this slice remains outstanding. Earlier slices' proof below
+does not establish those gates for APP-READY-086; no device or full production
+readiness is claimed.
+
 ## APP-READY-085 - Notification Preference Accessible Names
 
 IN PROGRESS on `slice/APP-READY-085-notification-preference-labels`, base

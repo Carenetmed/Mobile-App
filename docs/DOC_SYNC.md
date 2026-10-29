@@ -1,5 +1,14 @@
 # Documentation sync index
 
+## APP-READY-084 Scoped Sync (IN PROGRESS)
+
+The route constants, executable route contract, canonical route table, codebase
+status and handoff share one 79-route authority inventory. Every declared value
+is active, an approved alias, deferred to `DeferredFeaturePage`, or deliberately
+reserved; unknown values use `UnknownRoutePage`. No route mapping or product
+navigation changes. Analyzer, seven targeted tests and the full 1,176-test suite
+pass. Staging debug APK and independent review pass; CI remains a delivery gate.
+
 ## APP-READY-083 Scoped Sync
 
 The root README, codebase status, and

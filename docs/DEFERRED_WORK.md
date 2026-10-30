@@ -2,6 +2,10 @@
 
 ## APP-READY-087 Upload Recovery Boundary
 
+APP087B restores cache clearing on explicit authority denial while preserving
+recoverable refresh data. RC7 is held for the corrected candidate; its valid
+signature is not approval for physical acceptance.
+
 Serialized section loads and file selection do not add signed-URL renewal,
 durable upload resume, abandoned-object cleanup or a retention policy. A cancelled
 upload may already have an incomplete backend record; the UI does not claim it

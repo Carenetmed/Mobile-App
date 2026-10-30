@@ -1,5 +1,25 @@
 # Codebase status
 
+## APP-READY-087B - Verification Authority Errors (IN PROGRESS)
+
+Network and server document-refresh failures retain cached rows. Explicit
+unauthorized/forbidden failures clear document rows and loaded-success state,
+showing the safe authority error without inventing a backend-empty result.
+Both authority regressions failed against PR260 before the five-line repair;
+all 17 then-focused race/authority tests passed. Review added two explicit
+AuthFailure network/server retention regressions for the changed catch branch.
+No test removal or weakened assertions. All 1,201 Flutter tests (1,197 retained
+plus four additions), 19 focused tests, analyzer, staging debug APK and fresh
+release lint pass. Lint reports zero errors, five staging and four production
+warnings. Final source/test/lock hashes are stable; independent review found no
+blockers. PR/CI remain delivery gates; dependencies and contracts are unchanged.
+
+APP087 delivered through PR260 merge `987547a`; PR CI41133251996 and integration
+CI41135016555 passed with1197 tests. Signed RC7 accurately represents that merge
+but is held from device use pending this authority-error correction. No physical
+acceptance or whole-program completion is claimed. Older pending notes below are
+historical checkpoints.
+
 ## APP-READY-087 - Verification Load Safety (IN PROGRESS)
 
 Document and readiness refreshes each join one in-flight request. Document

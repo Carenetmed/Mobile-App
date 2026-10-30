@@ -218,6 +218,11 @@ class _ProfessionalVerificationDocumentsShellPageState
       }
       setState(() {
         _error = _safeVerificationError(failure);
+        if (failure.type == AuthFailureType.unauthorized ||
+            failure.type == AuthFailureType.forbidden) {
+          _documents = const <VerificationDocument>[];
+          _hasLoadedDocuments = false;
+        }
         _isLoading = false;
       });
     } catch (_) {

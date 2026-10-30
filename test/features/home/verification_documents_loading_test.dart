@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Home/data/repositories/onboarding_repository.dart';
 import 'package:app_t/features/Home/data/repositories/verification_repository.dart';
 import 'package:app_t/features/Home/domain/entities/account_readiness.dart';
@@ -173,6 +174,65 @@ void _hasDocument() => expect(find.text('PDF document'), findsOneWidget);
 void _noRawError() => expect(find.textContaining(_rawError), findsNothing);
 
 void main() {
+  for (final type in <AuthFailureType>[
+    AuthFailureType.network,
+    AuthFailureType.server,
+  ]) {
+    testWidgets('recoverable $type failure retains cached documents', (
+      tester,
+    ) async {
+      final h = _Harness();
+      await h.loaded(tester);
+      await _refresh(tester);
+      h.documents.calls.last.completeError(
+        AuthFailure(type: type, message: _rawError),
+      );
+      await h.finishReadiness(tester);
+      _hasDocument();
+      expect(
+        find.text('Service is unavailable. Please try again.'),
+        findsOneWidget,
+      );
+      _noRawError();
+    });
+  }
+
+  for (final status in <int>[401, 403]) {
+    testWidgets('authority failure $status clears cached documents', (
+      tester,
+    ) async {
+      final h = _Harness();
+      await h.loaded(tester);
+      _hasDocument();
+      await _refresh(tester);
+      h.documents.calls.last.completeError(
+        AuthFailure(
+          type:
+              status == 401
+                  ? AuthFailureType.unauthorized
+                  : AuthFailureType.forbidden,
+          message: _rawError,
+          statusCode: status,
+        ),
+      );
+      await h.finishReadiness(tester);
+      expect(find.text('PDF document'), findsNothing);
+      expect(
+        find.text(
+          status == 401
+              ? 'Please sign in again.'
+              : 'This account cannot manage verification.',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text('No verification documents are submitted yet.'),
+        findsNothing,
+      );
+      _noRawError();
+    });
+  }
+
   for (final duringRefresh in <bool>[false, true]) {
     for (final documentsFirst in <bool>[false, true]) {
       testWidgets(

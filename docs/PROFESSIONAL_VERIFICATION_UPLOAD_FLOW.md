@@ -2,6 +2,10 @@
 
 ## Current Load And Selection Safety (APP-READY-087)
 
+APP-READY-087B narrows retained-state behavior: explicit401/403 authority failure
+clears cached documents and loaded-success state. Network/server refresh failure
+still retains the last successful list. Denial is not rendered as backend-empty.
+
 Each document/readiness loader joins its current request rather than racing a
 second refresh. Last successful documents remain visible during refresh and on
 recoverable failure, with user-safe error copy. Pull-to-refresh retries both

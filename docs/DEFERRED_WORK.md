@@ -1,5 +1,14 @@
 # Deferred work and backend replacement map
 
+## APP-READY-087 Upload Recovery Boundary
+
+Serialized section loads and file selection do not add signed-URL renewal,
+durable upload resume, abandoned-object cleanup or a retention policy. A cancelled
+upload may already have an incomplete backend record; the UI does not claim it
+was deleted. Do not retry upload-init or upload-complete blindly after an
+uncertain result. Backend-owned recovery/cleanup and valid-file/admin/provider
+acceptance remain required; no broad source deletion or cloud mutation here.
+
 ## APP-READY-082H Permission And Routing Acceptance (IN PROGRESS)
 
 Host channel tests and patient/professional widget tests cover permission mapping,

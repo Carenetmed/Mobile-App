@@ -1,5 +1,25 @@
 # Professional Verification Upload Flow
 
+## Current Load And Selection Safety (APP-READY-087)
+
+Each document/readiness loader joins its current request rather than racing a
+second refresh. Last successful documents remain visible during refresh and on
+recoverable failure, with user-safe error copy. Pull-to-refresh retries both
+sections. Initial errors are not an empty-success state.
+
+File selection, validation and upload share one serialized operation. The chosen
+document type is captured before picker launch. Cancellation or disposal while
+the picker is open prevents its late result from entering upload-init. Picker
+exceptions are caught without exposing platform details. Successful upload waits
+for pre-existing reads, then refreshes authoritative documents/readiness.
+
+SHA-256/progress/transport cancellation were delivered before this slice; the
+original historical checksum-deferred notes below no longer describe runtime.
+No signed-URL renewal, durable resume, orphan cleanup or deletion is implemented
+by these UI changes. The backend remains authoritative for integrity and review.
+
+## Historical Initial Implementation
+
 Task: 52.79
 Date: 2026-07-15
 

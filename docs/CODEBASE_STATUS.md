@@ -1,5 +1,31 @@
 # Codebase status
 
+## APP-READY-087 - Verification Load Safety (IN PROGRESS)
+
+Document and readiness refreshes each join one in-flight request. Document
+refresh keeps the last successful list visible during loading and recoverable
+failure; initial loading, failure and backend-empty remain distinct. Pull to
+refresh retries both sections. Upload selection is serialized before opening
+the file picker, picker failures use safe errors, and cancellation/disposal
+discards late picker results. A successful upload waits for older reads before
+refreshing documents and readiness so a pre-upload response cannot suppress the
+new state. No optimistic review/verification status is applied.
+
+Existing 45 profile/verification regressions and 15 new deterministic race tests
+pass. The refresh regression fails against the base implementation (three
+requests instead of one) and passes with the repair. All 1,197 Flutter tests
+(1,182 retained plus 15 additions, no removals/skips) and analyzer pass.
+Staging debug APK and fresh release lint pass (zero errors, five warnings).
+Initial Windows-only generated local.properties errors and a stale cached lint
+retry are retained; escaping ignored local paths and rerunning all lint tasks
+resolved them without tracked native changes or suppression. Source/test/lockfile
+hashes remained stable across final checks. Independent review found no blockers.
+PR/CI remain delivery gates. No API/backend, dependency,
+navigation, appointment, messaging, RTC or payment changes. Expired signed-URL
+recovery and orphan retention/cleanup still require their own backend contract;
+these UI repairs do not claim that work complete. Prior APP086 delivered via
+PR259, merge `f56518c`, PR/integration CI green; older pending notes are historical.
+
 ## APP-READY-086 - Readiness Alignment (IN PROGRESS)
 
 Password validation uses NFC normalization for the 15-128 UTF-16 code-unit

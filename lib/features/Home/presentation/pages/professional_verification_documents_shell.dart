@@ -90,7 +90,11 @@ class ProfessionalVerificationDocumentsShellPage extends StatefulWidget {
 class _ProfessionalVerificationDocumentsShellPageState
     extends State<ProfessionalVerificationDocumentsShellPage> {
   bool _isLoading = true;
+  bool _hasLoadedDocuments = false;
+  Future<void>? _documentsRequest;
+  Future<void>? _readinessRequest;
   bool _isUploading = false;
+  bool _isPicking = false;
   double _uploadProgress = 0;
   VerificationUploadController? _uploadController;
   String? _error;
@@ -130,6 +134,19 @@ class _ProfessionalVerificationDocumentsShellPageState
   }
 
   Future<void> _loadReadiness() async {
+    if (!mounted) return;
+    final active = _readinessRequest;
+    if (active != null) return active;
+    final request = _performLoadReadiness();
+    _readinessRequest = request;
+    try {
+      await request;
+    } finally {
+      if (identical(_readinessRequest, request)) _readinessRequest = null;
+    }
+  }
+
+  Future<void> _performLoadReadiness() async {
     setState(() {
       _readinessError = null;
     });
@@ -163,6 +180,23 @@ class _ProfessionalVerificationDocumentsShellPageState
   }
 
   Future<void> _loadDocuments() async {
+    if (!mounted) return;
+    final active = _documentsRequest;
+    if (active != null) return active;
+    final request = _performLoadDocuments();
+    _documentsRequest = request;
+    try {
+      await request;
+    } finally {
+      if (identical(_documentsRequest, request)) _documentsRequest = null;
+    }
+  }
+
+  Future<void> _refresh() async {
+    await Future.wait([_loadReadiness(), _loadDocuments()]);
+  }
+
+  Future<void> _performLoadDocuments() async {
     setState(() {
       _isLoading = true;
       _error = null;
@@ -175,6 +209,7 @@ class _ProfessionalVerificationDocumentsShellPageState
       }
       setState(() {
         _documents = documents;
+        _hasLoadedDocuments = true;
         _isLoading = false;
       });
     } on AuthFailure catch (failure) {
@@ -183,7 +218,6 @@ class _ProfessionalVerificationDocumentsShellPageState
       }
       setState(() {
         _error = _safeVerificationError(failure);
-        _documents = const <VerificationDocument>[];
         _isLoading = false;
       });
     } catch (_) {
@@ -192,7 +226,6 @@ class _ProfessionalVerificationDocumentsShellPageState
       }
       setState(() {
         _error = 'Something went wrong. Please try again.';
-        _documents = const <VerificationDocument>[];
         _isLoading = false;
       });
     }
@@ -213,41 +246,37 @@ class _ProfessionalVerificationDocumentsShellPageState
   }
 
   Future<void> _uploadDocument() async {
+    if (!mounted || _isUploading) return;
+    final uploadController = VerificationUploadController();
+    final documentType = _selectedDocumentType;
+    _uploadController = uploadController;
     setState(() {
+      _isUploading = true;
+      _isPicking = true;
+      _uploadProgress = 0;
       _uploadError = null;
       _uploadSuccess = null;
     });
 
-    final picked = await _documentPicker.pick();
-    if (!mounted) {
-      return;
-    }
-    if (picked == null) {
-      setState(() {
-        _uploadError = 'No file selected.';
-      });
-      return;
-    }
-
-    final validationError = _validatePickedFile(picked);
-    if (validationError != null) {
-      setState(() {
-        _uploadError = validationError;
-      });
-      return;
-    }
-
-    setState(() {
-      _isUploading = true;
-      _uploadProgress = 0;
-    });
-    final uploadController = VerificationUploadController();
-    _uploadController = uploadController;
-
     try {
+      final picked = await _documentPicker.pick();
+      if (!mounted) return;
+      setState(() => _isPicking = false);
+      if (uploadController.isCancelled) {
+        throw const VerificationUploadCancelled();
+      }
+      if (picked == null) {
+        setState(() => _uploadError = 'No file selected.');
+        return;
+      }
+      final validationError = _validatePickedFile(picked);
+      if (validationError != null) {
+        setState(() => _uploadError = validationError);
+        return;
+      }
       await _verificationRepository.uploadDocument(
         VerificationUploadRequest(
-          documentType: _selectedDocumentType,
+          documentType: documentType,
           originalFileName: picked.name,
           mimeType: picked.mimeType,
           fileBytes: picked.bytes,
@@ -269,7 +298,15 @@ class _ProfessionalVerificationDocumentsShellPageState
       setState(() {
         _uploadSuccess = 'Document uploaded and pending review.';
       });
-      await _loadDocuments();
+      // A read started before the upload cannot confirm its resulting state.
+      final pendingDocuments = _documentsRequest;
+      final pendingReadiness = _readinessRequest;
+      await Future.wait([
+        if (pendingDocuments != null) pendingDocuments,
+        if (pendingReadiness != null) pendingReadiness,
+      ]);
+      if (!mounted) return;
+      await _refresh();
     } on VerificationUploadCancelled {
       if (!mounted) {
         return;
@@ -295,6 +332,7 @@ class _ProfessionalVerificationDocumentsShellPageState
       if (mounted) {
         setState(() {
           _isUploading = false;
+          _isPicking = false;
           _uploadProgress = 0;
           _uploadController = null;
         });
@@ -359,16 +397,11 @@ class _ProfessionalVerificationDocumentsShellPageState
       body: SafeArea(
         top: false,
         child: RefreshIndicator(
-          onRefresh: _loadDocuments,
+          onRefresh: _refresh,
           child: ListView(
             padding: REdgeInsets.fromLTRB(16.w, 12.h, 16.w, 28.h),
             children: [
-              _IntroCard(
-                onRefresh: () {
-                  _loadReadiness();
-                  _loadDocuments();
-                },
-              ),
+              _IntroCard(onRefresh: _refresh),
               SizedBox(height: 16.h),
               _VerificationReadinessCard(
                 readiness: _readiness,
@@ -380,6 +413,7 @@ class _ProfessionalVerificationDocumentsShellPageState
                 documentTypes: _documentTypes,
                 selectedDocumentType: _selectedDocumentType,
                 isUploading: _isUploading,
+                isPicking: _isPicking,
                 uploadProgress: _uploadProgress,
                 error: _uploadError,
                 success: _uploadSuccess,
@@ -397,21 +431,21 @@ class _ProfessionalVerificationDocumentsShellPageState
                 onCancel: _isUploading ? _cancelUpload : null,
               ),
               SizedBox(height: 16.h),
-              if (_isLoading)
+              if (_isLoading && !_hasLoadedDocuments)
                 const _StateCard(message: 'Loading verification documents...')
-              else if (_error != null)
-                _StateCard(message: _error!)
-              else if (_documents.isEmpty)
+              else if (_isLoading)
+                const LinearProgressIndicator(),
+              if (_error != null) _StateCard(message: _error!),
+              if (_hasLoadedDocuments && _documents.isEmpty)
                 const _StateCard(
                   message: 'No verification documents are submitted yet.',
-                )
-              else
-                ..._documents.map(
-                  (document) => Padding(
-                    padding: REdgeInsets.only(bottom: 12.h),
-                    child: _DocumentCard(document: document),
-                  ),
                 ),
+              ..._documents.map(
+                (document) => Padding(
+                  padding: REdgeInsets.only(bottom: 12.h),
+                  child: _DocumentCard(document: document),
+                ),
+              ),
             ],
           ),
         ),
@@ -480,6 +514,7 @@ class _UploadCard extends StatelessWidget {
     required this.documentTypes,
     required this.selectedDocumentType,
     required this.isUploading,
+    required this.isPicking,
     required this.uploadProgress,
     required this.error,
     required this.success,
@@ -491,6 +526,7 @@ class _UploadCard extends StatelessWidget {
   final List<String> documentTypes;
   final String selectedDocumentType;
   final bool isUploading;
+  final bool isPicking;
   final double uploadProgress;
   final String? error;
   final String? success;
@@ -571,7 +607,11 @@ class _UploadCard extends StatelessWidget {
                             )
                             : const Icon(Icons.upload_file),
                     label: Text(
-                      isUploading ? 'Uploading...' : 'Choose file to upload',
+                      isPicking
+                          ? 'Choosing file...'
+                          : isUploading
+                          ? 'Uploading...'
+                          : 'Choose file to upload',
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryBlue5,
@@ -581,24 +621,28 @@ class _UploadCard extends StatelessWidget {
                 ),
                 if (isUploading) ...[
                   SizedBox(height: 10.h),
-                  Semantics(
-                    label: 'Document upload progress',
-                    value: '${(uploadProgress * 100).round()} percent',
-                    child: LinearProgressIndicator(value: uploadProgress),
-                  ),
+                  if (!isPicking)
+                    Semantics(
+                      label: 'Document upload progress',
+                      value: '${(uploadProgress * 100).round()} percent',
+                      child: LinearProgressIndicator(value: uploadProgress),
+                    ),
                   SizedBox(height: 8.h),
                   Row(
                     children: [
-                      Expanded(
-                        child: Text(
-                          '${(uploadProgress * 100).round()}% uploaded',
-                          style: TextStyle(
-                            fontSize: FontSizes.footer4,
-                            fontFamily: AppFonts.montserrat,
-                            color: AppColors.primaryBlue11,
+                      if (isPicking)
+                        const Spacer()
+                      else
+                        Expanded(
+                          child: Text(
+                            '${(uploadProgress * 100).round()}% uploaded',
+                            style: TextStyle(
+                              fontSize: FontSizes.footer4,
+                              fontFamily: AppFonts.montserrat,
+                              color: AppColors.primaryBlue11,
+                            ),
                           ),
                         ),
-                      ),
                       TextButton.icon(
                         onPressed: onCancel,
                         icon: const Icon(Icons.close),

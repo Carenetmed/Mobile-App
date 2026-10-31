@@ -65,6 +65,7 @@ const _catalog = OnboardingCatalog(
 class _Documents implements VerificationRepository {
   final calls = <Completer<List<VerificationDocument>>>[];
   final uploads = <VerificationUploadRequest>[];
+  VerificationDocument uploadResult = _document;
 
   @override
   Future<List<VerificationDocument>> documents() {
@@ -78,7 +79,7 @@ class _Documents implements VerificationRepository {
     VerificationUploadRequest request,
   ) async {
     uploads.add(request);
-    return _document;
+    return uploadResult;
   }
 
   @override
@@ -174,6 +175,38 @@ void _hasDocument() => expect(find.text('PDF document'), findsOneWidget);
 void _noRawError() => expect(find.textContaining(_rawError), findsNothing);
 
 void main() {
+  for (final status in ['APPROVED', 'REJECTED']) {
+    testWidgets('completion replay preserves reviewed $status wording', (
+      tester,
+    ) async {
+      final h = _Harness();
+      h.documents.uploadResult = VerificationDocument(
+        id: 'test-document',
+        documentType: 'LICENSE',
+        status: status,
+        storageProvider: 'test',
+        mimeType: 'application/pdf',
+        fileSizeBytes: 4,
+        checksumProvided: true,
+      );
+      await h.loaded(tester);
+      await _choose(tester);
+      h.picker.calls.single.complete(_picked);
+      await tester.pump();
+      expect(find.text('Document uploaded and pending review.'), findsNothing);
+      expect(
+        find.text(
+          status == 'APPROVED'
+              ? 'Document upload confirmed. This document is approved.'
+              : 'Document upload confirmed. This document was not approved.',
+        ),
+        findsOneWidget,
+      );
+      h.documents.calls.last.complete([h.documents.uploadResult]);
+      await h.finishReadiness(tester);
+      expect(tester.takeException(), isNull);
+    });
+  }
   for (final type in <AuthFailureType>[
     AuthFailureType.network,
     AuthFailureType.server,

@@ -1,5 +1,16 @@
 # Deferred work and backend replacement map
 
+## APP-READY-088 Upload Recovery Rollout
+
+Typed signed metadata, raw-byte transport, bounded same-document renewal and
+completion replay are under verification. Recovery is memory-only and must not
+claim durable file resume or that an uncertain transfer created no object.
+Backend draft PR189 remains blocked by its unchanged dependency audit. Do not
+deploy its changed signed-header contract before the mobile consumer is ready.
+Real owned-object header/precondition enforcement, valid PDF upload/read/download
+and expiry recovery remain provider gates. Automatic cleanup still needs a
+retention decision and proved in-flight PUT safety; no deletion is enabled here.
+
 ## APP-READY-087 Upload Recovery Boundary
 
 APP087B restores cache clearing on explicit authority denial while preserving

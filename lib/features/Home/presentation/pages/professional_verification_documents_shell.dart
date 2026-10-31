@@ -279,7 +279,7 @@ class _ProfessionalVerificationDocumentsShellPageState
         setState(() => _uploadError = validationError);
         return;
       }
-      await _verificationRepository.uploadDocument(
+      final uploaded = await _verificationRepository.uploadDocument(
         VerificationUploadRequest(
           documentType: documentType,
           originalFileName: picked.name,
@@ -301,7 +301,12 @@ class _ProfessionalVerificationDocumentsShellPageState
         return;
       }
       setState(() {
-        _uploadSuccess = 'Document uploaded and pending review.';
+        _uploadSuccess = switch (uploaded.status) {
+          'APPROVED' => 'Document upload confirmed. This document is approved.',
+          'REJECTED' =>
+            'Document upload confirmed. This document was not approved.',
+          _ => 'Document uploaded and pending review.',
+        };
       });
       // A read started before the upload cannot confirm its resulting state.
       final pendingDocuments = _documentsRequest;

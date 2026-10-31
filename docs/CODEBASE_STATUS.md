@@ -1,5 +1,30 @@
 # Codebase status
 
+## APP-READY-088 - Verification Upload Recovery (IN PROGRESS)
+
+Base PR261 merge `6724191`. Initial implementation consumes validated immutable
+signed PUT headers and absolute UTC expiry, adds owner-document renewal API
+support, and preserves legacy responses without the new metadata. Raw file bytes
+now use Uint8List: a transport regression proved that Dio otherwise JSON-encoded
+a three-byte List<int> into nine bytes. The corrected outgoing stream is tested.
+Bearer credentials are not forwarded to storage; injected headers, mismatched
+sizes, unsafe URLs and substituted renewal document IDs fail closed.
+
+Final full suite1309, analyzer and staging debug APK pass after review repairs.
+Test inventory: retained1201 plus58 metadata,18 transport/API,30 recovery and
+two reviewed-status widget cases =1309; no removed/renamed/skipped tests.
+Bounded renewal/completion replay and account/cancellation phase checks are
+implemented. Initial1299-test full run and debug APK passed, followed by six late
+completion account/cancel regressions and four definite-HTTP retry regressions
+failed before repair and pass afterward. Independent re-review found both issues
+resolved with no new blocker. Fresh staging/production release lint passes with
+zero errors and four warnings each; all652 tasks executed, no suppression.
+Only ignored local SDK-path escaping was adjusted for Windows tooling; generated
+Kotlin diagnostics were preserved outside the checkout. PR/CI and deployment
+remain pending. Backend draft PR189 passes database
+and runtime CI but is blocked by dependency audit; no coordinated deployment or
+real-provider acceptance is claimed. No dependency/native/navigation changes.
+
 ## APP-READY-087B - Verification Authority Errors (IN PROGRESS)
 
 Network and server document-refresh failures retain cached rows. Explicit

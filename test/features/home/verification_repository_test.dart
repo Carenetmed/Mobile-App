@@ -14,6 +14,279 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('Signed upload capability boundary', () {
+    test('backend headers reach storage without account credentials', () async {
+      final apiAdapter = _QueueAdapter([
+        _QueuedResponse.json(_signedResponse()),
+        _QueuedResponse.json({
+          'document': {
+            'id': 'document-1',
+            'documentType': 'LICENSE',
+            'status': 'PENDING',
+            'storageProvider': 'gcs',
+            'mimeType': 'application/pdf',
+            'fileSizeBytes': 3,
+            'checksumProvided': true,
+          },
+        }),
+      ]);
+      final storage = _RecordingBytesAdapter([_QueuedResponse.json({})]);
+      final repository = _repository(
+        apiAdapter: apiAdapter,
+        uploadAdapter: storage,
+        withSession: true,
+      );
+      await repository.uploadDocument(
+        const VerificationUploadRequest(
+          documentType: 'LICENSE',
+          originalFileName: 'license.pdf',
+          mimeType: 'application/pdf',
+          fileBytes: [1, 2, 3],
+        ),
+      );
+      final headers = storage.requests.single.headers;
+      expect(headers['Content-Type'], 'application/pdf');
+      expect(headers['Content-Length'], '3');
+      expect(headers['x-goog-if-generation-match'], '0');
+      expect(storage.sentBytes, [1, 2, 3]);
+      expect(storage.requests.single.followRedirects, isFalse);
+      expect(
+        headers.keys.map((key) => key.toLowerCase()),
+        isNot(contains('authorization')),
+      );
+      expect(
+        headers.keys.map((key) => key.toLowerCase()),
+        isNot(contains('cookie')),
+      );
+      expect(apiAdapter.requests, hasLength(2));
+    });
+
+    test(
+      'renewal posts only the exact document identity with bearer auth',
+      () async {
+        final adapter = _QueueAdapter([
+          _QueuedResponse.json(_signedResponse()),
+        ]);
+        final client = VerificationApiClient(
+          config: const CareNetApiConfig(baseUrl: 'https://api.example.test'),
+          dio: Dio()..httpClientAdapter = adapter,
+        );
+        final upload = await client.uploadRenew(
+          accessToken: 'account-token',
+          documentId: 'document-1',
+        );
+        expect(upload.document.id, 'document-1');
+        final sent = adapter.requests.single;
+        expect(sent.method, 'POST');
+        expect(
+          sent.uri.path,
+          '/verification/documents/document-1/upload-renew',
+        );
+        expect(sent.headers['Authorization'], 'Bearer account-token');
+        expect(sent.data, isNull);
+      },
+    );
+
+    test('renewal cannot substitute another document response', () async {
+      final adapter = _QueueAdapter([
+        _QueuedResponse.json(_signedResponse(documentId: 'foreign-document')),
+      ]);
+      final client = VerificationApiClient(
+        config: const CareNetApiConfig(baseUrl: 'https://api.example.test'),
+        dio: Dio()..httpClientAdapter = adapter,
+      );
+      await expectLater(
+        client.uploadRenew(
+          accessToken: 'account-token',
+          documentId: 'document-1',
+        ),
+        throwsA(isA<AuthFailure>()),
+      );
+    });
+
+    test(
+      'storage denial is not mislabelled as account authorization',
+      () async {
+        final adapter = _QueueAdapter([
+          _QueuedResponse.json({
+            'message': 'private provider details',
+          }, statusCode: 403),
+        ]);
+        final client = VerificationApiClient(
+          config: const CareNetApiConfig(baseUrl: 'https://api.example.test'),
+          uploadDio: Dio()..httpClientAdapter = adapter,
+        );
+        await expectLater(
+          client.uploadBytes(
+            signedUploadUrl: 'https://storage.example.test/upload',
+            fileBytes: [1],
+            mimeType: 'application/pdf',
+          ),
+          throwsA(
+            isA<AuthFailure>()
+                .having((failure) => failure.statusCode, 'status', 403)
+                .having(
+                  (failure) => failure.type,
+                  'type',
+                  AuthFailureType.network,
+                )
+                .having(
+                  (failure) => failure.message,
+                  'message',
+                  'Could not upload the document. Please try again.',
+                ),
+          ),
+        );
+      },
+    );
+
+    for (final invalidField in ['id', 'status', 'checksumProvided']) {
+      test(
+        'completion rejects invalid $invalidField instead of claiming success',
+        () async {
+          final document = <String, dynamic>{
+            'id': 'document-1',
+            'documentType': 'LICENSE',
+            'status': 'PENDING',
+            'storageProvider': 'gcs',
+            'mimeType': 'application/pdf',
+            'fileSizeBytes': 3,
+            'checksumProvided': true,
+          };
+          document[invalidField] = switch (invalidField) {
+            'id' => 'foreign-document',
+            'status' => 'UNKNOWN',
+            _ => false,
+          };
+          final adapter = _QueueAdapter([
+            _QueuedResponse.json({'document': document}),
+          ]);
+          final client = VerificationApiClient(
+            config: const CareNetApiConfig(baseUrl: 'https://api.example.test'),
+            dio: Dio()..httpClientAdapter = adapter,
+          );
+          await expectLater(
+            client.uploadComplete(
+              accessToken: 'account-token',
+              documentId: 'document-1',
+              fileSizeBytes: 3,
+              checksumSha256: 'a' * 64,
+            ),
+            throwsA(isA<AuthFailure>()),
+          );
+          expect(adapter.requests, hasLength(1));
+        },
+      );
+    }
+
+    for (final status in [405, 413, 415, 429]) {
+      test('definite HTTP $status does not replay completion', () async {
+        final api = _QueueAdapter([
+          _QueuedResponse.json(_signedResponse()),
+          _QueuedResponse.json({
+            'message': 'private server details',
+          }, statusCode: status),
+        ]);
+        final storage = _QueueAdapter([_QueuedResponse.json({})]);
+        final repository = _repository(
+          apiAdapter: api,
+          uploadAdapter: storage,
+          withSession: true,
+        );
+        await expectLater(
+          repository.uploadDocument(
+            const VerificationUploadRequest(
+              documentType: 'LICENSE',
+              originalFileName: 'license.pdf',
+              mimeType: 'application/pdf',
+              fileBytes: [1, 2, 3],
+            ),
+          ),
+          throwsA(
+            isA<AuthFailure>().having(
+              (failure) => failure.statusCode,
+              'status',
+              status,
+            ),
+          ),
+        );
+        expect(api.requests, hasLength(2));
+        expect(storage.requests, hasLength(1));
+      });
+    }
+
+    for (final name in ['Authorization', 'Cookie', 'Host']) {
+      test('storage rejects injected $name before network access', () async {
+        final adapter = _QueueAdapter([]);
+        final client = VerificationApiClient(
+          config: const CareNetApiConfig(baseUrl: 'https://api.example.test'),
+          uploadDio: Dio()..httpClientAdapter = adapter,
+        );
+        await expectLater(
+          client.uploadBytes(
+            signedUploadUrl: 'https://storage.example.test/upload',
+            fileBytes: [1, 2, 3],
+            mimeType: 'application/pdf',
+            requiredHeaders: {name: 'must-not-leave-the-client'},
+          ),
+          throwsA(isA<AuthFailure>()),
+        );
+        expect(adapter.requests, isEmpty);
+      });
+    }
+
+    test(
+      'storage rejects signed size inconsistent with actual bytes',
+      () async {
+        final adapter = _QueueAdapter([]);
+        final client = VerificationApiClient(
+          config: const CareNetApiConfig(baseUrl: 'https://api.example.test'),
+          uploadDio: Dio()..httpClientAdapter = adapter,
+        );
+        await expectLater(
+          client.uploadBytes(
+            signedUploadUrl: 'https://storage.example.test/upload',
+            fileBytes: [1, 2, 3],
+            mimeType: 'application/pdf',
+            requiredHeaders: {
+              'content-type': 'application/pdf',
+              'content-length': '4',
+              'x-goog-if-generation-match': '0',
+            },
+          ),
+          throwsA(isA<AuthFailure>()),
+        );
+        expect(adapter.requests, isEmpty);
+      },
+    );
+
+    for (final url in [
+      'http://storage.example.test/upload',
+      'https://user:password@storage.example.test/upload',
+      'https://storage.example.test/upload#fragment',
+    ]) {
+      test(
+        'unsafe signed URL is rejected: ${Uri.parse(url).scheme} credentials=${Uri.parse(url).userInfo.isNotEmpty} fragment=${Uri.parse(url).hasFragment}',
+        () async {
+          final adapter = _QueueAdapter([]);
+          final client = VerificationApiClient(
+            config: const CareNetApiConfig(baseUrl: 'https://api.example.test'),
+            uploadDio: Dio()..httpClientAdapter = adapter,
+          );
+          await expectLater(
+            client.uploadBytes(
+              signedUploadUrl: url,
+              fileBytes: [1],
+              mimeType: 'application/pdf',
+            ),
+            throwsA(isA<AuthFailure>()),
+          );
+          expect(adapter.requests, isEmpty);
+        },
+      );
+    }
+  });
+
   group('Verification repository boundary', () {
     test(
       'document list sends bearer auth and parses safe projection',
@@ -438,6 +711,31 @@ void main() {
   });
 }
 
+Map<String, dynamic> _signedResponse({String documentId = 'document-1'}) => {
+  'document': {
+    'id': documentId,
+    'documentType': 'LICENSE',
+    'storageProvider': 'gcs',
+    'mimeType': 'application/pdf',
+    'fileSizeBytes': 3,
+    'status': 'PENDING',
+  },
+  'upload': {
+    'signedUrl': 'https://storage.example/signed-upload',
+    'expiresInSeconds': 300,
+    'expiresAt':
+        DateTime.now()
+            .toUtc()
+            .add(const Duration(minutes: 5))
+            .toIso8601String(),
+    'requiredHeaders': {
+      'content-type': 'application/pdf',
+      'content-length': '3',
+      'x-goog-if-generation-match': '0',
+    },
+  },
+};
+
 VerificationRepository _repository({
   required _QueueAdapter apiAdapter,
   HttpClientAdapter? uploadAdapter,
@@ -520,6 +818,22 @@ class _QueueAdapter implements HttpClientAdapter {
         Headers.contentTypeHeader: <String>[Headers.jsonContentType],
       },
     );
+  }
+}
+
+class _RecordingBytesAdapter extends _QueueAdapter {
+  _RecordingBytesAdapter(super.responses);
+
+  List<int> sentBytes = [];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    sentBytes = await requestStream?.expand((chunk) => chunk).toList() ?? [];
+    return super.fetch(options, null, cancelFuture);
   }
 }
 

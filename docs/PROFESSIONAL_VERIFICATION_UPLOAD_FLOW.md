@@ -1,5 +1,51 @@
 # Professional Verification Upload Flow
 
+## APP-READY-088 Recovery Contract (In Progress)
+
+The upload client now consumes BE077 signed headers when supplied: exact MIME,
+actual byte length and create-only generation precondition. Metadata is typed,
+normalized and immutable; malformed explicit new metadata cannot silently become
+a legacy upload. Older responses without either new field remain compatible.
+Only HTTPS signed URLs without userinfo/fragments are accepted, and only the
+three approved headers may be forwarded. Account bearer headers stay on API
+requests, not storage PUTs. A renewal response must retain the requested document
+ID; the renewal request carries no client-supplied owner/profile authority.
+
+Storage bytes are Uint8List rather than an ordinary integer list. The new
+transport test observed the prior JSON encoding and incorrect length, then
+proved the exact raw stream after repair. This is local transport proof, not
+real GCS enforcement or PDF acceptance. Renewal/retry orchestration and complete
+rollout remain in progress; the backend draft is audit-blocked and undeployed.
+
+Within one upload operation, an explicitly expired new-contract capability is
+renewed for the same document ID. An expiry-related storage401/403 can cause at
+most one renewal and one repeated PUT; ordinary denial and legacy responses do
+not enter that path. The injected clock decides whether to request renewal,
+never whether storage/backend must authorize it. Completion may replay the same
+ID, computed checksum and actual byte size once on an uncertain transport/server
+result, only when the new replay-capable contract was received. Definite client
+errors are not immediate retries. No second upload-init is used for recovery.
+
+The current account is rechecked between phases and after successful completion,
+so a late response after logout, account change or cancellation is not returned
+as upload success. Cancellation prevents later phases. Storage redirects are
+disabled and storage errors are not presented as
+CareNet account authorization failures. A matching completion can report an
+already-approved/rejected document: the success copy preserves that status
+instead of incorrectly claiming that review is still pending.
+
+This recovery is bounded and memory-only. It does not persist sensitive file
+bytes or signed URLs, resume after process death, prove a timed-out PUT did not
+arrive, or authorize abandoned-object deletion. A fresh user-initiated upload
+after an exhausted operation remains a new attempt; cleanup safety and actual
+provider acceptance stay explicit gates.
+
+Local repaired-source results:1309 full tests, analyzer and staging debug APK
+pass. Review-found late-success and definite HTTP405/413/415/429 retry defects
+have failing-before/passing-after regressions. Fresh staging/production lint
+passes with zero errors/four warnings each, without suppression. CI and live-provider
+proof remain separate gates; no dependency or native source change is included.
+
 ## Current Load And Selection Safety (APP-READY-087)
 
 APP-READY-087B narrows retained-state behavior: explicit401/403 authority failure

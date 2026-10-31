@@ -1,5 +1,16 @@
 # Phase 1 legal and authentication links
 
+## APP-READY-089 Approved Public Support Contact
+
+The user approved publishing `carenethealthplatforms@gmail.com` on `/support`.
+The CareNet team owns replies; no support hours or response times are promised.
+The source uses an accessible, query-free mailto link with medical/privacy,
+secret-safety and non-emergency guidance, without a data form or vendor workflow.
+Publication is pending; source changes do not prove mailbox delivery, provider
+acceptance or operational readiness. Authentication links and legal terms are
+unchanged. The initial-contact release-gate wording below is historical and is
+superseded by this approval; it does not require inventing service hours.
+
 ## Canonical origin
 
 CareNet public pages and authentication links use

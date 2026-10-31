@@ -1,5 +1,20 @@
 # Codebase status
 
+## APP-READY-089 - Public Support Contact (IN PROGRESS)
+
+The owner approved carenethealthplatforms@gmail.com for public support, with the
+CareNet team responsible for replies and no promised response hours. The page
+replaces its placeholder with an accessible, query-free mailto link and retains
+privacy/emergency guidance. A narrow 200%-text browser check initially exposed
+horizontal email overflow; reading-column wrapping fixes it at320px while
+preserving existing colors/spacing. Desktop1280px also fits.
+
+Three focused tests and all1312 Flutter tests pass (1309 retained); analyzer and
+staging debug APK pass. No application/native/dependency changes; signed RC9
+binary inputs remain unchanged. Source review/PR/CI and controlled Hosting
+publication/read-back remain pending. Source edits are not a live-contact or
+mailbox-delivery claim. No backend/cloud SQL/payment mutation.
+
 ## APP-READY-088 - Verification Upload Recovery (IN PROGRESS)
 
 Base PR261 merge `6724191`. Initial implementation consumes validated immutable

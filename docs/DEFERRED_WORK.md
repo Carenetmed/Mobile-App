@@ -1,5 +1,15 @@
 # Deferred work and backend replacement map
 
+## APP-READY-089 Public Support Contact (Source Only)
+
+User-approved `carenethealthplatforms@gmail.com` is now in the `/support` source.
+The CareNet team owns replies, with no promised support hours or response times.
+The query-free mailto has no prefilled health details, subject or body; the page
+retains emergency guidance and warns against emailing medical details or secrets.
+No data form, external vendor workflow, auth-link or legal-terms change is added.
+Hosting publication and operational mailbox/provider acceptance remain unproved;
+this source-only slice does not complete backend repair or broader readiness.
+
 ## APP-READY-088 Upload Recovery Rollout
 
 Typed signed metadata, raw-byte transport, bounded same-document renewal and

@@ -1,5 +1,50 @@
 # Professional Verification Upload Regression
 
+## APP-READY-090 Task Spec - Confirmed Provider Expiry
+
+Status: IN PROGRESS within APP-READY-082. Base `7da0d68`.
+Goal: consume actual storage expiry from backend
+[PR191](https://github.com/ridwanmullick/carenet-backend-lab/pull/191), without
+confusing signed-capability expiry with account authority or uncertain PUTs.
+
+Allowed: verification API/repository, typed storage failure, focused tests,
+explicit existing XML dependency and canonical docs. Not allowed: shared auth,
+widgets/routes, native, backend, cloud/provider changes or cleanup.
+
+Require bad-response400 + ExpiredToken + explicit expired-token message, or403
++ AccessDenied + explicit expired-request message; XML MIME, at most16KiB UTF8,
+one unqualified Error root and one plain Code/Message. Reject DTD/entities,
+duplicates, namespaces, malformed XML and ambiguous top-level text/CDATA. Retain
+only safe reason/status; never expose raw XML, capabilities or provider internals.
+
+One owner-rechecked same-document renewal for new-contract responses only;
+same bytes/headers, at most two PUTs, no second upload-init. Confirmed expiry
+does not require device-clock agreement and never grants backend authority.
+Generic400/403,401,412,timeout and malformed responses do not authorize retry.
+Proactive renewal and bounded matching completion replay remain unchanged.
+
+Tests: real raw-XML Dio classification and adapter/repository pipeline; both
+confirmed forms, wrong status/code, permission/signature denial, malformed and
+oversized XML, one-renewal bound, legacy, owner/logout/cancel, no false completion.
+All104 focused and1359 full tests pass, zero skipped; analyzer is clean and
+staging debug APK passes. The three top-level ambiguity cases fail before repair
+and pass afterward. Independent re-review is clear. Fresh staging/production
+release lint passes all652 tasks; protected signing,30 environment probes,
+backup privacy and iOS source configuration pass. Ignored Windows SDK paths
+needed escaping; no native source change or lint suppression. Signed artifacts
+and PR/merged CI remain gates.
+
+Inventory: retained1312 plus31 storage classification/boundary/pipeline tests
+and16 recovery tests =1359. The two retained403 cases are renamed to require
+confirmed expiry, preserving their once-only/repeated-error coverage. No test
+removed, skipped or disabled. Initial validation caught a zero-filled new test
+file and an analyzer style issue; both were repaired, then all gates rerun.
+
+Later-device steps: owned professional fixture, expired signed capability,
+same-document renewal and one submitted document; interrupt upload and require
+no false success/session loss. Do not execute physical acceptance or approve
+real evidence here. Cross-attempt uncertain-PUT settlement remains open.
+
 ## APP-READY-082E - In-Flight Cancellation
 
 The added `cancelling an in-flight storage upload prevents completion` test

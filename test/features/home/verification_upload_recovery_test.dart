@@ -8,6 +8,7 @@ import 'package:app_t/features/Home/data/models/verification_document_model.dart
 import 'package:app_t/features/Home/data/repositories/verification_repository.dart';
 import 'package:app_t/features/Home/data/services/verification_api_client.dart';
 import 'package:app_t/features/Home/domain/entities/verification_upload_request.dart';
+import 'package:app_t/features/Home/domain/entities/verification_storage_failure.dart';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,17 +35,17 @@ void main() {
   });
 
   for (final repeated in [false, true]) {
-    test('PUT 403 after expiry renews once; repeated=$repeated', () async {
+    test('confirmed PUT 403 expiry renews once; repeated=$repeated', () async {
       final h = await _Harness.create();
       h.api.onPut = (attempt) async {
         h.now = h.now.add(const Duration(minutes: 10));
-        if (attempt == 1 || repeated) throw _failure(403);
+        if (attempt == 1 || repeated) throw _expired403;
       };
       h.api.onRenew = () async {
         h.api.renewed = h.capability(renewed: true);
       };
       if (repeated) {
-        await expectLater(h.upload(), throwsA(same(_forbidden)));
+        await expectLater(h.upload(), throwsA(same(_expired403)));
         expect(h.api.events, ['init', 'put', 'renew', 'put']);
       } else {
         await h.upload();
@@ -58,6 +59,109 @@ void main() {
       ]);
       expect(h.api.putBytes, everyElement(orderedEquals(_bytes)));
     });
+  }
+
+  for (final advanceClock in [false, true]) {
+    for (final repeated in [false, true]) {
+      test(
+        'confirmed PUT 400 expiry renews same ID once; clockAdvanced=$advanceClock repeated=$repeated',
+        () async {
+          final h = await _Harness.create();
+          h.api.onPut = (attempt) async {
+            if (advanceClock) h.now = h.now.add(const Duration(minutes: 10));
+            if (attempt == 1 || repeated) throw _expired400;
+          };
+          h.api.onRenew =
+              () async => h.api.renewed = h.capability(renewed: true);
+          if (repeated) {
+            await expectLater(h.upload(), throwsA(same(_expired400)));
+            expect(h.api.events, ['init', 'put', 'renew', 'put']);
+            expect(h.api.completions, isEmpty);
+          } else {
+            await h.upload();
+            expect(h.api.events, ['init', 'put', 'renew', 'put', 'complete']);
+            h.expectCompletion(count: 1);
+          }
+          expect(h.api.renewIds, ['document-1']);
+          expect(h.api.putUrls, [
+            'https://storage.example/initial',
+            'https://storage.example/renewed',
+          ]);
+          expect(h.api.putBytes, everyElement(orderedEquals(_bytes)));
+          expect(h.api.putHeaders, everyElement(h.api.initial.requiredHeaders));
+          expect((await h.store.read())?.user.id, 'owner');
+        },
+      );
+    }
+  }
+
+  for (final status in <int?>[400, 403, 412, null]) {
+    for (final afterRenewal in [false, true]) {
+      test(
+        'unconfirmed PUT $status never retries or infers completion; afterRenewal=$afterRenewal',
+        () async {
+          final h = await _Harness.create();
+          final failure = VerificationStorageFailure(
+            reason: VerificationStorageFailureReason.other,
+            statusCode: status,
+          );
+          h.api.onPut = (attempt) async {
+            h.now = h.now.add(const Duration(minutes: 10));
+            if (afterRenewal && attempt == 1) throw _expired400;
+            throw failure;
+          };
+          h.api.onRenew =
+              () async => h.api.renewed = h.capability(renewed: true);
+          await expectLater(h.upload(), throwsA(same(failure)));
+          expect(h.api.events, [
+            'init',
+            'put',
+            if (afterRenewal) ...['renew', 'put'],
+          ]);
+          expect(h.api.completions, isEmpty);
+          expect(h.api.renewIds, afterRenewal ? ['document-1'] : isEmpty);
+          expect((await h.store.read())?.user.id, 'owner');
+        },
+      );
+    }
+  }
+
+  test('legacy confirmed expiry never invokes renewal endpoint', () async {
+    final h = await _Harness.create(legacy: true);
+    h.api.onPut = (_) async => throw _expired400;
+    await expectLater(h.upload(), throwsA(same(_expired400)));
+    expect(h.api.events, ['init', 'put']);
+  });
+
+  for (final change in ['logout', 'account switch', 'cancel']) {
+    test(
+      '$change before reactive expiry renewal prevents renewal and completion',
+      () async {
+        final h = await _Harness.create();
+        final controller = VerificationUploadController();
+        h.api.onPut = (_) async {
+          switch (change) {
+            case 'logout':
+              await h.store.clear();
+            case 'account switch':
+              await h.store.save(_session('other-user'));
+            case 'cancel':
+              controller.cancel();
+          }
+          throw _expired400;
+        };
+        await expectLater(
+          h.upload(controller: controller),
+          throwsA(
+            change == 'cancel'
+                ? isA<VerificationUploadCancelled>()
+                : _unauthorized,
+          ),
+        );
+        expect(h.api.events, ['init', 'put']);
+        expect(h.api.completions, isEmpty);
+      },
+    );
   }
 
   test('nonexpired PUT 403 does not renew or complete', () async {
@@ -257,6 +361,14 @@ void main() {
 }
 
 const _bytes = [1, 2, 3];
+const _expired400 = VerificationStorageFailure(
+  reason: VerificationStorageFailureReason.expiredCapability,
+  statusCode: 400,
+);
+const _expired403 = VerificationStorageFailure(
+  reason: VerificationStorageFailureReason.expiredCapability,
+  statusCode: 403,
+);
 const _completedDocument = VerificationDocumentModel(
   id: 'document-1',
   documentType: 'license',

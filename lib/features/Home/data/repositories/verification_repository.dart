@@ -7,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 
 import '../../domain/entities/verification_document.dart';
+import '../../domain/entities/verification_storage_failure.dart';
 import '../../domain/entities/verification_upload_request.dart';
 import '../services/verification_api_client.dart';
 
@@ -94,8 +95,10 @@ class VerificationRepository {
           break;
         } on AuthFailure catch (failure) {
           if (!renewed &&
-              expired() &&
-              (failure.statusCode == 401 || failure.statusCode == 403)) {
+              init.expiresAt != null &&
+              failure is VerificationStorageFailure &&
+              failure.reason ==
+                  VerificationStorageFailureReason.expiredCapability) {
             await renew();
             continue;
           }

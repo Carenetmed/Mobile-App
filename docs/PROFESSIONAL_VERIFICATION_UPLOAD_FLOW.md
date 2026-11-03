@@ -1,5 +1,17 @@
 # Professional Verification Upload Flow
 
+## APP-READY-090 Provider Expiry Correction
+
+This supersedes APP088's historical clock/status-only reactive rule below.
+Confirmed XML400 ExpiredToken or403 explicitly expired AccessDenied permits one
+same-ID new-contract renewal despite device-clock disagreement. Strict bounded
+parsing yields only a safe typed reason/status; no raw provider data or session
+invalidation. Generic denials, signature errors, malformed XML, timeouts and412
+do not authorize another PUT or prove completion. Proactive renewal and bounded
+matching completion replay remain unchanged. XML6.5.0 was already locked
+transitively; direct declaration changes no package bytes. No UI/router/backend
+or provider mutation. Unknown PUT outcomes remain honest unresolved recovery.
+
 ## APP-READY-088 Recovery Contract (In Progress)
 
 The upload client now consumes BE077 signed headers when supplied: exact MIME,

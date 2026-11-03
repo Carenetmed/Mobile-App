@@ -1,5 +1,28 @@
 # AI handoff - read this first
 
+## APP-READY-090 - Confirmed Storage Expiry Recovery
+
+IN PROGRESS within the user-approved complete readiness program and sole NEXT
+APP-READY-082. Base `7da0d68`; dedicated branch
+`slice/APP-READY-090-verification-expiry-recovery` in a reused clean isolated
+checkout. Backend PR191 proved real Google Storage400 ExpiredToken; APP088's
+clock/status-only rule misses it. Filled Task Spec:
+`PROFESSIONAL_VERIFICATION_UPLOAD_REGRESSION.md`.
+
+Renew only confirmed provider expiry, once for the same new-contract document
+ID, despite device-clock disagreement. Preserve exact bytes/headers, proactive
+renewal, owner/cancellation checks and matching completion replay. Generic denial,
+signature error, malformed XML, unknown PUT outcomes and412 never authorize blind
+retry or imply completion. No UI/backend/native/cloud/payment/device changes.
+Local104 targeted and all1359 Flutter tests pass, with zero skipped; analyzer
+reports no issues and staging debug APK passes. Inventory1312+47:31 new raw-XML
+adapter/boundary/pipeline cases and16 new recovery cases; two retained403 cases
+are renamed to require confirmed expiry. No removed/skipped/weakened tests.
+Fresh staging/production release lint and backup, iOS source configuration,
+protected-signing and30 environment regressions pass. Only ignored Windows SDK
+path escaping was repaired; no lint suppression or native source change.
+Signed artifacts and exact PR/merged CI remain pending; readiness stays open.
+
 ## APP-READY-086 - Readiness Alignment
 
 IN PROGRESS. Password validation and confirmation compare NFC-normalized

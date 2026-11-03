@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:app_t/core/config/carenet_api_config.dart';
 import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:dio/dio.dart';
+import 'package:xml/xml.dart';
 
+import '../../domain/entities/verification_storage_failure.dart';
 import '../models/verification_document_model.dart';
 
 class VerificationApiClient {
@@ -188,9 +191,11 @@ class VerificationApiClient {
       );
     } on DioException catch (error) {
       if (storageRequest) {
-        throw AuthFailure(
-          type: AuthFailureType.network,
-          message: 'Could not upload the document. Please try again.',
+        throw VerificationStorageFailure(
+          reason:
+              _confirmedStorageExpiry(error)
+                  ? VerificationStorageFailureReason.expiredCapability
+                  : VerificationStorageFailureReason.other,
           statusCode: error.response?.statusCode,
         );
       }
@@ -200,6 +205,75 @@ class VerificationApiClient {
         type: AuthFailureType.unknown,
         message: 'Something went wrong. Please try again.',
       );
+    }
+  }
+
+  bool _confirmedStorageExpiry(DioException error) {
+    final response = error.response;
+    if (error.type != DioExceptionType.badResponse ||
+        !const {400, 403}.contains(response?.statusCode)) {
+      return false;
+    }
+    final contentTypes = response?.headers[Headers.contentTypeHeader];
+    if (contentTypes == null || contentTypes.length != 1) return false;
+    final mime = contentTypes.single.split(';').first.trim().toLowerCase();
+    final body = response?.data;
+    if (!const {'application/xml', 'text/xml'}.contains(mime) ||
+        body is! String ||
+        body.length > 16384 ||
+        utf8.encode(body).length > 16384 ||
+        RegExp(
+          r'<!\s*(?:DOCTYPE|ENTITY)',
+          caseSensitive: false,
+        ).hasMatch(body)) {
+      return false;
+    }
+    try {
+      final document = XmlDocument.parse(body);
+      final root = document.rootElement;
+      if (document.children.any(
+        (node) =>
+            !identical(node, root) &&
+            node is! XmlDeclaration &&
+            node is! XmlComment &&
+            !(node is XmlText && node.value.trim().isEmpty),
+      )) {
+        return false;
+      }
+      if (root.name.qualified != 'Error' || root.attributes.isNotEmpty) {
+        return false;
+      }
+      final codes = root.findElements('Code').toList();
+      final messages = root.findElements('Message').toList();
+      if (codes.length != 1 ||
+          messages.length != 1 ||
+          codes.single.attributes.isNotEmpty ||
+          messages.single.attributes.isNotEmpty ||
+          codes.single.childElements.isNotEmpty ||
+          messages.single.childElements.isNotEmpty ||
+          root.descendantElements.where((e) => e.name.local == 'Code').length !=
+              1 ||
+          root.descendantElements
+                  .where((e) => e.name.local == 'Message')
+                  .length !=
+              1) {
+        return false;
+      }
+      final code = codes.single.innerText.trim();
+      final message = messages.single.innerText.trim();
+      return response!.statusCode == 400
+          ? code == 'ExpiredToken' &&
+              RegExp(
+                r'^The provided token has expired\.?$',
+                caseSensitive: false,
+              ).hasMatch(message)
+          : code == 'AccessDenied' &&
+              RegExp(
+                r'^Request has expired(?:[.:\s]|$)',
+                caseSensitive: false,
+              ).hasMatch(message);
+    } on XmlException {
+      return false;
     }
   }
 

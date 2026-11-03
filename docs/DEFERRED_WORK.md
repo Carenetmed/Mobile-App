@@ -1,5 +1,14 @@
 # Deferred work and backend replacement map
 
+## APP-READY-090 Upload Recovery Boundary
+
+Confirmed provider expiry is being repaired using backend BE079 evidence.
+Unknown PUT outcomes and412 do not prove completed evidence and are not blindly
+retried; cross-attempt settlement remains open. Real-browser PDF preview/download,
+normal coordinated runtime promotion, retention/in-flight upload cleanup safety
+and physical acceptance remain separate gates. No automatic evidence deletion,
+payment activation or new content feature belongs to this repair.
+
 ## APP-READY-089 Public Support Contact (Source Only)
 
 User-approved `carenethealthplatforms@gmail.com` is now in the `/support` source.

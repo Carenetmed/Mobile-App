@@ -1,5 +1,27 @@
 # Codebase status
 
+## APP-READY-090 - Confirmed Storage Expiry Recovery (IN PROGRESS)
+
+Base `7da0d68`. A verification-specific sanitized storage reason distinguishes
+bounded explicit XML400 ExpiredToken and403 expired AccessDenied from permission,
+signature, malformed-response and uncertain-upload failures. Confirmed expiry
+permits one same-document renewal even when the device clock disagrees. No
+storage error clears the app session. Existing exact bytes/headers, cancellation,
+owner checks and completion replay are retained.
+
+XML6.5.0 is already locked and now explicitly declared; package versions and
+checksums are unchanged. Independent review reproduced top-level XML text/CDATA
+ambiguity: three regressions fail before validation and pass after repair.
+All104 focused and1359 full tests pass, zero skipped; analyzer is clean and
+staging debug APK passes. Net+47 is31 new storage-boundary/pipeline tests and16
+new recovery cases; two existing403 cases are renamed/updated, none removed.
+Fresh staging/production release lint, backup, iOS source configuration,
+protected-signing and30 environment probes pass. Ignored Windows SDK path
+escaping repaired without suppression. Signed artifacts and CI remain pending.
+Historical APP088/089 pending delivery notes below are superseded by merged
+PRs262/263. Backend provider proof passed and is delivered through PR191; mobile
+source tests are not physical upload, browser or full readiness acceptance.
+
 ## APP-READY-089 - Public Support Contact (IN PROGRESS)
 
 The owner approved carenethealthplatforms@gmail.com for public support, with the

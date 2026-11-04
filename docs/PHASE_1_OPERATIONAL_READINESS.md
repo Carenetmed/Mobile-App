@@ -30,7 +30,11 @@ historical and its “remaining gates” are reconciled here.
   observed in the Nov 4 read-back are `CLOSED`. This proves current state, not
   successful delivery for every failure condition. BigQuery billing export and
   Budgets API are not configured, so cost breakdown/alert thresholds remain
-  unavailable.
+  unavailable. The database memory policy is enabled with the intended
+  `Usage > 90` for 600s and 60s mean alignment (last mutation Oct 23). Recent
+  samples remain below threshold; no breach or notification-delivery proof is
+  claimed. The backend's monitoring contract still marks BE-P1-058 in progress
+  and needs a documentation reconciliation.
 - Database recovery: a disposable PITR clone was verified and deleted. Time
   from clone submission to completed verification was 56m08s, below the
   provisional 60-minute target for this one run. The latest available restore
@@ -118,9 +122,11 @@ Protected worktrees and archive references remain outside this slice.
   The worker schedule remains paused.
 - Database/security: one PITR restore verification completed within 56m08s, but
   RPO is unknown; the latest restore point preceded shutdown by about 16m22s.
-  Remaining least-privilege review and the SQL memory-metric discrepancy remain
-  open after the narrowly scoped Firebase SDK binding repair above. Do not
-  resize, restart or suppress an alert based on an unverified diagnosis.
+  The live SQL memory condition now matches the intended metric, but the
+  backend's stale status note and a real breach/notification proof remain open.
+  Remaining least-privilege review also remains open after the narrowly scoped
+  Firebase SDK binding repair above. Do not resize, restart or suppress an alert
+  based on an unverified diagnosis.
 - Admin: IAP/application login and queue access are proved, and Download is
   deployed. Source and mocked-browser tests pass; real valid-file preview,
   download and operator recovery acceptance remain open. Do not approve, reject

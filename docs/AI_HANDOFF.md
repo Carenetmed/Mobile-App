@@ -15,8 +15,10 @@ Read-only cloud checks on Nov 4: staging Cloud SQL is STOPPED with activation
 policy NEVER and deletion protection on; all three scheduler jobs are PAUSED;
 Cloud Run backend/admin/messaging have no minimum-instance floor (messaging
 explicitly minScale 0). Thirteen monitoring policies and their email channel
-are enabled; the observed alert records are CLOSED. No Cloud SQL window,
-worker, scheduler, or service scaling was changed. The Firebase Admin SDK
+are enabled; the observed alert records are CLOSED. The database memory policy
+uses the intended `Usage > 90` condition for 600s; no real threshold breach or
+memory-alert delivery is claimed. No Cloud SQL window, worker, scheduler, or
+service scaling was changed. The Firebase Admin SDK
 identity's project-wide Token Creator grant was narrowed to a self-only
 service-account binding; no service was activated. Billing export and budgets
 are not configured, so this is cost-control evidence, not a measured cost

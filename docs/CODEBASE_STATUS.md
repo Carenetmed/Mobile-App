@@ -27,6 +27,11 @@ identity's project-wide Token Creator grant was narrowed to a self-only
 service-account binding. Billing export/budgets are unavailable, so total spend
 is unknown.
 
+The enabled database memory policy currently filters the intended `Usage`
+component above 90 for 600 seconds (60-second mean alignment). The live policy
+was last mutated on Oct 23; no actual high-pressure breach or notification
+delivery under that condition is proved.
+
 One disposable PITR clone was verified and deleted. Restore verification took
 56m08s from submission to receipt, below the provisional 60-minute target for
 that run only. Latest available restore point was about 16m22s before source

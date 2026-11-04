@@ -26,6 +26,10 @@ The Nov 4 Cloud Run read-back shows `carenet-backend-staging-be075-candidate`
 serving 100% API traffic. `carenet-backend-staging-be079-expiry-proof` is the
 latest ready revision but is not serving; latest created is
 `carenet-backend-staging-be079-default-restored`. No service was promoted.
+The live database memory policy also matches the intended `Usage > 90` for
+600 seconds with 60-second mean alignment; a real threshold breach and its
+notification delivery remain unproved, and the backend contract documentation
+still needs reconciliation.
 
 ## APP-READY-084 Scoped Sync (IN PROGRESS)
 

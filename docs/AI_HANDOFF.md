@@ -42,10 +42,10 @@ real file download or valid PDF rendering. The 63-byte smoke PDF shown failing
 in the browser is not evidence that a valid PDF was delivered. Public `/terms`, `/privacy`, `/support`, `/account-deletion`,
 `/verify-email`, `/reset-password`, and Android `assetlinks.json` all returned
 HTTP 200; the approved support contact is in the live page. Mailbox delivery is
-not implied. One approved plain test email was sent from
-`ridwanmullickpro+carenet-proof@gmail.com` to the support contact on Nov 4 and
-appears in the sender's Sent folder; receipt in the recipient mailbox remains
-unconfirmed.
+not implied. One approved plain test email was sent from a disposable alias to
+the support contact on Nov 4 and appears in the sender's Sent folder; receipt in
+the recipient mailbox remains unconfirmed. The sender identity is omitted from
+public documentation.
 
 APP-READY-082 remains the single recorded next operational track and is still
 partial. Follow `PHASE_1_OPERATIONAL_READINESS.md` for its reconciled current

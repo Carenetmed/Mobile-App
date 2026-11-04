@@ -2,9 +2,9 @@
 
 ## Current Checkpoint (2026-11-04)
 
-Mobile integration is `040cbd7d033b2cdb7e969623f8e55a38a3b3d9f2` after
-docs-only PR #266; exact-head CI `41793512082` and post-merge integration CI
-`41798115546` passed. Backend `main` is `2d4b320771479e00ca7034a0859821a6b1fb7863`
+Mobile integration is `9fc8f6a742d6a6a75008101fee24f6ebd0ad3e47` after
+docs-only PR #267; post-merge integration CI `41845757337` passed. Backend
+`main` is `2d4b320771479e00ca7034a0859821a6b1fb7863`
 after docs-only PR #193; PR-head CI `41802198065` and post-merge CI `41802721952`
 passed all three lanes. APP-READY-090 and PR #265 are earlier checkpoints; this
 reconciliation does not close the remaining operational gates.
@@ -12,8 +12,9 @@ reconciliation does not close the remaining operational gates.
 - Cloud cost posture: Cloud SQL `STOPPED`, activation `NEVER`, deletion
   protection enabled; all three Scheduler jobs `PAUSED`; Cloud Run backend,
   admin and messaging have no minimum-instance floor (messaging explicitly
-  minScale 0). Cloud Billing and the Billing Budgets API are enabled; no runtime
-  service was started for this checkpoint.
+  minScale 0). Cloud Billing and the Billing Budgets API are enabled. Firebase
+  Hosting's control-plane API is enabled for the static pages; no runtime
+  service was started.
 - Backend traffic: read-only Cloud Run state shows
   `carenet-backend-staging-be075-candidate` at 100%. The latest ready revision
   is `carenet-backend-staging-be079-expiry-proof` but receives no traffic; the
@@ -27,7 +28,9 @@ reconciliation does not close the remaining operational gates.
   identity; the runtime identity's existing self-only signing grant is
   unchanged. This closes only the cross-service-account impersonation finding,
   not the broader least-privilege review.
-- Monitoring: 13 policies and the email channel are enabled. All alert records
+- Monitoring: 13 policies and the email channel are enabled; all 13 enabled
+  policies reference the channel, which matches the approved operations
+  recipient. All alert records
   observed in the Nov 4 read-back are `CLOSED`. This proves current state, not
   successful delivery for every failure condition. No budget is configured and
   BigQuery billing export is absent, so cost breakdown and budget alerts remain
@@ -42,16 +45,22 @@ reconciliation does not close the remaining operational gates.
   point was about 16m22s before source shutdown; actual RPO and data loss remain
   unknown. No RPO SLO is claimed.
 - Admin: Web PR #11 added the authenticated Download action/route; PR #12 added
-  browser fixture/flow coverage. Both are merged with CI green, and the
-  deployed staging revision is `download-lf-63c089c`. A real-file operator
+  browser fixture/flow coverage. Both are merged with CI green. Cloud Run
+  revision `carenet-admin-staging-00006-55n` serves 100% traffic using digest
+  `sha256:fdc99d7516c92928508ef01bbb1d3232d336c10438ad930fee6cb3b32add3504`,
+  which matches successful Cloud Build `4eeaf836-c946-43f6-a27d-221cb636c9a2`;
+  its source archive contains the Download UI and authenticated route. A
+  real-file operator
   download and valid PDF rendering have not been proven. The observed 63-byte
   smoke document failed browser preview; do not approve/reject or overwrite it
   to clear this gate.
-- Support/legal: the approved Support page and Terms, Privacy, Account Deletion,
+- Support/legal: the default Firebase Hosting site
+  `https://project-a96784ee-811c-46ab-a7b.web.app` serves the approved Support
+  page and Terms, Privacy, Account Deletion,
   verification, reset and Android asset-links endpoints returned HTTP 200.
   The approved contact is live. One approved plain test email was sent from
-  the disposable alias on Nov 4 and appears in the sender's Sent folder;
-  receipt in the recipient mailbox remains unconfirmed.
+  the disposable alias on Nov 4; the owner confirmed it arrived in the support
+  mailbox. No response hours or times are promised.
 - Release/device: APP-READY-081 Hosting checks and APP-READY-090 merged CI are
   complete. Play signing/release acceptance, physical Android tests, Apple
   signing/provider setup and Mac/iPhone acceptance remain open.
@@ -63,9 +72,10 @@ checkpoint into a provider activation or start short-form content work.
 
 ## Scope And Authority
 
-APP-READY-082 remains partially complete. This October 21 handoff reconciles
-mobile status with the owning backend/cloud work; it changes no runtime,
-provider, dependency, navigation, test or cloud configuration. Earlier dated
+APP-READY-082 remains partially complete. This November 4 handoff reconciles
+mobile status with current Hosting and monitoring evidence. It enabled only
+the Firebase Hosting control-plane API and changed no runtime, provider,
+dependency, navigation or app behavior. Earlier dated
 audit snapshots are historical. The full readiness program is not complete.
 Protected worktrees and archive references remain outside this slice.
 

@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('040cbd7d033b2cdb7e969623f8e55a38a3b3d9f2'),
+        contains('9fc8f6a742d6a6a75008101fee24f6ebd0ad3e47'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,7 +40,7 @@ void main() {
       );
       expect(
         entry.value,
-        contains('41798115546'),
+        contains('41845757337'),
         reason: '${entry.key} must name mobile post-merge CI.',
       );
       expect(
@@ -69,9 +69,35 @@ void main() {
     final handoff = currentSections['AI_HANDOFF.md']!;
     expect(handoff, contains('Web PR #11'));
     expect(handoff, contains('PR #12 added browser fixture/flow coverage'));
-    expect(handoff, contains('real file download or valid PDF rendering'));
+    expect(handoff, contains('4eeaf836-c946-43f6-a27d-221cb636c9a2'));
+    expect(
+      handoff,
+      contains(
+        'sha256:fdc99d7516c92928508ef01bbb1d3232d336c10438ad930fee6cb3b32add3504',
+      ),
+    );
+    expect(handoff, contains('real-file download or valid PDF rendering'));
     expect(handoff, contains('63-byte smoke PDF'));
   });
+
+  test(
+    'published support and mailbox evidence do not imply response promises',
+    () {
+      final handoff = currentSections['AI_HANDOFF.md']!;
+      final readiness = currentSections['PHASE_1_OPERATIONAL_READINESS.md']!;
+
+      expect(
+        handoff,
+        contains('https://project-a96784ee-811c-46ab-a7b.web.app'),
+      );
+      expect(
+        handoff,
+        contains('owner confirmed the one approved plain-text mailbox test'),
+      );
+      expect(readiness, contains('owner confirmed it arrived in the support'));
+      expect(readiness, contains('No response hours or times are promised'));
+    },
+  );
 }
 
 String _before(String text, String marker) {

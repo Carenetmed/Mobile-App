@@ -2,6 +2,12 @@
 
 ## APP-READY-090 Provider Expiry Correction
 
+Status: merged through mobile PR #264 at integration SHA
+`54eba950f7711addf52d01e89bce4810e47661f2`; reviewed-head and post-merge
+Flutter/iOS CI passed. This closes source/CI delivery only. Real-file upload,
+preview/download, cross-attempt uncertain settlement, cleanup safety, and
+physical-device acceptance remain open.
+
 This supersedes APP088's historical clock/status-only reactive rule below.
 Confirmed XML400 ExpiredToken or403 explicitly expired AccessDenied permits one
 same-ID new-contract renewal despite device-clock disagreement. Strict bounded

@@ -1,6 +1,37 @@
 # Codebase status
 
-## APP-READY-090 - Confirmed Storage Expiry Recovery (IN PROGRESS)
+## Current Checkpoint (2026-11-04)
+
+Integration base is `54eba950f7711addf52d01e89bce4810e47661f2` after APP-READY-090
+merged through PR #264. Exact-head Flutter/iOS runs `41708017208` and
+`41708017280`, plus integration runs `41712602530` and `41712602391`, passed.
+The storage-expiry source correction is merged; remaining real-provider and
+device acceptance is documented under `PHASE_1_OPERATIONAL_READINESS.md` and
+`PROFESSIONAL_VERIFICATION_UPLOAD_FLOW.md`.
+
+APP-READY-089 Support is published: all seven canonical Hosting paths, including
+`/support`, returned HTTP 200 on Nov 4, and the approved support contact was
+present in the live page. This does not prove mailbox delivery. APP-READY-088
+upload recovery and APP-READY-090 confirmed-expiry handling are merged; valid
+real-file upload, preview and operator download remain unproved.
+
+Cost-control read-back: staging SQL is STOPPED/NEVER with deletion protection;
+all three Scheduler jobs are PAUSED; Cloud Run backend/admin/messaging have no
+minimum-instance floor; thirteen monitoring policies and the email channel are
+enabled, with observed alert records CLOSED. No cloud mutation occurred in this
+checkpoint. Billing export/budgets are unavailable, so total spend is unknown.
+
+One disposable PITR clone was verified and deleted. Restore verification took
+56m08s from submission to receipt, below the provisional 60-minute target for
+that run only. Latest available restore point was about 16m22s before source
+shutdown; actual RPO/data loss remains unknown. Do not claim an RPO SLO.
+
+The admin Download action is in the deployed `download-lf-63c089c` revision.
+Source tests cover mocked bytes and recovery; actual operator download and
+valid PDF rendering remain open. APP-READY-082 remains the sole recorded next
+operational track. See `AI_HANDOFF.md` for current evidence and boundaries.
+
+## APP-READY-090 - Confirmed Storage Expiry Recovery (Merged; PR #264)
 
 Base `7da0d68`. A verification-specific sanitized storage reason distinguishes
 bounded explicit XML400 ExpiredToken and403 expired AccessDenied from permission,
@@ -17,12 +48,13 @@ staging debug APK passes. Net+47 is31 new storage-boundary/pipeline tests and16
 new recovery cases; two existing403 cases are renamed/updated, none removed.
 Fresh staging/production release lint, backup, iOS source configuration,
 protected-signing and30 environment probes pass. Ignored Windows SDK path
-escaping repaired without suppression. Signed artifacts and CI remain pending.
+escaping repaired without suppression. PR #264 and post-merge integration CI
+passed; signed physical release/device acceptance remains separate.
 Historical APP088/089 pending delivery notes below are superseded by merged
 PRs262/263. Backend provider proof passed and is delivered through PR191; mobile
 source tests are not physical upload, browser or full readiness acceptance.
 
-## APP-READY-089 - Public Support Contact (IN PROGRESS)
+## APP-READY-089 - Public Support Contact (Published; mailbox delivery unverified)
 
 The owner approved carenethealthplatforms@gmail.com for public support, with the
 CareNet team responsible for replies and no promised response hours. The page
@@ -33,9 +65,9 @@ preserving existing colors/spacing. Desktop1280px also fits.
 
 Three focused tests and all1312 Flutter tests pass (1309 retained); analyzer and
 staging debug APK pass. No application/native/dependency changes; signed RC9
-binary inputs remain unchanged. Source review/PR/CI and controlled Hosting
-publication/read-back remain pending. Source edits are not a live-contact or
-mailbox-delivery claim. No backend/cloud SQL/payment mutation.
+binary inputs remain unchanged. PR #263 is merged and Hosting read-back on Nov 4
+returned 200 with the approved contact in the live page. This does not prove
+mailbox delivery. No backend, Cloud SQL, or payment mutation.
 
 ## APP-READY-088 - Verification Upload Recovery (IN PROGRESS)
 

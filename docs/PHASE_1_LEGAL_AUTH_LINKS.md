@@ -6,10 +6,12 @@ The user approved publishing `carenethealthplatforms@gmail.com` on `/support`.
 The CareNet team owns replies; no support hours or response times are promised.
 The source uses an accessible, query-free mailto link with medical/privacy,
 secret-safety and non-emergency guidance, without a data form or vendor workflow.
-Publication is pending; source changes do not prove mailbox delivery, provider
-acceptance or operational readiness. Authentication links and legal terms are
-unchanged. The initial-contact release-gate wording below is historical and is
-superseded by this approval; it does not require inventing service hours.
+Firebase Hosting read-back on 2026-11-04 returned HTTP 200 for `/support` and
+the approved contact was present. Terms, privacy, account-deletion, verification,
+reset, and Android asset-link routes also returned HTTP 200. This does not prove
+mailbox delivery, provider acceptance or complete operational readiness.
+Authentication links and legal terms are unchanged. The initial-contact
+release-gate wording below is historical and superseded by this approval.
 
 ## Canonical origin
 
@@ -30,9 +32,8 @@ links to Terms and Privacy. Account links to Support, Privacy/legal, and account
 deletion information. Account deletion itself remains an authenticated,
 backend-owned operation requiring recent authentication.
 
-The initial Support page deliberately does not invent an unverified support
-mailbox. A monitored launch support channel and operating hours remain a release
-gate.
+The live Support page uses the user-approved contact and does not invent
+response hours. Mailbox delivery and operational ownership checks remain open.
 
 ## Authentication links
 

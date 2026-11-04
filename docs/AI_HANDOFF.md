@@ -1,32 +1,38 @@
 # AI handoff - read this first
 
-## Current Verified Checkpoint (2026-11-04)
+## Current Verified Checkpoint (2026-11-05)
 
-Current Mobile integration is `9fc8f6a742d6a6a75008101fee24f6ebd0ad3e47`.
-Docs-only reconciliation PR #267 merged; post-merge integration CI
-`41845757337` passed. Backend `main` is
+Current Mobile integration is `c8aae9303890248e50d178ac54862957889f3cf3`.
+APP-READY-093 PR #268 merged; post-merge integration CI
+`41871578397` passed all mobile checks. Backend `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863`; docs-only PR #193 reconciled
 BE-P1-058 after delivery, and PR-head CI `41802198065` plus post-merge main CI
 `41802721952` passed all three lanes. Older APP-READY-090 evidence below is
-historical; these checkpoints do not complete the readiness program.
-PR #267's reconciliation added three documentation assertions: 1,362 tests
-versus 1,359 on the prior integration, with no tests removed, skipped, or
-weakened. This follow-up adds one documentation assertion: 1,363 total
-(1,362 retained plus one), with no tests removed, skipped, or weakened.
+historical; these checkpoints do not complete the readiness program. The
+mobile suite remains 1,363 tests at this integration; this reconciliation
+updates an existing documentation assertion and adds or removes no tests.
 
-Read-only cloud checks on Nov 4: staging Cloud SQL is STOPPED with activation
-policy NEVER and deletion protection on; all three scheduler jobs are PAUSED;
+Cloud SQL was briefly started for the Nov 5 admin-console proof and returned
+to STOPPED with activation policy NEVER and deletion protection on. All three
+scheduler jobs remain PAUSED;
 Cloud Run backend/admin/messaging have no minimum-instance floor (messaging
 explicitly minScale 0). Thirteen monitoring policies and their email channel
-are enabled; the observed alert records are CLOSED. The database memory policy
-uses the intended `Usage > 90` condition for 600s; BE-P1-058 is delivered, but
-no real threshold breach or condition-triggered alert delivery is claimed. No
-Cloud SQL window, worker, scheduler, or service scaling was changed. The
-Firebase Admin SDK identity's project-wide Token Creator grant was narrowed to
-a self-only service-account binding; no service was activated. Cloud Billing
+are enabled; the Nov 4 observed alert records were CLOSED. Incident and email
+delivery state was not re-read after the Nov 5 database window, so no new
+alert-delivery proof is claimed. The database memory policy uses the intended
+`Usage > 90` condition for 600s. BE-P1-058 is delivered; no real threshold breach
+or condition-triggered alert delivery is claimed. No worker, scheduler,
+or Cloud Run scaling configuration changed. The Firebase Admin SDK identity's
+project-wide Token Creator grant was narrowed to a self-only service-account
+binding. Cloud Billing
 and the Billing Budgets API are enabled, but no budget or BigQuery billing
 export is configured. Total spend remains unknown; no budget cap was created
 without an approved monthly amount.
+
+During the first Nov 5 start attempt, the Cloud SQL connector returned 409
+while the control-plane operation was still running. The later successful
+attempt waited for the SQL operation to finish and verified backend readiness
+HTTP 200 before sign-in. `RUNNABLE` alone is not an adequate readiness gate.
 
 Firebase Hosting control-plane API is enabled for the canonical project. The
 default site `https://project-a96784ee-811c-46ab-a7b.web.app` serves the home,
@@ -34,7 +40,8 @@ Terms, Privacy, Support, Account Deletion, verification and reset pages with
 HTTP 200; the Support response includes the approved contact and no promised
 response hours. The owner confirmed the one approved plain-text mailbox test
 arrived. Hosting responses include `nosniff`, `no-referrer`, `DENY`, and a
-Content Security Policy. No runtime service was started.
+Content Security Policy. No runtime service was deployed or scaled up for this
+checkpoint.
 
 A disposable PITR clone completed one restore verification in 56m08s from
 clone submission to verified receipt, below the provisional 60-minute target.
@@ -49,10 +56,13 @@ The admin Download action was added in Web PR #11
 `sha256:fdc99d7516c92928508ef01bbb1d3232d336c10438ad930fee6cb3b32add3504`
 matches successful Cloud Build `4eeaf836-c946-43f6-a27d-221cb636c9a2`; the
 build source archive contains the Download UI and authenticated download route.
-PR #12 added browser fixture/flow coverage and merged at
-`c15324d2024c04e12aa769073b97635d61015bdd`. The operator has not yet proven a
-real-file download or valid PDF rendering. The 63-byte smoke PDF shown failing
-in the browser is not evidence that a valid PDF was delivered. Public `/terms`,
+PR #12 added browser fixture/flow coverage; Web PR #13 merged the sign-in-layer
+clarification at `112212d486adf442a57e61563a77f89a7488dc86`, but that change is
+not deployed. The user confirmed on Nov 5 that CareNet admin sign-in succeeded
+and the deployed Download action completed during the controlled SQL window.
+This is operator confirmation of one download, not independent byte-integrity
+or valid-PDF proof. The 63-byte smoke PDF previously shown failing in the
+browser remains invalid for preview; no review decision was made. Public `/terms`,
 `/privacy`, `/support`, `/account-deletion`, `/verify-email`, `/reset-password`,
 and Android `assetlinks.json` all returned
 HTTP 200; the approved support contact is in the live page. The owner confirmed
@@ -1275,7 +1285,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 4 read-back: 13 enabled policies, enabled email channel, observed alerts closed, schedulers paused, SQL stopped, Cloud Run no min instances; residual gates in `PHASE_1_OPERATIONAL_READINESS.md` |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile integration `c8aae93`/CI `41871578397`; admin sign-in and one download operator-confirmed; SQL back to STOPPED/NEVER, schedulers paused; post-window alert status unverified; residual gates in `PHASE_1_OPERATIONAL_READINESS.md` |
 
 ### APP-READY-055 implementation evidence
 

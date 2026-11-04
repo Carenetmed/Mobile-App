@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('9fc8f6a742d6a6a75008101fee24f6ebd0ad3e47'),
+        contains('c8aae9303890248e50d178ac54862957889f3cf3'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,7 +40,7 @@ void main() {
       );
       expect(
         entry.value,
-        contains('41845757337'),
+        contains('41871578397'),
         reason: '${entry.key} must name mobile post-merge CI.',
       );
       expect(
@@ -69,6 +69,10 @@ void main() {
     final handoff = currentSections['AI_HANDOFF.md']!;
     expect(handoff, contains('Web PR #11'));
     expect(handoff, contains('PR #12 added browser fixture/flow coverage'));
+    expect(handoff, contains('Web PR #13 merged the sign-in-layer'));
+    expect(handoff, contains('user confirmed on Nov 5'));
+    expect(handoff, contains('not independent byte-integrity'));
+    expect(handoff, contains('not deployed'));
     expect(handoff, contains('4eeaf836-c946-43f6-a27d-221cb636c9a2'));
     expect(
       handoff,
@@ -76,7 +80,6 @@ void main() {
         'sha256:fdc99d7516c92928508ef01bbb1d3232d336c10438ad930fee6cb3b32add3504',
       ),
     );
-    expect(handoff, contains('real-file download or valid PDF rendering'));
     expect(handoff, contains('63-byte smoke PDF'));
   });
 

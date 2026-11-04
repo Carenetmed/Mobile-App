@@ -1,9 +1,10 @@
 # Documentation sync index
 
-## Current Readiness Reconciliation (2026-11-04)
+## Current Readiness Reconciliation (2026-11-05)
 
-The current integration is `9fc8f6a742d6a6a75008101fee24f6ebd0ad3e47` after
-docs-only PR #267; post-merge integration CI `41845757337` passed. Backend
+The current integration is `c8aae9303890248e50d178ac54862957889f3cf3` after
+APP-READY-093 PR #268; post-merge integration CI `41871578397` passed all mobile
+checks. Backend
 `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863` after docs-only BE-P1-058 PR #193;
 PR-head and post-merge CI runs `41802198065` and `41802721952` passed all three
@@ -13,19 +14,25 @@ source is merged. Older pending CI statements below are historical records.
 Current read-only cloud state: SQL STOPPED/NEVER with deletion protection,
 three Scheduler jobs PAUSED, Cloud Run without minimum-instance floors, thirteen
 enabled alert policies (all referencing the approved operations email channel),
-and no open observed alerts. The owner confirmed the approved support-mailbox
+and no open alert records in the Nov 4 read-back. Incident state after the Nov 5
+database window was not reread. The owner confirmed the approved support-mailbox
 test arrived. One
 disposable PITR proof completed verification in 56m08s and its clone was deleted;
 RPO remains unknown. The Firebase Admin SDK identity's project-wide Token Creator
 grant is now self-scoped; the broader least-privilege review remains open. Public
 legal/support/auth-link routes and assetlinks.json returned HTTP 200 from the
 default Hosting site. The active admin revision's digest and successful build
-source prove the Download UI/route is deployed, but valid-file preview/download
-and operator acceptance remain open. Firebase Hosting's API, Cloud Billing and
+source prove the Download UI/route is deployed. On Nov 5 the operator confirmed
+CareNet admin sign-in and a completed staging document download during a
+bounded SQL window; byte integrity and valid PDF rendering were not verified.
+Web PR #13
+merged the sign-in-layer clarification at
+`112212d486adf442a57e61563a77f89a7488dc86`, but staging still serves revision
+`carenet-admin-staging-00006-55n`. Firebase Hosting's API, Cloud Billing and
 its Budgets API are enabled, but no budget or BigQuery billing export is
-configured; actual spend remains unknown and no cap was invented. This
-follow-up adds one documentation test: 1,363 total (1,362 retained plus one),
-with no removed, skipped, or weakened tests. APP-READY-082 remains the single next recorded
+configured; actual spend remains unknown and no cap was invented. The mobile
+suite remains 1,363 tests; this documentation follow-up updates an existing
+assertion, with no tests added, removed, skipped or weakened. APP-READY-082 remains the single next recorded
 operational track; device, provider, RPO/security, and final Paystack gates
 remain open.
 

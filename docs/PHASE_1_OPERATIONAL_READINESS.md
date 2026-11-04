@@ -1,20 +1,22 @@
 # Phase 1 Operational Readiness
 
-## Current Checkpoint (2026-11-04)
+## Current Checkpoint (2026-11-05)
 
-Mobile integration is `9fc8f6a742d6a6a75008101fee24f6ebd0ad3e47` after
-docs-only PR #267; post-merge integration CI `41845757337` passed. Backend
+Mobile integration is `c8aae9303890248e50d178ac54862957889f3cf3` after
+APP-READY-093 PR #268; post-merge integration CI `41871578397` passed all
+mobile checks. Backend
 `main` is `2d4b320771479e00ca7034a0859821a6b1fb7863`
 after docs-only PR #193; PR-head CI `41802198065` and post-merge CI `41802721952`
 passed all three lanes. APP-READY-090 and PR #265 are earlier checkpoints; this
 reconciliation does not close the remaining operational gates.
 
-- Cloud cost posture: Cloud SQL `STOPPED`, activation `NEVER`, deletion
+- Cloud cost posture: Cloud SQL was briefly enabled for the Nov 5 admin proof
+  and is now `STOPPED`, activation `NEVER`, deletion
   protection enabled; all three Scheduler jobs `PAUSED`; Cloud Run backend,
   admin and messaging have no minimum-instance floor (messaging explicitly
   minScale 0). Cloud Billing and the Billing Budgets API are enabled. Firebase
   Hosting's control-plane API is enabled for the static pages; no runtime
-  service was started.
+  service was deployed or scaled up for this checkpoint.
 - Backend traffic: read-only Cloud Run state shows
   `carenet-backend-staging-be075-candidate` at 100%. The latest ready revision
   is `carenet-backend-staging-be079-expiry-proof` but receives no traffic; the
@@ -31,8 +33,9 @@ reconciliation does not close the remaining operational gates.
 - Monitoring: 13 policies and the email channel are enabled; all 13 enabled
   policies reference the channel, which matches the approved operations
   recipient. All alert records
-  observed in the Nov 4 read-back are `CLOSED`. This proves current state, not
-  successful delivery for every failure condition. No budget is configured and
+  observed in the Nov 4 read-back are `CLOSED`. Incident and notification
+  delivery state was not reread after the Nov 5 database window; this proves no
+  new alert delivery. No budget is configured and
   BigQuery billing export is absent, so cost breakdown and budget alerts remain
   unavailable; no monthly cap was invented. The database memory policy is
   enabled with the intended `Usage > 90` for 600s and 60s mean alignment (last
@@ -45,15 +48,17 @@ reconciliation does not close the remaining operational gates.
   point was about 16m22s before source shutdown; actual RPO and data loss remain
   unknown. No RPO SLO is claimed.
 - Admin: Web PR #11 added the authenticated Download action/route; PR #12 added
-  browser fixture/flow coverage. Both are merged with CI green. Cloud Run
+  browser fixture/flow coverage. Web PR #13 merged sign-in clarification at
+  `112212d486adf442a57e61563a77f89a7488dc86`, not yet deployed. Cloud Run
   revision `carenet-admin-staging-00006-55n` serves 100% traffic using digest
   `sha256:fdc99d7516c92928508ef01bbb1d3232d336c10438ad930fee6cb3b32add3504`,
   which matches successful Cloud Build `4eeaf836-c946-43f6-a27d-221cb636c9a2`;
-  its source archive contains the Download UI and authenticated route. A
-  real-file operator
-  download and valid PDF rendering have not been proven. The observed 63-byte
-  smoke document failed browser preview; do not approve/reject or overwrite it
-  to clear this gate.
+  its source archive contains the Download UI and authenticated route. On Nov
+  5 the operator confirmed successful CareNet admin sign-in and that a
+  document download completed while backend readiness returned HTTP 200. This
+  proves one operator download, not byte integrity or valid PDF rendering. The
+  observed 63-byte smoke document failed browser preview; do not approve/reject
+  or overwrite it to clear this gate.
 - Support/legal: the default Firebase Hosting site
   `https://project-a96784ee-811c-46ab-a7b.web.app` serves the approved Support
   page and Terms, Privacy, Account Deletion,
@@ -72,9 +77,9 @@ checkpoint into a provider activation or start short-form content work.
 
 ## Scope And Authority
 
-APP-READY-082 remains partially complete. This November 4 handoff reconciles
-mobile status with current Hosting and monitoring evidence. It enabled only
-the Firebase Hosting control-plane API and changed no runtime, provider,
+APP-READY-082 remains partially complete. This November 5 handoff reconciles
+mobile status with current Hosting, monitoring and operator evidence. It
+changed no app runtime, provider,
 dependency, navigation or app behavior. Earlier dated
 audit snapshots are historical. The full readiness program is not complete.
 Protected worktrees and archive references remain outside this slice.
@@ -141,12 +146,14 @@ Protected worktrees and archive references remain outside this slice.
   Remaining least-privilege review also remains open after the narrowly scoped
   Firebase SDK binding repair above. Do not resize, restart or suppress an alert
   based on an unverified diagnosis.
-- Admin: IAP/application login and queue access are proved, and Download is
-  deployed. Source and mocked-browser tests pass; real valid-file preview,
-  download and operator recovery acceptance remain open. Do not approve, reject
-  or overwrite the smoke document to clear a gate.
+- Admin: IAP, CareNet application login and queue access are proved, and
+  Download is deployed. The operator confirmed one staging document download
+  on Nov 5; byte integrity, valid-file preview and operator recovery remain
+  open. Do not approve, reject or overwrite the smoke document to clear this
+  gate.
 - Support/legal: the approved contact is live and its page returns HTTP 200.
-  Mailbox delivery remains unproved; no response hours are promised.
+  The owner confirmed the approved mailbox test arrived; no response hours are
+  promised.
 - Release/device: Hosting auth-link checks and merged CI passed. Approved Play
   signing/release acceptance and physical Android proof remain open. iOS still
   requires Apple signing/provider and Mac/iPhone proof.

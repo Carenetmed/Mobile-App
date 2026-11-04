@@ -1,10 +1,10 @@
 # Codebase status
 
-## Current Checkpoint (2026-11-04)
+## Current Checkpoint (2026-11-05)
 
-Integration base is `9fc8f6a742d6a6a75008101fee24f6ebd0ad3e47`. Docs-only
-readiness reconciliation PR #267 merged with post-merge integration run
-`41845757337` passing. Backend `main` is
+Integration base is `c8aae9303890248e50d178ac54862957889f3cf3`. APP-READY-093
+PR #268 merged with post-merge integration run `41871578397` passing all mobile
+checks. Backend `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863`; BE-P1-058 evidence reconciliation
 PR #193 and post-merge CI runs `41802198065` and `41802721952` passed all three
 lanes. These documentation updates do not complete the operational program.
@@ -16,8 +16,9 @@ APP-READY-089 Support is published: all seven canonical Hosting paths, including
 `/support`, returned HTTP 200 on Nov 4, and the approved support contact was
 present in the live page. The owner confirmed the approved test email arrived
 in the support mailbox. APP-READY-088
-upload recovery and APP-READY-090 confirmed-expiry handling are merged; valid
-real-file upload, preview and operator download remain unproved.
+upload recovery and APP-READY-090 confirmed-expiry handling are merged. The
+operator confirmed one staging document download on Nov 5; valid real-file
+upload, byte integrity and PDF preview remain unproved.
 
 Cost-control read-back: staging SQL is STOPPED/NEVER with deletion protection;
 all three Scheduler jobs are PAUSED; Cloud Run backend/admin/messaging have no
@@ -40,12 +41,14 @@ One disposable PITR clone was verified and deleted. Restore verification took
 that run only. Latest available restore point was about 16m22s before source
 shutdown; actual RPO/data loss remains unknown. Do not claim an RPO SLO.
 
-The admin Download action was added in Web PR #11 and is present in the active
-Cloud Run revision `carenet-admin-staging-00006-55n`, whose image digest matches
-successful Cloud Build `4eeaf836-c946-43f6-a27d-221cb636c9a2`. The build source
-archive contains the Download UI and authenticated download route; PR #12 adds
-browser fixture/flow coverage. Actual operator download and valid PDF rendering
-remain open. APP-READY-082 remains
+The admin Download action is present in active Cloud Run revision
+`carenet-admin-staging-00006-55n`. Web PR #13 merged the explanatory sign-in
+copy at `112212d486adf442a57e61563a77f89a7488dc86`, but the revision has not
+been updated. On Nov 5 the operator confirmed successful CareNet admin sign-in
+and completion of a document download during a bounded SQL window. Byte
+integrity and valid PDF preview remain unproved; the existing 63-byte smoke
+document must not be approved, rejected or overwritten. Cloud SQL is back to
+STOPPED/NEVER. APP-READY-082 remains
 the sole recorded next operational track. See `AI_HANDOFF.md` for current
 evidence and boundaries.
 

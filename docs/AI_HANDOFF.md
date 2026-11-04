@@ -2,27 +2,30 @@
 
 ## Current Verified Checkpoint (2026-11-04)
 
-Current Mobile integration is `11adb705e259ba0e131689a8f016233b37ffb951`.
-APP-READY-090 merged through PR #264 at the prior integration SHA
-`54eba950f7711addf52d01e89bce4810e47661f2`; docs-only readiness reconciliation
-PR #265 then merged. Its exact-head run `41776604730` and post-merge integration
-run `41778438353` passed. PR #264 reviewed-head and integration Flutter/iOS CI
-also passed (runs `41708017208`, `41708017280`, `41712602530`, and
-`41712602391`). APP-P1-011 network/session/startup is already marked DONE in
-the task table; a duplicate APP-READY-091 implementation is not authorized.
+Current Mobile integration is `040cbd7d033b2cdb7e969623f8e55a38a3b3d9f2`.
+Docs-only reconciliation PR #266 merged; exact-head CI `41793512082` and
+post-merge integration CI `41798115546` passed. Backend `main` is
+`2d4b320771479e00ca7034a0859821a6b1fb7863`; docs-only PR #193 reconciled
+BE-P1-058 after delivery, and PR-head CI `41802198065` plus post-merge main CI
+`41802721952` passed all three lanes. Older APP-READY-090 evidence below is
+historical; these checkpoints do not complete the readiness program.
+This reconciliation adds three documentation assertions: the full Flutter
+suite is 1,362 tests versus 1,359 on the prior integration; no tests were
+removed, skipped, or weakened.
 
 Read-only cloud checks on Nov 4: staging Cloud SQL is STOPPED with activation
 policy NEVER and deletion protection on; all three scheduler jobs are PAUSED;
 Cloud Run backend/admin/messaging have no minimum-instance floor (messaging
 explicitly minScale 0). Thirteen monitoring policies and their email channel
 are enabled; the observed alert records are CLOSED. The database memory policy
-uses the intended `Usage > 90` condition for 600s; no real threshold breach or
-memory-alert delivery is claimed. No Cloud SQL window, worker, scheduler, or
-service scaling was changed. The Firebase Admin SDK
-identity's project-wide Token Creator grant was narrowed to a self-only
-service-account binding; no service was activated. Billing export and budgets
-are not configured, so this is cost-control evidence, not a measured cost
-report.
+uses the intended `Usage > 90` condition for 600s; BE-P1-058 is delivered, but
+no real threshold breach or condition-triggered alert delivery is claimed. No
+Cloud SQL window, worker, scheduler, or service scaling was changed. The
+Firebase Admin SDK identity's project-wide Token Creator grant was narrowed to
+a self-only service-account binding; no service was activated. Cloud Billing
+and the Billing Budgets API are enabled, but no budget or BigQuery billing
+export is configured. Total spend remains unknown; no budget cap was created
+without an approved monthly amount.
 
 A disposable PITR clone completed one restore verification in 56m08s from
 clone submission to verified receipt, below the provisional 60-minute target.
@@ -31,15 +34,18 @@ restore point preceded source shutdown by about 16m22s; actual RPO/data loss is
 unknown and remains open. The clone, local proxy, and temporary proof resources
 were deleted; the source instance remains stopped.
 
-The admin Download action is present in the staging revision built from
-`download-lf-63c089c`; its UI offers an authenticated download alongside the
-PDF preview. Web source suites pass (22 Node tests and 9 mocked Chromium
-journeys), but the operator has not yet proven a real file download. The
-63-byte smoke PDF shown failing in the browser is not evidence of valid PDF
-rendering. Public `/terms`, `/privacy`, `/support`, `/account-deletion`,
+The admin Download action was added in Web PR #11
+(`8dfbaada9d4a55d7e0781bca7ae9e97cc40a117e`) and deployed in staging revision
+`download-lf-63c089c`; PR #12 added browser fixture/flow coverage and merged at
+`c15324d2024c04e12aa769073b97635d61015bdd`. The operator has not yet proven a
+real file download or valid PDF rendering. The 63-byte smoke PDF shown failing
+in the browser is not evidence that a valid PDF was delivered. Public `/terms`, `/privacy`, `/support`, `/account-deletion`,
 `/verify-email`, `/reset-password`, and Android `assetlinks.json` all returned
 HTTP 200; the approved support contact is in the live page. Mailbox delivery is
-not implied.
+not implied. One approved plain test email was sent from a disposable alias to
+the support contact on Nov 4 and appears in the sender's Sent folder; receipt in
+the recipient mailbox remains unconfirmed. The sender identity is omitted from
+public documentation.
 
 APP-READY-082 remains the single recorded next operational track and is still
 partial. Follow `PHASE_1_OPERATIONAL_READINESS.md` for its reconciled current

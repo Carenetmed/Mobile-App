@@ -1,17 +1,16 @@
 ﻿# CareNet project documentation
 
-Current: APP-READY-081 is merged through PR #245 at `1ab1075`; exact-head CI,
-942 tests, analyzer, Android APK/release checks and live Hosting checks passed.
-Integration CI also passed; PR #246 merged its proof at `51c3a2a`. See `AI_HANDOFF.md`,
-`FIREBASE_ENVIRONMENTS.md`, and `ANDROID_RELEASE_SIGNING.md`. Admin login/queue
-and the deployed Download feature are proved separately from valid-file
-preview acceptance, which remains partial. Older checkpoint summaries below
-are historical. APP-READY-082 operational alerting remains partial: nine policies
-are applied, all three schedules are paused, and a controlled release-health
-alert has actual delivery proof. See `PHASE_1_OPERATIONAL_READINESS.md` for the
-owning backend evidence and remaining gates. Payments remain the
-final explicit-confirmation gate. Phone automatic auth-link verification is
-still separate from a correctly hosted certificate association.
+Current Mobile integration is `040cbd7d033b2cdb7e969623f8e55a38a3b3d9f2` after
+PR #266; its exact-head CI `41793512082` and post-merge CI `41798115546` passed.
+Backend `main` is
+`2d4b320771479e00ca7034a0859821a6b1fb7863` after docs-only PR #193; all three
+CI lanes passed on the PR and merged result (`41802198065`, `41802721952`). See `AI_HANDOFF.md`,
+`CODEBASE_STATUS.md`, and `PHASE_1_OPERATIONAL_READINESS.md` for current gates.
+The admin Download control is deployed, but valid-file operator download and
+preview acceptance remain open. Cloud Billing and the Budgets API are enabled;
+no budget or BigQuery billing export is configured, so actual spend is unknown.
+APP-READY-082, provider, security/RPO, release/device, and final Paystack gates
+remain open. Older checkpoint summaries below are historical.
 
 Historical: APP-READY-075 merged as PR #240 at `0e0a65b268d7561f2376c846b24a52045cbf2854`.
 Final-head and integration CI passed all 930 tests, analyzer, Android debug APK,

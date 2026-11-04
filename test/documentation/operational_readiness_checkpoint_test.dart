@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('af0e7ab7bf774c348ed99712f99ca0bb2e2c671e'),
+        contains('7634f66c25fad83cd477207255b33cbad2d2a1ca'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,8 +40,18 @@ void main() {
       );
       expect(
         entry.value,
-        contains('41910169371'),
+        contains('41917412119'),
         reason: '${entry.key} must name mobile post-merge CI.',
+      );
+      expect(
+        entry.value,
+        contains('carenet-admin-staging-00008-cig'),
+        reason: '${entry.key} must name the current admin revision.',
+      );
+      expect(
+        entry.value,
+        isNot(contains('carenet-admin-staging-00006-55n')),
+        reason: '${entry.key} must not report the superseded admin revision.',
       );
       expect(
         entry.value,
@@ -70,18 +80,24 @@ void main() {
   test('admin download deployment is distinct from valid-file acceptance', () {
     final handoff = currentSections['AI_HANDOFF.md']!;
     expect(handoff, contains('Web PR #11'));
-    expect(handoff, contains('PR #12 added browser fixture/flow coverage'));
-    expect(handoff, contains('Web PR #13 merged the sign-in-layer'));
-    expect(handoff, contains('user confirmed on Nov 5'));
-    expect(handoff, contains('not independent byte-integrity'));
-    expect(handoff, contains('not deployed'));
-    expect(handoff, contains('4eeaf836-c946-43f6-a27d-221cb636c9a2'));
+    expect(handoff, contains('PR #12 added browser fixture/flow'));
+    expect(handoff, contains('coverage, and PR #13 clarified'));
+    expect(handoff, contains('PR #13 clarified that IAP access'));
+    expect(handoff, contains('PR #15 normalized the container entrypoint'));
+    expect(handoff, contains('post-merge CI'));
+    expect(handoff, contains('41927227034'));
+    expect(handoff, contains('operator visual confirmation'));
+    expect(handoff, contains('This is not independent'));
+    expect(handoff, contains('byte-integrity or valid-PDF proof'));
+    expect(handoff, contains('caace09e-6c85-4a48-b05e-d62b66575785'));
     expect(
       handoff,
       contains(
-        'sha256:fdc99d7516c92928508ef01bbb1d3232d336c10438ad930fee6cb3b32add3504',
+        'sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7',
       ),
     );
+    expect(handoff, contains('100% traffic'));
+    expect(handoff, contains('CI container smoke served `/admin`'));
     expect(handoff, contains('63-byte smoke PDF'));
   });
 

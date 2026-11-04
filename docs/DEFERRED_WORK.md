@@ -2,22 +2,26 @@
 
 ## APP-READY-090 Upload Recovery Boundary
 
-Confirmed provider expiry is being repaired using backend BE079 evidence.
-Unknown PUT outcomes and412 do not prove completed evidence and are not blindly
-retried; cross-attempt settlement remains open. Real-browser PDF preview/download,
-normal coordinated runtime promotion, retention/in-flight upload cleanup safety
-and physical acceptance remain separate gates. No automatic evidence deletion,
-payment activation or new content feature belongs to this repair.
+APP-READY-090 is merged through mobile PR #264. Confirmed provider expiry is
+handled using backend BE079 evidence. Unknown PUT outcomes and412 do not prove
+completed evidence and are not blindly retried; cross-attempt settlement remains
+open. Real-file upload, preview and operator download, normal coordinated runtime
+promotion, retention/in-flight upload cleanup safety and physical acceptance
+remain separate gates. The staging admin Download action is deployed, but
+source/mock tests do not prove that a valid private file can be downloaded and
+rendered. No automatic evidence deletion, payment activation or new content
+feature belongs to this repair.
 
-## APP-READY-089 Public Support Contact (Source Only)
+## APP-READY-089 Public Support Contact (Published; mailbox delivery unverified)
 
-User-approved `carenethealthplatforms@gmail.com` is now in the `/support` source.
+User-approved `carenethealthplatforms@gmail.com` is published on `/support`.
 The CareNet team owns replies, with no promised support hours or response times.
 The query-free mailto has no prefilled health details, subject or body; the page
 retains emergency guidance and warns against emailing medical details or secrets.
 No data form, external vendor workflow, auth-link or legal-terms change is added.
-Hosting publication and operational mailbox/provider acceptance remain unproved;
-this source-only slice does not complete backend repair or broader readiness.
+Live Hosting returned HTTP 200 and served the approved contact on Nov 4.
+Operational mailbox/provider delivery remains unproved; this does not complete
+backend repair or broader readiness.
 
 ## APP-READY-088 Upload Recovery Rollout
 

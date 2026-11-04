@@ -1,5 +1,42 @@
 # Phase 1 Operational Readiness
 
+## Current Checkpoint (2026-11-04)
+
+APP-READY-090 merged in PR #264 at `54eba950f7711addf52d01e89bce4810e47661f2`;
+both reviewed-head and integration Flutter/iOS CI passed. The October 21
+snapshot below is historical and its “remaining gates” are reconciled here.
+
+- Cloud cost posture: Cloud SQL `STOPPED`, activation `NEVER`, deletion
+  protection enabled; all three Scheduler jobs `PAUSED`; Cloud Run backend,
+  admin and messaging have no minimum-instance floor (messaging explicitly
+  minScale 0). No cloud settings were mutated for this checkpoint.
+- Monitoring: 13 policies and the email channel are enabled. All alert records
+  observed in the Nov 4 read-back are `CLOSED`. This proves current state, not
+  successful delivery for every failure condition. BigQuery billing export and
+  Budgets API are not configured, so cost breakdown/alert thresholds remain
+  unavailable.
+- Database recovery: a disposable PITR clone was verified and deleted. Time
+  from clone submission to completed verification was 56m08s, below the
+  provisional 60-minute target for this one run. The latest available restore
+  point was about 16m22s before source shutdown; actual RPO and data loss remain
+  unknown. No RPO SLO is claimed.
+- Admin: the Download action is present in the deployed
+  `download-lf-63c089c` staging revision; 22 Node tests and 9 mocked Chromium
+  journeys pass. Real-file download and valid PDF rendering have not been
+  proven. The observed 63-byte smoke document failed browser preview; do not
+  approve/reject or overwrite it to clear this gate.
+- Support/legal: the approved Support page and Terms, Privacy, Account Deletion,
+  verification, reset and Android asset-links endpoints returned HTTP 200.
+  The approved contact is live; mailbox delivery is not proved.
+- Release/device: APP-READY-081 Hosting checks and APP-READY-090 merged CI are
+  complete. Play signing/release acceptance, physical Android tests, Apple
+  signing/provider setup and Mac/iPhone acceptance remain open.
+- Payments: Paystack test activation remains last and requires the single final
+  explicit confirmation. The previously exposed test key must not be reused.
+
+APP-READY-082 remains the recorded next operational track. Do not turn this
+checkpoint into a provider activation or start short-form content work.
+
 ## Scope And Authority
 
 APP-READY-082 remains partially complete. This October 21 handoff reconciles
@@ -48,37 +85,36 @@ Protected worktrees and archive references remain outside this slice.
 - A controlled account-security email has provider, mailbox and signed-callback
   delivery evidence. The owning [notification contract](https://github.com/ridwanmullick/carenet-backend-lab/blob/main/docs/56-phase1-transactional-notifications.md)
   keeps live worker retry, FCM and full-worker acceptance distinct.
-- SQL remains running because the staging API and admin require it. The
-  October 19 successful backup is not fresh restore acceptance, continuous RPO
-  proof, permission to stop a required database or a billing cap.
+- At the October 21 checkpoint, SQL was running because the staging API and
+  admin required it. The October 19 backup was not fresh restore acceptance,
+  continuous RPO proof, permission to stop a required database or a billing cap.
 
 ## Remaining Gates
 
 - RTC: useful provider cleanup, sustained cadence, failure-alert delivery and
-  queue-age evidence remain open. The v3 positive access simulation initially
-  lacked inherited organization deny-policy visibility. Explicitly approved
-  read-only Deny Reviewer access resolved that visibility for this proof. Its
-  fixed-expiry binding was then removed, with all seven unrelated organization
-  bindings preserved. Immediate global cache revocation is not claimed.
-  Invocation IAM is empty and the schedule is paused. Future unknown access
-  results must still fail closed. See the owning
+  queue-age evidence remain open. Invocation IAM and schedules remain paused or
+  empty. Unknown access must fail closed. See the owning
   [reconciliation contract](https://github.com/ridwanmullick/carenet-backend-lab/blob/main/docs/66-rtc-reconciliation-serialization.md).
 - Worker/provider: natural retry, actual FCM delivery and full-worker execution
   are not proved by local tests, one delivered email or an SDK response alone.
-- Database/security: fresh restore/RPO/RTO acceptance, complete least-privilege
-  review and the SQL memory-metric discrepancy remain open. Do not resize,
-  restart or suppress an alert based on an unverified diagnosis.
-- Admin: IAP/application login and queue access are proved. Valid-file preview,
-  actual operator download and recovery acceptance remain partial. Do not
-  approve, reject or overwrite the invalid smoke document to clear a gate.
-- Support/legal: exact monitored contact, reply owner and truthful response
-  hours still require confirmation. Do not publish guessed operational promises.
-- Release/device: signed Android automatic app-link verification, approved Play
-  signing certificates and final physical acceptance remain separate. iOS still
+  The worker schedule remains paused.
+- Database/security: one PITR restore verification completed within 56m08s, but
+  RPO is unknown; the latest restore point preceded shutdown by about 16m22s.
+  Complete least-privilege review and the SQL memory-metric discrepancy remain
+  open. Do not resize, restart or suppress an alert based on an unverified
+  diagnosis.
+- Admin: IAP/application login and queue access are proved, and Download is
+  deployed. Source and mocked-browser tests pass; real valid-file preview,
+  download and operator recovery acceptance remain open. Do not approve, reject
+  or overwrite the smoke document to clear a gate.
+- Support/legal: the approved contact is live and its page returns HTTP 200.
+  Mailbox delivery remains unproved; no response hours are promised.
+- Release/device: Hosting auth-link checks and merged CI passed. Approved Play
+  signing/release acceptance and physical Android proof remain open. iOS still
   requires Apple signing/provider and Mac/iPhone proof.
-- Payments: the single final confirmation has not been requested. Paystack
-  activation stays last and test-only; the exposed key must not be reused.
-  Live payments and payouts are not approved by this handoff.
+- Payments: final test-only Paystack activation still requires one explicit
+  confirmation. The exposed test key must not be reused. Live payments and
+  payouts are not approved by this handoff.
 
 ## Verification Boundary
 

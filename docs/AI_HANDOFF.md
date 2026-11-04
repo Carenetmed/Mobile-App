@@ -1,27 +1,45 @@
 # AI handoff - read this first
 
-## APP-READY-090 - Confirmed Storage Expiry Recovery
+## Current Verified Checkpoint (2026-11-04)
 
-IN PROGRESS within the user-approved complete readiness program and sole NEXT
-APP-READY-082. Base `7da0d68`; dedicated branch
-`slice/APP-READY-090-verification-expiry-recovery` in a reused clean isolated
-checkout. Backend PR191 proved real Google Storage400 ExpiredToken; APP088's
-clock/status-only rule misses it. Filled Task Spec:
-`PROFESSIONAL_VERIFICATION_UPLOAD_REGRESSION.md`.
+Current Mobile integration is `54eba950f7711addf52d01e89bce4810e47661f2`.
+APP-READY-090 merged through PR #264 at that SHA. Reviewed-head and integration
+Flutter/iOS CI passed (runs `41708017208`, `41708017280`, `41712602530`, and
+`41712602391`). APP-P1-011 network/session/startup is already marked DONE in
+the task table; a duplicate APP-READY-091 implementation is not authorized.
 
-Renew only confirmed provider expiry, once for the same new-contract document
-ID, despite device-clock disagreement. Preserve exact bytes/headers, proactive
-renewal, owner/cancellation checks and matching completion replay. Generic denial,
-signature error, malformed XML, unknown PUT outcomes and412 never authorize blind
-retry or imply completion. No UI/backend/native/cloud/payment/device changes.
-Local104 targeted and all1359 Flutter tests pass, with zero skipped; analyzer
-reports no issues and staging debug APK passes. Inventory1312+47:31 new raw-XML
-adapter/boundary/pipeline cases and16 new recovery cases; two retained403 cases
-are renamed to require confirmed expiry. No removed/skipped/weakened tests.
-Fresh staging/production release lint and backup, iOS source configuration,
-protected-signing and30 environment regressions pass. Only ignored Windows SDK
-path escaping was repaired; no lint suppression or native source change.
-Signed artifacts and exact PR/merged CI remain pending; readiness stays open.
+Read-only cloud checks on Nov 4: staging Cloud SQL is STOPPED with activation
+policy NEVER and deletion protection on; all three scheduler jobs are PAUSED;
+Cloud Run backend/admin/messaging have no minimum-instance floor (messaging
+explicitly minScale 0). Thirteen monitoring policies and their email channel
+are enabled; the observed alert records are CLOSED. No Cloud SQL window,
+worker, scheduler, IAM, or service scaling was changed. Billing export and
+budgets are not configured, so this is cost-control evidence, not a measured
+cost report.
+
+A disposable PITR clone completed one restore verification in 56m08s from
+clone submission to verified receipt, below the provisional 60-minute target.
+This is one restore observation, not an established SLO. The latest available
+restore point preceded source shutdown by about 16m22s; actual RPO/data loss is
+unknown and remains open. The clone, local proxy, and temporary proof resources
+were deleted; the source instance remains stopped.
+
+The admin Download action is present in the staging revision built from
+`download-lf-63c089c`; its UI offers an authenticated download alongside the
+PDF preview. Web source suites pass (22 Node tests and 9 mocked Chromium
+journeys), but the operator has not yet proven a real file download. The
+63-byte smoke PDF shown failing in the browser is not evidence of valid PDF
+rendering. Public `/terms`, `/privacy`, `/support`, `/account-deletion`,
+`/verify-email`, `/reset-password`, and Android `assetlinks.json` all returned
+HTTP 200; the approved support contact is in the live page. Mailbox delivery is
+not implied.
+
+APP-READY-082 remains the single recorded next operational track. Its dated
+handoff is being reconciled; do not start new product scope, a duplicate
+network/session slice, or Paystack activation. Real upload/download acceptance,
+RPO/security review, RTC/worker provider proof, signed-store/device checks,
+iOS signing/device proof, and final separately approved test-only Paystack
+activation remain distinct gates.
 
 ## APP-READY-086 - Readiness Alignment
 
@@ -333,23 +351,15 @@ used existing Google Cloud authentication; no secret was exported or logged.
 
 ### Current Operational Follow-Up
 
-APP-READY-082 remains the one next task, with partial operational proof rather
-than an unconfigured alert channel. October 21 read-back confirms nine enabled
-policies, no uptime checks, and all three schedules paused. Six passive
-service/database/job policies and the sanitized release-health policy are
-joined by two RTC failure policies. A controlled release-health counter,
-OPEN incident, and matching alert receipt are proved; that is not failure-mail
-acceptance for every policy. Keep the approved personal recipient out of Git.
-See `PHASE_1_OPERATIONAL_READINESS.md` for owning backend proofs and remaining
-RTC, worker/provider, database, admin, release, support, and device gates.
-No recurring worker or unnecessary polling probe was enabled by this update.
-
-SQL remains running for the staging backend/admin. Fresh backup `1792427900036`
-is SUCCESSFUL at 2026-10-19T16:40:11.966Z; operation
-`2ed6bc40-09e4-4c51-9b6b-a7480000002f` is DONE without error. Gateway readiness
-returned HTTP 200 at 16:40:46Z. This is not fresh restore acceptance or a
-continuous RPO guarantee. No schema, service traffic, worker schedule or
-payment settings changed.
+APP-READY-082 remains the one next task. On Nov 4, thirteen monitoring policies
+and the email notification channel read back enabled; all observed alert
+records were closed. This verifies configuration/state only, not delivery for
+every policy. All three Scheduler jobs are paused, SQL is STOPPED/NEVER, and
+Cloud Run has no minimum-instance floor. The Nov 4 disposable PITR proof
+verified schema/migrations and deleted its clone; one 56m08s restore is not an
+RPO guarantee. See `PHASE_1_OPERATIONAL_READINESS.md` for residual RTC,
+worker/provider, RPO/security, admin-file, release, iOS, and device gates.
+No recurring worker or unnecessary probe was enabled.
 
 ### APP-READY-075 Reminder And Schedules Accessibility (Done; PR #240 Merged)
 
@@ -1175,7 +1185,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | PAY-P1-008 | Paid-consultation financial authority and Flutter experience | L | **DONE** |
 | CALL-P1-009 | Appointment-linked video/audio consultation | L | **DONE** |
 | NOTIF-P1-010 | Durable transactional notifications | L | **DONE** |
-| APP-P1-011 | Network and session startup foundation | L | **DONE** |
+| APP-P1-011 | Network and session startup foundation | L | **DONE** - bounded transport, atomic session, serialized refresh, deferred optional notification startup; focused resilience suite and PR #264 integration CI verified |
 | APP-P1-012 | Authentication and onboarding readiness | L | **DONE** |
 | APP-P1-013 | Firebase environment separation | L | **DONE** |
 | APP-P1-014 | Account and route authority | L | **DONE** |
@@ -1226,9 +1236,9 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-078 | Make the existing backend email-verification request reachable from authenticated Account and render backend-owned email/status | S | **DONE** - PR #242 merged at `f8aea76`; 933-test suite and CI passed; physical-device link verification remains pending |
 | APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **DONE** - IAP-protected staging console deployed and first super-administrator provisioned; operator browser smoke pending |
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
-| APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - operator login/queue proved; Download deployed in Web PR #11; valid-file preview/download proof remains open |
-| APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; exact-head CI and Hosting manifest/live-content checks passed; integration CI pending at proof time |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - nine policies read back; controlled release-health alert delivered; remaining operational/provider gates in `PHASE_1_OPERATIONAL_READINESS.md` |
+| APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
+| APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 4 read-back: 13 enabled policies, enabled email channel, observed alerts closed, schedulers paused, SQL stopped, Cloud Run no min instances; residual gates in `PHASE_1_OPERATIONAL_READINESS.md` |
 
 ### APP-READY-055 implementation evidence
 

@@ -65,7 +65,9 @@ product, moderation, storage, and cost decision.
 
 ### APP-P1-011 - Network, Session And Startup Foundation
 
-Status: implemented on dedicated slice branch; verification pending PR CI.
+Status: DONE; bounded transport, atomic session storage, serialized refresh,
+and non-blocking optional startup are merged and regression-tested. The current
+task table and `AI_HANDOFF.md` carry integration evidence.
 
 - **Purpose:** Prevent indefinite feature requests, mixed secure-session records,
   avoidable sign-outs after access-token expiry, and optional notification work

@@ -2,9 +2,12 @@
 
 ## Current Checkpoint (2026-11-04)
 
-Integration base is `54eba950f7711addf52d01e89bce4810e47661f2` after APP-READY-090
-merged through PR #264. Exact-head Flutter/iOS runs `41708017208` and
-`41708017280`, plus integration runs `41712602530` and `41712602391`, passed.
+Integration base is `11adb705e259ba0e131689a8f016233b37ffb951`. APP-READY-090
+merged through PR #264 at the prior base `54eba950f7711addf52d01e89bce4810e47661f2`;
+docs-only readiness reconciliation PR #265 then merged. Its exact-head run
+`41776604730` and post-merge integration run `41778438353` passed. PR #264
+reviewed-head Flutter/iOS runs `41708017208` and `41708017280`, plus integration
+runs `41712602530` and `41712602391`, also passed.
 The storage-expiry source correction is merged; remaining real-provider and
 device acceptance is documented under `PHASE_1_OPERATIONAL_READINESS.md` and
 `PROFESSIONAL_VERIFICATION_UPLOAD_FLOW.md`.
@@ -19,7 +22,10 @@ Cost-control read-back: staging SQL is STOPPED/NEVER with deletion protection;
 all three Scheduler jobs are PAUSED; Cloud Run backend/admin/messaging have no
 minimum-instance floor; thirteen monitoring policies and the email channel are
 enabled, with observed alert records CLOSED. No cloud mutation occurred in this
-checkpoint. Billing export/budgets are unavailable, so total spend is unknown.
+checkpoint except a least-privilege IAM adjustment: the Firebase Admin SDK
+identity's project-wide Token Creator grant was narrowed to a self-only
+service-account binding. Billing export/budgets are unavailable, so total spend
+is unknown.
 
 One disposable PITR clone was verified and deleted. Restore verification took
 56m08s from submission to receipt, below the provisional 60-minute target for
@@ -30,6 +36,11 @@ The admin Download action is in the deployed `download-lf-63c089c` revision.
 Source tests cover mocked bytes and recovery; actual operator download and
 valid PDF rendering remain open. APP-READY-082 remains the sole recorded next
 operational track. See `AI_HANDOFF.md` for current evidence and boundaries.
+
+The Nov 4 read-only Cloud Run check found API traffic at 100% on
+`carenet-backend-staging-be075-candidate`; `carenet-backend-staging-be079-expiry-proof`
+is latest ready, not serving. The latest created revision is
+`carenet-backend-staging-be079-default-restored`. No deployment was changed.
 
 ## APP-READY-090 - Confirmed Storage Expiry Recovery (Merged; PR #264)
 
@@ -338,7 +349,7 @@ environment regressions. Final-head/integration proof is attached to
 is claimed. No tracked native configuration or dependency change was required.
 APP-READY-082 stays partial.
 
-## APP-READY-082 - Operational Handoff (Partial)
+## APP-READY-082 - Operational Handoff (Partial; October 21 Snapshot)
 
 October 21 read-back confirms nine enabled alert policies, zero uptime checks,
 and three paused schedules. The controlled sanitized release-health alert has
@@ -352,9 +363,10 @@ reviewer binding was then removed, preserving unrelated IAM. Future operations
 still require fresh authority checks, not a bypass of unknown results.
 `PHASE_1_OPERATIONAL_READINESS.md` owns the cross-repository evidence map.
 
-The serving API is `carenet-backend-staging-00014-jhw` at 100% traffic. This
-documentation-only reconciliation does not promote an image, activate a
-schedule, change the 942-test inventory or complete the readiness program.
+At this October 21 snapshot, the serving API was
+`carenet-backend-staging-00014-jhw` at 100% traffic. This documentation-only
+reconciliation did not promote an image, activate a schedule, or change the
+then-current 942-test inventory. It did not complete the readiness program.
 Backend source/CI and mobile runtime/deployment/device proof remain separate.
 
 ## APP-READY-081 - Signed Android Auth-Link Association (Merged/Deployed)
@@ -418,12 +430,12 @@ sign-in/startup entry points. No tests were removed, disabled, or skipped. PR
 CI `39205075146` passed. No dependency, lockfile, backend, provider, native, or
 cloud changes were in scope.
 
-## Current Staging Admin And Account State (Supersedes Earlier Audits)
+## Staging Admin And Account State (Historical Snapshot; See Current Checkpoint)
 
 APP-READY-077's previously pending setup is now complete: the staging Web
 admin console is deployed behind Cloud Run IAP, and the first staging
 super-administrator was provisioned through the backend's two-phase operator
-procedure. The backend staging service runs revision
+procedure. At this snapshot the backend staging service ran revision
 `carenet-backend-staging-00014-jhw` at 100% traffic. The operator completed
 password setup, application login and queue access as recorded above. Valid-file
 preview and actual operator download are still unproved. Cloud SQL remains

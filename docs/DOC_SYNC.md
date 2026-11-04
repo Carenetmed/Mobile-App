@@ -2,13 +2,13 @@
 
 ## Current Readiness Reconciliation (2026-11-04)
 
-The current integration is `11adb705e259ba0e131689a8f016233b37ffb951`.
-APP-READY-090 merged through PR #264 at the prior base
-`54eba950f7711addf52d01e89bce4810e47661f2`; docs-only readiness reconciliation
-PR #265 then merged. Its exact-head run `41776604730` and post-merge integration
-run `41778438353` passed. APP-READY-089 support content is live; APP-READY-088/090
-upload recovery source is merged. Older pending CI statements below are
-historical slice records, not current delivery status.
+The current integration is `040cbd7d033b2cdb7e969623f8e55a38a3b3d9f2` after
+docs-only PR #266; exact-head CI `41793512082` and post-merge integration CI
+`41798115546` passed. Backend `main` is
+`2d4b320771479e00ca7034a0859821a6b1fb7863` after docs-only BE-P1-058 PR #193;
+PR-head and post-merge CI runs `41802198065` and `41802721952` passed all three
+lanes. APP-READY-089 support content is live; APP-READY-088/090 upload recovery
+source is merged. Older pending CI statements below are historical records.
 
 Current read-only cloud state: SQL STOPPED/NEVER with deletion protection,
 three Scheduler jobs PAUSED, Cloud Run without minimum-instance floors, thirteen
@@ -16,20 +16,22 @@ enabled alert policies, enabled email channel, and no open observed alerts. One
 disposable PITR proof completed verification in 56m08s and its clone was deleted;
 RPO remains unknown. The Firebase Admin SDK identity's project-wide Token Creator
 grant is now self-scoped; the broader least-privilege review remains open. Public
-legal/support/auth-link routes and assetlinks.json
-returned HTTP 200. The admin Download control is deployed, but real valid-file
-preview/download and operator acceptance remain open. Billing export/budgets are
-not configured. APP-READY-082 remains the single next recorded operational
-track; device, provider, RPO/security, and final Paystack gates remain open.
+legal/support/auth-link routes and assetlinks.json returned HTTP 200. The admin
+Download control is deployed, but valid-file preview/download and operator
+acceptance remain open. Cloud Billing and its Budgets API are enabled, but no
+budget or BigQuery billing export is configured; actual spend remains unknown
+and no cap was invented. APP-READY-082 remains the single next recorded
+operational track; device, provider, RPO/security, and final Paystack gates
+remain open.
 
 The Nov 4 Cloud Run read-back shows `carenet-backend-staging-be075-candidate`
 serving 100% API traffic. `carenet-backend-staging-be079-expiry-proof` is the
 latest ready revision but is not serving; latest created is
 `carenet-backend-staging-be079-default-restored`. No service was promoted.
-The live database memory policy also matches the intended `Usage > 90` for
-600 seconds with 60-second mean alignment; a real threshold breach and its
-notification delivery remain unproved, and the backend contract documentation
-still needs reconciliation.
+The live database memory policy matches the intended `Usage > 90` for 600
+seconds with 60-second mean alignment; BE-P1-058 documentation is reconciled in
+backend PR #193. A real threshold breach and condition-triggered notification
+delivery remain unproved.
 
 ## APP-READY-084 Scoped Sync (IN PROGRESS)
 

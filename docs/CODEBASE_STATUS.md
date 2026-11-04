@@ -2,12 +2,12 @@
 
 ## Current Checkpoint (2026-11-04)
 
-Integration base is `11adb705e259ba0e131689a8f016233b37ffb951`. APP-READY-090
-merged through PR #264 at the prior base `54eba950f7711addf52d01e89bce4810e47661f2`;
-docs-only readiness reconciliation PR #265 then merged. Its exact-head run
-`41776604730` and post-merge integration run `41778438353` passed. PR #264
-reviewed-head Flutter/iOS runs `41708017208` and `41708017280`, plus integration
-runs `41712602530` and `41712602391`, also passed.
+Integration base is `040cbd7d033b2cdb7e969623f8e55a38a3b3d9f2`. Docs-only
+readiness reconciliation PR #266 merged with exact-head run `41793512082` and
+post-merge integration run `41798115546` passing. Backend `main` is
+`2d4b320771479e00ca7034a0859821a6b1fb7863`; BE-P1-058 evidence reconciliation
+PR #193 and post-merge CI runs `41802198065` and `41802721952` passed all three
+lanes. These documentation updates do not complete the operational program.
 The storage-expiry source correction is merged; remaining real-provider and
 device acceptance is documented under `PHASE_1_OPERATIONAL_READINESS.md` and
 `PROFESSIONAL_VERIFICATION_UPLOAD_FLOW.md`.
@@ -21,26 +21,29 @@ real-file upload, preview and operator download remain unproved.
 Cost-control read-back: staging SQL is STOPPED/NEVER with deletion protection;
 all three Scheduler jobs are PAUSED; Cloud Run backend/admin/messaging have no
 minimum-instance floor; thirteen monitoring policies and the email channel are
-enabled, with observed alert records CLOSED. No cloud mutation occurred in this
-checkpoint except a least-privilege IAM adjustment: the Firebase Admin SDK
-identity's project-wide Token Creator grant was narrowed to a self-only
-service-account binding. Billing export/budgets are unavailable, so total spend
-is unknown.
+enabled, with observed alert records CLOSED. The only control-plane changes in
+this checkpoint were narrowing the Firebase Admin SDK identity's project-wide
+Token Creator grant to a self-only service-account binding and enabling the
+Billing Budgets API; no runtime service was activated. Cloud Billing is
+enabled, but there is no configured budget or BigQuery billing export, so total
+spend is still unknown. No cap was set without an approved monthly amount.
 
-The enabled database memory policy currently filters the intended `Usage`
-component above 90 for 600 seconds (60-second mean alignment). The live policy
-was last mutated on Oct 23; no actual high-pressure breach or notification
-delivery under that condition is proved.
+The enabled database memory policy filters the intended `Usage` component
+above 90 for 600 seconds (60-second mean alignment). BE-P1-058 is delivered
+through backend PR #169, and its documentation is reconciled in backend PR #193.
+The live policy was last mutated on Oct 23; no actual high-pressure breach or
+condition-triggered notification delivery is proved.
 
 One disposable PITR clone was verified and deleted. Restore verification took
 56m08s from submission to receipt, below the provisional 60-minute target for
 that run only. Latest available restore point was about 16m22s before source
 shutdown; actual RPO/data loss remains unknown. Do not claim an RPO SLO.
 
-The admin Download action is in the deployed `download-lf-63c089c` revision.
-Source tests cover mocked bytes and recovery; actual operator download and
-valid PDF rendering remain open. APP-READY-082 remains the sole recorded next
-operational track. See `AI_HANDOFF.md` for current evidence and boundaries.
+The admin Download action was added in Web PR #11 and deployed in
+`download-lf-63c089c`; PR #12 adds browser fixture/flow coverage. Actual
+operator download and valid PDF rendering remain open. APP-READY-082 remains
+the sole recorded next operational track. See `AI_HANDOFF.md` for current
+evidence and boundaries.
 
 The Nov 4 read-only Cloud Run check found API traffic at 100% on
 `carenet-backend-staging-be075-candidate`; `carenet-backend-staging-be079-expiry-proof`

@@ -2,17 +2,18 @@
 
 ## Current Checkpoint (2026-11-04)
 
-APP-READY-090 merged in PR #264 at `54eba950f7711addf52d01e89bce4810e47661f2`.
-Docs-only readiness reconciliation PR #265 is merged at integration SHA
-`11adb705e259ba0e131689a8f016233b37ffb951`; exact-head run `41776604730` and
-post-merge integration run `41778438353` passed. PR #264 reviewed-head and
-integration Flutter/iOS CI also passed. The October 21 snapshot below is
-historical and its “remaining gates” are reconciled here.
+Mobile integration is `040cbd7d033b2cdb7e969623f8e55a38a3b3d9f2` after
+docs-only PR #266; exact-head CI `41793512082` and post-merge integration CI
+`41798115546` passed. Backend `main` is `2d4b320771479e00ca7034a0859821a6b1fb7863`
+after docs-only PR #193; PR-head CI `41802198065` and post-merge CI `41802721952`
+passed all three lanes. APP-READY-090 and PR #265 are earlier checkpoints; this
+reconciliation does not close the remaining operational gates.
 
 - Cloud cost posture: Cloud SQL `STOPPED`, activation `NEVER`, deletion
   protection enabled; all three Scheduler jobs `PAUSED`; Cloud Run backend,
   admin and messaging have no minimum-instance floor (messaging explicitly
-  minScale 0). No cloud settings were mutated for this checkpoint.
+  minScale 0). Cloud Billing and the Billing Budgets API are enabled; no runtime
+  service was started for this checkpoint.
 - Backend traffic: read-only Cloud Run state shows
   `carenet-backend-staging-be075-candidate` at 100%. The latest ready revision
   is `carenet-backend-staging-be079-expiry-proof` but receives no traffic; the
@@ -28,26 +29,29 @@ historical and its “remaining gates” are reconciled here.
   not the broader least-privilege review.
 - Monitoring: 13 policies and the email channel are enabled. All alert records
   observed in the Nov 4 read-back are `CLOSED`. This proves current state, not
-  successful delivery for every failure condition. BigQuery billing export and
-  Budgets API are not configured, so cost breakdown/alert thresholds remain
-  unavailable. The database memory policy is enabled with the intended
-  `Usage > 90` for 600s and 60s mean alignment (last mutation Oct 23). Recent
-  samples remain below threshold; no breach or notification-delivery proof is
-  claimed. The backend's monitoring contract still marks BE-P1-058 in progress
-  and needs a documentation reconciliation.
+  successful delivery for every failure condition. No budget is configured and
+  BigQuery billing export is absent, so cost breakdown and budget alerts remain
+  unavailable; no monthly cap was invented. The database memory policy is
+  enabled with the intended `Usage > 90` for 600s and 60s mean alignment (last
+  mutation Oct 23). BE-P1-058 is delivered and backend PR #193 reconciles its
+  documentation. Recent samples remain below threshold; no breach or
+  condition-triggered notification-delivery proof is claimed.
 - Database recovery: a disposable PITR clone was verified and deleted. Time
   from clone submission to completed verification was 56m08s, below the
   provisional 60-minute target for this one run. The latest available restore
   point was about 16m22s before source shutdown; actual RPO and data loss remain
   unknown. No RPO SLO is claimed.
-- Admin: the Download action is present in the deployed
-  `download-lf-63c089c` staging revision; 22 Node tests and 9 mocked Chromium
-  journeys pass. Real-file download and valid PDF rendering have not been
-  proven. The observed 63-byte smoke document failed browser preview; do not
-  approve/reject or overwrite it to clear this gate.
+- Admin: Web PR #11 added the authenticated Download action/route; PR #12 added
+  browser fixture/flow coverage. Both are merged with CI green, and the
+  deployed staging revision is `download-lf-63c089c`. A real-file operator
+  download and valid PDF rendering have not been proven. The observed 63-byte
+  smoke document failed browser preview; do not approve/reject or overwrite it
+  to clear this gate.
 - Support/legal: the approved Support page and Terms, Privacy, Account Deletion,
   verification, reset and Android asset-links endpoints returned HTTP 200.
-  The approved contact is live; mailbox delivery is not proved.
+  The approved contact is live. One approved plain test email was sent from
+  the disposable alias on Nov 4 and appears in the sender's Sent folder;
+  receipt in the recipient mailbox remains unconfirmed.
 - Release/device: APP-READY-081 Hosting checks and APP-READY-090 merged CI are
   complete. Play signing/release acceptance, physical Android tests, Apple
   signing/provider setup and Mac/iPhone acceptance remain open.

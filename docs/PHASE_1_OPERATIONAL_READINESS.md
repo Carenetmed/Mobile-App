@@ -2,8 +2,8 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Mobile integration is `c8aae9303890248e50d178ac54862957889f3cf3` after
-APP-READY-093 PR #268; post-merge integration CI `41871578397` passed all
+Mobile integration is `af0e7ab7bf774c348ed99712f99ca0bb2e2c671e` after
+APP-READY-082 PR #269; post-merge integration CI `41910169371` passed all
 mobile checks. Backend
 `main` is `2d4b320771479e00ca7034a0859821a6b1fb7863`
 after docs-only PR #193; PR-head CI `41802198065` and post-merge CI `41802721952`
@@ -30,18 +30,19 @@ reconciliation does not close the remaining operational gates.
   identity; the runtime identity's existing self-only signing grant is
   unchanged. This closes only the cross-service-account impersonation finding,
   not the broader least-privilege review.
-- Monitoring: 13 policies and the email channel are enabled; all 13 enabled
-  policies reference the channel, which matches the approved operations
-  recipient. All alert records
-  observed in the Nov 4 read-back are `CLOSED`. Incident and notification
-  delivery state was not reread after the Nov 5 database window; this proves no
-  new alert delivery. No budget is configured and
-  BigQuery billing export is absent, so cost breakdown and budget alerts remain
+- Monitoring: 13 policies and the email channel are enabled; all 13 policies
+  reference the approved operations channel. A bounded canary using existing
+  staging-admin request metrics created one temporary policy and incident;
+  both firing and resolved emails arrived, then the policy was deleted and its
+  incident closed. The original policy count is back to 13, and no channel-error
+  logs appeared in the one-hour read-back. This proves the notification path,
+  not a real threshold breach or delivery for every policy. No budget is
+  configured and BigQuery billing export is absent, so cost breakdown and budget alerts remain
   unavailable; no monthly cap was invented. The database memory policy is
   enabled with the intended `Usage > 90` for 600s and 60s mean alignment (last
   mutation Oct 23). BE-P1-058 is delivered and backend PR #193 reconciles its
-  documentation. Recent samples remain below threshold; no breach or
-  condition-triggered notification-delivery proof is claimed.
+  documentation. Recent samples remain below threshold; no real breach or
+  memory-policy notification delivery is claimed.
 - Database recovery: a disposable PITR clone was verified and deleted. Time
   from clone submission to completed verification was 56m08s, below the
   provisional 60-minute target for this one run. The latest available restore

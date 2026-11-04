@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('c8aae9303890248e50d178ac54862957889f3cf3'),
+        contains('af0e7ab7bf774c348ed99712f99ca0bb2e2c671e'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,7 +40,7 @@ void main() {
       );
       expect(
         entry.value,
-        contains('41871578397'),
+        contains('41910169371'),
         reason: '${entry.key} must name mobile post-merge CI.',
       );
       expect(
@@ -58,11 +58,13 @@ void main() {
     expect(handoff, contains('Billing Budgets API are enabled'));
     expect(handoff, contains('no budget or BigQuery billing'));
     expect(handoff, contains('Total spend remains unknown'));
-    expect(handoff, contains('no real threshold breach'));
-    expect(handoff, contains('condition-triggered alert delivery is claimed'));
+    expect(handoff, contains('real memory-pressure alert delivery is claimed'));
+    expect(handoff, contains('both alert and resolved emails'));
+    expect(handoff, contains('temporary policy was deleted'));
+    expect(handoff, contains('service-failure delivery for every policy'));
     expect(readiness, contains('no monthly cap was invented'));
     expect(readiness, contains('BE-P1-058 is delivered'));
-    expect(readiness, contains('condition-triggered notification-delivery'));
+    expect(readiness, contains('not a real threshold breach or delivery'));
   });
 
   test('admin download deployment is distinct from valid-file acceptance', () {

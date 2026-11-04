@@ -2,29 +2,32 @@
 
 ## Current Verified Checkpoint (2026-11-05)
 
-Current Mobile integration is `c8aae9303890248e50d178ac54862957889f3cf3`.
-APP-READY-093 PR #268 merged; post-merge integration CI
-`41871578397` passed all mobile checks. Backend `main` is
+Current Mobile integration is `af0e7ab7bf774c348ed99712f99ca0bb2e2c671e`.
+APP-READY-082 current-admin-evidence PR #269 merged; post-merge integration CI
+`41910169371` passed all mobile checks. Backend `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863`; docs-only PR #193 reconciled
 BE-P1-058 after delivery, and PR-head CI `41802198065` plus post-merge main CI
 `41802721952` passed all three lanes. Older APP-READY-090 evidence below is
 historical; these checkpoints do not complete the readiness program. The
-mobile suite remains 1,363 tests at this integration; this reconciliation
-updates an existing documentation assertion and adds or removes no tests.
+mobile suite remains 1,363 tests at this integration; the documentation
+reconciliation updates an existing assertion and adds or removes no tests.
 
 Cloud SQL was briefly started for the Nov 5 admin-console proof and returned
 to STOPPED with activation policy NEVER and deletion protection on. All three
 scheduler jobs remain PAUSED;
 Cloud Run backend/admin/messaging have no minimum-instance floor (messaging
 explicitly minScale 0). Thirteen monitoring policies and their email channel
-are enabled; the Nov 4 observed alert records were CLOSED. Incident and email
-delivery state was not re-read after the Nov 5 database window, so no new
-alert-delivery proof is claimed. The database memory policy uses the intended
-`Usage > 90` condition for 600s. BE-P1-058 is delivered; no real threshold breach
-or condition-triggered alert delivery is claimed. No worker, scheduler,
-or Cloud Run scaling configuration changed. The Firebase Admin SDK identity's
-project-wide Token Creator grant was narrowed to a self-only service-account
-binding. Cloud Billing
+are enabled. A bounded canary verified delivery: one temporary policy fired
+against existing staging-admin request metrics, both alert and resolved emails
+arrived, and the temporary policy was deleted; its incident is closed. The
+current policy count returned to 13, and no notification-channel error logs
+were found in the last hour. This proves the email channel path, not real
+service-failure delivery for every policy. The database memory policy uses the
+intended `Usage > 90` condition for 600s. BE-P1-058 is delivered; no real
+threshold breach or real memory-pressure alert delivery is claimed. No worker,
+scheduler, or Cloud Run scaling configuration changed. The Firebase Admin SDK
+identity's project-wide Token Creator grant was narrowed to a self-only
+service-account binding. Cloud Billing
 and the Billing Budgets API are enabled, but no budget or BigQuery billing
 export is configured. Total spend remains unknown; no budget cap was created
 without an approved monthly amount.
@@ -1285,7 +1288,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile integration `c8aae93`/CI `41871578397`; admin sign-in and one download operator-confirmed; SQL back to STOPPED/NEVER, schedulers paused; post-window alert status unverified; residual gates in `PHASE_1_OPERATIONAL_READINESS.md` |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: integration `af0e7ab`/CI `41910169371`; admin sign-in/download operator-confirmed; controlled alert and recovery emails received; temporary policy removed; SQL STOPPED/NEVER, schedulers paused; real failure, cost-budget, RTC/worker gates remain open |
 
 ### APP-READY-055 implementation evidence
 

@@ -2,8 +2,8 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Mobile integration is `af0e7ab7bf774c348ed99712f99ca0bb2e2c671e` after
-APP-READY-082 PR #269; post-merge integration CI `41910169371` passed all
+Mobile integration is `7634f66c25fad83cd477207255b33cbad2d2a1ca` after
+APP-READY-082 PR #270; post-merge integration CI `41917412119` passed all
 mobile checks. Backend
 `main` is `2d4b320771479e00ca7034a0859821a6b1fb7863`
 after docs-only PR #193; PR-head CI `41802198065` and post-merge CI `41802721952`
@@ -15,8 +15,9 @@ reconciliation does not close the remaining operational gates.
   protection enabled; all three Scheduler jobs `PAUSED`; Cloud Run backend,
   admin and messaging have no minimum-instance floor (messaging explicitly
   minScale 0). Cloud Billing and the Billing Budgets API are enabled. Firebase
-  Hosting's control-plane API is enabled for the static pages; no runtime
-  service was deployed or scaled up for this checkpoint.
+  Hosting's control-plane API is enabled for static pages. The admin revision
+  was updated as detailed below; backend and messaging were not deployed or
+  scaled up, and no service has a minimum-instance floor.
 - Backend traffic: read-only Cloud Run state shows
   `carenet-backend-staging-be075-candidate` at 100%. The latest ready revision
   is `carenet-backend-staging-be079-expiry-proof` but receives no traffic; the
@@ -48,18 +49,17 @@ reconciliation does not close the remaining operational gates.
   provisional 60-minute target for this one run. The latest available restore
   point was about 16m22s before source shutdown; actual RPO and data loss remain
   unknown. No RPO SLO is claimed.
-- Admin: Web PR #11 added the authenticated Download action/route; PR #12 added
-  browser fixture/flow coverage. Web PR #13 merged sign-in clarification at
-  `112212d486adf442a57e61563a77f89a7488dc86`, not yet deployed. Cloud Run
-  revision `carenet-admin-staging-00006-55n` serves 100% traffic using digest
-  `sha256:fdc99d7516c92928508ef01bbb1d3232d336c10438ad930fee6cb3b32add3504`,
-  which matches successful Cloud Build `4eeaf836-c946-43f6-a27d-221cb636c9a2`;
-  its source archive contains the Download UI and authenticated route. On Nov
-  5 the operator confirmed successful CareNet admin sign-in and that a
-  document download completed while backend readiness returned HTTP 200. This
-  proves one operator download, not byte integrity or valid PDF rendering. The
-  observed 63-byte smoke document failed browser preview; do not approve/reject
-  or overwrite it to clear this gate.
+- Admin: Web PR #15 main `f511d6a36d69157eed239a77c73d9253e57d8e7e` passed
+  post-merge CI `41927227034`. Cloud Build
+  `caace09e-6c85-4a48-b05e-d62b66575785` built the merged source; staging now
+  serves digest `sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7`
+  in revision `carenet-admin-staging-00008-cig` at 100% traffic. The revision
+  is Ready/ContainerHealthy and CI's container smoke served `/admin`. The CLI
+  check reached IAP's OAuth redirect, so operator visual confirmation of the
+  updated sign-in copy remains open. The operator previously confirmed admin
+  sign-in and one document download during a bounded SQL window; byte integrity
+  and valid PDF rendering are still unproved. Do not approve/reject or overwrite
+  the observed 63-byte smoke document.
 - Support/legal: the default Firebase Hosting site
   `https://project-a96784ee-811c-46ab-a7b.web.app` serves the approved Support
   page and Terms, Privacy, Account Deletion,

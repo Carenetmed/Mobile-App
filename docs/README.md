@@ -1,15 +1,15 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `af0e7ab7bf774c348ed99712f99ca0bb2e2c671e` after
-PR #269; its post-merge CI `41910169371` passed.
+Current Mobile integration is `7634f66c25fad83cd477207255b33cbad2d2a1ca` after
+PR #270; its post-merge CI `41917412119` passed.
 Backend `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863` after docs-only PR #193; all three
 CI lanes passed on the PR and merged result (`41802198065`, `41802721952`). See `AI_HANDOFF.md`,
 `CODEBASE_STATUS.md`, and `PHASE_1_OPERATIONAL_READINESS.md` for current gates.
-The admin Download control is deployed in revision
-`carenet-admin-staging-00006-55n`. The operator confirmed sign-in and a
-staging document download on Nov 5; byte integrity and valid-file preview
-acceptance remain open. The default
+The admin Download control and sign-in clarification are deployed in staging
+revision `carenet-admin-staging-00008-cig` at 100% traffic. The operator
+previously confirmed sign-in and a staging document download on Nov 5; byte
+integrity and valid-file preview acceptance remain open. The default
 Firebase Hosting site serves the approved public/legal pages, and the owner
 confirmed the support mailbox test arrived. Cloud Billing and the Budgets API
 are enabled;

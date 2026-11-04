@@ -2,9 +2,9 @@
 
 ## Current Verified Checkpoint (2026-11-05)
 
-Current Mobile integration is `af0e7ab7bf774c348ed99712f99ca0bb2e2c671e`.
-APP-READY-082 current-admin-evidence PR #269 merged; post-merge integration CI
-`41910169371` passed all mobile checks. Backend `main` is
+Current Mobile integration is `7634f66c25fad83cd477207255b33cbad2d2a1ca`.
+APP-READY-082 alert-delivery PR #270 merged; post-merge integration CI
+`41917412119` passed all mobile checks. Backend `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863`; docs-only PR #193 reconciled
 BE-P1-058 after delivery, and PR-head CI `41802198065` plus post-merge main CI
 `41802721952` passed all three lanes. Older APP-READY-090 evidence below is
@@ -43,8 +43,8 @@ Terms, Privacy, Support, Account Deletion, verification and reset pages with
 HTTP 200; the Support response includes the approved contact and no promised
 response hours. The owner confirmed the one approved plain-text mailbox test
 arrived. Hosting responses include `nosniff`, `no-referrer`, `DENY`, and a
-Content Security Policy. No runtime service was deployed or scaled up for this
-checkpoint.
+Content Security Policy. The admin revision was updated as detailed below;
+backend and messaging revisions were not deployed or scaled up.
 
 A disposable PITR clone completed one restore verification in 56m08s from
 clone submission to verified receipt, below the provisional 60-minute target.
@@ -54,18 +54,22 @@ unknown and remains open. The clone, local proxy, and temporary proof resources
 were deleted; the source instance remains stopped.
 
 The admin Download action was added in Web PR #11
-(`8dfbaada9d4a55d7e0781bca7ae9e97cc40a117e`) and is serving at 100% in revision
-`carenet-admin-staging-00006-55n`. Its image digest
-`sha256:fdc99d7516c92928508ef01bbb1d3232d336c10438ad930fee6cb3b32add3504`
-matches successful Cloud Build `4eeaf836-c946-43f6-a27d-221cb636c9a2`; the
-build source archive contains the Download UI and authenticated download route.
-PR #12 added browser fixture/flow coverage; Web PR #13 merged the sign-in-layer
-clarification at `112212d486adf442a57e61563a77f89a7488dc86`, but that change is
-not deployed. The user confirmed on Nov 5 that CareNet admin sign-in succeeded
-and the deployed Download action completed during the controlled SQL window.
-This is operator confirmation of one download, not independent byte-integrity
-or valid-PDF proof. The 63-byte smoke PDF previously shown failing in the
-browser remains invalid for preview; no review decision was made. Public `/terms`,
+(`8dfbaada9d4a55d7e0781bca7ae9e97cc40a117e`); PR #12 added browser fixture/flow
+coverage, and PR #13 clarified that IAP access and CareNet admin credentials
+are separate sign-in steps. Web PR #14 fixed bundled-font build resolution;
+PR #15 normalized the container entrypoint's line endings. Web main
+`f511d6a36d69157eed239a77c73d9253e57d8e7e` passed post-merge CI
+`41927227034`. Cloud Build `caace09e-6c85-4a48-b05e-d62b66575785` built the
+merged source, and staging now serves digest
+`sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7` from
+revision `carenet-admin-staging-00008-cig` at 100% traffic. The revision is
+Ready/ContainerHealthy; CI container smoke served `/admin`. The CLI check reached
+the IAP OAuth redirect, so operator visual confirmation of the updated sign-in
+copy remains open. The user previously confirmed CareNet admin sign-in and one
+download during the controlled SQL window. This is not independent
+byte-integrity or valid-PDF proof. The 63-byte smoke PDF previously shown
+failing in the browser remains invalid for preview; no review decision was made.
+Public `/terms`,
 `/privacy`, `/support`, `/account-deletion`, `/verify-email`, `/reset-password`,
 and Android `assetlinks.json` all returned
 HTTP 200; the approved support contact is in the live page. The owner confirmed

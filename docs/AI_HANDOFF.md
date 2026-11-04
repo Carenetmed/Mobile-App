@@ -2,9 +2,12 @@
 
 ## Current Verified Checkpoint (2026-11-04)
 
-Current Mobile integration is `54eba950f7711addf52d01e89bce4810e47661f2`.
-APP-READY-090 merged through PR #264 at that SHA. Reviewed-head and integration
-Flutter/iOS CI passed (runs `41708017208`, `41708017280`, `41712602530`, and
+Current Mobile integration is `11adb705e259ba0e131689a8f016233b37ffb951`.
+APP-READY-090 merged through PR #264 at the prior integration SHA
+`54eba950f7711addf52d01e89bce4810e47661f2`; docs-only readiness reconciliation
+PR #265 then merged. Its exact-head run `41776604730` and post-merge integration
+run `41778438353` passed. PR #264 reviewed-head and integration Flutter/iOS CI
+also passed (runs `41708017208`, `41708017280`, `41712602530`, and
 `41712602391`). APP-P1-011 network/session/startup is already marked DONE in
 the task table; a duplicate APP-READY-091 implementation is not authorized.
 
@@ -12,10 +15,14 @@ Read-only cloud checks on Nov 4: staging Cloud SQL is STOPPED with activation
 policy NEVER and deletion protection on; all three scheduler jobs are PAUSED;
 Cloud Run backend/admin/messaging have no minimum-instance floor (messaging
 explicitly minScale 0). Thirteen monitoring policies and their email channel
-are enabled; the observed alert records are CLOSED. No Cloud SQL window,
-worker, scheduler, IAM, or service scaling was changed. Billing export and
-budgets are not configured, so this is cost-control evidence, not a measured
-cost report.
+are enabled; the observed alert records are CLOSED. The database memory policy
+uses the intended `Usage > 90` condition for 600s; no real threshold breach or
+memory-alert delivery is claimed. No Cloud SQL window, worker, scheduler, or
+service scaling was changed. The Firebase Admin SDK
+identity's project-wide Token Creator grant was narrowed to a self-only
+service-account binding; no service was activated. Billing export and budgets
+are not configured, so this is cost-control evidence, not a measured cost
+report.
 
 A disposable PITR clone completed one restore verification in 56m08s from
 clone submission to verified receipt, below the provisional 60-minute target.
@@ -34,14 +41,25 @@ rendering. Public `/terms`, `/privacy`, `/support`, `/account-deletion`,
 HTTP 200; the approved support contact is in the live page. Mailbox delivery is
 not implied.
 
-APP-READY-082 remains the single recorded next operational track. Its dated
-handoff is being reconciled; do not start new product scope, a duplicate
-network/session slice, or Paystack activation. Real upload/download acceptance,
-RPO/security review, RTC/worker provider proof, signed-store/device checks,
-iOS signing/device proof, and final separately approved test-only Paystack
-activation remain distinct gates.
+APP-READY-082 remains the single recorded next operational track and is still
+partial. Follow `PHASE_1_OPERATIONAL_READINESS.md` for its reconciled current
+evidence; do not start new product scope, a duplicate network/session slice, or
+Paystack activation. Real upload/download acceptance, RPO/security review,
+RTC/worker provider proof, signed-store/device checks, iOS signing/device proof,
+and final separately approved test-only Paystack activation remain distinct
+gates.
 
-## APP-READY-086 - Readiness Alignment
+Read-only Cloud Run state on Nov 4: `carenet-backend-staging-be075-candidate`
+serves 100% of API traffic. `carenet-backend-staging-be079-expiry-proof` is the
+latest ready revision but is not serving; the latest created revision is
+`carenet-backend-staging-be079-default-restored`. Do not describe BE-079 as
+deployed to 100% or promote it without the normal review and rollout gates.
+
+The dated slice notes below are historical work records. The current action
+authority is the single **NEXT** row in the task table; older branch/test/CI
+states do not override the current integration checkpoint above.
+
+## APP-READY-086 - Readiness Alignment (Historical Work Record)
 
 IN PROGRESS. Password validation and confirmation compare NFC-normalized
 values using exactly pinned `unorm_dart: 0.3.2`, retaining the backend's
@@ -300,12 +318,13 @@ were removed or skipped. PR #243 reviewed head `6b97c72e742c4635a879f99570b50fb3
 merged at `94f20dc1beea79f3773c7c846a40dd32bc415a67`. PR CI `39203627650` and
 post-merge integration CI `39205075146` passed.
 
-### Current staging admin state
+### Staging Admin State (Historical Snapshot; See Current Checkpoint Above)
 
 APP-READY-077's source/deployment/first-operator setup is complete. The Web
 console is deployed behind Cloud Run IAP; the first staging super-administrator
-was provisioned through the backend's two-phase operator procedure. Backend
-revision `carenet-backend-staging-00014-jhw` is at 100% traffic. The operator
+was provisioned through the backend's two-phase operator procedure. At this
+snapshot the backend revision `carenet-backend-staging-00014-jhw` was at 100%
+traffic. The operator
 completed password setup and application login;
 screenshots prove SUPER ADMIN access and the verification queue. IAP access and
 CareNet application login are separate. Web PR #10 fixed canonical-origin

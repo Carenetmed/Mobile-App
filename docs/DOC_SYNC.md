@@ -2,21 +2,34 @@
 
 ## Current Readiness Reconciliation (2026-11-04)
 
-The current integration is `54eba950f7711addf52d01e89bce4810e47661f2`, with
-APP-READY-090 merged through PR #264 and both Flutter/iOS post-merge CI lanes
-green. APP-READY-089 support content is live; APP-READY-088/090 upload recovery
-source is merged. The status entries below are historical slice records where
-they still say delivery or CI is pending.
+The current integration is `11adb705e259ba0e131689a8f016233b37ffb951`.
+APP-READY-090 merged through PR #264 at the prior base
+`54eba950f7711addf52d01e89bce4810e47661f2`; docs-only readiness reconciliation
+PR #265 then merged. Its exact-head run `41776604730` and post-merge integration
+run `41778438353` passed. APP-READY-089 support content is live; APP-READY-088/090
+upload recovery source is merged. Older pending CI statements below are
+historical slice records, not current delivery status.
 
 Current read-only cloud state: SQL STOPPED/NEVER with deletion protection,
 three Scheduler jobs PAUSED, Cloud Run without minimum-instance floors, thirteen
 enabled alert policies, enabled email channel, and no open observed alerts. One
 disposable PITR proof completed verification in 56m08s and its clone was deleted;
-RPO remains unknown. Public legal/support/auth-link routes and assetlinks.json
+RPO remains unknown. The Firebase Admin SDK identity's project-wide Token Creator
+grant is now self-scoped; the broader least-privilege review remains open. Public
+legal/support/auth-link routes and assetlinks.json
 returned HTTP 200. The admin Download control is deployed, but real valid-file
 preview/download and operator acceptance remain open. Billing export/budgets are
 not configured. APP-READY-082 remains the single next recorded operational
 track; device, provider, RPO/security, and final Paystack gates remain open.
+
+The Nov 4 Cloud Run read-back shows `carenet-backend-staging-be075-candidate`
+serving 100% API traffic. `carenet-backend-staging-be079-expiry-proof` is the
+latest ready revision but is not serving; latest created is
+`carenet-backend-staging-be079-default-restored`. No service was promoted.
+The live database memory policy also matches the intended `Usage > 90` for
+600 seconds with 60-second mean alignment; a real threshold breach and its
+notification delivery remain unproved, and the backend contract documentation
+still needs reconciliation.
 
 ## APP-READY-084 Scoped Sync (IN PROGRESS)
 

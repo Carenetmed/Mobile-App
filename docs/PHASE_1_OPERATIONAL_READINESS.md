@@ -2,19 +2,39 @@
 
 ## Current Checkpoint (2026-11-04)
 
-APP-READY-090 merged in PR #264 at `54eba950f7711addf52d01e89bce4810e47661f2`;
-both reviewed-head and integration Flutter/iOS CI passed. The October 21
-snapshot below is historical and its “remaining gates” are reconciled here.
+APP-READY-090 merged in PR #264 at `54eba950f7711addf52d01e89bce4810e47661f2`.
+Docs-only readiness reconciliation PR #265 is merged at integration SHA
+`11adb705e259ba0e131689a8f016233b37ffb951`; exact-head run `41776604730` and
+post-merge integration run `41778438353` passed. PR #264 reviewed-head and
+integration Flutter/iOS CI also passed. The October 21 snapshot below is
+historical and its “remaining gates” are reconciled here.
 
 - Cloud cost posture: Cloud SQL `STOPPED`, activation `NEVER`, deletion
   protection enabled; all three Scheduler jobs `PAUSED`; Cloud Run backend,
   admin and messaging have no minimum-instance floor (messaging explicitly
   minScale 0). No cloud settings were mutated for this checkpoint.
+- Backend traffic: read-only Cloud Run state shows
+  `carenet-backend-staging-be075-candidate` at 100%. The latest ready revision
+  is `carenet-backend-staging-be079-expiry-proof` but receives no traffic; the
+  latest created revision is `carenet-backend-staging-be079-default-restored`.
+  This is not approval to promote a candidate.
+- IAM: the Firebase Admin SDK identity's project-wide
+  `roles/iam.serviceAccountTokenCreator` grant was narrowed to a self-only
+  service-account binding. Read-back confirms zero project binding, one
+  self-scoped binding, no such grant on other service-account resources, and
+  zero user-managed keys for that identity. Cloud Run does not use that
+  identity; the runtime identity's existing self-only signing grant is
+  unchanged. This closes only the cross-service-account impersonation finding,
+  not the broader least-privilege review.
 - Monitoring: 13 policies and the email channel are enabled. All alert records
   observed in the Nov 4 read-back are `CLOSED`. This proves current state, not
   successful delivery for every failure condition. BigQuery billing export and
   Budgets API are not configured, so cost breakdown/alert thresholds remain
-  unavailable.
+  unavailable. The database memory policy is enabled with the intended
+  `Usage > 90` for 600s and 60s mean alignment (last mutation Oct 23). Recent
+  samples remain below threshold; no breach or notification-delivery proof is
+  claimed. The backend's monitoring contract still marks BE-P1-058 in progress
+  and needs a documentation reconciliation.
 - Database recovery: a disposable PITR clone was verified and deleted. Time
   from clone submission to completed verification was 56m08s, below the
   provisional 60-minute target for this one run. The latest available restore
@@ -63,7 +83,9 @@ Protected worktrees and archive references remain outside this slice.
   remain preserved. [Backend PR #158](https://github.com/ridwanmullick/carenet-backend-lab/pull/158)
   and [monitoring contract](https://github.com/ridwanmullick/carenet-backend-lab/blob/main/docs/62-staging-monitoring-and-response.md)
   own that evidence and its limits.
-- The API still serves `carenet-backend-staging-00014-jhw` at 100% traffic.
+- At the October 21 checkpoint, the API served
+  `carenet-backend-staging-00014-jhw` at 100% traffic. This is historical; the
+  Nov 4 traffic state is recorded in the current checkpoint above.
   Reconciliation-job configuration is separate from API image promotion.
   [Backend PR #164](https://github.com/ridwanmullick/carenet-backend-lab/pull/164)
   records applied RTC configuration, one authenticated manual Scheduler dispatch,
@@ -100,9 +122,11 @@ Protected worktrees and archive references remain outside this slice.
   The worker schedule remains paused.
 - Database/security: one PITR restore verification completed within 56m08s, but
   RPO is unknown; the latest restore point preceded shutdown by about 16m22s.
-  Complete least-privilege review and the SQL memory-metric discrepancy remain
-  open. Do not resize, restart or suppress an alert based on an unverified
-  diagnosis.
+  The live SQL memory condition now matches the intended metric, but the
+  backend's stale status note and a real breach/notification proof remain open.
+  Remaining least-privilege review also remains open after the narrowly scoped
+  Firebase SDK binding repair above. Do not resize, restart or suppress an alert
+  based on an unverified diagnosis.
 - Admin: IAP/application login and queue access are proved, and Download is
   deployed. Source and mocked-browser tests pass; real valid-file preview,
   download and operator recovery acceptance remain open. Do not approve, reject

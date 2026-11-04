@@ -1,7 +1,7 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `c8aae9303890248e50d178ac54862957889f3cf3` after
-PR #268; its post-merge CI `41871578397` passed.
+Current Mobile integration is `af0e7ab7bf774c348ed99712f99ca0bb2e2c671e` after
+PR #269; its post-merge CI `41910169371` passed.
 Backend `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863` after docs-only PR #193; all three
 CI lanes passed on the PR and merged result (`41802198065`, `41802721952`). See `AI_HANDOFF.md`,
@@ -14,6 +14,9 @@ Firebase Hosting site serves the approved public/legal pages, and the owner
 confirmed the support mailbox test arrived. Cloud Billing and the Budgets API
 are enabled;
 no budget or BigQuery billing export is configured, so actual spend is unknown.
+The Cloud Monitoring operations email channel delivered a controlled firing
+and resolved test alert; no real service-failure alert or budget alert is
+claimed.
 APP-READY-082, provider, security/RPO, release/device, and final Paystack gates
 remain open. Older checkpoint summaries below are historical.
 

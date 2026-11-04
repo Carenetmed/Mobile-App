@@ -2,8 +2,8 @@
 
 ## Current Readiness Reconciliation (2026-11-05)
 
-The current integration is `c8aae9303890248e50d178ac54862957889f3cf3` after
-APP-READY-093 PR #268; post-merge integration CI `41871578397` passed all mobile
+The current integration is `af0e7ab7bf774c348ed99712f99ca0bb2e2c671e` after
+APP-READY-082 PR #269; post-merge integration CI `41910169371` passed all mobile
 checks. Backend
 `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863` after docs-only BE-P1-058 PR #193;
@@ -13,10 +13,13 @@ source is merged. Older pending CI statements below are historical records.
 
 Current read-only cloud state: SQL STOPPED/NEVER with deletion protection,
 three Scheduler jobs PAUSED, Cloud Run without minimum-instance floors, thirteen
-enabled alert policies (all referencing the approved operations email channel),
-and no open alert records in the Nov 4 read-back. Incident state after the Nov 5
-database window was not reread. The owner confirmed the approved support-mailbox
-test arrived. One
+enabled alert policies (all referencing the approved operations email channel).
+A temporary alert policy on existing staging-admin request metrics fired; both
+firing and resolved messages were received, then the temporary policy was
+deleted and its incident closed. The original 13 policies remain, with no
+channel-error logs in the one-hour read-back. This verifies channel
+delivery, not real failure behavior for every alert condition. The owner
+confirmed the approved support-mailbox test arrived. One
 disposable PITR proof completed verification in 56m08s and its clone was deleted;
 RPO remains unknown. The Firebase Admin SDK identity's project-wide Token Creator
 grant is now self-scoped; the broader least-privilege review remains open. Public

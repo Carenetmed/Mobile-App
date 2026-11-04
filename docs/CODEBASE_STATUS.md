@@ -2,8 +2,8 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Integration base is `c8aae9303890248e50d178ac54862957889f3cf3`. APP-READY-093
-PR #268 merged with post-merge integration run `41871578397` passing all mobile
+Integration base is `af0e7ab7bf774c348ed99712f99ca0bb2e2c671e`. APP-READY-082
+PR #269 merged with post-merge integration run `41910169371` passing all mobile
 checks. Backend `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863`; BE-P1-058 evidence reconciliation
 PR #193 and post-merge CI runs `41802198065` and `41802721952` passed all three
@@ -23,10 +23,14 @@ upload, byte integrity and PDF preview remain unproved.
 Cost-control read-back: staging SQL is STOPPED/NEVER with deletion protection;
 all three Scheduler jobs are PAUSED; Cloud Run backend/admin/messaging have no
 minimum-instance floor; thirteen monitoring policies and the email channel are
-enabled, with observed alert records CLOSED. The only control-plane changes in
-this checkpoint were narrowing the Firebase Admin SDK identity's project-wide
-Token Creator grant to a self-only service-account binding and enabling the
-Billing Budgets API; no runtime service was activated. Cloud Billing is
+enabled. A temporary canary on existing staging-admin request metrics fired;
+the operator received both the firing and resolved emails, the canary policy
+was deleted, and its incident closed. The original 13 policies remain. No
+notification-channel error logs appeared in the one-hour read-back. The durable
+control-plane changes in this checkpoint were narrowing the Firebase Admin
+SDK identity's project-wide Token Creator grant to a self-only service-account
+binding and enabling the Billing Budgets API. The temporary canary policy was
+removed; no runtime service was activated. Cloud Billing is
 enabled, but there is no configured budget or BigQuery billing export, so total
 spend is still unknown. No cap was set without an approved monthly amount.
 
@@ -34,7 +38,8 @@ The enabled database memory policy filters the intended `Usage` component
 above 90 for 600 seconds (60-second mean alignment). BE-P1-058 is delivered
 through backend PR #169, and its documentation is reconciled in backend PR #193.
 The live policy was last mutated on Oct 23; no actual high-pressure breach or
-condition-triggered notification delivery is proved.
+real memory-pressure notification delivery is proved. The canary verifies the
+email channel path only.
 
 One disposable PITR clone was verified and deleted. Restore verification took
 56m08s from submission to receipt, below the provisional 60-minute target for

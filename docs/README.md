@@ -1,13 +1,17 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `040cbd7d033b2cdb7e969623f8e55a38a3b3d9f2` after
-PR #266; its exact-head CI `41793512082` and post-merge CI `41798115546` passed.
+Current Mobile integration is `9fc8f6a742d6a6a75008101fee24f6ebd0ad3e47` after
+PR #267; its post-merge CI `41845757337` passed.
 Backend `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863` after docs-only PR #193; all three
 CI lanes passed on the PR and merged result (`41802198065`, `41802721952`). See `AI_HANDOFF.md`,
 `CODEBASE_STATUS.md`, and `PHASE_1_OPERATIONAL_READINESS.md` for current gates.
-The admin Download control is deployed, but valid-file operator download and
-preview acceptance remain open. Cloud Billing and the Budgets API are enabled;
+The admin Download control is deployed in revision
+`carenet-admin-staging-00006-55n`; valid-file operator download and preview
+acceptance remain open. The default
+Firebase Hosting site serves the approved public/legal pages, and the owner
+confirmed the support mailbox test arrived. Cloud Billing and the Budgets API
+are enabled;
 no budget or BigQuery billing export is configured, so actual spend is unknown.
 APP-READY-082, provider, security/RPO, release/device, and final Paystack gates
 remain open. Older checkpoint summaries below are historical.

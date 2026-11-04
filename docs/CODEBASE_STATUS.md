@@ -2,9 +2,9 @@
 
 ## Current Checkpoint (2026-11-04)
 
-Integration base is `040cbd7d033b2cdb7e969623f8e55a38a3b3d9f2`. Docs-only
-readiness reconciliation PR #266 merged with exact-head run `41793512082` and
-post-merge integration run `41798115546` passing. Backend `main` is
+Integration base is `9fc8f6a742d6a6a75008101fee24f6ebd0ad3e47`. Docs-only
+readiness reconciliation PR #267 merged with post-merge integration run
+`41845757337` passing. Backend `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863`; BE-P1-058 evidence reconciliation
 PR #193 and post-merge CI runs `41802198065` and `41802721952` passed all three
 lanes. These documentation updates do not complete the operational program.
@@ -14,7 +14,8 @@ device acceptance is documented under `PHASE_1_OPERATIONAL_READINESS.md` and
 
 APP-READY-089 Support is published: all seven canonical Hosting paths, including
 `/support`, returned HTTP 200 on Nov 4, and the approved support contact was
-present in the live page. This does not prove mailbox delivery. APP-READY-088
+present in the live page. The owner confirmed the approved test email arrived
+in the support mailbox. APP-READY-088
 upload recovery and APP-READY-090 confirmed-expiry handling are merged; valid
 real-file upload, preview and operator download remain unproved.
 
@@ -39,9 +40,12 @@ One disposable PITR clone was verified and deleted. Restore verification took
 that run only. Latest available restore point was about 16m22s before source
 shutdown; actual RPO/data loss remains unknown. Do not claim an RPO SLO.
 
-The admin Download action was added in Web PR #11 and deployed in
-`download-lf-63c089c`; PR #12 adds browser fixture/flow coverage. Actual
-operator download and valid PDF rendering remain open. APP-READY-082 remains
+The admin Download action was added in Web PR #11 and is present in the active
+Cloud Run revision `carenet-admin-staging-00006-55n`, whose image digest matches
+successful Cloud Build `4eeaf836-c946-43f6-a27d-221cb636c9a2`. The build source
+archive contains the Download UI and authenticated download route; PR #12 adds
+browser fixture/flow coverage. Actual operator download and valid PDF rendering
+remain open. APP-READY-082 remains
 the sole recorded next operational track. See `AI_HANDOFF.md` for current
 evidence and boundaries.
 

@@ -2,32 +2,36 @@
 
 ## Current Verified Checkpoint (2026-11-05)
 
-Current Mobile integration is `4ea82e14add4f19fa2d5b55d49a2d18059d06c01`.
-APP-READY-098 merged through PR #278 as this integration commit; merged-result
-CI `42060289556` passed all 1,366 tests, analyzer, debug APK, Android release
-lint, signing, and environment regressions. APP-READY-098 changed no test
-inventory. APP-READY-097 merged through PR #277 at `9c84e43`; its two
-source-path regression tests changed the base from 1,364 to 1,366; no tests
-were removed, skipped, disabled or
-weakened. Local APK packaging had failed from E: drive exhaustion, but CI
-successfully produced the debug APK. Backend `main` is
+Current Mobile integration is `9449a733dcd192475f81b2720a4d1ffdb9f03db4`.
+APP-READY-099 merged through PR #279; merged-result CI `42073930798` passed
+all 1,366 tests, analyzer, debug APK, Android release lint, signing, and
+environment regressions. PR #279 reconciled alert and budget evidence without
+changing test inventory. APP-READY-098 merged through PR #278 with CI
+`42060289556`; its documentation reconciliation also changed no tests.
+APP-READY-097's two source-path regression tests changed the base from 1,364
+to 1,366; no tests were removed, skipped, disabled or weakened. Local APK
+packaging had failed from E: drive exhaustion, but CI successfully produced
+the debug APK. Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194 recorded the
 bounded 5xx alert-condition test, with PR CI `41982489735` and post-merge CI
 `41982963454` passing all three lanes. Older APP-READY-090 evidence below is
 historical; these checkpoints do not complete the readiness program. The
-integration suite is 1,364 tests; the APP-READY-097 branch passes all 1,366
-tests and `flutter analyze`. Local debug APK packaging exhausted the E: volume
-while stripping native libraries; no APK was produced, and exact-head CI is
-the remaining build gate. The previously
-recorded 1,363 was a one-test undercount. No test is removed, skipped, disabled
-or weakened.
+current integration suite is 1,366 tests with analyzer and Android gates green.
+The previously recorded 1,363 was a one-test undercount. No test is removed,
+skipped, disabled or weakened.
 
 Cloud SQL was briefly started for the Nov 5 admin-console proof and returned
 to STOPPED with activation policy NEVER and deletion protection on. All three
 scheduler jobs remain PAUSED;
 Cloud Run backend/admin/messaging have no minimum-instance floor (messaging
-explicitly minScale 0). Thirteen monitoring policies and their email channel
-are enabled. The user confirmed the firing email from a test-only canary policy
+explicitly minScale 0). Fourteen monitoring policies and their email channel
+are enabled. A five-minute HTTPS uptime check named `CareNet staging backend
+liveness` checks the API gateway `/health` endpoint from Asia-Pacific, Europe,
+and US-Iowa, requiring HTTP 200 and JSON `status="ok"`. Current check samples
+pass in all three regions. Its policy fires after at least two regions fail
+persistently and treats prolonged missing check data as unhealthy. This is API
+liveness, not database readiness. The user confirmed the firing email from a
+test-only canary policy
 on existing staging-admin request metrics; that temporary policy was deleted.
 Separately, nine bounded API Gateway readiness GETs while Cloud SQL was
 intentionally stopped produced backend 503s and crossed the existing API 5xx
@@ -41,8 +45,8 @@ Cloud Run traffic were changed. This proves one controlled recovery, not
 continuous availability or a natural-outage SLO. Gmail confirms the real-policy
 firing and resolved messages for this incident were delivered at
 `2026-11-04T19:55:21Z` and `2026-11-04T20:00:21Z`; this proves this policy's
-notification path for one incident, not delivery for every policy. The original
-13 policies remain. The separate API p95 policy also fired at
+notification path for one incident, not delivery for every policy. The
+original 13 policies remain, plus the new liveness policy. The separate API p95 policy also fired at
 `2026-11-05T10:48:12Z` with 11,457.57 ms latency on 503 responses and delivered
 an alert email. Its resolution email at `2026-11-05T11:46:07Z` states the metric
 was missing after 57m55s; `evaluationMissingData` is unset. This proves that
@@ -128,19 +132,22 @@ RTC/worker provider proof, signed-store/device checks, iOS signing/device proof,
 and final separately approved test-only Paystack activation remain distinct
 gates.
 
-Read-only alert inventory on Nov 5: all 13 live policies are enabled and
-reference the approved email channel. Controlled alert-email evidence exists
-for three policies: API 5xx, sanitized release-health, and API p95 latency. The
-other ten are configured without a controlled event/delivery proof; several
+Current alert inventory after PR #279 and the liveness configuration: all 14
+policies are enabled and reference the approved email channel. Controlled
+alert-email evidence exists for three policies: API 5xx, sanitized
+release-health, and API p95 latency. The new liveness check has healthy samples
+from three regions, but its alert email has not been exercised. The other
+eleven policies are configured without a controlled event/delivery proof; several
 are intentionally dormant while SQL or Scheduler jobs are stopped/paused. The
-deleted temporary canary is outside the 13. No alert traffic or service state
+deleted temporary canary is outside the 14. No alert traffic or service state
 was changed for this inventory. The Cloud Billing Reports console is the
 read-only source for current cost. The $31.75 USD project-scoped monthly budget
 alert sends current-spend thresholds at 50%, 90%, and 100% to the approved
 operations channel; it is not a cap. No BigQuery dataset or billing export is
-configured. Metric conditions leave missing-data evaluation
-unset, so absent telemetry is not evidence of health. Four policies auto-close
-after 30 minutes and nine after 60; only three explicitly request an `OPENED`
+configured. The original 13 metric conditions leave missing-data evaluation
+unset, so absent telemetry is not evidence of health; the new liveness policy
+marks prolonged missing check data active. Four of the original policies
+auto-close after 30 minutes and nine after 60; only three explicitly request an `OPENED`
 prompt, and only the release-health policy explicitly renotifies after 60
 minutes. The approved Billing Viewer can open the report, but actual spend was
 not read here.
@@ -1367,7 +1374,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5 checkpoint: integration `4ea82e1`, post-merge CI `42060289556` passed 1,366 tests and configured Android gates; APP-READY-098 docs-only PR #278 merged; APP-READY-097 PR #277 added two source-path tests (deployed acceptance remains open); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged at `2a3f299` (mocked valid PDF response only, no real visual-preview proof or runtime deployment); admin revision `00008-cig` at 100%; controlled degraded-readiness test opened API 5xx and p95 incidents; 5xx firing/resolved email delivered, while p95 measured 11,457.57 ms on 503 responses and later resolved due missing metric data (not recovery); a gated readiness request returned HTTP 200, then SQL was restored to STOPPED/NEVER; sanitized release-health has separate incident/email evidence; 13 enabled policies on the approved channel, with 3/13 having alert-email evidence and 10/13 configuration-only; all three Scheduler jobs remain PAUSED; Cloud SQL STOPPED/NEVER with deletion protection, automated backups/PITR enabled and 7-backup retention, but newest successful backup is Oct 27; public IPv4 assigned, private IP absent, no authorized networks configured, SSL requirement false (security/connectivity review remains open); project-scoped $31.75 USD monthly budget alert has 50/90/100% email thresholds (not a spending cap); actual cost report remains unread and no BigQuery export is configured; memory, RTC, worker, provider, security/RPO and release/device gates remain open |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5 checkpoint: integration `9449a73`, merged-result CI `42073930798` passed 1,366 tests and configured Android gates; APP-READY-099 PR #279 reconciled alert/budget evidence without test changes; APP-READY-098 PR #278 also made no test changes; APP-READY-097 PR #277 added two source-path tests (deployed acceptance remains open); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged at `2a3f299` (mocked valid PDF response only, no real visual-preview proof or runtime deployment); admin revision `00008-cig` at 100%; controlled degraded-readiness test opened API 5xx and p95 incidents; 5xx firing/resolved email delivered, while p95 measured 11,457.57 ms on 503 responses and resolved after metric data went missing (not recovery); public API `/health` now has a five-minute three-region uptime check and enabled alert, with current check samples passing but alert email not yet exercised; a gated readiness request returned HTTP 200, then SQL was restored to STOPPED/NEVER; sanitized release-health has separate incident/email evidence; 14 enabled policies on the approved channel, with 3/14 having alert-email evidence and 11/14 configuration-only; all three Scheduler jobs remain PAUSED; Cloud SQL STOPPED/NEVER with deletion protection, automated backups/PITR enabled and 7-backup retention, but newest successful backup is Oct 27; public IPv4 assigned, private IP absent, no authorized networks configured, SSL requirement false (security/connectivity review remains open); project-scoped $31.75 USD monthly budget alert has 50/90/100% email thresholds (not a spending cap); actual cost report remains unread and no BigQuery export is configured; memory, RTC, worker, provider, security/RPO and release/device gates remain open |
 
 ### APP-READY-055 implementation evidence
 

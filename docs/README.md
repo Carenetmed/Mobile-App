@@ -1,7 +1,7 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `4ea82e14add4f19fa2d5b55d49a2d18059d06c01` after
-APP-READY-098 PR #278; post-merge CI `42060289556` passed 1,366 tests, analyzer,
+Current Mobile integration is `9449a733dcd192475f81b2720a4d1ffdb9f03db4` after
+APP-READY-099 PR #279; post-merge CI `42073930798` passed 1,366 tests, analyzer,
 debug APK, Android release lint/signing, and environment checks. APP-READY-098
 changed no test inventory. APP-READY-097 increased the suite from 1,364 to
 1,366 with no removed, skipped, disabled or weakened tests.
@@ -27,11 +27,14 @@ Gmail confirms the actual API 5xx policy's firing and resolved messages for
 this incident; it does not prove delivery for every policy. The API p95 policy
 also fired on staging 503s at 11,457.57 ms and delivered an email. It resolved
 after 57m55s because metric data became missing; this is not service-recovery
-proof. A read-only inventory found 13 enabled policies on the approved
-channel, with alert-email evidence for three and configuration-only evidence
-for ten. Missing
-metric evaluation is not configured; four policies auto-close in 30 minutes,
-nine in 60, and only three explicitly request an `OPENED` prompt. Actual
+proof. A current inventory found 14 enabled policies on the approved channel,
+with alert-email evidence for three and configuration-only evidence for eleven.
+A five-minute three-region HTTPS check validates API gateway `/health` (HTTP
+200 and JSON `status=ok`); current samples pass, but the new liveness alert
+email has not been exercised. Its policy treats prolonged missing check data
+as unhealthy. The other 13 policies mostly leave missing-metric evaluation
+unset; four auto-close in 30 minutes, nine in 60, and only three explicitly
+request an `OPENED` prompt. Actual
 current spend remains unread: the Billing Viewer report is available in the
 Cloud Console, and no BigQuery dataset was found in the canonical project.
 Nov 5 read-only database inspection found PITR enabled with seven retained

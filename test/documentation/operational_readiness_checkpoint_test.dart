@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6'),
+        contains('9c84e436a4e6457d9d49c157db19caef2e34b652'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,13 +40,13 @@ void main() {
       );
       expect(
         entry.value,
-        contains('42031227938'),
+        contains('42046284344'),
         reason: '${entry.key} must name mobile post-merge CI.',
       );
       if (entry.key == 'AI_HANDOFF.md' || entry.key == 'CODEBASE_STATUS.md') {
         expect(
           entry.value,
-          contains('1,364 tests'),
+          contains('1,366 tests'),
           reason: '${entry.key} must record the verified full-suite count.',
         );
       }
@@ -77,7 +77,7 @@ void main() {
     expect(handoff, contains('Total spend remains unknown'));
     expect(handoff, contains('Gmail confirms the real-policy'));
     expect(handoff, contains('APP-READY-097 - Sanitized Release-Health'));
-    expect(handoff, contains('not prove deployed admission, log retention'));
+    expect(handoff, contains('not proof of deployed admission, log retention'));
     expect(
       File('docs/PHASE_1_RELEASE_HEALTH.md').readAsStringSync(),
       contains('The default-off case'),
@@ -91,6 +91,8 @@ void main() {
     expect(handoff, contains('not delivery for every policy'));
     expect(readiness, contains('no monthly cap was invented'));
     expect(readiness, contains('BE-P1-058 is delivered'));
+    expect(readiness, contains('newest successful automated backup is'));
+    expect(readiness, contains('2026-10-27T18:00:00Z'));
     expect(readiness, contains('earlier 503 exercise was controlled'));
     expect(readiness, contains('Gmail confirms the real-policy'));
     expect(readiness, contains('Two have controlled alert-delivery'));

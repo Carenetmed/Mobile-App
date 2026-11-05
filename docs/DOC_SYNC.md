@@ -2,13 +2,14 @@
 
 ## Current Readiness Reconciliation (2026-11-05)
 
-The current integration is `09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6` after
-APP-READY-096 docs-only PR #276; post-merge integration CI `42031227938` passed
-1,364 tests and all configured checks. APP-READY-097 adds two local tests
-connecting the sanitized error bridge through consent/session checks to the
-strict HTTP adapter. Its 1,366-test suite and analyzer pass; local APK packaging
-ran out of E: disk space while stripping native libraries, and exact-head CI
-remains the APK gate.
+The current integration is `9c84e436a4e6457d9d49c157db19caef2e34b652` after
+APP-READY-097 PR #277; merged-result integration CI `42046284344` passed 1,366
+tests and all configured checks, including debug APK, Android release lint,
+signing, and environment checks. The two new local tests connect the sanitized
+error bridge through consent/session checks to the strict HTTP adapter. The
+1,364 to 1,366 increase is exactly +2 with no removed, skipped, disabled or
+weakened tests. Local APK packaging had exhausted E: space; merged-result CI
+successfully built the APK.
 Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
 PR lanes `41982489735` and post-merge CI `41982963454` passed. APP-READY-089
@@ -39,7 +40,12 @@ minutes and nine at 60, with only three explicitly requesting an `OPENED`
 prompt. The Billing Viewer can use the Cloud Console current-month report; the
 correct billing account has no budget, no BigQuery dataset was found in the
 canonical project, and current documentation records no export. Actual spend
-was not read in this checkpoint.
+was not read in this checkpoint. Nov 5 SQL read-back confirms STOPPED/NEVER,
+deletion protection, automated backups/PITR, seven retained backups, and newest
+successful automated backup Oct 27. Public IPv4 is assigned, private IP is
+absent, no authorized network entries are configured, and `requireSsl` is
+false. These backup-freshness and network-security review items remain open;
+no setting changed.
 This tests one controlled degraded-readiness condition, not a natural outage or
 delivery for every alert. The owner
 confirmed the approved support-mailbox test arrived. One
@@ -65,11 +71,11 @@ operator visual confirmation remains open because the CLI request reached IAP's
 OAuth redirect. Firebase Hosting's API, Cloud Billing and
 its Budgets API are enabled, but no budget or BigQuery billing export is
 configured; actual spend remains unknown and no cap was invented. The full
-suite on integration passes 1,364 tests; the previous 1,363 figure was a one-
-test undercount. APP-READY-097 adds two tests and removes, skips, disables or
-weakens none. APP-READY-082 remains the single next recorded operational
-track; the new source-path test does not prove deployed report admission or
-native crash capture. Cost visibility, device, provider,
+suite on the previous integration passed 1,364 tests; the previous 1,363 figure
+was a one-test undercount. APP-READY-097 is merged and adds two tests; no tests
+were removed, skipped, disabled or weakened. APP-READY-082 remains the single
+next recorded operational track; the source-path test does not prove deployed
+report admission or native crash capture. Cost visibility, device, provider,
 RPO/security, and final Paystack gates
 remain open.
 

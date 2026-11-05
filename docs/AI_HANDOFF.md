@@ -2,18 +2,22 @@
 
 ## Current Verified Checkpoint (2026-11-05)
 
-Current Mobile integration is `1fd0b4a4af6806abad214b83716778ac9ca1ab1e`.
-APP-READY-095 docs-only PR #275 merged; post-merge integration CI
-`42021705954` passed the analyzer, 1,364-test suite, debug APK, Android
-release lint, signing, and environment regressions. Backend `main` is
+Current Mobile integration is `09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6`.
+APP-READY-096 docs-only PR #276 merged; post-merge integration CI
+`42031227938` passed the analyzer, 1,364-test suite, debug APK, Android
+release lint, signing, and environment regressions. APP-READY-097 is in
+progress on `slice/APP-READY-097-release-health-pipeline`, based on that
+integration; it adds two source-path regression tests. Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194 recorded the
 bounded 5xx alert-condition test, with PR CI `41982489735` and post-merge CI
 `41982963454` passing all three lanes. Older APP-READY-090 evidence below is
 historical; these checkpoints do not complete the readiness program. The
-full suite is 1,364 tests on both the exact integration base and this docs
-branch. The previously recorded 1,363 was a one-test undercount. This update
-adds assertions to an existing documentation test and adds/removes/skips no
-test cases.
+integration suite is 1,364 tests; the APP-READY-097 branch passes all 1,366
+tests and `flutter analyze`. Local debug APK packaging exhausted the E: volume
+while stripping native libraries; no APK was produced, and exact-head CI is
+the remaining build gate. The previously
+recorded 1,363 was a one-test undercount. No test is removed, skipped, disabled
+or weakened.
 
 Cloud SQL was briefly started for the Nov 5 admin-console proof and returned
 to STOPPED with activation policy NEVER and deletion protection on. All three
@@ -101,7 +105,10 @@ the one approved plain test email arrived in the support mailbox. The sender
 identity is omitted from public documentation.
 
 APP-READY-082 remains the single recorded next operational track and is still
-partial. The bounded service-recovery proof and this incident's real-policy
+partial. APP-READY-097 now tests the connected framework-error bridge,
+consent/session coordinator and release-health HTTP projection with a fake
+transport; this is local source-path evidence, not deployed acceptance. The
+bounded service-recovery proof and this incident's real-policy
 firing/resolution email delivery are complete; delivery for all policies,
 cost/budget visibility, provider, database/security, release/device, and other
 gates remain open. Follow `PHASE_1_OPERATIONAL_READINESS.md` for its reconciled current
@@ -133,6 +140,20 @@ serves 100% of API traffic. `carenet-backend-staging-be079-expiry-proof` is the
 latest ready revision but is not serving; the latest created revision is
 `carenet-backend-staging-be079-default-restored`. Do not describe BE-079 as
 deployed to 100% or promote it without the normal review and rollout gates.
+
+## APP-READY-097 - Sanitized Release-Health Source Path (IN PROGRESS)
+
+Clean branch `slice/APP-READY-097-release-health-pipeline`, based on
+`09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6`. Two tests connect the real Flutter
+error bridge, consent/session coordinator and strict HTTP adapter through a
+fake transport. The default-off path proves no session read or HTTP request;
+the opted-in path asserts the exact allowlisted payload and private-error
+exclusion. Targeted tests and the full 1,366-test suite pass; analysis is clean.
+Local APK packaging failed when E: ran out of space while stripping native
+libraries, so no APK is claimed. Diff review and exact-head CI remain required.
+No backend, dependency, runtime, cloud, or provider setting changed. This does
+not prove deployed admission, log retention, actual mobile submission, native
+crash handling or device behavior.
 
 The dated slice notes below are historical work records. The current action
 authority is the single **NEXT** row in the task table; older branch/test/CI
@@ -1336,7 +1357,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile docs PR #275 merged at `1fd0b4a` with post-merge CI `42021705954` (1,364 tests); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged as `2a3f299` with post-merge CI `42000423597` (valid mocked PDF response asserted, no real visual-preview proof or runtime deployment); admin revision `00008-cig` still serves Web PR #15 at 100%; controlled degraded-readiness test opened the real API 5xx incident, then a separately gated recovery returned `/health/ready` HTTP 200 and restored SQL to STOPPED/NEVER; Gmail confirms firing and resolved mail for that one API policy; a separate sanitized release-health event also has incident/email evidence; live inventory has 13 enabled policies on the approved channel, with 2/13 having controlled delivery evidence and 11/13 configuration-only; temporary canary deleted; three schedulers paused; actual cost report remains unread, no budget or BigQuery export; memory, RTC, worker, provider, security/RPO and release/device gates remain open |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile docs PR #275 merged at `1fd0b4a` with post-merge CI `42021705954` (1,364 tests); APP-READY-096 PR #276 merged at `09a3e1c` with post-merge CI `42031227938`; backend docs PR #194 merged at `1e2072b`; Web PR #16 merged as `2a3f299` with post-merge CI `42000423597` (valid mocked PDF response asserted, no real visual-preview proof or runtime deployment); admin revision `00008-cig` still serves Web PR #15 at 100%; controlled degraded-readiness test opened the real API 5xx incident, then a separately gated recovery returned `/health/ready` HTTP 200 and restored SQL to STOPPED/NEVER; Gmail confirms firing and resolved mail for that one API policy; a separate sanitized release-health event also has incident/email evidence; live inventory has 13 enabled policies on the approved channel, with 2/13 having controlled delivery evidence and 11/13 configuration-only; temporary canary deleted; three schedulers paused; actual cost report remains unread, no budget or BigQuery export; APP-READY-097 adds two local error-to-HTTP source-path tests; memory, RTC, worker, provider, security/RPO and release/device gates remain open |
 
 ### APP-READY-055 implementation evidence
 

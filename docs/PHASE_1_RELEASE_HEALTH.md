@@ -193,7 +193,30 @@ Kotlin cache logs remain local/untracked; tooling policy blocked cleanup.
 More local headroom and actual signed release-candidate/device proof remain open.
 
 No provider acceptance, deployment or production-readiness completion is claimed.
-The next source slice after this PR merges is APP-READY-064, the approved
-English/Nigerian locale policy; backend currency/time authority must not change.
+
+## APP-READY-097 - Sanitized Report Source-Path Regression
+
+At mobile integration base `09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6`, the
+bridge, coordinator and API adapter had focused tests independently, but no
+single test exercised the connected error-to-transport path. Two tests now
+wire the real `ReleaseHealthErrorBridge`, `ReleaseHealthCoordinator` and
+`ReleaseHealthApiClient` to an in-memory HTTP adapter. The default-off case
+proves a synthetic framework error does not read the session or issue HTTP.
+The opted-in case proves the exact allowlisted report, bearer header and
+endpoint while hostile exception/context objects are never stringified or
+serialized.
+
+This is local source-path evidence only. The fake adapter does not prove a
+deployed staging submission, backend admission/log retention, native crash
+capture, process survival or device behavior. No backend, provider, cloud
+configuration, dependency or runtime code changed. The baseline suite has
+1,364 tests; this change adds two, with no tests removed, skipped, disabled or
+weakened. The complete 1,366-test suite and analyzer pass. Local debug APK
+packaging ran out of E: space while stripping native libraries, so no local APK
+is claimed; exact-head CI is required before delivery.
+At the APP-READY-063 checkpoint, the next selected source slice was
+APP-READY-064, the approved English/Nigerian locale policy; backend
+currency/time authority must not change. This note is historical and does not
+supersede the current readiness task queue.
 Dependencies remain unchanged. Payments remain the final explicitly approved
 provider gate; no cloud service was started for this work.

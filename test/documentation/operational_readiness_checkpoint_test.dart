@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('1fd0b4a4af6806abad214b83716778ac9ca1ab1e'),
+        contains('09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,7 +40,7 @@ void main() {
       );
       expect(
         entry.value,
-        contains('42021705954'),
+        contains('42031227938'),
         reason: '${entry.key} must name mobile post-merge CI.',
       );
       if (entry.key == 'AI_HANDOFF.md' || entry.key == 'CODEBASE_STATUS.md') {
@@ -76,6 +76,12 @@ void main() {
     expect(handoff, contains('no budget or BigQuery billing'));
     expect(handoff, contains('Total spend remains unknown'));
     expect(handoff, contains('Gmail confirms the real-policy'));
+    expect(handoff, contains('APP-READY-097 - Sanitized Release-Health'));
+    expect(handoff, contains('not prove deployed admission, log retention'));
+    expect(
+      File('docs/PHASE_1_RELEASE_HEALTH.md').readAsStringSync(),
+      contains('The default-off case'),
+    );
     expect(handoff, contains('GET /health/ready'));
     expect(handoff, contains('returned HTTP 200'));
     expect(handoff, contains('test-only canary policy'));

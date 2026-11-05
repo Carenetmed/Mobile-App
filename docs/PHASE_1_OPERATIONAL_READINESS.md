@@ -2,10 +2,13 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Mobile integration is `1fd0b4a4af6806abad214b83716778ac9ca1ab1e` after
-APP-READY-095 docs-only PR #275; post-merge integration CI `42021705954` passed
+Mobile integration is `09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6` after
+APP-READY-096 docs-only PR #276; post-merge integration CI `42031227938` passed
 1,364 tests plus analyzer, debug APK, Android release lint, signing, and
-environment regressions.
+environment regressions. APP-READY-097 adds two local source-path tests for
+sanitized diagnostics; all 1,366 tests and analysis pass. Local APK packaging
+ran out of E: disk space while stripping native libraries; exact-head CI remains
+the APK gate.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only
 PR #194; PR-head CI `41982489735` and post-merge CI `41982963454` passed all
 three lanes. APP-READY-090 and PR #265 are earlier checkpoints; this
@@ -130,6 +133,9 @@ spend has not been read in this checkpoint, so no cap or forecast is claimed.
 
 APP-READY-082 remains the recorded next operational track. Do not turn this
 checkpoint into a provider activation or start short-form content work.
+APP-READY-097's fake-transport test proves only the local source path; deployed
+admission, logs/retention, real mobile submission, and native crash behavior
+remain unproved.
 
 ## Scope And Authority
 

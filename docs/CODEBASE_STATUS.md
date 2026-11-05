@@ -2,18 +2,19 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Integration base is `1fd0b4a4af6806abad214b83716778ac9ca1ab1e`. APP-READY-095
-docs-only PR #275 merged with post-merge integration run `42021705954` passing
+Integration base is `09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6`. APP-READY-096
+docs-only PR #276 merged with post-merge integration run `42031227938` passing
 1,364 tests and analyzer, debug APK, Android release lint/signing, and
-environment checks.
+environment checks. APP-READY-097 adds two local source-path regression tests;
+the 1,366-test suite and analyzer pass. Local APK packaging ran out of E: space
+while stripping native libraries; exact-head CI remains the APK gate.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194
 recorded the controlled API 5xx alert-condition test, with PR CI
 `41982489735` and post-merge CI `41982963454` passing all three lanes. These
 documentation updates do not complete the operational program.
-A fresh full `flutter test` on both the exact integration base and this docs
-branch passed 1,364 tests; the older 1,363 figure was a one-test undercount.
-This slice changes assertions in an existing documentation test but adds or
-removes no test cases.
+The exact integration-base suite passed 1,364 tests; the older 1,363 figure was
+a one-test undercount. APP-READY-097's full 1,366-test suite and analyzer pass.
+No tests are removed, skipped, disabled or weakened; CI remains required.
 The storage-expiry source correction is merged; remaining real-provider and
 device acceptance is documented under `PHASE_1_OPERATIONAL_READINESS.md` and
 `PROFESSIONAL_VERIFICATION_UPLOAD_FLOW.md`.

@@ -1,8 +1,9 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `1fd0b4a4af6806abad214b83716778ac9ca1ab1e` after
-PR #275; its post-merge CI `42021705954` passed with 1,364 tests and the
-analyzer, debug APK, Android release lint/signing, and environment checks.
+Current Mobile integration is `09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6` after
+APP-READY-096 PR #276; its post-merge CI `42031227938` passed with 1,364 tests
+and the analyzer, debug APK, Android release lint/signing, and environment
+checks.
 Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
 CI lanes passed on the PR and merged result (`41982489735`, `41982963454`). See `AI_HANDOFF.md`,

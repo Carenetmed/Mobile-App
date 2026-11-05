@@ -2,9 +2,13 @@
 
 ## Current Readiness Reconciliation (2026-11-05)
 
-The current integration is `1fd0b4a4af6806abad214b83716778ac9ca1ab1e` after
-APP-READY-095 docs-only PR #275; post-merge integration CI `42021705954` passed
-1,364 tests and all configured checks.
+The current integration is `09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6` after
+APP-READY-096 docs-only PR #276; post-merge integration CI `42031227938` passed
+1,364 tests and all configured checks. APP-READY-097 adds two local tests
+connecting the sanitized error bridge through consent/session checks to the
+strict HTTP adapter. Its 1,366-test suite and analyzer pass; local APK packaging
+ran out of E: disk space while stripping native libraries, and exact-head CI
+remains the APK gate.
 Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
 PR lanes `41982489735` and post-merge CI `41982963454` passed. APP-READY-089
@@ -61,11 +65,11 @@ operator visual confirmation remains open because the CLI request reached IAP's
 OAuth redirect. Firebase Hosting's API, Cloud Billing and
 its Budgets API are enabled, but no budget or BigQuery billing export is
 configured; actual spend remains unknown and no cap was invented. The full
-suite passes 1,364 tests on both the exact integration base and this docs
-branch; the previous 1,363 figure was a one-test undercount. This follow-up
-updates assertions in an existing test, with no test cases added, removed,
-skipped or weakened. APP-READY-082 remains the single next recorded
-operational track; cost visibility, device, provider,
+suite on integration passes 1,364 tests; the previous 1,363 figure was a one-
+test undercount. APP-READY-097 adds two tests and removes, skips, disables or
+weakens none. APP-READY-082 remains the single next recorded operational
+track; the new source-path test does not prove deployed report admission or
+native crash capture. Cost visibility, device, provider,
 RPO/security, and final Paystack gates
 remain open.
 

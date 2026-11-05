@@ -2,11 +2,13 @@
 
 ## Current Verified Checkpoint (2026-11-05)
 
-Current Mobile integration is `9c84e436a4e6457d9d49c157db19caef2e34b652`.
-APP-READY-097 merged through PR #277 at `9c84e43`; merged-result CI
-`42046284344` passed all 1,366 tests, analyzer, debug APK, Android release
-lint, signing, and environment regressions. The PR added two source-path
-regression tests (1,364 + 2); no tests were removed, skipped, disabled or
+Current Mobile integration is `4ea82e14add4f19fa2d5b55d49a2d18059d06c01`.
+APP-READY-098 merged through PR #278 as this integration commit; merged-result
+CI `42060289556` passed all 1,366 tests, analyzer, debug APK, Android release
+lint, signing, and environment regressions. APP-READY-098 changed no test
+inventory. APP-READY-097 merged through PR #277 at `9c84e43`; its two
+source-path regression tests changed the base from 1,364 to 1,366; no tests
+were removed, skipped, disabled or
 weakened. Local APK packaging had failed from E: drive exhaustion, but CI
 successfully produced the debug APK. Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194 recorded the
@@ -40,16 +42,23 @@ continuous availability or a natural-outage SLO. Gmail confirms the real-policy
 firing and resolved messages for this incident were delivered at
 `2026-11-04T19:55:21Z` and `2026-11-04T20:00:21Z`; this proves this policy's
 notification path for one incident, not delivery for every policy. The original
-13 policies remain.
+13 policies remain. The separate API p95 policy also fired at
+`2026-11-05T10:48:12Z` with 11,457.57 ms latency on 503 responses and delivered
+an alert email. Its resolution email at `2026-11-05T11:46:07Z` states the metric
+was missing after 57m55s; `evaluationMissingData` is unset. This proves that
+policy's alert-email path, not recovery. Its timing overlaps the controlled
+SQL-off/recovery window, but request-level causation is not independently
+verified.
 The database memory policy uses the
 intended `Usage > 90` condition for 600s. BE-P1-058 is delivered; no real
 threshold breach or real memory-pressure alert delivery is claimed. No worker,
 scheduler, or Cloud Run scaling configuration changed. The Firebase Admin SDK
 identity's project-wide Token Creator grant was narrowed to a self-only
-service-account binding. Cloud Billing
-and the Billing Budgets API are enabled, but no budget or BigQuery billing
-export is configured. Total spend remains unknown; no budget cap was created
-without an approved monthly amount.
+service-account binding. Cloud Billing and the Billing Budgets API are enabled.
+A project-scoped $31.75 USD monthly budget alert (~₹3,000 at the Nov 5
+mid-market rate) now sends 50%, 90%, and 100% current-spend notifications to
+the approved operations channel; it does not cap or stop spending. No BigQuery
+billing export exists and actual spend remains unknown.
 
 During the first Nov 5 attempt, a stop request received HTTP 409 while the
 start operation was still running. A readiness request made before that
@@ -120,16 +129,16 @@ and final separately approved test-only Paystack activation remain distinct
 gates.
 
 Read-only alert inventory on Nov 5: all 13 live policies are enabled and
-reference the approved email channel. Controlled delivery is evidenced for two
-policies only: one API 5xx incident (firing and resolved emails) and one
-sanitized release-health counter event (incident and matching email). The
-other eleven are configured without a controlled event/delivery proof; several
+reference the approved email channel. Controlled alert-email evidence exists
+for three policies: API 5xx, sanitized release-health, and API p95 latency. The
+other ten are configured without a controlled event/delivery proof; several
 are intentionally dormant while SQL or Scheduler jobs are stopped/paused. The
 deleted temporary canary is outside the 13. No alert traffic or service state
 was changed for this inventory. The Cloud Billing Reports console is the
-read-only source for current cost; the billing account has no budget, and no
-BigQuery dataset was found in the canonical project. Existing configuration
-docs record no billing export. Metric conditions leave missing-data evaluation
+read-only source for current cost. The $31.75 USD project-scoped monthly budget
+alert sends current-spend thresholds at 50%, 90%, and 100% to the approved
+operations channel; it is not a cap. No BigQuery dataset or billing export is
+configured. Metric conditions leave missing-data evaluation
 unset, so absent telemetry is not evidence of health. Four policies auto-close
 after 30 minutes and nine after 60; only three explicitly request an `OPENED`
 prompt, and only the release-health policy explicitly renotifies after 60
@@ -1358,7 +1367,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5 checkpoint: mobile integration `9c84e43`, post-merge CI `42046284344` passed 1,366 tests and all configured Android gates; APP-READY-097 merged as PR #277 (two local source-path tests, deployed acceptance still open); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged as `2a3f299` (mocked valid PDF response only, no real visual-preview proof or runtime deployment); admin revision `00008-cig` at 100%; controlled degraded-readiness test opened the API 5xx incident and separately gated recovery returned `/health/ready` HTTP 200, then SQL was restored to STOPPED/NEVER; Gmail confirms firing and resolved mail for that one API policy; sanitized release-health has separate incident/email evidence; 13 enabled policies on the approved channel, with 2/13 having controlled delivery evidence and 11/13 configuration-only; all three Scheduler jobs remain PAUSED; Cloud SQL STOPPED/NEVER with deletion protection, automated backups/PITR enabled and 7-backup retention, but newest successful automated backup is Oct 27; public IPv4 is assigned, private IP absent, no authorized networks configured, SSL requirement false (security/connectivity review remains open); actual cost report remains unread; no budget or BigQuery export; memory, RTC, worker, provider, security/RPO and release/device gates remain open |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5 checkpoint: integration `4ea82e1`, post-merge CI `42060289556` passed 1,366 tests and configured Android gates; APP-READY-098 docs-only PR #278 merged; APP-READY-097 PR #277 added two source-path tests (deployed acceptance remains open); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged at `2a3f299` (mocked valid PDF response only, no real visual-preview proof or runtime deployment); admin revision `00008-cig` at 100%; controlled degraded-readiness test opened API 5xx and p95 incidents; 5xx firing/resolved email delivered, while p95 measured 11,457.57 ms on 503 responses and later resolved due missing metric data (not recovery); a gated readiness request returned HTTP 200, then SQL was restored to STOPPED/NEVER; sanitized release-health has separate incident/email evidence; 13 enabled policies on the approved channel, with 3/13 having alert-email evidence and 10/13 configuration-only; all three Scheduler jobs remain PAUSED; Cloud SQL STOPPED/NEVER with deletion protection, automated backups/PITR enabled and 7-backup retention, but newest successful backup is Oct 27; public IPv4 assigned, private IP absent, no authorized networks configured, SSL requirement false (security/connectivity review remains open); project-scoped $31.75 USD monthly budget alert has 50/90/100% email thresholds (not a spending cap); actual cost report remains unread and no BigQuery export is configured; memory, RTC, worker, provider, security/RPO and release/device gates remain open |
 
 ### APP-READY-055 implementation evidence
 

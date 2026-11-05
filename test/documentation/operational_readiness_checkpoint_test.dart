@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('9c84e436a4e6457d9d49c157db19caef2e34b652'),
+        contains('4ea82e14add4f19fa2d5b55d49a2d18059d06c01'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,8 +40,8 @@ void main() {
       );
       expect(
         entry.value,
-        contains('42046284344'),
-        reason: '${entry.key} must name mobile post-merge CI.',
+        contains('42060289556'),
+        reason: '${entry.key} must name current mobile post-merge CI.',
       );
       if (entry.key == 'AI_HANDOFF.md' || entry.key == 'CODEBASE_STATUS.md') {
         expect(
@@ -73,8 +73,16 @@ void main() {
     final readiness = currentSections['PHASE_1_OPERATIONAL_READINESS.md']!;
 
     expect(handoff, contains('Billing Budgets API are enabled'));
-    expect(handoff, contains('no budget or BigQuery billing'));
-    expect(handoff, contains('Total spend remains unknown'));
+    expect(
+      handoff,
+      contains(r'project-scoped $31.75 USD monthly budget alert'),
+    );
+    expect(
+      handoff,
+      contains('billing export exists and actual spend remains unknown'),
+    );
+    expect(handoff, contains('does not cap or stop spending'));
+    expect(handoff, contains('actual spend remains unknown'));
     expect(handoff, contains('Gmail confirms the real-policy'));
     expect(handoff, contains('APP-READY-097 - Sanitized Release-Health'));
     expect(handoff, contains('not proof of deployed admission, log retention'));
@@ -89,14 +97,19 @@ void main() {
     expect(handoff, contains('auto-closed while SQL remained stopped'));
     expect(handoff, contains('temporary policy was deleted'));
     expect(handoff, contains('not delivery for every policy'));
-    expect(readiness, contains('no monthly cap was invented'));
+    expect(readiness, contains('This is an alert, not a spend'));
+    expect(readiness, contains('A project-scoped monthly budget alert is'));
+    expect(readiness, contains('50%, 90%, and 100% current-spend email'));
     expect(readiness, contains('BE-P1-058 is delivered'));
     expect(readiness, contains('newest successful automated backup is'));
     expect(readiness, contains('2026-10-27T18:00:00Z'));
     expect(readiness, contains('earlier 503 exercise was controlled'));
     expect(readiness, contains('Gmail confirms the real-policy'));
-    expect(readiness, contains('Two have controlled alert-delivery'));
-    expect(readiness, contains('eleven are configuration-only'));
+    expect(readiness, contains('Three have controlled alert-email'));
+    expect(readiness, contains('ten are configuration-only'));
+    expect(readiness, contains('11,457.57 ms'));
+    expect(readiness, contains('service recovered'));
+    expect(readiness, contains('metric was missing'));
     expect(readiness, contains('do not configure `evaluationMissingData`'));
     expect(readiness, contains('Four policies use a'));
     expect(readiness, contains('30-minute auto-close and nine use 60 minutes'));
@@ -127,21 +140,15 @@ void main() {
         .singleWhere((line) => line.startsWith('| APP-READY-082 |'));
 
     expect(task, contains('**NEXT**'));
+    expect(task, contains('`4ea82e1`'));
+    expect(task, contains('`42060289556`'));
     expect(task, contains('backend docs PR #194 merged at `1e2072b`'));
     expect(task, contains('controlled degraded-readiness test'));
     expect(task, contains('admin revision `00008-cig`'));
     expect(task, contains('13 enabled policies on the approved channel'));
-    expect(task, contains('2/13 having controlled delivery evidence'));
-    expect(
-      task,
-      contains(
-        'Gmail confirms firing and resolved mail for that one API policy',
-      ),
-    );
-    expect(
-      task,
-      contains('separately gated recovery returned `/health/ready` HTTP 200'),
-    );
+    expect(task, contains('3/13 having alert-email evidence'));
+    expect(task, contains('5xx firing/resolved email delivered'));
+    expect(task, contains('a gated readiness request returned HTTP 200'));
     expect(task, contains('actual cost report remains unread'));
     expect(task, isNot(contains('af0e7ab')));
   });

@@ -1,16 +1,17 @@
 # Phase 1 Operational Readiness
 
-## Current Checkpoint (2026-11-05)
+## Current Checkpoint (2026-11-06)
 
-Mobile integration is `9449a733dcd192475f81b2720a4d1ffdb9f03db4` after
-APP-READY-099 PR #279; post-merge integration CI `42073930798` passed 1,366
-tests, analyzer, debug APK, Android release lint, signing, and environment
-regressions. APP-READY-098 was docs/test-only reconciliation; the full suite
-remains 1,366 with no inventory change. APP-READY-097 PR #277 added two tests
-over the 1,364-test base, connecting framework-error handling through consent
-and session checks to the sanitized HTTP projection. No tests were removed,
-skipped, disabled or weakened. Local APK packaging had hit E: drive exhaustion;
-CI verified the APK on the merged result.
+Mobile integration is `d80eac2aa431cff9ea281410c9a5a8c39eaf8660` after
+APP-READY-100 PR #280. Its reviewed head was
+`e6912068a722005e0a8b8341b9a6a8b66a8e9eea`; PR-head CI `42081173591` and
+merged-result CI `42084055217` both passed on their exact commits. The merged
+workflow passed all 1,366 tests, analyzer, debug APK, Android release lint,
+signing, and release-environment regressions. PR #280 reconciled the liveness
+uptime-check evidence in six documentation/test files and changed no test
+inventory. APP-READY-097 remains the only recent runtime-test increase: +2 over
+the 1,364-test base. No tests were removed, skipped, disabled or weakened.
+Local APK packaging had hit E: drive exhaustion; CI verified the APK.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only
 PR #194; PR-head CI `41982489735` and post-merge CI `41982963454` passed all
 three lanes. APP-READY-090 and PR #265 are earlier checkpoints; this
@@ -117,6 +118,13 @@ reconciliation does not close the remaining operational gates.
   signing/provider setup and Mac/iPhone acceptance remain open.
 - Payments: Paystack test activation remains last and requires the single final
   explicit confirmation. The previously exposed test key must not be reused.
+
+APP-READY-100 adds one five-minute, three-region HTTPS API liveness check and an
+enabled alert policy; current checker samples pass. The policy's email path has
+not been exercised. The monthly project budget is `$31.75 USD` (about `INR
+3,000`), with 50%, 90%, and 100% current-spend notifications; it is not a cap.
+The budget object was read back after the owner selected INR 3,000. Actual
+current spend is still unread.
 
 ## Live Alert Policy Inventory (Read-Only, 2026-11-05)
 

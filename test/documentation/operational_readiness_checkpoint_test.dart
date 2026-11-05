@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('9449a733dcd192475f81b2720a4d1ffdb9f03db4'),
+        contains('d80eac2aa431cff9ea281410c9a5a8c39eaf8660'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,8 +40,13 @@ void main() {
       );
       expect(
         entry.value,
-        contains('42073930798'),
-        reason: '${entry.key} must name current mobile post-merge CI.',
+        contains('42081173591'),
+        reason: '${entry.key} must name the reviewed PR-head CI.',
+      );
+      expect(
+        entry.value,
+        contains('42084055217'),
+        reason: '${entry.key} must name current merged-result CI.',
       );
       if (entry.key == 'AI_HANDOFF.md' || entry.key == 'CODEBASE_STATUS.md') {
         expect(
@@ -147,15 +152,17 @@ void main() {
         .singleWhere((line) => line.startsWith('| APP-READY-082 |'));
 
     expect(task, contains('**NEXT**'));
-    expect(task, contains('`9449a73`'));
-    expect(task, contains('`42073930798`'));
+    expect(task, contains('`d80eac2`'));
+    expect(task, contains('`42081173591`'));
+    expect(task, contains('`42084055217`'));
+    expect(task, contains('APP-READY-100 PR #280'));
     expect(task, contains('backend docs PR #194 merged at `1e2072b`'));
-    expect(task, contains('controlled degraded-readiness test'));
+    expect(task, contains('controlled SQL-off readiness test'));
     expect(task, contains('admin revision `00008-cig`'));
     expect(task, contains('14 enabled policies on the approved channel'));
     expect(task, contains('3/14 having alert-email evidence'));
-    expect(task, contains('three-region uptime check'));
-    expect(task, contains('5xx firing/resolved email delivered'));
+    expect(task, contains('three-region uptime check samples pass'));
+    expect(task, contains('produced the 5xx firing/resolved emails'));
     expect(task, contains('a gated readiness request returned HTTP 200'));
     expect(task, contains('actual cost report remains unread'));
     expect(task, isNot(contains('af0e7ab')));

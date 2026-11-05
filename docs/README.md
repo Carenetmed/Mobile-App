@@ -1,7 +1,8 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `fa1a715c25ab388ba29a92172c570ba7199f669a` after
-PR #272; its post-merge CI `41977173538` passed.
+Current Mobile integration is `1bb6dc76930a530d2d8331ba483301f0bd784b8a` after
+PR #274; its post-merge CI `42007269788` passed with 1,364 tests and the
+analyzer, debug APK, Android release lint/signing, and environment checks.
 Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
 CI lanes passed on the PR and merged result (`41982489735`, `41982963454`). See `AI_HANDOFF.md`,
@@ -16,7 +17,10 @@ are enabled;
 no budget or BigQuery billing export is configured, so actual spend is unknown.
 The user confirmed the test-only canary firing email. A separate bounded API
 5xx alert-condition exercise opened and auto-closed its incident while SQL
-remained stopped; real-policy email receipt and service recovery are unconfirmed.
+remained stopped. A separate bounded SQL restart and one readiness request
+verified HTTP 200 with all checks healthy; SQL is again STOPPED/NEVER.
+Gmail confirms the actual API 5xx policy's firing and resolved messages for
+this incident; it does not prove delivery for every policy.
 APP-READY-082, provider, security/RPO, release/device, and final Paystack gates
 remain open. Web PR #16 merged at `2a3f299f6cc00779b2d7625a0c60339e83551595`
 and post-merge CI `42000423597` passed. It validates a valid mocked PDF

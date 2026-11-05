@@ -2,9 +2,10 @@
 
 ## Current Verified Checkpoint (2026-11-05)
 
-Current Mobile integration is `fa1a715c25ab388ba29a92172c570ba7199f669a`.
-APP-READY-082 task-row PR #272 merged; post-merge integration CI
-`41977173538` passed. Backend `main` is
+Current Mobile integration is `1bb6dc76930a530d2d8331ba483301f0bd784b8a`.
+APP-READY-094 docs-only PR #274 merged; post-merge integration CI
+`42007269788` passed the analyzer, 1,364-test suite, debug APK, Android
+release lint, signing, and environment regressions. Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194 recorded the
 bounded 5xx alert-condition test, with PR CI `41982489735` and post-merge CI
 `41982963454` passing all three lanes. Older APP-READY-090 evidence below is
@@ -24,10 +25,17 @@ on existing staging-admin request metrics; that temporary policy was deleted.
 Separately, nine bounded API Gateway readiness GETs while Cloud SQL was
 intentionally stopped produced backend 503s and crossed the existing API 5xx
 threshold (aligned request count 3, threshold >2), opening its incident. The
-incident later auto-closed while SQL remained stopped; that is not recovery
-evidence. Receipt of the real-policy email is unconfirmed, and no natural outage
-or successful database recovery was tested. This does not prove service-failure
-delivery for every policy. The original 13 policies remain.
+incident auto-closed while SQL remained stopped, before recovery was tested.
+A later bounded SQL window waited for the Cloud SQL start operation to finish;
+one `GET /health/ready` returned HTTP 200 with database, migrations, email,
+Google auth, and verification storage all `ok`. SQL was then returned to
+`STOPPED/NEVER`; all Scheduler jobs remained paused and no database rows or
+Cloud Run traffic were changed. This proves one controlled recovery, not
+continuous availability or a natural-outage SLO. Gmail confirms the real-policy
+firing and resolved messages for this incident were delivered at
+`2026-11-04T19:55:21Z` and `2026-11-04T20:00:21Z`; this proves this policy's
+notification path for one incident, not delivery for every policy. The original
+13 policies remain.
 The database memory policy uses the
 intended `Usage > 90` condition for 600s. BE-P1-058 is delivered; no real
 threshold breach or real memory-pressure alert delivery is claimed. No worker,
@@ -38,10 +46,13 @@ and the Billing Budgets API are enabled, but no budget or BigQuery billing
 export is configured. Total spend remains unknown; no budget cap was created
 without an approved monthly amount.
 
-During the first Nov 5 start attempt, the Cloud SQL connector returned 409
-while the control-plane operation was still running. The later successful
-attempt waited for the SQL operation to finish and verified backend readiness
-HTTP 200 before sign-in. `RUNNABLE` alone is not an adequate readiness gate.
+During the first Nov 5 attempt, a stop request received HTTP 409 while the
+start operation was still running. A readiness request made before that
+operation completed returned 503 and is inconclusive. The second attempt waited
+for the complete start operation and an additional 15 seconds before the sole
+readiness request; it returned HTTP 200 at `2026-11-05T11:01:25.228Z`. The stop
+operation completed at `2026-11-05T11:02:28.548Z`, restoring
+`STOPPED/NEVER`. `RUNNABLE` alone is not an adequate readiness gate.
 
 Firebase Hosting control-plane API is enabled for the canonical project. The
 default site `https://project-a96784ee-811c-46ab-a7b.web.app` serves the home,
@@ -90,7 +101,10 @@ the one approved plain test email arrived in the support mailbox. The sender
 identity is omitted from public documentation.
 
 APP-READY-082 remains the single recorded next operational track and is still
-partial. Follow `PHASE_1_OPERATIONAL_READINESS.md` for its reconciled current
+partial. The bounded service-recovery proof and this incident's real-policy
+firing/resolution email delivery are complete; delivery for all policies,
+cost/budget visibility, provider, database/security, release/device, and other
+gates remain open. Follow `PHASE_1_OPERATIONAL_READINESS.md` for its reconciled current
 evidence; do not start new product scope, a duplicate network/session slice, or
 Paystack activation. Real upload/download acceptance, RPO/security review,
 RTC/worker provider proof, signed-store/device checks, iOS signing/device proof,
@@ -1305,7 +1319,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile task-row PR #272 merged at `fa1a715`; backend docs PR #194 merged at `1e2072b`; Web PR #16 merged as `2a3f299` with post-merge CI `42000423597` (valid mocked PDF response asserted, no real visual-preview proof or runtime deployment); admin revision `00008-cig` still serves Web PR #15 at 100%; controlled nine-GET degraded-readiness test opened the real API 5xx incident (aligned count 3 over threshold 2), later auto-closed while SQL remained stopped; real-policy email receipt and recovery unconfirmed; test-only canary firing email confirmed; 13 original policies remain, SQL STOPPED/NEVER, schedulers paused; budget/cost ceiling, memory alert proof, RTC and worker gates remain open |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile docs PR #274 merged at `1bb6dc7` with post-merge CI `42007269788` (1,364 tests); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged as `2a3f299` with post-merge CI `42000423597` (valid mocked PDF response asserted, no real visual-preview proof or runtime deployment); admin revision `00008-cig` still serves Web PR #15 at 100%; controlled nine-GET degraded-readiness test opened the real API 5xx incident (aligned count 3 over threshold 2), auto-closed while SQL remained stopped; a later bounded restart waited for the operation to finish, verified `/health/ready` HTTP 200, then restored SQL to STOPPED/NEVER; Gmail confirms this incident's real-policy firing and resolved emails; test-only canary firing email separately confirmed; 13 original policies remain, schedulers paused; budget/cost ceiling, memory alert proof, RTC and worker gates remain open |
 
 ### APP-READY-055 implementation evidence
 

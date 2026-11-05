@@ -8,6 +8,10 @@ Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194
 recorded the controlled API 5xx alert-condition test, with PR CI
 `41982489735` and post-merge CI `41982963454` passing all three lanes. These
 documentation updates do not complete the operational program.
+A fresh full `flutter test` on both the exact integration base and this docs
+branch passed 1,364 tests; the older 1,363 figure was a one-test undercount.
+This slice changes assertions in an existing documentation test but adds or
+removes no test cases.
 The storage-expiry source correction is merged; remaining real-provider and
 device acceptance is documented under `PHASE_1_OPERATIONAL_READINESS.md` and
 `PROFESSIONAL_VERIFICATION_UPLOAD_FLOW.md`.
@@ -52,7 +56,12 @@ shutdown; actual RPO/data loss remains unknown. Do not claim an RPO SLO.
 
 The admin Download action and sign-in clarification are now in active Cloud
 Run revision `carenet-admin-staging-00008-cig` at 100% staging traffic. Web PR
-#15 main is `f511d6a36d69157eed239a77c73d9253e57d8e7e`; post-merge CI
+#16 merged at `2a3f299f6cc00779b2d7625a0c60339e83551595`; post-merge CI
+`42000423597` passed. It improves only the mocked browser fixture/assertion:
+the valid one-page PDF response returns HTTP 200 and `application/pdf`. It did
+not change or redeploy runtime code, and headless visual PDF rendering plus a
+real valid staging document remain unproved. Web PR #15 main was
+`f511d6a36d69157eed239a77c73d9253e57d8e7e`; its post-merge CI
 `41927227034` passed. Cloud Build `caace09e-6c85-4a48-b05e-d62b66575785`
 produced digest
 `sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7`.

@@ -9,8 +9,10 @@ APP-READY-082 task-row PR #272 merged; post-merge integration CI
 bounded 5xx alert-condition test, with PR CI `41982489735` and post-merge CI
 `41982963454` passing all three lanes. Older APP-READY-090 evidence below is
 historical; these checkpoints do not complete the readiness program. The
-mobile suite remains 1,363 tests at this integration; the documentation
-reconciliation updates an existing assertion and adds or removes no tests.
+full suite is 1,364 tests on both the exact integration base and this docs
+branch. The previously recorded 1,363 was a one-test undercount. This update
+adds assertions to an existing documentation test and adds/removes/skips no
+test cases.
 
 Cloud SQL was briefly started for the Nov 5 admin-console proof and returned
 to STOPPED with activation policy NEVER and deletion protection on. All three
@@ -61,8 +63,15 @@ The admin Download action was added in Web PR #11
 (`8dfbaada9d4a55d7e0781bca7ae9e97cc40a117e`); PR #12 added browser fixture/flow
 coverage, and PR #13 clarified that IAP access and CareNet admin credentials
 are separate sign-in steps. Web PR #14 fixed bundled-font build resolution;
-PR #15 normalized the container entrypoint's line endings. Web main
-`f511d6a36d69157eed239a77c73d9253e57d8e7e` passed post-merge CI
+PR #15 normalized the container entrypoint's line endings. Web PR #16 then
+replaced the blank browser PDF fixture with a valid one-page PDF and asserted
+that the mock preview iframe receives HTTP 200 with `application/pdf`. PR #16
+changed only browser tests and documentation; it did not change or redeploy
+the admin runtime. It merged at `2a3f299f6cc00779b2d7625a0c60339e83551595`
+with post-merge CI `42000423597` passing. This is transport/fixture evidence,
+not proof that Chromium visually rendered the PDF or that a real uploaded
+staging document previews correctly. Web main before PR #16 was
+`f511d6a36d69157eed239a77c73d9253e57d8e7e`, with post-merge CI
 `41927227034`. Cloud Build `caace09e-6c85-4a48-b05e-d62b66575785` built the
 merged source, and staging now serves digest
 `sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7` from
@@ -1296,7 +1305,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile task-row PR #272 merged at `fa1a715`; backend docs PR #194 merged at `1e2072b`; admin revision `00008-cig` serves Web PR #15 at 100%; controlled nine-GET degraded-readiness test opened the real API 5xx incident (aligned count 3 over threshold 2), later auto-closed while SQL remained stopped; real-policy email receipt and recovery unconfirmed; test-only canary firing email confirmed; 13 original policies remain, SQL STOPPED/NEVER, schedulers paused; budget/cost ceiling, memory alert proof, RTC and worker gates remain open |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile task-row PR #272 merged at `fa1a715`; backend docs PR #194 merged at `1e2072b`; Web PR #16 merged as `2a3f299` with post-merge CI `42000423597` (valid mocked PDF response asserted, no real visual-preview proof or runtime deployment); admin revision `00008-cig` still serves Web PR #15 at 100%; controlled nine-GET degraded-readiness test opened the real API 5xx incident (aligned count 3 over threshold 2), later auto-closed while SQL remained stopped; real-policy email receipt and recovery unconfirmed; test-only canary firing email confirmed; 13 original policies remain, SQL STOPPED/NEVER, schedulers paused; budget/cost ceiling, memory alert proof, RTC and worker gates remain open |
 
 ### APP-READY-055 implementation evidence
 

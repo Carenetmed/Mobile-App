@@ -18,7 +18,11 @@ The user confirmed the test-only canary firing email. A separate bounded API
 5xx alert-condition exercise opened and auto-closed its incident while SQL
 remained stopped; real-policy email receipt and service recovery are unconfirmed.
 APP-READY-082, provider, security/RPO, release/device, and final Paystack gates
-remain open. Older checkpoint summaries below are historical.
+remain open. Web PR #16 merged at `2a3f299f6cc00779b2d7625a0c60339e83551595`
+and post-merge CI `42000423597` passed. It validates a valid mocked PDF
+response (HTTP 200, `application/pdf`), not visual rendering or a real staging
+upload; it changed no runtime code and triggered no deployment. Older
+checkpoint summaries below are historical.
 
 Historical: APP-READY-075 merged as PR #240 at `0e0a65b268d7561f2376c846b24a52045cbf2854`.
 Final-head and integration CI passed all 930 tests, analyzer, Android debug APK,

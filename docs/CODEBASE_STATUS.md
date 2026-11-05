@@ -2,19 +2,20 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Integration base is `09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6`. APP-READY-096
-docs-only PR #276 merged with post-merge integration run `42031227938` passing
-1,364 tests and analyzer, debug APK, Android release lint/signing, and
-environment checks. APP-READY-097 adds two local source-path regression tests;
-the 1,366-test suite and analyzer pass. Local APK packaging ran out of E: space
-while stripping native libraries; exact-head CI remains the APK gate.
+Integration base is `9c84e436a4e6457d9d49c157db19caef2e34b652`. APP-READY-097
+PR #277 merged with post-merge integration run `42046284344` passing 1,366 tests,
+analyzer, debug APK, Android release lint/signing, and environment checks. The
+source-path test addition is exactly +2 over the 1,364-test base;
+no tests were removed, skipped, disabled or weakened. Local APK packaging ran
+out of E: space while stripping native libraries, but merged-result CI built
+the APK successfully.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194
 recorded the controlled API 5xx alert-condition test, with PR CI
 `41982489735` and post-merge CI `41982963454` passing all three lanes. These
 documentation updates do not complete the operational program.
-The exact integration-base suite passed 1,364 tests; the older 1,363 figure was
-a one-test undercount. APP-READY-097's full 1,366-test suite and analyzer pass.
-No tests are removed, skipped, disabled or weakened; CI remains required.
+The exact previous integration suite passed 1,364 tests; the older 1,363 figure
+was a one-test undercount. APP-READY-097 is merged and its full 1,366-test suite
+and analyzer pass. No tests are removed, skipped, disabled or weakened.
 The storage-expiry source correction is merged; remaining real-provider and
 device acceptance is documented under `PHASE_1_OPERATIONAL_READINESS.md` and
 `PROFESSIONAL_VERIFICATION_UPLOAD_FLOW.md`.
@@ -50,6 +51,12 @@ removed; no backend/messaging service or Scheduler job was activated. The admin
 revision was updated without adding a minimum-instance floor. Cloud Billing is
 enabled, but there is no configured budget or BigQuery billing export, so total
 spend is still unknown. No cap was set without an approved monthly amount.
+On Nov 5, read-only SQL configuration showed automated backups/PITR enabled
+with seven retained backups, but the newest successful automated backup is
+Oct 27. Public IPv4 is assigned, private IP is absent, no authorized networks
+are configured, and `requireSsl` is false. This stale recovery point and
+network posture remain open security/RPO review items; no network or instance
+setting was changed.
 
 The enabled database memory policy filters the intended `Usage` component
 above 90 for 600 seconds (60-second mean alignment). BE-P1-058 is delivered

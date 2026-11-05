@@ -211,12 +211,16 @@ deployed staging submission, backend admission/log retention, native crash
 capture, process survival or device behavior. No backend, provider, cloud
 configuration, dependency or runtime code changed. The baseline suite has
 1,364 tests; this change adds two, with no tests removed, skipped, disabled or
-weakened. The complete 1,366-test suite and analyzer pass. Local debug APK
-packaging ran out of E: space while stripping native libraries, so no local APK
-is claimed; exact-head CI is required before delivery.
+weakened. PR #277 merged at `9c84e436a4e6457d9d49c157db19caef2e34b652`;
+merged-result CI `42046284344` passed the complete 1,366-test suite, analyzer,
+debug APK, Android release lint, signing, and environment regressions. Local
+debug APK packaging ran out of E: space while stripping native libraries; CI
+provided the verified APK build.
 At the APP-READY-063 checkpoint, the next selected source slice was
 APP-READY-064, the approved English/Nigerian locale policy; backend
 currency/time authority must not change. This note is historical and does not
 supersede the current readiness task queue.
 Dependencies remain unchanged. Payments remain the final explicitly approved
-provider gate; no cloud service was started for this work.
+provider gate; no cloud service was started for this work. The new tests remain
+fake-transport source-path coverage only and do not prove deployed admission,
+retention, mobile submission, native crash capture or device behavior.

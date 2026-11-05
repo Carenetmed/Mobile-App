@@ -1,9 +1,9 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6` after
-APP-READY-096 PR #276; its post-merge CI `42031227938` passed with 1,364 tests
-and the analyzer, debug APK, Android release lint/signing, and environment
-checks.
+Current Mobile integration is `9c84e436a4e6457d9d49c157db19caef2e34b652` after
+APP-READY-097 PR #277; post-merge CI `42046284344` passed 1,366 tests, analyzer,
+debug APK, Android release lint/signing, and environment checks. The two-test
+increase from 1,364 has no removed, skipped, disabled or weakened tests.
 Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
 CI lanes passed on the PR and merged result (`41982489735`, `41982963454`). See `AI_HANDOFF.md`,
@@ -29,6 +29,10 @@ nine in 60, and only three explicitly request an `OPENED` prompt. Actual
 current spend remains unread: the Billing Viewer report is available in the
 Cloud Console, but no budget exists and no BigQuery dataset was found in the
 canonical project.
+Nov 5 read-only database inspection found PITR enabled with seven retained
+backups but the newest successful automated backup dated Oct 27. Public IPv4 is
+assigned, private IP is absent, no authorized networks are configured, and
+`requireSsl` is false; security/RPO review remains open.
 APP-READY-082, provider, security/RPO, release/device, and final Paystack gates
 remain open. Web PR #16 merged at `2a3f299f6cc00779b2d7625a0c60339e83551595`
 and post-merge CI `42000423597` passed. It validates a valid mocked PDF

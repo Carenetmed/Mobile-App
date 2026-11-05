@@ -2,13 +2,13 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Mobile integration is `09a3e1c3ab3c7983aba7a2cfdf331608dd00dea6` after
-APP-READY-096 docs-only PR #276; post-merge integration CI `42031227938` passed
-1,364 tests plus analyzer, debug APK, Android release lint, signing, and
-environment regressions. APP-READY-097 adds two local source-path tests for
-sanitized diagnostics; all 1,366 tests and analysis pass. Local APK packaging
-ran out of E: disk space while stripping native libraries; exact-head CI remains
-the APK gate.
+Mobile integration is `9c84e436a4e6457d9d49c157db19caef2e34b652` after
+APP-READY-097 PR #277; post-merge integration CI `42046284344` passed 1,366
+tests, analyzer, debug APK, Android release lint, signing, and environment
+regressions. The two new tests connect framework-error handling through consent
+and session checks to the sanitized HTTP projection. The count change is exactly
+1,364 + 2; no tests were removed, skipped, disabled or weakened. Local APK
+packaging had hit E: drive exhaustion; CI verified the APK on the merged result.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only
 PR #194; PR-head CI `41982489735` and post-merge CI `41982963454` passed all
 three lanes. APP-READY-090 and PR #265 are earlier checkpoints; this
@@ -63,6 +63,13 @@ reconciliation does not close the remaining operational gates.
   provisional 60-minute target for this one run. The latest available restore
   point was about 16m22s before source shutdown; actual RPO and data loss remain
   unknown. No RPO SLO is claimed.
+- Current database configuration (read-only, Nov 5): Cloud SQL is `STOPPED`,
+  activation `NEVER`, deletion protection on, automated backups and PITR enabled,
+  with seven retained backups. The newest successful automated backup is
+  `2026-10-27T18:00:00Z`; it is not a fresh Nov 5 recovery point. Public IPv4
+  remains assigned, private IP is not configured, no authorized network entries
+  are configured, and `requireSsl` is false. This is a security/connectivity
+  review item, not authorization to change networking or start the instance.
 - Admin: Web PR #16 merged as `2a3f299f6cc00779b2d7625a0c60339e83551595`;
   post-merge CI `42000423597` passed. The valid one-page mock PDF receives
   HTTP 200 and `application/pdf` in the browser test, but this proves neither
@@ -133,9 +140,9 @@ spend has not been read in this checkpoint, so no cap or forecast is claimed.
 
 APP-READY-082 remains the recorded next operational track. Do not turn this
 checkpoint into a provider activation or start short-form content work.
-APP-READY-097's fake-transport test proves only the local source path; deployed
-admission, logs/retention, real mobile submission, and native crash behavior
-remain unproved.
+APP-READY-097 is merged; its fake-transport test proves only the local source
+path. Deployed admission, logs/retention, real mobile submission, and native
+crash behavior remain unproved.
 
 ## Scope And Authority
 
@@ -227,9 +234,11 @@ Protected worktrees and archive references remain outside this slice.
 
 ## Verification Boundary
 
-This docs-only reconciliation requires checked evidence links, a focused diff,
-one task-table NEXT row, no private addresses or credentials, and
-`git diff --check`. Full runtime tests are not newly claimed from documentation
-checks. Normal repository CI must pass on the reviewed PR head before merge.
+This docs-only reconciliation records current mobile/cloud read-only evidence;
+it changes no runtime or cloud configuration. It requires checked evidence
+links, a focused diff, one task-table NEXT row, no private addresses or
+credentials, and `git diff --check`. Full runtime tests are not newly claimed
+from documentation checks. Normal repository CI must pass on the reviewed PR
+head before merge.
 APP-READY-082 stays the single next task; no content, messaging, consultation or
 financial product expansion is authorized here.

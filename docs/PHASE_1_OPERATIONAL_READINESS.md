@@ -2,13 +2,15 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Mobile integration is `9c84e436a4e6457d9d49c157db19caef2e34b652` after
-APP-READY-097 PR #277; post-merge integration CI `42046284344` passed 1,366
+Mobile integration is `4ea82e14add4f19fa2d5b55d49a2d18059d06c01` after
+APP-READY-098 PR #278; post-merge integration CI `42060289556` passed 1,366
 tests, analyzer, debug APK, Android release lint, signing, and environment
-regressions. The two new tests connect framework-error handling through consent
-and session checks to the sanitized HTTP projection. The count change is exactly
-1,364 + 2; no tests were removed, skipped, disabled or weakened. Local APK
-packaging had hit E: drive exhaustion; CI verified the APK on the merged result.
+regressions. APP-READY-098 was docs/test-only reconciliation; the full suite
+remains 1,366 with no inventory change. APP-READY-097 PR #277 added two tests
+over the 1,364-test base, connecting framework-error handling through consent
+and session checks to the sanitized HTTP projection. No tests were removed,
+skipped, disabled or weakened. Local APK packaging had hit E: drive exhaustion;
+CI verified the APK on the merged result.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only
 PR #194; PR-head CI `41982489735` and post-merge CI `41982963454` passed all
 three lanes. APP-READY-090 and PR #265 are earlier checkpoints; this
@@ -51,9 +53,20 @@ reconciliation does not close the remaining operational gates.
   Gmail confirms the real-policy firing and resolved emails for this incident
   arrived at `2026-11-04T19:55:21Z` and `2026-11-04T20:00:21Z`; this proves one
   incident's delivery, not every policy. The earlier 503 exercise was controlled,
-  not a natural outage. The original 13 policies remain. No budget is
-  configured and BigQuery billing export is absent, so cost breakdown and budget alerts remain
-  unavailable; no monthly cap was invented. The database memory policy is
+  not a natural outage. The API p95 policy separately fired at
+  `2026-11-05T10:48:12Z` with a measured value of 11,457.57 ms against 3,000 ms
+  and response class 5xx / status 503. Its alert email arrived; the resolved
+  email at `2026-11-05T11:46:07Z` says the latency metric was missing and the
+  incident lasted 57m55s. The policy has no `evaluationMissingData` setting, so
+  this is alert-delivery evidence, not evidence the service recovered. Its
+  timing overlaps the controlled SQL-off/recovery window; attribution to that
+  exercise is an inference, not an independently proven request correlation.
+  The original 13 policies remain. A project-scoped monthly budget alert is
+  configured at $31.75 USD for the CareNet project (approximately ₹3,000
+  at the Nov 5 mid-market rate), with 50%, 90%, and 100% current-spend email
+  thresholds to the approved operations channel. This is an alert, not a spend
+  cap or automatic shutdown. BigQuery billing export is absent and actual spend
+  remains unread. The database memory policy is
   enabled with the intended `Usage > 90` for 600s and 60s mean alignment (last
   mutation Oct 23). BE-P1-058 is delivered; backend PR #194 records the
   controlled 5xx exercise. Recent samples remain below threshold; no real memory breach or
@@ -102,8 +115,8 @@ reconciliation does not close the remaining operational gates.
 ## Live Alert Policy Inventory (Read-Only, 2026-11-05)
 
 Read-only Cloud Monitoring inspection found 13 enabled policies, each
-referencing the same approved email channel. Two have controlled alert-delivery
-evidence; eleven are configuration-only. The separately created test canary
+referencing the same approved email channel. Three have controlled alert-email
+evidence; ten are configuration-only. The separately created test canary
 was deleted and is not counted among these 13.
 
 | Policy | Live condition | Evidence status |
@@ -113,7 +126,7 @@ was deleted and is not counted among these 13.
 | Database disk pressure | Cloud SQL disk utilization >80% for 300 seconds, 60-second mean | Configuration verified; no threshold event or delivery proof. |
 | RTC scheduler dispatch failed | Error-severity log for the RTC reconciliation Scheduler job | Configuration verified; no matching incident or delivery proof. The job is paused. |
 | Sanitized mobile release-health report | Sanitized release-health counter above zero | One controlled counter event opened an incident and produced a matching email. This is not native-crash acceptance. |
-| API p95 latency | Cloud Run request latency p95 >3,000 ms for 300 seconds | Configuration verified; no threshold event or delivery proof. |
+| API p95 latency | Cloud Run request latency p95 >3,000 ms for 300 seconds | Fired at 11,457.57 ms on 503 responses and delivered email; resolved after 57m55s because metric data became missing. Delivery is proved, service recovery is not. |
 | Notification deliveries overdue or abandoned | Observer log: due work >300 seconds late, stale claim, or unclaimed processing | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
 | Notification observer execution failed | Observer Cloud Run Job execution result is not succeeded | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
 | RTC execution failed | RTC reconciliation Cloud Run Job execution result is not succeeded | Configuration verified; no matching incident or delivery proof. RTC schedule is paused. |
@@ -123,7 +136,7 @@ was deleted and is not counted among these 13.
 | Notification reminders overdue or abandoned | Observer log: due work >300 seconds late, stale claim, or unclaimed processing | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
 
 This inventory proves current policy configuration and channel references, not
-end-to-end delivery for all conditions. Do not deliberately induce the eleven
+end-to-end delivery for all conditions. Do not deliberately induce the ten
 unobserved conditions, start paused workers, or enable recurring schedules just
 to produce test alerts; obtain a bounded proof plan before changing operational
 state. The metric conditions do not configure `evaluationMissingData`; an absent
@@ -131,12 +144,12 @@ metric is therefore not evidence of a healthy system. Four policies use a
 30-minute auto-close and nine use 60 minutes. Only the RTC scheduler-dispatch,
 sanitized release-health, and RTC-execution policies explicitly list an
 `OPENED` notification prompt; the release-health policy also has a 60-minute
-renotify interval. The current month cost report is available to the approved Billing
-Viewer in [Google Cloud Billing Reports](https://console.cloud.google.com/billing/019357-62ECE6-84D214/reports?project=project-a96784ee-811c-46ab-a7b).
-The CLI has no spend-report command; the billing account currently has no
-budget, and no BigQuery dataset was found in the canonical project. Existing
-documentation records that billing export is not configured. Actual current
-spend has not been read in this checkpoint, so no cap or forecast is claimed.
+renotify interval. The current month cost report is available to the approved
+Billing Viewer in [Google Cloud Billing Reports](https://console.cloud.google.com/billing/019357-62ECE6-84D214/reports?project=project-a96784ee-811c-46ab-a7b).
+The project-scoped $31.75 USD monthly budget alert sends current-spend notices
+at 50%, 90%, and 100%; it is not a hard cap. The CLI has no spend-report
+command, and no BigQuery dataset or export was found. Actual current spend has
+not been read in this checkpoint, so no cost forecast is claimed.
 
 APP-READY-082 remains the recorded next operational track. Do not turn this
 checkpoint into a provider activation or start short-form content work.

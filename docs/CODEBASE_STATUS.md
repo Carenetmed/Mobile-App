@@ -2,13 +2,14 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Integration base is `9c84e436a4e6457d9d49c157db19caef2e34b652`. APP-READY-097
-PR #277 merged with post-merge integration run `42046284344` passing 1,366 tests,
-analyzer, debug APK, Android release lint/signing, and environment checks. The
-source-path test addition is exactly +2 over the 1,364-test base;
-no tests were removed, skipped, disabled or weakened. Local APK packaging ran
-out of E: space while stripping native libraries, but merged-result CI built
-the APK successfully.
+Integration base is `4ea82e14add4f19fa2d5b55d49a2d18059d06c01`. APP-READY-098
+PR #278 merged with post-merge integration run `42060289556` passing 1,366 tests,
+analyzer, debug APK, Android release lint/signing, and environment checks. This
+docs/test-only reconciliation made no test-inventory change. APP-READY-097's
+source-path test addition is exactly +2 over the 1,364-test base; no tests were
+removed, skipped, disabled or weakened. Local APK packaging ran out of E: space
+while stripping native libraries, but merged-result CI built the APK
+successfully.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194
 recorded the controlled API 5xx alert-condition test, with PR CI
 `41982489735` and post-merge CI `41982963454` passing all three lanes. These
@@ -48,9 +49,11 @@ control-plane changes in this checkpoint were narrowing the Firebase Admin
 SDK identity's project-wide Token Creator grant to a self-only service-account
 binding and enabling the Billing Budgets API. The temporary canary policy was
 removed; no backend/messaging service or Scheduler job was activated. The admin
-revision was updated without adding a minimum-instance floor. Cloud Billing is
-enabled, but there is no configured budget or BigQuery billing export, so total
-spend is still unknown. No cap was set without an approved monthly amount.
+revision was updated without adding a minimum-instance floor. A project-scoped
+$31.75 USD monthly budget alert (~₹3,000 at the Nov 5 mid-market rate) now sends
+50%, 90%, and 100% current-spend notices to the approved operations channel; it
+is not a spend cap or automatic stop. No BigQuery billing export is configured,
+so actual spend remains unknown.
 On Nov 5, read-only SQL configuration showed automated backups/PITR enabled
 with seven retained backups, but the newest successful automated backup is
 Oct 27. Public IPv4 is assigned, private IP is absent, no authorized networks
@@ -66,11 +69,16 @@ real memory-pressure notification delivery is proved. The canary verifies the
 test-only firing email; actual API 5xx firing and resolved alert emails are
 confirmed for the single controlled incident only.
 The Nov 5 read-only policy inventory confirms 13 enabled policies on the
-approved channel. Controlled incident/email evidence exists for the API 5xx
-and sanitized release-health policies only (2/13); the other eleven remain
-configuration-only. The deleted temporary canary is outside this count. The
-billing account has no budget; the approved Billing Viewer can inspect the
-current-month console report, but its actual spend was not read here. Metric
+approved channel. Controlled alert-email evidence exists for API 5xx,
+sanitized release-health, and API p95 latency (3/13); the other ten remain
+configuration-only. The p95 alert measured 11,457.57 ms on staging 503
+responses at `2026-11-05T10:48:12Z`; its resolved email at `11:46:07Z` says the
+metric was missing after 57m55s. Because `evaluationMissingData` is unset, that
+resolution does not prove service recovery. Its timing overlaps the controlled
+SQL-off/recovery window, but request-level attribution is not independently
+proved. The deleted temporary canary is outside this count. The approved Billing
+Viewer can inspect the current-month console report, but its actual spend was
+not read here. The project budget alert does not cap spending. Metric
 policies leave missing-data evaluation unset; four auto-close after 30 minutes,
 nine after 60, and only three explicitly request an `OPENED` prompt. The
 release-health policy alone explicitly configures a 60-minute renotify interval.

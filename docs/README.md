@@ -1,9 +1,10 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `9c84e436a4e6457d9d49c157db19caef2e34b652` after
-APP-READY-097 PR #277; post-merge CI `42046284344` passed 1,366 tests, analyzer,
-debug APK, Android release lint/signing, and environment checks. The two-test
-increase from 1,364 has no removed, skipped, disabled or weakened tests.
+Current Mobile integration is `4ea82e14add4f19fa2d5b55d49a2d18059d06c01` after
+APP-READY-098 PR #278; post-merge CI `42060289556` passed 1,366 tests, analyzer,
+debug APK, Android release lint/signing, and environment checks. APP-READY-098
+changed no test inventory. APP-READY-097 increased the suite from 1,364 to
+1,366 with no removed, skipped, disabled or weakened tests.
 Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
 CI lanes passed on the PR and merged result (`41982489735`, `41982963454`). See `AI_HANDOFF.md`,
@@ -14,21 +15,25 @@ previously confirmed sign-in and a staging document download on Nov 5; byte
 integrity and valid-file preview acceptance remain open. The default
 Firebase Hosting site serves the approved public/legal pages, and the owner
 confirmed the support mailbox test arrived. Cloud Billing and the Budgets API
-are enabled;
-no budget or BigQuery billing export is configured, so actual spend is unknown.
+are enabled. A project-scoped $31.75 USD monthly budget alert (~₹3,000 at the
+Nov 5 mid-market rate) sends 50%, 90%, and 100% current-spend notifications to
+the approved operations email; it is not a cap or automatic shutdown. No
+BigQuery billing export is configured, so actual spend is unknown.
 The user confirmed the test-only canary firing email. A separate bounded API
 5xx alert-condition exercise opened and auto-closed its incident while SQL
 remained stopped. A separate bounded SQL restart and one readiness request
 verified HTTP 200 with all checks healthy; SQL is again STOPPED/NEVER.
 Gmail confirms the actual API 5xx policy's firing and resolved messages for
-this incident; it does not prove delivery for every policy. A read-only
-inventory found 13 enabled policies on the approved channel, with controlled
-delivery evidence for two and configuration-only evidence for eleven. Missing
+this incident; it does not prove delivery for every policy. The API p95 policy
+also fired on staging 503s at 11,457.57 ms and delivered an email. It resolved
+after 57m55s because metric data became missing; this is not service-recovery
+proof. A read-only inventory found 13 enabled policies on the approved
+channel, with alert-email evidence for three and configuration-only evidence
+for ten. Missing
 metric evaluation is not configured; four policies auto-close in 30 minutes,
 nine in 60, and only three explicitly request an `OPENED` prompt. Actual
 current spend remains unread: the Billing Viewer report is available in the
-Cloud Console, but no budget exists and no BigQuery dataset was found in the
-canonical project.
+Cloud Console, and no BigQuery dataset was found in the canonical project.
 Nov 5 read-only database inspection found PITR enabled with seven retained
 backups but the newest successful automated backup dated Oct 27. Public IPv4 is
 assigned, private IP is absent, no authorized networks are configured, and

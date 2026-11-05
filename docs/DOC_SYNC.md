@@ -2,14 +2,14 @@
 
 ## Current Readiness Reconciliation (2026-11-05)
 
-The current integration is `9c84e436a4e6457d9d49c157db19caef2e34b652` after
-APP-READY-097 PR #277; merged-result integration CI `42046284344` passed 1,366
+The current integration is `4ea82e14add4f19fa2d5b55d49a2d18059d06c01` after
+APP-READY-098 PR #278; merged-result integration CI `42060289556` passed 1,366
 tests and all configured checks, including debug APK, Android release lint,
-signing, and environment checks. The two new local tests connect the sanitized
-error bridge through consent/session checks to the strict HTTP adapter. The
-1,364 to 1,366 increase is exactly +2 with no removed, skipped, disabled or
-weakened tests. Local APK packaging had exhausted E: space; merged-result CI
-successfully built the APK.
+signing, and environment checks. APP-READY-098 changed no test inventory. The
+APP-READY-097 source-path tests connect the sanitized error bridge through
+consent/session checks to the strict HTTP adapter; the increase from 1,364 to
+1,366 was exactly +2 with no removed, skipped, disabled or weakened tests. Local
+APK packaging had exhausted E: space; merged-result CI successfully built it.
 Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
 PR lanes `41982489735` and post-merge CI `41982963454` passed. APP-READY-089
@@ -31,16 +31,21 @@ controlled recovery, not continuous availability. Gmail confirms the real-policy
 firing and resolved messages for this incident at `2026-11-04T19:55:21Z` and
 `2026-11-04T20:00:21Z`; this does not prove delivery for every policy. The
 original 13 policies remain.
-The Nov 5 read-only inventory found controlled delivery evidence for two
-policies only (API 5xx and sanitized release-health); the other eleven have
-configuration/channel evidence but no controlled condition-delivery proof.
+The Nov 5 read-only inventory found controlled alert-email evidence for three
+policies (API 5xx, sanitized release-health, and API p95 latency); the other ten
+have configuration/channel evidence but no controlled condition-delivery proof.
+The p95 alert fired at 11,457.57 ms on 503 responses at `2026-11-05T10:48:12Z`;
+its resolved email reports missing metric data after 57m55s, not a healthy
+recovery. The policy's `evaluationMissingData` remains unset.
 All three Scheduler jobs remain paused and no alert conditions were induced.
 Metric missing-data behavior is not configured; four policies auto-close at 30
 minutes and nine at 60, with only three explicitly requesting an `OPENED`
-prompt. The Billing Viewer can use the Cloud Console current-month report; the
-correct billing account has no budget, no BigQuery dataset was found in the
-canonical project, and current documentation records no export. Actual spend
-was not read in this checkpoint. Nov 5 SQL read-back confirms STOPPED/NEVER,
+prompt. The Billing Viewer can use the Cloud Console current-month report. A
+project-scoped $31.75 USD monthly budget alert (~₹3,000 at the Nov 5 mid-market
+rate) sends threshold notifications at 50%, 90%, and 100% to the approved
+operations channel; it is not a cap or automatic stop. No BigQuery dataset or
+billing export is configured, and actual spend was not read. Nov 5 SQL
+read-back confirms STOPPED/NEVER,
 deletion protection, automated backups/PITR, seven retained backups, and newest
 successful automated backup Oct 27. Public IPv4 is assigned, private IP is
 absent, no authorized network entries are configured, and `requireSsl` is
@@ -68,9 +73,10 @@ at 100% staging traffic:
 `sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7`.
 The revision is Ready/ContainerHealthy, and CI's container smoke served `/admin`;
 operator visual confirmation remains open because the CLI request reached IAP's
-OAuth redirect. Firebase Hosting's API, Cloud Billing and
-its Budgets API are enabled, but no budget or BigQuery billing export is
-configured; actual spend remains unknown and no cap was invented. The full
+OAuth redirect. Firebase Hosting's API, Cloud Billing and its Budgets API are
+enabled. The project-scoped $31.75 USD monthly budget alert has 50%, 90%, and
+100% current-spend notifications and does not cap spending. No BigQuery billing
+export is configured; actual spend remains unknown. The full
 suite on the previous integration passed 1,364 tests; the previous 1,363 figure
 was a one-test undercount. APP-READY-097 is merged and adds two tests; no tests
 were removed, skipped, disabled or weakened. APP-READY-082 remains the single

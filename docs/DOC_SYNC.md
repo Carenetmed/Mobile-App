@@ -2,8 +2,8 @@
 
 ## Current Readiness Reconciliation (2026-11-05)
 
-The current integration is `af0e7ab7bf774c348ed99712f99ca0bb2e2c671e` after
-APP-READY-082 PR #269; post-merge integration CI `41910169371` passed all mobile
+The current integration is `7634f66c25fad83cd477207255b33cbad2d2a1ca` after
+APP-READY-082 PR #270; post-merge integration CI `41917412119` passed all mobile
 checks. Backend
 `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863` after docs-only BE-P1-058 PR #193;
@@ -11,7 +11,7 @@ PR-head and post-merge CI runs `41802198065` and `41802721952` passed all three
 lanes. APP-READY-089 support content is live; APP-READY-088/090 upload recovery
 source is merged. Older pending CI statements below are historical records.
 
-Current read-only cloud state: SQL STOPPED/NEVER with deletion protection,
+Current cloud state read-back: SQL STOPPED/NEVER with deletion protection,
 three Scheduler jobs PAUSED, Cloud Run without minimum-instance floors, thirteen
 enabled alert policies (all referencing the approved operations email channel).
 A temporary alert policy on existing staging-admin request metrics fired; both
@@ -28,10 +28,14 @@ default Hosting site. The active admin revision's digest and successful build
 source prove the Download UI/route is deployed. On Nov 5 the operator confirmed
 CareNet admin sign-in and a completed staging document download during a
 bounded SQL window; byte integrity and valid PDF rendering were not verified.
-Web PR #13
-merged the sign-in-layer clarification at
-`112212d486adf442a57e61563a77f89a7488dc86`, but staging still serves revision
-`carenet-admin-staging-00006-55n`. Firebase Hosting's API, Cloud Billing and
+Web PR #15 main `f511d6a36d69157eed239a77c73d9253e57d8e7e` passed
+post-merge CI `41927227034`; Cloud Build `caace09e-6c85-4a48-b05e-d62b66575785`
+produced the digest now serving as revision `carenet-admin-staging-00008-cig`
+at 100% staging traffic:
+`sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7`.
+The revision is Ready/ContainerHealthy, and CI's container smoke served `/admin`;
+operator visual confirmation remains open because the CLI request reached IAP's
+OAuth redirect. Firebase Hosting's API, Cloud Billing and
 its Budgets API are enabled, but no budget or BigQuery billing export is
 configured; actual spend remains unknown and no cap was invented. The mobile
 suite remains 1,363 tests; this documentation follow-up updates an existing

@@ -2,8 +2,8 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Integration base is `af0e7ab7bf774c348ed99712f99ca0bb2e2c671e`. APP-READY-082
-PR #269 merged with post-merge integration run `41910169371` passing all mobile
+Integration base is `7634f66c25fad83cd477207255b33cbad2d2a1ca`. APP-READY-082
+PR #270 merged with post-merge integration run `41917412119` passing all mobile
 checks. Backend `main` is
 `2d4b320771479e00ca7034a0859821a6b1fb7863`; BE-P1-058 evidence reconciliation
 PR #193 and post-merge CI runs `41802198065` and `41802721952` passed all three
@@ -30,7 +30,8 @@ notification-channel error logs appeared in the one-hour read-back. The durable
 control-plane changes in this checkpoint were narrowing the Firebase Admin
 SDK identity's project-wide Token Creator grant to a self-only service-account
 binding and enabling the Billing Budgets API. The temporary canary policy was
-removed; no runtime service was activated. Cloud Billing is
+removed; no backend/messaging service or Scheduler job was activated. The admin
+revision was updated without adding a minimum-instance floor. Cloud Billing is
 enabled, but there is no configured budget or BigQuery billing export, so total
 spend is still unknown. No cap was set without an approved monthly amount.
 
@@ -46,14 +47,19 @@ One disposable PITR clone was verified and deleted. Restore verification took
 that run only. Latest available restore point was about 16m22s before source
 shutdown; actual RPO/data loss remains unknown. Do not claim an RPO SLO.
 
-The admin Download action is present in active Cloud Run revision
-`carenet-admin-staging-00006-55n`. Web PR #13 merged the explanatory sign-in
-copy at `112212d486adf442a57e61563a77f89a7488dc86`, but the revision has not
-been updated. On Nov 5 the operator confirmed successful CareNet admin sign-in
-and completion of a document download during a bounded SQL window. Byte
-integrity and valid PDF preview remain unproved; the existing 63-byte smoke
-document must not be approved, rejected or overwritten. Cloud SQL is back to
-STOPPED/NEVER. APP-READY-082 remains
+The admin Download action and sign-in clarification are now in active Cloud
+Run revision `carenet-admin-staging-00008-cig` at 100% staging traffic. Web PR
+#15 main is `f511d6a36d69157eed239a77c73d9253e57d8e7e`; post-merge CI
+`41927227034` passed. Cloud Build `caace09e-6c85-4a48-b05e-d62b66575785`
+produced digest
+`sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7`.
+The revision is Ready/ContainerHealthy and CI container smoke served `/admin`.
+The CLI check reached the IAP OAuth redirect, so operator visual confirmation
+of the updated sign-in copy remains open. The operator previously confirmed
+CareNet admin sign-in and one document download during a bounded SQL window;
+byte integrity and valid PDF preview remain unproved. The existing 63-byte
+smoke document must not be approved, rejected or overwritten. Cloud SQL is back
+to STOPPED/NEVER. APP-READY-082 remains
 the sole recorded next operational track. See `AI_HANDOFF.md` for current
 evidence and boundaries.
 

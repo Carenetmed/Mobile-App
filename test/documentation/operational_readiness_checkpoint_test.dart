@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('fa1a715c25ab388ba29a92172c570ba7199f669a'),
+        contains('1bb6dc76930a530d2d8331ba483301f0bd784b8a'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,7 +40,7 @@ void main() {
       );
       expect(
         entry.value,
-        contains('41977173538'),
+        contains('42007269788'),
         reason: '${entry.key} must name mobile post-merge CI.',
       );
       if (entry.key == 'AI_HANDOFF.md' || entry.key == 'CODEBASE_STATUS.md') {
@@ -75,16 +75,21 @@ void main() {
     expect(handoff, contains('Billing Budgets API are enabled'));
     expect(handoff, contains('no budget or BigQuery billing'));
     expect(handoff, contains('Total spend remains unknown'));
-    expect(handoff, contains('real-policy email is unconfirmed'));
+    expect(
+      handoff,
+      contains('Gmail confirms the real-policy'),
+    );
+    expect(handoff, contains('GET /health/ready'));
+    expect(handoff, contains('returned HTTP 200'));
     expect(handoff, contains('test-only canary policy'));
     expect(handoff, contains('threshold >2'));
     expect(handoff, contains('auto-closed while SQL remained stopped'));
     expect(handoff, contains('temporary policy was deleted'));
-    expect(handoff, contains('does not prove service-failure'));
+    expect(handoff, contains('not delivery for every policy'));
     expect(readiness, contains('no monthly cap was invented'));
     expect(readiness, contains('BE-P1-058 is delivered'));
-    expect(readiness, contains('controlled degraded-readiness test'));
-    expect(readiness, contains('Receipt of the real-policy'));
+    expect(readiness, contains('earlier 503 exercise was controlled'));
+    expect(readiness, contains('Gmail confirms the real-policy'));
   });
 
   test('APP-READY-082 remains the sole next task with current evidence', () {
@@ -100,8 +105,9 @@ void main() {
     expect(task, contains('13 original policies remain'));
     expect(
       task,
-      contains('real-policy email receipt and recovery unconfirmed'),
+      contains('Gmail confirms this incident\'s real-policy firing'),
     );
+    expect(task, contains('verified `/health/ready` HTTP 200'));
     expect(task, contains('budget/cost ceiling'));
     expect(task, isNot(contains('af0e7ab')));
   });

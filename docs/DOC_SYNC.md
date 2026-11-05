@@ -2,8 +2,9 @@
 
 ## Current Readiness Reconciliation (2026-11-05)
 
-The current integration is `fa1a715c25ab388ba29a92172c570ba7199f669a` after
-APP-READY-082 task-row PR #272; post-merge integration CI `41977173538` passed.
+The current integration is `1bb6dc76930a530d2d8331ba483301f0bd784b8a` after
+APP-READY-094 docs-only PR #274; post-merge integration CI `42007269788` passed
+1,364 tests and all configured checks.
 Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
 PR lanes `41982489735` and post-merge CI `41982963454` passed. APP-READY-089
@@ -17,8 +18,14 @@ A test-only temporary alert policy on existing staging-admin request metrics
 fired; the user confirmed the firing email, then the temporary policy was
 deleted. Separately, nine bounded API Gateway readiness GETs while SQL was
 stopped produced backend 503s and opened the existing API 5xx policy incident.
-It auto-closed while SQL remained stopped, so this is not recovery evidence; the
-real-policy email receipt is unconfirmed. The original 13 policies remain.
+It auto-closed while SQL remained stopped. A separate bounded recovery window
+waited for the Cloud SQL start operation to finish, then one `/health/ready`
+request returned HTTP 200 with all five readiness checks healthy. SQL was
+restored to STOPPED/NEVER; all schedulers remained paused. This proves one
+controlled recovery, not continuous availability. Gmail confirms the real-policy
+firing and resolved messages for this incident at `2026-11-04T19:55:21Z` and
+`2026-11-04T20:00:21Z`; this does not prove delivery for every policy. The
+original 13 policies remain.
 This tests one controlled degraded-readiness condition, not a natural outage or
 delivery for every alert. The owner
 confirmed the approved support-mailbox test arrived. One
@@ -48,7 +55,8 @@ suite passes 1,364 tests on both the exact integration base and this docs
 branch; the previous 1,363 figure was a one-test undercount. This follow-up
 updates assertions in an existing test, with no test cases added, removed,
 skipped or weakened. APP-READY-082 remains the single next recorded
-operational track; device, provider, RPO/security, and final Paystack gates
+operational track; cost visibility, device, provider,
+RPO/security, and final Paystack gates
 remain open.
 
 The Nov 4 Cloud Run read-back shows `carenet-backend-staging-be075-candidate`

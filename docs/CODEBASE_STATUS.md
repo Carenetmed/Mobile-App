@@ -2,8 +2,10 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Integration base is `fa1a715c25ab388ba29a92172c570ba7199f669a`. APP-READY-082
-task-row PR #272 merged with post-merge integration run `41977173538` passing.
+Integration base is `1bb6dc76930a530d2d8331ba483301f0bd784b8a`. APP-READY-094
+docs-only PR #274 merged with post-merge integration run `42007269788` passing
+1,364 tests and analyzer, debug APK, Android release lint/signing, and
+environment checks.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194
 recorded the controlled API 5xx alert-condition test, with PR CI
 `41982489735` and post-merge CI `41982963454` passing all three lanes. These
@@ -30,10 +32,16 @@ minimum-instance floor; thirteen monitoring policies and the email channel are
 enabled. A test-only temporary canary on existing staging-admin request metrics
 fired; the user confirmed its firing email, then the canary policy was deleted.
 Separately, nine bounded API Gateway readiness GETs while SQL was stopped
-produced backend 503s and opened the existing API 5xx policy incident. It later
-auto-closed while SQL remained stopped; the real-policy email receipt is
-unconfirmed, and auto-close is not recovery evidence. The original 13 policies
-remain. The durable
+produced backend 503s and opened the existing API 5xx policy incident. It
+auto-closed while SQL remained stopped. A later bounded recovery window waited
+for the Cloud SQL start operation to complete, then one `/health/ready` request
+returned HTTP 200 with database, migrations, email, Google auth, and verification
+storage healthy. SQL returned to STOPPED/NEVER and the schedulers stayed paused.
+This proves one controlled recovery, not continuous availability or natural-
+outage behavior. Gmail confirms this incident's real-policy firing and
+resolved emails were delivered at `2026-11-04T19:55:21Z` and
+`2026-11-04T20:00:21Z`; this proves one policy's delivery, not all-policy
+coverage. The original 13 policies remain. The durable
 control-plane changes in this checkpoint were narrowing the Firebase Admin
 SDK identity's project-wide Token Creator grant to a self-only service-account
 binding and enabling the Billing Budgets API. The temporary canary policy was
@@ -47,7 +55,8 @@ above 90 for 600 seconds (60-second mean alignment). BE-P1-058 is delivered
 through backend PR #169, and PR #194 records the controlled 5xx exercise.
 The live policy was last mutated on Oct 23; no actual high-pressure breach or
 real memory-pressure notification delivery is proved. The canary verifies the
-test-only firing email; the real-policy email receipt remains unconfirmed.
+test-only firing email; actual API 5xx firing and resolved alert emails are
+confirmed for the single controlled incident only.
 
 One disposable PITR clone was verified and deleted. Restore verification took
 56m08s from submission to receipt, below the provisional 60-minute target for

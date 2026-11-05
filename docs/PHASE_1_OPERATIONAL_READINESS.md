@@ -2,8 +2,10 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Mobile integration is `fa1a715c25ab388ba29a92172c570ba7199f669a` after
-APP-READY-082 task-row PR #272; post-merge integration CI `41977173538` passed.
+Mobile integration is `1bb6dc76930a530d2d8331ba483301f0bd784b8a` after
+APP-READY-094 docs-only PR #274; post-merge integration CI `42007269788` passed
+1,364 tests plus analyzer, debug APK, Android release lint, signing, and
+environment regressions.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only
 PR #194; PR-head CI `41982489735` and post-merge CI `41982963454` passed all
 three lanes. APP-READY-090 and PR #265 are earlier checkpoints; this
@@ -37,9 +39,16 @@ reconciliation does not close the remaining operational gates.
   API Gateway readiness GETs while Cloud SQL was intentionally stopped produced
   backend 503s and crossed the existing API 5xx threshold (aligned count 3,
   threshold >2), opening its incident. The incident auto-closed while SQL
-  remained stopped; this does not prove recovery. Receipt of the real-policy
-  email is unconfirmed; this was a controlled degraded-readiness test, not a
-  natural outage. The original 13 policies remain. No budget is
+  remained stopped. A later bounded recovery window waited until the complete
+  Cloud SQL start operation finished, then one `GET /health/ready` returned
+  HTTP 200 with database, migrations, email, Google auth, and verification
+  storage all healthy. SQL was returned to `STOPPED/NEVER`; schedulers remained
+  paused and no Cloud Run traffic or database rows changed. This proves one
+  controlled recovery, not continuous availability or natural-outage behavior.
+  Gmail confirms the real-policy firing and resolved emails for this incident
+  arrived at `2026-11-04T19:55:21Z` and `2026-11-04T20:00:21Z`; this proves one
+  incident's delivery, not every policy. The earlier 503 exercise was controlled,
+  not a natural outage. The original 13 policies remain. No budget is
   configured and BigQuery billing export is absent, so cost breakdown and budget alerts remain
   unavailable; no monthly cap was invented. The database memory policy is
   enabled with the intended `Usage > 90` for 600s and 60s mean alignment (last
@@ -87,8 +96,10 @@ checkpoint into a provider activation or start short-form content work.
 
 APP-READY-082 remains partially complete. This November 5 handoff reconciles
 mobile status with current Hosting, monitoring and operator evidence. It
-changed no app runtime, provider,
-dependency, navigation or app behavior. Earlier dated
+changed no app runtime, provider, dependency, navigation, or deployed service
+configuration. A bounded Cloud SQL recovery proof was run and the instance was
+returned to its prior `STOPPED/NEVER` state; no database rows were changed.
+Earlier dated
 audit snapshots are historical. The full readiness program is not complete.
 Protected worktrees and archive references remain outside this slice.
 

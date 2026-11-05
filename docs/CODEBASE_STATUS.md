@@ -2,8 +2,8 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Integration base is `1bb6dc76930a530d2d8331ba483301f0bd784b8a`. APP-READY-094
-docs-only PR #274 merged with post-merge integration run `42007269788` passing
+Integration base is `1fd0b4a4af6806abad214b83716778ac9ca1ab1e`. APP-READY-095
+docs-only PR #275 merged with post-merge integration run `42021705954` passing
 1,364 tests and analyzer, debug APK, Android release lint/signing, and
 environment checks.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194
@@ -57,6 +57,15 @@ The live policy was last mutated on Oct 23; no actual high-pressure breach or
 real memory-pressure notification delivery is proved. The canary verifies the
 test-only firing email; actual API 5xx firing and resolved alert emails are
 confirmed for the single controlled incident only.
+The Nov 5 read-only policy inventory confirms 13 enabled policies on the
+approved channel. Controlled incident/email evidence exists for the API 5xx
+and sanitized release-health policies only (2/13); the other eleven remain
+configuration-only. The deleted temporary canary is outside this count. The
+billing account has no budget; the approved Billing Viewer can inspect the
+current-month console report, but its actual spend was not read here. Metric
+policies leave missing-data evaluation unset; four auto-close after 30 minutes,
+nine after 60, and only three explicitly request an `OPENED` prompt. The
+release-health policy alone explicitly configures a 60-minute renotify interval.
 
 One disposable PITR clone was verified and deleted. Restore verification took
 56m08s from submission to receipt, below the provisional 60-minute target for

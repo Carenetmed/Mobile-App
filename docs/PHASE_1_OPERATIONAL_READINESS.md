@@ -2,8 +2,8 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Mobile integration is `1bb6dc76930a530d2d8331ba483301f0bd784b8a` after
-APP-READY-094 docs-only PR #274; post-merge integration CI `42007269788` passed
+Mobile integration is `1fd0b4a4af6806abad214b83716778ac9ca1ab1e` after
+APP-READY-095 docs-only PR #275; post-merge integration CI `42021705954` passed
 1,364 tests plus analyzer, debug APK, Android release lint, signing, and
 environment regressions.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only
@@ -88,6 +88,45 @@ reconciliation does not close the remaining operational gates.
   signing/provider setup and Mac/iPhone acceptance remain open.
 - Payments: Paystack test activation remains last and requires the single final
   explicit confirmation. The previously exposed test key must not be reused.
+
+## Live Alert Policy Inventory (Read-Only, 2026-11-05)
+
+Read-only Cloud Monitoring inspection found 13 enabled policies, each
+referencing the same approved email channel. Two have controlled alert-delivery
+evidence; eleven are configuration-only. The separately created test canary
+was deleted and is not counted among these 13.
+
+| Policy | Live condition | Evidence status |
+| --- | --- | --- |
+| API server errors | Cloud Run 5xx request count >2 over a 5-minute sum | One controlled SQL-off incident fired and resolved; both real-policy emails were found in Gmail. |
+| Database memory pressure | Cloud SQL `Usage` >90% for 600 seconds, 60-second mean | Configuration verified; no real breach or delivery proof. SQL is currently stopped. |
+| Database disk pressure | Cloud SQL disk utilization >80% for 300 seconds, 60-second mean | Configuration verified; no threshold event or delivery proof. |
+| RTC scheduler dispatch failed | Error-severity log for the RTC reconciliation Scheduler job | Configuration verified; no matching incident or delivery proof. The job is paused. |
+| Sanitized mobile release-health report | Sanitized release-health counter above zero | One controlled counter event opened an incident and produced a matching email. This is not native-crash acceptance. |
+| API p95 latency | Cloud Run request latency p95 >3,000 ms for 300 seconds | Configuration verified; no threshold event or delivery proof. |
+| Notification deliveries overdue or abandoned | Observer log: due work >300 seconds late, stale claim, or unclaimed processing | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
+| Notification observer execution failed | Observer Cloud Run Job execution result is not succeeded | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
+| RTC execution failed | RTC reconciliation Cloud Run Job execution result is not succeeded | Configuration verified; no matching incident or delivery proof. RTC schedule is paused. |
+| Notification events overdue or abandoned | Observer log: due work >300 seconds late, stale claim, or unclaimed processing | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
+| Database CPU pressure | Cloud SQL CPU utilization >85% for 600 seconds, 60-second mean | Configuration verified; no threshold event or delivery proof. SQL is currently stopped. |
+| Staging job failure | Notification-worker or migration Cloud Run Job execution result is not succeeded | Configuration verified; no matching incident or delivery proof. |
+| Notification reminders overdue or abandoned | Observer log: due work >300 seconds late, stale claim, or unclaimed processing | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
+
+This inventory proves current policy configuration and channel references, not
+end-to-end delivery for all conditions. Do not deliberately induce the eleven
+unobserved conditions, start paused workers, or enable recurring schedules just
+to produce test alerts; obtain a bounded proof plan before changing operational
+state. The metric conditions do not configure `evaluationMissingData`; an absent
+metric is therefore not evidence of a healthy system. Four policies use a
+30-minute auto-close and nine use 60 minutes. Only the RTC scheduler-dispatch,
+sanitized release-health, and RTC-execution policies explicitly list an
+`OPENED` notification prompt; the release-health policy also has a 60-minute
+renotify interval. The current month cost report is available to the approved Billing
+Viewer in [Google Cloud Billing Reports](https://console.cloud.google.com/billing/019357-62ECE6-84D214/reports?project=project-a96784ee-811c-46ab-a7b).
+The CLI has no spend-report command; the billing account currently has no
+budget, and no BigQuery dataset was found in the canonical project. Existing
+documentation records that billing export is not configured. Actual current
+spend has not been read in this checkpoint, so no cap or forecast is claimed.
 
 APP-READY-082 remains the recorded next operational track. Do not turn this
 checkpoint into a provider activation or start short-form content work.

@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('1bb6dc76930a530d2d8331ba483301f0bd784b8a'),
+        contains('1fd0b4a4af6806abad214b83716778ac9ca1ab1e'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,7 +40,7 @@ void main() {
       );
       expect(
         entry.value,
-        contains('42007269788'),
+        contains('42021705954'),
         reason: '${entry.key} must name mobile post-merge CI.',
       );
       if (entry.key == 'AI_HANDOFF.md' || entry.key == 'CODEBASE_STATUS.md') {
@@ -75,10 +75,7 @@ void main() {
     expect(handoff, contains('Billing Budgets API are enabled'));
     expect(handoff, contains('no budget or BigQuery billing'));
     expect(handoff, contains('Total spend remains unknown'));
-    expect(
-      handoff,
-      contains('Gmail confirms the real-policy'),
-    );
+    expect(handoff, contains('Gmail confirms the real-policy'));
     expect(handoff, contains('GET /health/ready'));
     expect(handoff, contains('returned HTTP 200'));
     expect(handoff, contains('test-only canary policy'));
@@ -90,6 +87,29 @@ void main() {
     expect(readiness, contains('BE-P1-058 is delivered'));
     expect(readiness, contains('earlier 503 exercise was controlled'));
     expect(readiness, contains('Gmail confirms the real-policy'));
+    expect(readiness, contains('Two have controlled alert-delivery'));
+    expect(readiness, contains('eleven are configuration-only'));
+    expect(readiness, contains('do not configure `evaluationMissingData`'));
+    expect(readiness, contains('Four policies use a'));
+    expect(readiness, contains('30-minute auto-close and nine use 60 minutes'));
+    expect(readiness, contains('policies explicitly list an'));
+    for (final policy in <String>[
+      'API server errors',
+      'Database memory pressure',
+      'Database disk pressure',
+      'RTC scheduler dispatch failed',
+      'Sanitized mobile release-health report',
+      'API p95 latency',
+      'Notification deliveries overdue or abandoned',
+      'Notification observer execution failed',
+      'RTC execution failed',
+      'Notification events overdue or abandoned',
+      'Database CPU pressure',
+      'Staging job failure',
+      'Notification reminders overdue or abandoned',
+    ]) {
+      expect(readiness, contains('| $policy |'));
+    }
   });
 
   test('APP-READY-082 remains the sole next task with current evidence', () {
@@ -100,15 +120,21 @@ void main() {
 
     expect(task, contains('**NEXT**'));
     expect(task, contains('backend docs PR #194 merged at `1e2072b`'));
-    expect(task, contains('controlled nine-GET degraded-readiness test'));
+    expect(task, contains('controlled degraded-readiness test'));
     expect(task, contains('admin revision `00008-cig`'));
-    expect(task, contains('13 original policies remain'));
+    expect(task, contains('13 enabled policies on the approved channel'));
+    expect(task, contains('2/13 having controlled delivery evidence'));
     expect(
       task,
-      contains('Gmail confirms this incident\'s real-policy firing'),
+      contains(
+        'Gmail confirms firing and resolved mail for that one API policy',
+      ),
     );
-    expect(task, contains('verified `/health/ready` HTTP 200'));
-    expect(task, contains('budget/cost ceiling'));
+    expect(
+      task,
+      contains('separately gated recovery returned `/health/ready` HTTP 200'),
+    );
+    expect(task, contains('actual cost report remains unread'));
     expect(task, isNot(contains('af0e7ab')));
   });
 

@@ -43,6 +43,13 @@ void main() {
         contains('41977173538'),
         reason: '${entry.key} must name mobile post-merge CI.',
       );
+      if (entry.key == 'AI_HANDOFF.md' || entry.key == 'CODEBASE_STATUS.md') {
+        expect(
+          entry.value,
+          contains('1,364 tests'),
+          reason: '${entry.key} must record the verified full-suite count.',
+        );
+      }
       expect(
         entry.value,
         contains('carenet-admin-staging-00008-cig'),
@@ -106,6 +113,11 @@ void main() {
     expect(handoff, contains('coverage, and PR #13 clarified'));
     expect(handoff, contains('PR #13 clarified that IAP access'));
     expect(handoff, contains('PR #15 normalized the container entrypoint'));
+    expect(handoff, contains('Web PR #16 then'));
+    expect(handoff, contains('2a3f299f6cc00779b2d7625a0c60339e83551595'));
+    expect(handoff, contains('42000423597'));
+    expect(handoff, contains('not proof that Chromium visually rendered'));
+    expect(handoff, contains('did not change or redeploy'));
     expect(handoff, contains('post-merge CI'));
     expect(handoff, contains('41927227034'));
     expect(handoff, contains('operator visual confirmation'));

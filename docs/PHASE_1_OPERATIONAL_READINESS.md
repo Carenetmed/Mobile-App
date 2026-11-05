@@ -51,8 +51,13 @@ reconciliation does not close the remaining operational gates.
   provisional 60-minute target for this one run. The latest available restore
   point was about 16m22s before source shutdown; actual RPO and data loss remain
   unknown. No RPO SLO is claimed.
-- Admin: Web PR #15 main `f511d6a36d69157eed239a77c73d9253e57d8e7e` passed
-  post-merge CI `41927227034`. Cloud Build
+- Admin: Web PR #16 merged as `2a3f299f6cc00779b2d7625a0c60339e83551595`;
+  post-merge CI `42000423597` passed. The valid one-page mock PDF receives
+  HTTP 200 and `application/pdf` in the browser test, but this proves neither
+  visual rendering in Chromium nor preview/download of a real staging upload.
+  PR #16 changed only tests/docs and did not redeploy runtime. Web PR #15 main
+  `f511d6a36d69157eed239a77c73d9253e57d8e7e` passed post-merge CI
+  `41927227034`. Cloud Build
   `caace09e-6c85-4a48-b05e-d62b66575785` built the merged source; staging now
   serves digest `sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7`
   in revision `carenet-admin-staging-00008-cig` at 100% traffic. The revision

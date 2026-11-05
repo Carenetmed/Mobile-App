@@ -1,11 +1,13 @@
 # Documentation sync index
 
-## Current Readiness Reconciliation (2026-11-05)
+## Current Readiness Reconciliation (2026-11-06)
 
-The current integration is `9449a733dcd192475f81b2720a4d1ffdb9f03db4` after
-APP-READY-099 PR #279; merged-result integration CI `42073930798` passed 1,366
-tests and all configured checks, including debug APK, Android release lint,
-signing, and environment checks. APP-READY-098 changed no test inventory. The
+The current integration is `d80eac2aa431cff9ea281410c9a5a8c39eaf8660` after
+APP-READY-100 PR #280; PR CI `42081173591` and merged-result CI `42084055217`
+passed on their exact heads. The merged run passed 1,366 tests and all
+configured checks, including debug APK, Android release lint, signing, and
+environment regressions. APP-READY-100 changed six documentation/test files
+and no test inventory. APP-READY-098 changed no test inventory. The
 APP-READY-097 source-path tests connect the sanitized error bridge through
 consent/session checks to the strict HTTP adapter; the increase from 1,364 to
 1,366 was exactly +2 with no removed, skipped, disabled or weakened tests. Local

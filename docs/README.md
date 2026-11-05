@@ -1,8 +1,10 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `9449a733dcd192475f81b2720a4d1ffdb9f03db4` after
-APP-READY-099 PR #279; post-merge CI `42073930798` passed 1,366 tests, analyzer,
-debug APK, Android release lint/signing, and environment checks. APP-READY-098
+Current Mobile integration is `d80eac2aa431cff9ea281410c9a5a8c39eaf8660` after
+APP-READY-100 PR #280; PR CI `42081173591` and merged-result CI `42084055217`
+passed on their exact heads, including 1,366 tests, analyzer, debug APK, Android
+release lint/signing, and environment checks. APP-READY-100 changed six
+documentation/test files and did not change test inventory. APP-READY-098
 changed no test inventory. APP-READY-097 increased the suite from 1,364 to
 1,366 with no removed, skipped, disabled or weakened tests.
 Backend `main` is

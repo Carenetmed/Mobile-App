@@ -1,11 +1,12 @@
 # Codebase status
 
-## Current Checkpoint (2026-11-05)
+## Current Checkpoint (2026-11-06)
 
-Integration base is `9449a733dcd192475f81b2720a4d1ffdb9f03db4`. APP-READY-099
-PR #279 merged with post-merge integration run `42073930798` passing 1,366 tests,
-analyzer, debug APK, Android release lint/signing, and environment checks. This
-docs/test-only reconciliation made no test-inventory change.
+Integration base is `d80eac2aa431cff9ea281410c9a5a8c39eaf8660`. APP-READY-100
+PR #280 reviewed head `e6912068a722005e0a8b8341b9a6a8b66a8e9eea` passed PR CI
+`42081173591`; merged-result CI `42084055217` passed on the exact integration
+SHA with 1,366 tests, analyzer, debug APK, Android release lint/signing, and
+environment regressions. The six-file reconciliation changed no test inventory.
 APP-READY-097's
 source-path test addition is exactly +2 over the 1,364-test base; no tests were
 removed, skipped, disabled or weakened. Local APK packaging ran out of E: space

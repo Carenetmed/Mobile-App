@@ -2,12 +2,12 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Integration base is `7634f66c25fad83cd477207255b33cbad2d2a1ca`. APP-READY-082
-PR #270 merged with post-merge integration run `41917412119` passing all mobile
-checks. Backend `main` is
-`2d4b320771479e00ca7034a0859821a6b1fb7863`; BE-P1-058 evidence reconciliation
-PR #193 and post-merge CI runs `41802198065` and `41802721952` passed all three
-lanes. These documentation updates do not complete the operational program.
+Integration base is `fa1a715c25ab388ba29a92172c570ba7199f669a`. APP-READY-082
+task-row PR #272 merged with post-merge integration run `41977173538` passing.
+Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194
+recorded the controlled API 5xx alert-condition test, with PR CI
+`41982489735` and post-merge CI `41982963454` passing all three lanes. These
+documentation updates do not complete the operational program.
 The storage-expiry source correction is merged; remaining real-provider and
 device acceptance is documented under `PHASE_1_OPERATIONAL_READINESS.md` and
 `PROFESSIONAL_VERIFICATION_UPLOAD_FLOW.md`.
@@ -23,10 +23,13 @@ upload, byte integrity and PDF preview remain unproved.
 Cost-control read-back: staging SQL is STOPPED/NEVER with deletion protection;
 all three Scheduler jobs are PAUSED; Cloud Run backend/admin/messaging have no
 minimum-instance floor; thirteen monitoring policies and the email channel are
-enabled. A temporary canary on existing staging-admin request metrics fired;
-the operator received both the firing and resolved emails, the canary policy
-was deleted, and its incident closed. The original 13 policies remain. No
-notification-channel error logs appeared in the one-hour read-back. The durable
+enabled. A test-only temporary canary on existing staging-admin request metrics
+fired; the user confirmed its firing email, then the canary policy was deleted.
+Separately, nine bounded API Gateway readiness GETs while SQL was stopped
+produced backend 503s and opened the existing API 5xx policy incident. It later
+auto-closed while SQL remained stopped; the real-policy email receipt is
+unconfirmed, and auto-close is not recovery evidence. The original 13 policies
+remain. The durable
 control-plane changes in this checkpoint were narrowing the Firebase Admin
 SDK identity's project-wide Token Creator grant to a self-only service-account
 binding and enabling the Billing Budgets API. The temporary canary policy was
@@ -37,10 +40,10 @@ spend is still unknown. No cap was set without an approved monthly amount.
 
 The enabled database memory policy filters the intended `Usage` component
 above 90 for 600 seconds (60-second mean alignment). BE-P1-058 is delivered
-through backend PR #169, and its documentation is reconciled in backend PR #193.
+through backend PR #169, and PR #194 records the controlled 5xx exercise.
 The live policy was last mutated on Oct 23; no actual high-pressure breach or
 real memory-pressure notification delivery is proved. The canary verifies the
-email channel path only.
+test-only firing email; the real-policy email receipt remains unconfirmed.
 
 One disposable PITR clone was verified and deleted. Restore verification took
 56m08s from submission to receipt, below the provisional 60-minute target for

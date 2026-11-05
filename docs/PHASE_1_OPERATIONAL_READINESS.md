@@ -2,12 +2,11 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Mobile integration is `7634f66c25fad83cd477207255b33cbad2d2a1ca` after
-APP-READY-082 PR #270; post-merge integration CI `41917412119` passed all
-mobile checks. Backend
-`main` is `2d4b320771479e00ca7034a0859821a6b1fb7863`
-after docs-only PR #193; PR-head CI `41802198065` and post-merge CI `41802721952`
-passed all three lanes. APP-READY-090 and PR #265 are earlier checkpoints; this
+Mobile integration is `fa1a715c25ab388ba29a92172c570ba7199f669a` after
+APP-READY-082 task-row PR #272; post-merge integration CI `41977173538` passed.
+Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only
+PR #194; PR-head CI `41982489735` and post-merge CI `41982963454` passed all
+three lanes. APP-READY-090 and PR #265 are earlier checkpoints; this
 reconciliation does not close the remaining operational gates.
 
 - Cloud cost posture: Cloud SQL was briefly enabled for the Nov 5 admin proof
@@ -32,17 +31,20 @@ reconciliation does not close the remaining operational gates.
   unchanged. This closes only the cross-service-account impersonation finding,
   not the broader least-privilege review.
 - Monitoring: 13 policies and the email channel are enabled; all 13 policies
-  reference the approved operations channel. A bounded canary using existing
-  staging-admin request metrics created one temporary policy and incident;
-  both firing and resolved emails arrived, then the policy was deleted and its
-  incident closed. The original policy count is back to 13, and no channel-error
-  logs appeared in the one-hour read-back. This proves the notification path,
-  not a real threshold breach or delivery for every policy. No budget is
+  reference the approved operations channel. The user confirmed the firing
+  email from a bounded test-only canary policy on existing staging-admin
+  request metrics; that temporary policy was deleted. Separately, nine bounded
+  API Gateway readiness GETs while Cloud SQL was intentionally stopped produced
+  backend 503s and crossed the existing API 5xx threshold (aligned count 3,
+  threshold >2), opening its incident. The incident auto-closed while SQL
+  remained stopped; this does not prove recovery. Receipt of the real-policy
+  email is unconfirmed; this was a controlled degraded-readiness test, not a
+  natural outage. The original 13 policies remain. No budget is
   configured and BigQuery billing export is absent, so cost breakdown and budget alerts remain
   unavailable; no monthly cap was invented. The database memory policy is
   enabled with the intended `Usage > 90` for 600s and 60s mean alignment (last
-  mutation Oct 23). BE-P1-058 is delivered and backend PR #193 reconciles its
-  documentation. Recent samples remain below threshold; no real breach or
+  mutation Oct 23). BE-P1-058 is delivered; backend PR #194 records the
+  controlled 5xx exercise. Recent samples remain below threshold; no real memory breach or
   memory-policy notification delivery is claimed.
 - Database recovery: a disposable PITR clone was verified and deleted. Time
   from clone submission to completed verification was 56m08s, below the

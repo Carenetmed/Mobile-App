@@ -30,17 +30,17 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('7634f66c25fad83cd477207255b33cbad2d2a1ca'),
+        contains('fa1a715c25ab388ba29a92172c570ba7199f669a'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
         entry.value,
-        contains('2d4b320771479e00ca7034a0859821a6b1fb7863'),
+        contains('1e2072bf2520b387d3dcc28f32918c21a86ad880'),
         reason: '${entry.key} must name current backend main.',
       );
       expect(
         entry.value,
-        contains('41917412119'),
+        contains('41977173538'),
         reason: '${entry.key} must name mobile post-merge CI.',
       );
       expect(
@@ -55,7 +55,7 @@ void main() {
       );
       expect(
         entry.value,
-        contains('41802721952'),
+        contains('41982963454'),
         reason: '${entry.key} must name backend post-merge CI.',
       );
     }
@@ -68,13 +68,16 @@ void main() {
     expect(handoff, contains('Billing Budgets API are enabled'));
     expect(handoff, contains('no budget or BigQuery billing'));
     expect(handoff, contains('Total spend remains unknown'));
-    expect(handoff, contains('real memory-pressure alert delivery is claimed'));
-    expect(handoff, contains('both alert and resolved emails'));
+    expect(handoff, contains('real-policy email is unconfirmed'));
+    expect(handoff, contains('test-only canary policy'));
+    expect(handoff, contains('threshold >2'));
+    expect(handoff, contains('auto-closed while SQL remained stopped'));
     expect(handoff, contains('temporary policy was deleted'));
-    expect(handoff, contains('service-failure delivery for every policy'));
+    expect(handoff, contains('does not prove service-failure'));
     expect(readiness, contains('no monthly cap was invented'));
     expect(readiness, contains('BE-P1-058 is delivered'));
-    expect(readiness, contains('not a real threshold breach or delivery'));
+    expect(readiness, contains('controlled degraded-readiness test'));
+    expect(readiness, contains('Receipt of the real-policy'));
   });
 
   test('APP-READY-082 remains the sole next task with current evidence', () {
@@ -84,11 +87,14 @@ void main() {
         .singleWhere((line) => line.startsWith('| APP-READY-082 |'));
 
     expect(task, contains('**NEXT**'));
-    expect(task, contains('PR #271 docs merged as `ca81a4c`'));
-    expect(task, contains('integration CI `41963952178`'));
+    expect(task, contains('backend docs PR #194 merged at `1e2072b`'));
+    expect(task, contains('controlled nine-GET degraded-readiness test'));
     expect(task, contains('admin revision `00008-cig`'));
     expect(task, contains('13 original policies remain'));
-    expect(task, contains('real failure-condition delivery'));
+    expect(
+      task,
+      contains('real-policy email receipt and recovery unconfirmed'),
+    );
     expect(task, contains('budget/cost ceiling'));
     expect(task, isNot(contains('af0e7ab')));
   });

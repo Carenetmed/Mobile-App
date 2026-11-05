@@ -2,23 +2,25 @@
 
 ## Current Readiness Reconciliation (2026-11-05)
 
-The current integration is `7634f66c25fad83cd477207255b33cbad2d2a1ca` after
-APP-READY-082 PR #270; post-merge integration CI `41917412119` passed all mobile
-checks. Backend
-`main` is
-`2d4b320771479e00ca7034a0859821a6b1fb7863` after docs-only BE-P1-058 PR #193;
-PR-head and post-merge CI runs `41802198065` and `41802721952` passed all three
-lanes. APP-READY-089 support content is live; APP-READY-088/090 upload recovery
+The current integration is `fa1a715c25ab388ba29a92172c570ba7199f669a` after
+APP-READY-082 task-row PR #272; post-merge integration CI `41977173538` passed.
+Backend `main` is
+`1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
+PR lanes `41982489735` and post-merge CI `41982963454` passed. APP-READY-089
+support content is live; APP-READY-088/090 upload recovery
 source is merged. Older pending CI statements below are historical records.
 
 Current cloud state read-back: SQL STOPPED/NEVER with deletion protection,
 three Scheduler jobs PAUSED, Cloud Run without minimum-instance floors, thirteen
 enabled alert policies (all referencing the approved operations email channel).
-A temporary alert policy on existing staging-admin request metrics fired; both
-firing and resolved messages were received, then the temporary policy was
-deleted and its incident closed. The original 13 policies remain, with no
-channel-error logs in the one-hour read-back. This verifies channel
-delivery, not real failure behavior for every alert condition. The owner
+A test-only temporary alert policy on existing staging-admin request metrics
+fired; the user confirmed the firing email, then the temporary policy was
+deleted. Separately, nine bounded API Gateway readiness GETs while SQL was
+stopped produced backend 503s and opened the existing API 5xx policy incident.
+It auto-closed while SQL remained stopped, so this is not recovery evidence; the
+real-policy email receipt is unconfirmed. The original 13 policies remain.
+This tests one controlled degraded-readiness condition, not a natural outage or
+delivery for every alert. The owner
 confirmed the approved support-mailbox test arrived. One
 disposable PITR proof completed verification in 56m08s and its clone was deleted;
 RPO remains unknown. The Firebase Admin SDK identity's project-wide Token Creator

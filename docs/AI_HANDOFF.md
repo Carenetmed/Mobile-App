@@ -2,12 +2,12 @@
 
 ## Current Verified Checkpoint (2026-11-05)
 
-Current Mobile integration is `7634f66c25fad83cd477207255b33cbad2d2a1ca`.
-APP-READY-082 alert-delivery PR #270 merged; post-merge integration CI
-`41917412119` passed all mobile checks. Backend `main` is
-`2d4b320771479e00ca7034a0859821a6b1fb7863`; docs-only PR #193 reconciled
-BE-P1-058 after delivery, and PR-head CI `41802198065` plus post-merge main CI
-`41802721952` passed all three lanes. Older APP-READY-090 evidence below is
+Current Mobile integration is `fa1a715c25ab388ba29a92172c570ba7199f669a`.
+APP-READY-082 task-row PR #272 merged; post-merge integration CI
+`41977173538` passed. Backend `main` is
+`1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194 recorded the
+bounded 5xx alert-condition test, with PR CI `41982489735` and post-merge CI
+`41982963454` passing all three lanes. Older APP-READY-090 evidence below is
 historical; these checkpoints do not complete the readiness program. The
 mobile suite remains 1,363 tests at this integration; the documentation
 reconciliation updates an existing assertion and adds or removes no tests.
@@ -17,12 +17,16 @@ to STOPPED with activation policy NEVER and deletion protection on. All three
 scheduler jobs remain PAUSED;
 Cloud Run backend/admin/messaging have no minimum-instance floor (messaging
 explicitly minScale 0). Thirteen monitoring policies and their email channel
-are enabled. A bounded canary verified delivery: one temporary policy fired
-against existing staging-admin request metrics, both alert and resolved emails
-arrived, and the temporary policy was deleted; its incident is closed. The
-current policy count returned to 13, and no notification-channel error logs
-were found in the last hour. This proves the email channel path, not real
-service-failure delivery for every policy. The database memory policy uses the
+are enabled. The user confirmed the firing email from a test-only canary policy
+on existing staging-admin request metrics; that temporary policy was deleted.
+Separately, nine bounded API Gateway readiness GETs while Cloud SQL was
+intentionally stopped produced backend 503s and crossed the existing API 5xx
+threshold (aligned request count 3, threshold >2), opening its incident. The
+incident later auto-closed while SQL remained stopped; that is not recovery
+evidence. Receipt of the real-policy email is unconfirmed, and no natural outage
+or successful database recovery was tested. This does not prove service-failure
+delivery for every policy. The original 13 policies remain.
+The database memory policy uses the
 intended `Usage > 90` condition for 600s. BE-P1-058 is delivered; no real
 threshold breach or real memory-pressure alert delivery is claimed. No worker,
 scheduler, or Cloud Run scaling configuration changed. The Firebase Admin SDK
@@ -1292,7 +1296,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: PR #270 merged at `7634f66`; PR #271 docs merged as `ca81a4c` with integration CI `41963952178`; admin revision `00008-cig` serves Web PR #15 at 100%; alert email path proved, temporary policy removed, 13 original policies remain; SQL STOPPED/NEVER, schedulers paused; real failure-condition delivery, budget/cost ceiling, RTC and worker gates remain open |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile task-row PR #272 merged at `fa1a715`; backend docs PR #194 merged at `1e2072b`; admin revision `00008-cig` serves Web PR #15 at 100%; controlled nine-GET degraded-readiness test opened the real API 5xx incident (aligned count 3 over threshold 2), later auto-closed while SQL remained stopped; real-policy email receipt and recovery unconfirmed; test-only canary firing email confirmed; 13 original policies remain, SQL STOPPED/NEVER, schedulers paused; budget/cost ceiling, memory alert proof, RTC and worker gates remain open |
 
 ### APP-READY-055 implementation evidence
 

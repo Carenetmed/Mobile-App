@@ -1,10 +1,10 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `7634f66c25fad83cd477207255b33cbad2d2a1ca` after
-PR #270; its post-merge CI `41917412119` passed.
+Current Mobile integration is `fa1a715c25ab388ba29a92172c570ba7199f669a` after
+PR #272; its post-merge CI `41977173538` passed.
 Backend `main` is
-`2d4b320771479e00ca7034a0859821a6b1fb7863` after docs-only PR #193; all three
-CI lanes passed on the PR and merged result (`41802198065`, `41802721952`). See `AI_HANDOFF.md`,
+`1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
+CI lanes passed on the PR and merged result (`41982489735`, `41982963454`). See `AI_HANDOFF.md`,
 `CODEBASE_STATUS.md`, and `PHASE_1_OPERATIONAL_READINESS.md` for current gates.
 The admin Download control and sign-in clarification are deployed in staging
 revision `carenet-admin-staging-00008-cig` at 100% traffic. The operator
@@ -14,9 +14,9 @@ Firebase Hosting site serves the approved public/legal pages, and the owner
 confirmed the support mailbox test arrived. Cloud Billing and the Budgets API
 are enabled;
 no budget or BigQuery billing export is configured, so actual spend is unknown.
-The Cloud Monitoring operations email channel delivered a controlled firing
-and resolved test alert; no real service-failure alert or budget alert is
-claimed.
+The user confirmed the test-only canary firing email. A separate bounded API
+5xx alert-condition exercise opened and auto-closed its incident while SQL
+remained stopped; real-policy email receipt and service recovery are unconfirmed.
 APP-READY-082, provider, security/RPO, release/device, and final Paystack gates
 remain open. Older checkpoint summaries below are historical.
 

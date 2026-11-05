@@ -1,7 +1,7 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `1bb6dc76930a530d2d8331ba483301f0bd784b8a` after
-PR #274; its post-merge CI `42007269788` passed with 1,364 tests and the
+Current Mobile integration is `1fd0b4a4af6806abad214b83716778ac9ca1ab1e` after
+PR #275; its post-merge CI `42021705954` passed with 1,364 tests and the
 analyzer, debug APK, Android release lint/signing, and environment checks.
 Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
@@ -20,7 +20,14 @@ The user confirmed the test-only canary firing email. A separate bounded API
 remained stopped. A separate bounded SQL restart and one readiness request
 verified HTTP 200 with all checks healthy; SQL is again STOPPED/NEVER.
 Gmail confirms the actual API 5xx policy's firing and resolved messages for
-this incident; it does not prove delivery for every policy.
+this incident; it does not prove delivery for every policy. A read-only
+inventory found 13 enabled policies on the approved channel, with controlled
+delivery evidence for two and configuration-only evidence for eleven. Missing
+metric evaluation is not configured; four policies auto-close in 30 minutes,
+nine in 60, and only three explicitly request an `OPENED` prompt. Actual
+current spend remains unread: the Billing Viewer report is available in the
+Cloud Console, but no budget exists and no BigQuery dataset was found in the
+canonical project.
 APP-READY-082, provider, security/RPO, release/device, and final Paystack gates
 remain open. Web PR #16 merged at `2a3f299f6cc00779b2d7625a0c60339e83551595`
 and post-merge CI `42000423597` passed. It validates a valid mocked PDF

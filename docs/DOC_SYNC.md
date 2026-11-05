@@ -2,8 +2,8 @@
 
 ## Current Readiness Reconciliation (2026-11-05)
 
-The current integration is `1bb6dc76930a530d2d8331ba483301f0bd784b8a` after
-APP-READY-094 docs-only PR #274; post-merge integration CI `42007269788` passed
+The current integration is `1fd0b4a4af6806abad214b83716778ac9ca1ab1e` after
+APP-READY-095 docs-only PR #275; post-merge integration CI `42021705954` passed
 1,364 tests and all configured checks.
 Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
@@ -26,6 +26,16 @@ controlled recovery, not continuous availability. Gmail confirms the real-policy
 firing and resolved messages for this incident at `2026-11-04T19:55:21Z` and
 `2026-11-04T20:00:21Z`; this does not prove delivery for every policy. The
 original 13 policies remain.
+The Nov 5 read-only inventory found controlled delivery evidence for two
+policies only (API 5xx and sanitized release-health); the other eleven have
+configuration/channel evidence but no controlled condition-delivery proof.
+All three Scheduler jobs remain paused and no alert conditions were induced.
+Metric missing-data behavior is not configured; four policies auto-close at 30
+minutes and nine at 60, with only three explicitly requesting an `OPENED`
+prompt. The Billing Viewer can use the Cloud Console current-month report; the
+correct billing account has no budget, no BigQuery dataset was found in the
+canonical project, and current documentation records no export. Actual spend
+was not read in this checkpoint.
 This tests one controlled degraded-readiness condition, not a natural outage or
 delivery for every alert. The owner
 confirmed the approved support-mailbox test arrived. One

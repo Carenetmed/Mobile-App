@@ -2,9 +2,9 @@
 
 ## Current Verified Checkpoint (2026-11-05)
 
-Current Mobile integration is `1bb6dc76930a530d2d8331ba483301f0bd784b8a`.
-APP-READY-094 docs-only PR #274 merged; post-merge integration CI
-`42007269788` passed the analyzer, 1,364-test suite, debug APK, Android
+Current Mobile integration is `1fd0b4a4af6806abad214b83716778ac9ca1ab1e`.
+APP-READY-095 docs-only PR #275 merged; post-merge integration CI
+`42021705954` passed the analyzer, 1,364-test suite, debug APK, Android
 release lint, signing, and environment regressions. Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194 recorded the
 bounded 5xx alert-condition test, with PR CI `41982489735` and post-merge CI
@@ -110,6 +110,23 @@ Paystack activation. Real upload/download acceptance, RPO/security review,
 RTC/worker provider proof, signed-store/device checks, iOS signing/device proof,
 and final separately approved test-only Paystack activation remain distinct
 gates.
+
+Read-only alert inventory on Nov 5: all 13 live policies are enabled and
+reference the approved email channel. Controlled delivery is evidenced for two
+policies only: one API 5xx incident (firing and resolved emails) and one
+sanitized release-health counter event (incident and matching email). The
+other eleven are configured without a controlled event/delivery proof; several
+are intentionally dormant while SQL or Scheduler jobs are stopped/paused. The
+deleted temporary canary is outside the 13. No alert traffic or service state
+was changed for this inventory. The Cloud Billing Reports console is the
+read-only source for current cost; the billing account has no budget, and no
+BigQuery dataset was found in the canonical project. Existing configuration
+docs record no billing export. Metric conditions leave missing-data evaluation
+unset, so absent telemetry is not evidence of health. Four policies auto-close
+after 30 minutes and nine after 60; only three explicitly request an `OPENED`
+prompt, and only the release-health policy explicitly renotifies after 60
+minutes. The approved Billing Viewer can open the report, but actual spend was
+not read here.
 
 Read-only Cloud Run state on Nov 4: `carenet-backend-staging-be075-candidate`
 serves 100% of API traffic. `carenet-backend-staging-be079-expiry-proof` is the
@@ -1319,7 +1336,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile docs PR #274 merged at `1bb6dc7` with post-merge CI `42007269788` (1,364 tests); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged as `2a3f299` with post-merge CI `42000423597` (valid mocked PDF response asserted, no real visual-preview proof or runtime deployment); admin revision `00008-cig` still serves Web PR #15 at 100%; controlled nine-GET degraded-readiness test opened the real API 5xx incident (aligned count 3 over threshold 2), auto-closed while SQL remained stopped; a later bounded restart waited for the operation to finish, verified `/health/ready` HTTP 200, then restored SQL to STOPPED/NEVER; Gmail confirms this incident's real-policy firing and resolved emails; test-only canary firing email separately confirmed; 13 original policies remain, schedulers paused; budget/cost ceiling, memory alert proof, RTC and worker gates remain open |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 5: mobile docs PR #275 merged at `1fd0b4a` with post-merge CI `42021705954` (1,364 tests); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged as `2a3f299` with post-merge CI `42000423597` (valid mocked PDF response asserted, no real visual-preview proof or runtime deployment); admin revision `00008-cig` still serves Web PR #15 at 100%; controlled degraded-readiness test opened the real API 5xx incident, then a separately gated recovery returned `/health/ready` HTTP 200 and restored SQL to STOPPED/NEVER; Gmail confirms firing and resolved mail for that one API policy; a separate sanitized release-health event also has incident/email evidence; live inventory has 13 enabled policies on the approved channel, with 2/13 having controlled delivery evidence and 11/13 configuration-only; temporary canary deleted; three schedulers paused; actual cost report remains unread, no budget or BigQuery export; memory, RTC, worker, provider, security/RPO and release/device gates remain open |
 
 ### APP-READY-055 implementation evidence
 

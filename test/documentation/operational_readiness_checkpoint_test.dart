@@ -77,6 +77,22 @@ void main() {
     expect(readiness, contains('not a real threshold breach or delivery'));
   });
 
+  test('APP-READY-082 remains the sole next task with current evidence', () {
+    final handoff = File('docs/AI_HANDOFF.md').readAsStringSync();
+    final task = handoff
+        .split('\n')
+        .singleWhere((line) => line.startsWith('| APP-READY-082 |'));
+
+    expect(task, contains('**NEXT**'));
+    expect(task, contains('PR #271 docs merged as `ca81a4c`'));
+    expect(task, contains('integration CI `41963952178`'));
+    expect(task, contains('admin revision `00008-cig`'));
+    expect(task, contains('13 original policies remain'));
+    expect(task, contains('real failure-condition delivery'));
+    expect(task, contains('budget/cost ceiling'));
+    expect(task, isNot(contains('af0e7ab')));
+  });
+
   test('admin download deployment is distinct from valid-file acceptance', () {
     final handoff = currentSections['AI_HANDOFF.md']!;
     expect(handoff, contains('Web PR #11'));

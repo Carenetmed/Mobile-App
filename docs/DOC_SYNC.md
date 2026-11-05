@@ -2,8 +2,8 @@
 
 ## Current Readiness Reconciliation (2026-11-05)
 
-The current integration is `4ea82e14add4f19fa2d5b55d49a2d18059d06c01` after
-APP-READY-098 PR #278; merged-result integration CI `42060289556` passed 1,366
+The current integration is `9449a733dcd192475f81b2720a4d1ffdb9f03db4` after
+APP-READY-099 PR #279; merged-result integration CI `42073930798` passed 1,366
 tests and all configured checks, including debug APK, Android release lint,
 signing, and environment checks. APP-READY-098 changed no test inventory. The
 APP-READY-097 source-path tests connect the sanitized error bridge through
@@ -17,8 +17,13 @@ support content is live; APP-READY-088/090 upload recovery
 source is merged. Older pending CI statements below are historical records.
 
 Current cloud state read-back: SQL STOPPED/NEVER with deletion protection,
-three Scheduler jobs PAUSED, Cloud Run without minimum-instance floors, thirteen
+three Scheduler jobs PAUSED, Cloud Run without minimum-instance floors, fourteen
 enabled alert policies (all referencing the approved operations email channel).
+A five-minute three-region HTTPS check verifies API gateway `/health` returns
+HTTP 200 and JSON `status=ok`; current samples pass in all regions. Its alert
+policy opens after at least two regions fail persistently and treats prolonged
+missing check data as unhealthy. The liveness alert email has not been exercised
+and this does not prove database readiness.
 A test-only temporary alert policy on existing staging-admin request metrics
 fired; the user confirmed the firing email, then the temporary policy was
 deleted. Separately, nine bounded API Gateway readiness GETs while SQL was
@@ -30,17 +35,18 @@ restored to STOPPED/NEVER; all schedulers remained paused. This proves one
 controlled recovery, not continuous availability. Gmail confirms the real-policy
 firing and resolved messages for this incident at `2026-11-04T19:55:21Z` and
 `2026-11-04T20:00:21Z`; this does not prove delivery for every policy. The
-original 13 policies remain.
-The Nov 5 read-only inventory found controlled alert-email evidence for three
-policies (API 5xx, sanitized release-health, and API p95 latency); the other ten
+original 13 policies remain, plus the liveness policy. The current inventory
+has controlled alert-email evidence for three policies (API 5xx, sanitized
+release-health, and API p95 latency); the other eleven
 have configuration/channel evidence but no controlled condition-delivery proof.
 The p95 alert fired at 11,457.57 ms on 503 responses at `2026-11-05T10:48:12Z`;
 its resolved email reports missing metric data after 57m55s, not a healthy
 recovery. The policy's `evaluationMissingData` remains unset.
 All three Scheduler jobs remain paused and no alert conditions were induced.
-Metric missing-data behavior is not configured; four policies auto-close at 30
-minutes and nine at 60, with only three explicitly requesting an `OPENED`
-prompt. The Billing Viewer can use the Cloud Console current-month report. A
+The original 13 policies mostly leave metric missing-data behavior unset; the
+new liveness policy explicitly treats missing check data as active. Among the
+original 13, four auto-close at 30 minutes and nine at 60, with only three
+explicitly requesting an `OPENED` prompt. The Billing Viewer can use the Cloud Console current-month report. A
 project-scoped $31.75 USD monthly budget alert (~₹3,000 at the Nov 5 mid-market
 rate) sends threshold notifications at 50%, 90%, and 100% to the approved
 operations channel; it is not a cap or automatic stop. No BigQuery dataset or

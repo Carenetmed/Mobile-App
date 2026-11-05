@@ -2,8 +2,8 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Mobile integration is `4ea82e14add4f19fa2d5b55d49a2d18059d06c01` after
-APP-READY-098 PR #278; post-merge integration CI `42060289556` passed 1,366
+Mobile integration is `9449a733dcd192475f81b2720a4d1ffdb9f03db4` after
+APP-READY-099 PR #279; post-merge integration CI `42073930798` passed 1,366
 tests, analyzer, debug APK, Android release lint, signing, and environment
 regressions. APP-READY-098 was docs/test-only reconciliation; the full suite
 remains 1,366 with no inventory change. APP-READY-097 PR #277 added two tests
@@ -37,7 +37,7 @@ reconciliation does not close the remaining operational gates.
   identity; the runtime identity's existing self-only signing grant is
   unchanged. This closes only the cross-service-account impersonation finding,
   not the broader least-privilege review.
-- Monitoring: 13 policies and the email channel are enabled; all 13 policies
+- Monitoring: 14 policies and the email channel are enabled; all 14 policies
   reference the approved operations channel. The user confirmed the firing
   email from a bounded test-only canary policy on existing staging-admin
   request metrics; that temporary policy was deleted. Separately, nine bounded
@@ -61,7 +61,13 @@ reconciliation does not close the remaining operational gates.
   this is alert-delivery evidence, not evidence the service recovered. Its
   timing overlaps the controlled SQL-off/recovery window; attribution to that
   exercise is an inference, not an independently proven request correlation.
-  The original 13 policies remain. A project-scoped monthly budget alert is
+  A five-minute HTTPS uptime check named `CareNet staging backend liveness`
+  now checks API gateway `/health` in Asia-Pacific, Europe and US-Iowa. It
+  requires HTTP 200 and JSON `status=ok`; current samples pass from all three
+  regions. Its alert requires at least two regions failing persistently and
+  treats prolonged missing check data as unhealthy. Its alert email has not
+  been exercised. This is an API liveness signal, not database readiness.
+  The original 13 policies remain alongside the new policy. A project-scoped monthly budget alert is
   configured at $31.75 USD for the CareNet project (approximately ₹3,000
   at the Nov 5 mid-market rate), with 50%, 90%, and 100% current-spend email
   thresholds to the approved operations channel. This is an alert, not a spend
@@ -114,10 +120,11 @@ reconciliation does not close the remaining operational gates.
 
 ## Live Alert Policy Inventory (Read-Only, 2026-11-05)
 
-Read-only Cloud Monitoring inspection found 13 enabled policies, each
-referencing the same approved email channel. Three have controlled alert-email
-evidence; ten are configuration-only. The separately created test canary
-was deleted and is not counted among these 13.
+Current Cloud Monitoring read-back found 14 enabled policies, each referencing
+the same approved email channel. Three have controlled alert-email evidence;
+eleven are configuration-only. The separately created test canary was deleted
+and is not counted among these 14. The liveness check has passing three-region
+samples, but its alert-email path is not yet proved.
 
 | Policy | Live condition | Evidence status |
 | --- | --- | --- |
@@ -127,6 +134,7 @@ was deleted and is not counted among these 13.
 | RTC scheduler dispatch failed | Error-severity log for the RTC reconciliation Scheduler job | Configuration verified; no matching incident or delivery proof. The job is paused. |
 | Sanitized mobile release-health report | Sanitized release-health counter above zero | One controlled counter event opened an incident and produced a matching email. This is not native-crash acceptance. |
 | API p95 latency | Cloud Run request latency p95 >3,000 ms for 300 seconds | Fired at 11,457.57 ms on 503 responses and delivered email; resolved after 57m55s because metric data became missing. Delivery is proved, service recovery is not. |
+| API gateway liveness | HTTPS `/health` returns HTTP 200 with JSON `status=ok`; check runs every 5 minutes from three regions | Current samples pass in Asia-Pacific, Europe and US-Iowa. Alert fires when at least two regions fail persistently; prolonged missing check data is active. Email delivery is not yet proved. |
 | Notification deliveries overdue or abandoned | Observer log: due work >300 seconds late, stale claim, or unclaimed processing | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
 | Notification observer execution failed | Observer Cloud Run Job execution result is not succeeded | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
 | RTC execution failed | RTC reconciliation Cloud Run Job execution result is not succeeded | Configuration verified; no matching incident or delivery proof. RTC schedule is paused. |
@@ -136,12 +144,13 @@ was deleted and is not counted among these 13.
 | Notification reminders overdue or abandoned | Observer log: due work >300 seconds late, stale claim, or unclaimed processing | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
 
 This inventory proves current policy configuration and channel references, not
-end-to-end delivery for all conditions. Do not deliberately induce the ten
+end-to-end delivery for all conditions. Do not deliberately induce the eleven
 unobserved conditions, start paused workers, or enable recurring schedules just
 to produce test alerts; obtain a bounded proof plan before changing operational
-state. The metric conditions do not configure `evaluationMissingData`; an absent
-metric is therefore not evidence of a healthy system. Four policies use a
-30-minute auto-close and nine use 60 minutes. Only the RTC scheduler-dispatch,
+state. The original 13 metric policies leave `evaluationMissingData` unset; the
+new uptime policy explicitly treats prolonged missing check data as active.
+Missing metrics in the original policies are not proof of health. Four of the
+original policies use a 30-minute auto-close and nine use 60 minutes. Only the RTC scheduler-dispatch,
 sanitized release-health, and RTC-execution policies explicitly list an
 `OPENED` notification prompt; the release-health policy also has a 60-minute
 renotify interval. The current month cost report is available to the approved
@@ -160,15 +169,22 @@ crash behavior remain unproved.
 ## Scope And Authority
 
 APP-READY-082 remains partially complete. This November 5 handoff reconciles
-mobile status with current Hosting, monitoring and operator evidence. It
-changed no app runtime, provider, dependency, navigation, or deployed service
-configuration. A bounded Cloud SQL recovery proof was run and the instance was
-returned to its prior `STOPPED/NEVER` state; no database rows were changed.
+mobile status with current Hosting, monitoring and operator evidence. PR #279
+changed only documentation and a regression test. After the merge, one
+project-scoped HTTPS uptime check and alert policy were added; no app runtime,
+provider, dependency, navigation, Cloud SQL or Scheduler configuration changed.
+A bounded Cloud SQL recovery proof was run and the instance was returned to its
+prior `STOPPED/NEVER` state; no database rows were changed.
 Earlier dated
 audit snapshots are historical. The full readiness program is not complete.
 Protected worktrees and archive references remain outside this slice.
 
-## Verified Evidence
+## Historical Verified Evidence
+
+The following dated implementation records predate the current checkpoint
+above and are retained for provenance. In particular, their earlier alert
+counts and zero-uptime-check snapshot are superseded by the current 14-policy,
+one-uptime-check state.
 
 - Mobile integration `51c3a2a3353dfe2c6544072300651ec4b23680a4` contains
   APP-READY-081 and its documentation proof. The runtime baseline is 942 tests,

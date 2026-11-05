@@ -2,10 +2,11 @@
 
 ## Current Checkpoint (2026-11-05)
 
-Integration base is `4ea82e14add4f19fa2d5b55d49a2d18059d06c01`. APP-READY-098
-PR #278 merged with post-merge integration run `42060289556` passing 1,366 tests,
+Integration base is `9449a733dcd192475f81b2720a4d1ffdb9f03db4`. APP-READY-099
+PR #279 merged with post-merge integration run `42073930798` passing 1,366 tests,
 analyzer, debug APK, Android release lint/signing, and environment checks. This
-docs/test-only reconciliation made no test-inventory change. APP-READY-097's
+docs/test-only reconciliation made no test-inventory change.
+APP-READY-097's
 source-path test addition is exactly +2 over the 1,364-test base; no tests were
 removed, skipped, disabled or weakened. Local APK packaging ran out of E: space
 while stripping native libraries, but merged-result CI built the APK
@@ -31,8 +32,13 @@ upload, byte integrity and PDF preview remain unproved.
 
 Cost-control read-back: staging SQL is STOPPED/NEVER with deletion protection;
 all three Scheduler jobs are PAUSED; Cloud Run backend/admin/messaging have no
-minimum-instance floor; thirteen monitoring policies and the email channel are
-enabled. A test-only temporary canary on existing staging-admin request metrics
+minimum-instance floor; fourteen monitoring policies and the email channel are
+enabled. The new API gateway `/health` HTTPS check runs every five minutes from
+Asia-Pacific, Europe and US-Iowa, requires HTTP 200 and JSON status `ok`, and
+currently passes in all three checker regions. Its policy alerts after at least
+two regions fail persistently and treats prolonged missing check data as
+unhealthy. This is liveness, not readiness; the alert email has not yet been
+exercised. A test-only temporary canary on existing staging-admin request metrics
 fired; the user confirmed its firing email, then the canary policy was deleted.
 Separately, nine bounded API Gateway readiness GETs while SQL was stopped
 produced backend 503s and opened the existing API 5xx policy incident. It
@@ -44,7 +50,7 @@ This proves one controlled recovery, not continuous availability or natural-
 outage behavior. Gmail confirms this incident's real-policy firing and
 resolved emails were delivered at `2026-11-04T19:55:21Z` and
 `2026-11-04T20:00:21Z`; this proves one policy's delivery, not all-policy
-coverage. The original 13 policies remain. The durable
+coverage. The original 13 policies remain, plus the API liveness policy. The durable
 control-plane changes in this checkpoint were narrowing the Firebase Admin
 SDK identity's project-wide Token Creator grant to a self-only service-account
 binding and enabling the Billing Budgets API. The temporary canary policy was
@@ -68,20 +74,23 @@ The live policy was last mutated on Oct 23; no actual high-pressure breach or
 real memory-pressure notification delivery is proved. The canary verifies the
 test-only firing email; actual API 5xx firing and resolved alert emails are
 confirmed for the single controlled incident only.
-The Nov 5 read-only policy inventory confirms 13 enabled policies on the
-approved channel. Controlled alert-email evidence exists for API 5xx,
-sanitized release-health, and API p95 latency (3/13); the other ten remain
-configuration-only. The p95 alert measured 11,457.57 ms on staging 503
+The current inventory confirms 14 enabled policies on the approved channel.
+Controlled alert-email evidence exists for API 5xx, sanitized release-health,
+and API p95 latency (3/14); the other eleven remain configuration-only. The
+new liveness check has passing samples from all three regions, but its alert
+email has not been exercised. The p95 alert measured 11,457.57 ms on staging 503
 responses at `2026-11-05T10:48:12Z`; its resolved email at `11:46:07Z` says the
 metric was missing after 57m55s. Because `evaluationMissingData` is unset, that
 resolution does not prove service recovery. Its timing overlaps the controlled
 SQL-off/recovery window, but request-level attribution is not independently
 proved. The deleted temporary canary is outside this count. The approved Billing
 Viewer can inspect the current-month console report, but its actual spend was
-not read here. The project budget alert does not cap spending. Metric
-policies leave missing-data evaluation unset; four auto-close after 30 minutes,
-nine after 60, and only three explicitly request an `OPENED` prompt. The
-release-health policy alone explicitly configures a 60-minute renotify interval.
+not read here. The project budget alert does not cap spending. The original 13
+policies mostly leave missing-data evaluation unset; the new liveness policy
+explicitly treats prolonged missing check data as active. Four of the original
+policies auto-close after 30 minutes, nine after 60, and only three explicitly
+request an `OPENED` prompt. The release-health policy alone explicitly
+configures a 60-minute renotify interval.
 
 One disposable PITR clone was verified and deleted. Restore verification took
 56m08s from submission to receipt, below the provisional 60-minute target for

@@ -30,7 +30,7 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('4ea82e14add4f19fa2d5b55d49a2d18059d06c01'),
+        contains('9449a733dcd192475f81b2720a4d1ffdb9f03db4'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
@@ -40,7 +40,7 @@ void main() {
       );
       expect(
         entry.value,
-        contains('42060289556'),
+        contains('42073930798'),
         reason: '${entry.key} must name current mobile post-merge CI.',
       );
       if (entry.key == 'AI_HANDOFF.md' || entry.key == 'CODEBASE_STATUS.md') {
@@ -97,6 +97,10 @@ void main() {
     expect(handoff, contains('auto-closed while SQL remained stopped'));
     expect(handoff, contains('temporary policy was deleted'));
     expect(handoff, contains('not delivery for every policy'));
+    expect(handoff, contains('Fourteen monitoring policies'));
+    expect(handoff, contains('five-minute HTTPS uptime check'));
+    expect(handoff, contains('all three regions'));
+    expect(handoff, contains('liveness policy'));
     expect(readiness, contains('This is an alert, not a spend'));
     expect(readiness, contains('A project-scoped monthly budget alert is'));
     expect(readiness, contains('50%, 90%, and 100% current-spend email'));
@@ -106,13 +110,15 @@ void main() {
     expect(readiness, contains('earlier 503 exercise was controlled'));
     expect(readiness, contains('Gmail confirms the real-policy'));
     expect(readiness, contains('Three have controlled alert-email'));
-    expect(readiness, contains('ten are configuration-only'));
+    expect(readiness, contains('eleven are configuration-only'));
+    expect(readiness, contains('alert-email path is not yet proved'));
+    expect(readiness, contains('Missing metrics in the original policies'));
     expect(readiness, contains('11,457.57 ms'));
     expect(readiness, contains('service recovered'));
     expect(readiness, contains('metric was missing'));
-    expect(readiness, contains('do not configure `evaluationMissingData`'));
-    expect(readiness, contains('Four policies use a'));
-    expect(readiness, contains('30-minute auto-close and nine use 60 minutes'));
+    expect(readiness, contains('leave `evaluationMissingData` unset'));
+    expect(readiness, contains('Four of the'));
+    expect(readiness, contains('nine use 60 minutes'));
     expect(readiness, contains('policies explicitly list an'));
     for (final policy in <String>[
       'API server errors',
@@ -121,6 +127,7 @@ void main() {
       'RTC scheduler dispatch failed',
       'Sanitized mobile release-health report',
       'API p95 latency',
+      'API gateway liveness',
       'Notification deliveries overdue or abandoned',
       'Notification observer execution failed',
       'RTC execution failed',
@@ -140,13 +147,14 @@ void main() {
         .singleWhere((line) => line.startsWith('| APP-READY-082 |'));
 
     expect(task, contains('**NEXT**'));
-    expect(task, contains('`4ea82e1`'));
-    expect(task, contains('`42060289556`'));
+    expect(task, contains('`9449a73`'));
+    expect(task, contains('`42073930798`'));
     expect(task, contains('backend docs PR #194 merged at `1e2072b`'));
     expect(task, contains('controlled degraded-readiness test'));
     expect(task, contains('admin revision `00008-cig`'));
-    expect(task, contains('13 enabled policies on the approved channel'));
-    expect(task, contains('3/13 having alert-email evidence'));
+    expect(task, contains('14 enabled policies on the approved channel'));
+    expect(task, contains('3/14 having alert-email evidence'));
+    expect(task, contains('three-region uptime check'));
     expect(task, contains('5xx firing/resolved email delivered'));
     expect(task, contains('a gated readiness request returned HTTP 200'));
     expect(task, contains('actual cost report remains unread'));

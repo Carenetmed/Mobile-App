@@ -1,9 +1,12 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `d80eac2aa431cff9ea281410c9a5a8c39eaf8660` after
-APP-READY-100 PR #280; PR CI `42081173591` and merged-result CI `42084055217`
-passed on their exact heads, including 1,366 tests, analyzer, debug APK, Android
-release lint/signing, and environment checks. APP-READY-100 changed six
+Current Mobile integration is `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
+APP-READY-101 PR #281. Reviewed head `bb8b117fe5e0741ceb28bb29af0b716cba1efade`
+passed CI `42091108978`; merged-result CI `42093709035` passed on the exact
+merge SHA, including 1,366 tests, analyzer, debug APK, Android release
+lint/signing, and environment checks. PR #281 changed six documentation/test
+files without changing test inventory. APP-READY-100 PR #280's CI
+`42081173591` and merged-result CI `42084055217` passed. APP-READY-100 changed six
 documentation/test files and did not change test inventory. APP-READY-098
 changed no test inventory. APP-READY-097 increased the suite from 1,364 to
 1,366 with no removed, skipped, disabled or weakened tests.
@@ -32,9 +35,13 @@ after 57m55s because metric data became missing; this is not service-recovery
 proof. A current inventory found 14 enabled policies on the approved channel,
 with alert-email evidence for three and configuration-only evidence for eleven.
 A five-minute three-region HTTPS check validates API gateway `/health` (HTTP
-200 and JSON `status=ok`); current samples pass, but the new liveness alert
-email has not been exercised. Its policy treats prolonged missing check data
-as unhealthy. The other 13 policies mostly leave missing-metric evaluation
+200 and JSON `status=ok`); fresh samples pass. A bounded synthetic failure test
+delivered firing and resolved emails through a temporary 60-second policy on
+the same liveness metric and approved channel at `2026-11-05T19:57:33Z` and
+`2026-11-05T19:58:15Z`. That policy was deleted and `/health` restored. This
+proves metric-to-channel delivery, not the production liveness policy's full
+20-minute alignment and 300-second duration. Its policy treats prolonged
+missing check data as unhealthy. The other 13 policies mostly leave missing-metric evaluation
 unset; four auto-close in 30 minutes, nine in 60, and only three explicitly
 request an `OPENED` prompt. Actual
 current spend remains unread: the Billing Viewer report is available in the

@@ -1,14 +1,18 @@
 # AI handoff - read this first
 
-## Current Verified Checkpoint (2026-11-06)
+## Current Verified Checkpoint (2026-11-09)
 
-Current Mobile integration is `d80eac2aa431cff9ea281410c9a5a8c39eaf8660`.
+Current Mobile integration is `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9`.
+APP-READY-101 merged through PR #281. Reviewed head
+`bb8b117fe5e0741ceb28bb29af0b716cba1efade` passed PR CI `42091108978`; merged
+integration CI `42093709035` passed on the exact merge SHA with all 1,366 tests,
+analyzer, debug APK, Android release lint, signing, and environment regressions.
+PR #281 reconciled six documentation/test files and changed no test inventory.
 APP-READY-100 merged through PR #280. Reviewed head
 `e6912068a722005e0a8b8341b9a6a8b66a8e9eea` passed PR CI `42081173591`; merged
-integration CI `42084055217` passed on the exact merge SHA with all 1,366 tests,
-analyzer, debug APK, Android release lint, signing, and environment regressions.
-PR #280 reconciled liveness-check evidence in six documentation/test files and
-changed no test inventory. APP-READY-099 reconciled alert and budget evidence
+integration CI `42084055217` passed on that exact merge SHA. PR #280 reconciled
+liveness-check configuration evidence and changed no test inventory.
+APP-READY-099 reconciled alert and budget evidence
 without changing test inventory. APP-READY-098 merged through PR #278 with CI
 `42060289556`; its documentation reconciliation also changed no tests.
 APP-READY-097's two source-path regression tests changed the base from 1,364
@@ -33,9 +37,14 @@ liveness` checks the API gateway `/health` endpoint from Asia-Pacific, Europe,
 and US-Iowa, requiring HTTP 200 and JSON `status="ok"`. Current check samples
 pass in all three regions. Its policy fires after at least two regions fail
 persistently and treats prolonged missing check data as unhealthy. This is API
-liveness, not database readiness. The user confirmed the firing email from a
-test-only canary policy
-on existing staging-admin request metrics; that temporary policy was deleted.
+liveness, not database readiness. On Nov 5 a bounded synthetic test changed
+only the check path to a nonexistent URL; two regions reported failures. A
+temporary 60-second alert policy on the same uptime metric and approved email
+channel produced firing and resolved emails at `2026-11-05T19:57:33Z` and
+`2026-11-05T19:58:15Z`. The temporary policy was deleted, `/health` was restored,
+and fresh samples passed from all three regions. This proves the metric-to-email
+path, not the production policy's 20-minute alignment plus 300-second duration.
+The earlier test-only canary on staging-admin request metrics was also deleted.
 Separately, nine bounded API Gateway readiness GETs while Cloud SQL was
 intentionally stopped produced backend 503s and crossed the existing API 5xx
 threshold (aligned request count 3, threshold >2), opening its incident. The
@@ -135,12 +144,13 @@ RTC/worker provider proof, signed-store/device checks, iOS signing/device proof,
 and final separately approved test-only Paystack activation remain distinct
 gates.
 
-Current alert inventory after PR #279 and the liveness configuration: all 14
-policies are enabled and reference the approved email channel. Controlled
-alert-email evidence exists for three policies: API 5xx, sanitized
-release-health, and API p95 latency. The new liveness check has healthy samples
-from three regions, but its alert email has not been exercised. The other
-eleven policies are configured without a controlled event/delivery proof; several
+Current alert inventory after PR #281: all 14 persistent policies are enabled
+and reference the approved email channel. Controlled exact-policy alert-email
+evidence exists for three policies: API 5xx, sanitized release-health, and API
+p95 latency. Separately, a deleted short-window test policy exercised the
+liveness metric and same email channel; the production liveness policy's full
+evaluation window remains untested. The other eleven persistent policies are
+configured without a controlled event/delivery proof; several
 are intentionally dormant while SQL or Scheduler jobs are stopped/paused. The
 deleted temporary canary is outside the 14. No alert traffic or service state
 was changed for this inventory. The Cloud Billing Reports console is the
@@ -1377,7 +1387,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 6 checkpoint: integration `d80eac2`, exact-head PR CI `42081173591` and merged-result CI `42084055217` passed with 1,366 tests and configured Android gates; APP-READY-100 PR #280 reconciled the three-region API liveness check in six docs/test files without changing test inventory; APP-READY-099 PR #279 reconciled budget/alert evidence without test changes; APP-READY-097 PR #277 added two source-path tests (deployed acceptance remains open); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged at `2a3f299` and admin revision `00008-cig` serves the deployed Download action; operator confirmed one document download, but byte integrity and valid-PDF preview/recovery remain unproved; a controlled SQL-off readiness test produced the 5xx firing/resolved emails, while p95 measured 11,457.57 ms on 503 responses and resolved after metric data went missing (not recovery); the three-region uptime check samples pass, but its alert email is not exercised; a gated readiness request returned HTTP 200, then SQL was restored to STOPPED/NEVER; sanitized release-health has separate incident/email evidence; 14 enabled policies on the approved channel, with 3/14 having alert-email evidence and 11/14 configuration-only; all three Scheduler jobs remain PAUSED; Cloud SQL STOPPED/NEVER with deletion protection, automated backups/PITR enabled and 7-backup retention, but newest successful backup is Oct 27; public IPv4 assigned, private IP absent, no authorized networks configured, SSL requirement false (security/connectivity review remains open); the project budget is USD 31.75 (labelled INR 3,000 equivalent) with 50/90/100% current-spend alerts, not a cap; actual cost report remains unread and no BigQuery export is configured; memory, RTC, worker, provider, security/RPO and release/device gates remain open |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 9 checkpoint: integration `3d447f7`, PR #281 head `bb8b117` passed CI `42091108978`, merged-result CI `42093709035` passed with 1,366 tests and configured Android gates; APP-READY-101 PR #281 reconciled six docs/test files without test inventory change; APP-READY-100 PR #280 added the three-region API liveness check; a bounded synthetic failure produced firing/resolved emails through a deleted short-window policy on the same liveness metric/channel, then `/health` was restored and fresh samples from all three regions pass; production liveness policy's full 20-minute alignment/300-second duration is still untested; APP-READY-099 PR #279 reconciled budget/alert evidence without test changes; APP-READY-097 PR #277 added two source-path tests (deployed acceptance remains open); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged at `2a3f299` and admin revision `00008-cig` serves the deployed Download action; operator confirmed one document download, but byte integrity and valid-PDF preview/recovery remain unproved; a controlled SQL-off readiness test produced the 5xx firing/resolved emails, while p95 measured 11,457.57 ms on 503 responses and resolved after metric data went missing (not recovery); a gated readiness request returned HTTP 200, then SQL was restored to STOPPED/NEVER; sanitized release-health has separate incident/email evidence; 14 persistent policies on the approved channel, with exact-policy email evidence for 3/14 and the separate liveness signal/channel test above; all three Scheduler jobs remain PAUSED; Cloud SQL STOPPED/NEVER with deletion protection, automated backups/PITR enabled and 7-backup retention, but newest successful backup is Oct 27; public IPv4 assigned, private IP absent, no authorized networks configured, SSL requirement false (security/connectivity review remains open); the project budget is USD 31.75 (labelled INR 3,000 equivalent) with 50/90/100% current-spend alerts, not a cap; actual cost report remains unread and no BigQuery export is configured; memory, RTC, worker, provider, security/RPO and release/device gates remain open |
 
 ### APP-READY-055 implementation evidence
 

@@ -1,12 +1,14 @@
 # Codebase status
 
-## Current Checkpoint (2026-11-06)
+## Current Checkpoint (2026-11-09)
 
-Integration base is `d80eac2aa431cff9ea281410c9a5a8c39eaf8660`. APP-READY-100
-PR #280 reviewed head `e6912068a722005e0a8b8341b9a6a8b66a8e9eea` passed PR CI
-`42081173591`; merged-result CI `42084055217` passed on the exact integration
-SHA with 1,366 tests, analyzer, debug APK, Android release lint/signing, and
-environment regressions. The six-file reconciliation changed no test inventory.
+Integration base is `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
+APP-READY-101 PR #281. Reviewed head `bb8b117fe5e0741ceb28bb29af0b716cba1efade`
+passed PR CI `42091108978`; merged-result CI `42093709035` passed on the exact
+integration SHA with 1,366 tests, analyzer, debug APK, Android release
+lint/signing, and environment regressions. The six-file reconciliation changed
+no test inventory. APP-READY-100 PR #280's exact-head CI `42081173591` and
+merged-result CI `42084055217` were also green.
 APP-READY-097's
 source-path test addition is exactly +2 over the 1,364-test base; no tests were
 removed, skipped, disabled or weakened. Local APK packaging ran out of E: space
@@ -38,8 +40,13 @@ enabled. The new API gateway `/health` HTTPS check runs every five minutes from
 Asia-Pacific, Europe and US-Iowa, requires HTTP 200 and JSON status `ok`, and
 currently passes in all three checker regions. Its policy alerts after at least
 two regions fail persistently and treats prolonged missing check data as
-unhealthy. This is liveness, not readiness; the alert email has not yet been
-exercised. A test-only temporary canary on existing staging-admin request metrics
+unhealthy. This is liveness, not readiness. A bounded synthetic failure test
+used a temporary 60-second policy on the same uptime metric and approved email
+channel; firing and resolved emails arrived at `2026-11-05T19:57:33Z` and
+`2026-11-05T19:58:15Z`. That policy was deleted, `/health` restored, and fresh
+samples passed from all three regions. The production liveness policy's full
+20-minute alignment and 300-second duration remain untested. A test-only
+temporary canary on existing staging-admin request metrics
 fired; the user confirmed its firing email, then the canary policy was deleted.
 Separately, nine bounded API Gateway readiness GETs while SQL was stopped
 produced backend 503s and opened the existing API 5xx policy incident. It
@@ -76,10 +83,12 @@ real memory-pressure notification delivery is proved. The canary verifies the
 test-only firing email; actual API 5xx firing and resolved alert emails are
 confirmed for the single controlled incident only.
 The current inventory confirms 14 enabled policies on the approved channel.
-Controlled alert-email evidence exists for API 5xx, sanitized release-health,
-and API p95 latency (3/14); the other eleven remain configuration-only. The
-new liveness check has passing samples from all three regions, but its alert
-email has not been exercised. The p95 alert measured 11,457.57 ms on staging 503
+Controlled exact-policy alert-email evidence exists for API 5xx, sanitized
+release-health, and API p95 latency (3/14). Separately, the liveness metric and
+same email channel were exercised through a deleted short-window test policy;
+the production policy evaluation window remains untested. The other eleven
+persistent policies remain configuration-only. The p95 alert measured
+11,457.57 ms on staging 503
 responses at `2026-11-05T10:48:12Z`; its resolved email at `11:46:07Z` says the
 metric was missing after 57m55s. Because `evaluationMissingData` is unset, that
 resolution does not prove service recovery. Its timing overlaps the controlled

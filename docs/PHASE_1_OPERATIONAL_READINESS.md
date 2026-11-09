@@ -1,15 +1,17 @@
 # Phase 1 Operational Readiness
 
-## Current Checkpoint (2026-11-06)
+## Current Checkpoint (2026-11-09)
 
-Mobile integration is `d80eac2aa431cff9ea281410c9a5a8c39eaf8660` after
-APP-READY-100 PR #280. Its reviewed head was
-`e6912068a722005e0a8b8341b9a6a8b66a8e9eea`; PR-head CI `42081173591` and
-merged-result CI `42084055217` both passed on their exact commits. The merged
+Mobile integration is `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
+APP-READY-101 PR #281. Reviewed head
+`bb8b117fe5e0741ceb28bb29af0b716cba1efade` passed PR-head CI `42091108978`;
+merged-result CI `42093709035` passed on the exact merge SHA. The merged
 workflow passed all 1,366 tests, analyzer, debug APK, Android release lint,
-signing, and release-environment regressions. PR #280 reconciled the liveness
-uptime-check evidence in six documentation/test files and changed no test
-inventory. APP-READY-097 remains the only recent runtime-test increase: +2 over
+signing, and release-environment regressions. PR #281 changed six
+documentation/test files and no test inventory. APP-READY-100 PR #280's
+reviewed head `e6912068a722005e0a8b8341b9a6a8b66a8e9eea` passed PR CI
+`42081173591`; merged-result CI `42084055217` passed on its exact merge SHA.
+APP-READY-097 remains the only recent runtime-test increase: +2 over
 the 1,364-test base. No tests were removed, skipped, disabled or weakened.
 Local APK packaging had hit E: drive exhaustion; CI verified the APK.
 Backend `main` is `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only
@@ -66,8 +68,14 @@ reconciliation does not close the remaining operational gates.
   now checks API gateway `/health` in Asia-Pacific, Europe and US-Iowa. It
   requires HTTP 200 and JSON `status=ok`; current samples pass from all three
   regions. Its alert requires at least two regions failing persistently and
-  treats prolonged missing check data as unhealthy. Its alert email has not
-  been exercised. This is an API liveness signal, not database readiness.
+  treats prolonged missing check data as unhealthy. A bounded synthetic test
+  pointed only the monitor at a nonexistent path, then produced firing and
+  resolved emails through a temporary 60-second policy on the same uptime
+  metric and approved channel at `2026-11-05T19:57:33Z` and
+  `2026-11-05T19:58:15Z`. The test policy was deleted and `/health` restored;
+  fresh samples passed in all three regions. This proves signal/channel email
+  delivery, not the production policy's 20-minute alignment plus 300-second
+  duration. This is an API liveness signal, not database readiness.
   The original 13 policies remain alongside the new policy. A project-scoped monthly budget alert is
   configured at $31.75 USD for the CareNet project (approximately ₹3,000
   at the Nov 5 mid-market rate), with 50%, 90%, and 100% current-spend email
@@ -120,19 +128,23 @@ reconciliation does not close the remaining operational gates.
   explicit confirmation. The previously exposed test key must not be reused.
 
 APP-READY-100 adds one five-minute, three-region HTTPS API liveness check and an
-enabled alert policy; current checker samples pass. The policy's email path has
-not been exercised. The monthly project budget is `$31.75 USD` (about `INR
+enabled alert policy; current checker samples pass. A temporary short-window
+policy on the same metric and channel delivered firing and resolved messages;
+the production policy's full evaluation window remains untested. The monthly
+project budget is `$31.75 USD` (about `INR
 3,000`), with 50%, 90%, and 100% current-spend notifications; it is not a cap.
 The budget object was read back after the owner selected INR 3,000. Actual
 current spend is still unread.
 
-## Live Alert Policy Inventory (Read-Only, 2026-11-05)
+## Live Alert Policy Inventory (Read-Only, 2026-11-09)
 
-Current Cloud Monitoring read-back found 14 enabled policies, each referencing
-the same approved email channel. Three have controlled alert-email evidence;
-eleven are configuration-only. The separately created test canary was deleted
-and is not counted among these 14. The liveness check has passing three-region
-samples, but its alert-email path is not yet proved.
+Current Cloud Monitoring read-back found 14 persistent enabled policies, each
+referencing the same approved email channel. Three have controlled exact-policy
+alert-email evidence; eleven are configuration-only. A separate temporary
+short-window policy on the liveness metric produced firing and recovery emails
+to that channel and was deleted; it is not counted among the 14. The check has
+fresh passing three-region samples. The production liveness policy's complete
+evaluation window has not been exercised.
 
 | Policy | Live condition | Evidence status |
 | --- | --- | --- |
@@ -142,7 +154,7 @@ samples, but its alert-email path is not yet proved.
 | RTC scheduler dispatch failed | Error-severity log for the RTC reconciliation Scheduler job | Configuration verified; no matching incident or delivery proof. The job is paused. |
 | Sanitized mobile release-health report | Sanitized release-health counter above zero | One controlled counter event opened an incident and produced a matching email. This is not native-crash acceptance. |
 | API p95 latency | Cloud Run request latency p95 >3,000 ms for 300 seconds | Fired at 11,457.57 ms on 503 responses and delivered email; resolved after 57m55s because metric data became missing. Delivery is proved, service recovery is not. |
-| API gateway liveness | HTTPS `/health` returns HTTP 200 with JSON `status=ok`; check runs every 5 minutes from three regions | Current samples pass in Asia-Pacific, Europe and US-Iowa. Alert fires when at least two regions fail persistently; prolonged missing check data is active. Email delivery is not yet proved. |
+| API gateway liveness | HTTPS `/health` returns HTTP 200 with JSON `status=ok`; check runs every 5 minutes from three regions | Fresh samples pass in Asia-Pacific, Europe and US-Iowa. A deleted short-window policy on this metric delivered firing and resolved email; production policy's 20-minute alignment/300-second duration remains untested. Prolonged missing check data is active. |
 | Notification deliveries overdue or abandoned | Observer log: due work >300 seconds late, stale claim, or unclaimed processing | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
 | Notification observer execution failed | Observer Cloud Run Job execution result is not succeeded | Configuration verified; no matching incident or delivery proof. Observer schedule is paused. |
 | RTC execution failed | RTC reconciliation Cloud Run Job execution result is not succeeded | Configuration verified; no matching incident or delivery proof. RTC schedule is paused. |

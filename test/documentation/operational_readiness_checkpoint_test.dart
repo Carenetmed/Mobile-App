@@ -30,13 +30,23 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('d80eac2aa431cff9ea281410c9a5a8c39eaf8660'),
+        contains('3d447f7d1e78c1bd32007b3038bef4b6b204c9b9'),
         reason: '${entry.key} must name the current mobile integration.',
       );
       expect(
         entry.value,
         contains('1e2072bf2520b387d3dcc28f32918c21a86ad880'),
         reason: '${entry.key} must name current backend main.',
+      );
+      expect(
+        entry.value,
+        contains('42091108978'),
+        reason: '${entry.key} must name APP-READY-101 PR-head CI.',
+      );
+      expect(
+        entry.value,
+        contains('42093709035'),
+        reason: '${entry.key} must name current merged-result CI.',
       );
       expect(
         entry.value,
@@ -97,7 +107,10 @@ void main() {
     );
     expect(handoff, contains('GET /health/ready'));
     expect(handoff, contains('returned HTTP 200'));
-    expect(handoff, contains('test-only canary policy'));
+    expect(
+      handoff,
+      contains('test-only canary on staging-admin request metrics'),
+    );
     expect(handoff, contains('threshold >2'));
     expect(handoff, contains('auto-closed while SQL remained stopped'));
     expect(handoff, contains('temporary policy was deleted'));
@@ -114,9 +127,13 @@ void main() {
     expect(readiness, contains('2026-10-27T18:00:00Z'));
     expect(readiness, contains('earlier 503 exercise was controlled'));
     expect(readiness, contains('Gmail confirms the real-policy'));
-    expect(readiness, contains('Three have controlled alert-email'));
+    expect(readiness, contains('Three have controlled exact-policy'));
     expect(readiness, contains('eleven are configuration-only'));
-    expect(readiness, contains('alert-email path is not yet proved'));
+    expect(readiness, contains('production liveness policy\'s complete'));
+    expect(readiness, contains('evaluation window has not been exercised'));
+    expect(readiness, contains('temporary 60-second policy'));
+    expect(readiness, contains('2026-11-05T19:57:33Z'));
+    expect(readiness, contains('2026-11-05T19:58:15Z'));
     expect(readiness, contains('Missing metrics in the original policies'));
     expect(readiness, contains('11,457.57 ms'));
     expect(readiness, contains('service recovered'));
@@ -152,16 +169,18 @@ void main() {
         .singleWhere((line) => line.startsWith('| APP-READY-082 |'));
 
     expect(task, contains('**NEXT**'));
-    expect(task, contains('`d80eac2`'));
-    expect(task, contains('`42081173591`'));
-    expect(task, contains('`42084055217`'));
+    expect(task, contains('`3d447f7`'));
+    expect(task, contains('APP-READY-101 PR #281'));
+    expect(task, contains('`42091108978`'));
+    expect(task, contains('`42093709035`'));
     expect(task, contains('APP-READY-100 PR #280'));
     expect(task, contains('backend docs PR #194 merged at `1e2072b`'));
     expect(task, contains('controlled SQL-off readiness test'));
     expect(task, contains('admin revision `00008-cig`'));
-    expect(task, contains('14 enabled policies on the approved channel'));
-    expect(task, contains('3/14 having alert-email evidence'));
-    expect(task, contains('three-region uptime check samples pass'));
+    expect(task, contains('14 persistent policies on the approved channel'));
+    expect(task, contains('exact-policy email evidence for 3/14'));
+    expect(task, contains('fresh samples from all three regions pass'));
+    expect(task, contains('production liveness policy\'s full 20-minute'));
     expect(task, contains('produced the 5xx firing/resolved emails'));
     expect(task, contains('a gated readiness request returned HTTP 200'));
     expect(task, contains('actual cost report remains unread'));

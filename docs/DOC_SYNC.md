@@ -1,13 +1,15 @@
 # Documentation sync index
 
-## Current Readiness Reconciliation (2026-11-06)
+## Current Readiness Reconciliation (2026-11-09)
 
-The current integration is `d80eac2aa431cff9ea281410c9a5a8c39eaf8660` after
-APP-READY-100 PR #280; PR CI `42081173591` and merged-result CI `42084055217`
-passed on their exact heads. The merged run passed 1,366 tests and all
-configured checks, including debug APK, Android release lint, signing, and
-environment regressions. APP-READY-100 changed six documentation/test files
-and no test inventory. APP-READY-098 changed no test inventory. The
+The current integration is `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
+APP-READY-101 PR #281. Reviewed head `bb8b117fe5e0741ceb28bb29af0b716cba1efade`
+passed PR CI `42091108978`; merged-result CI `42093709035` passed on the exact
+merge SHA with 1,366 tests and all configured checks, including debug APK,
+Android release lint, signing, and environment regressions. PR #281 changed six
+documentation/test files and no test inventory. APP-READY-100 PR #280's PR CI
+`42081173591` and merged-result CI `42084055217` also passed. APP-READY-100
+changed six documentation/test files and no test inventory. APP-READY-098 changed no test inventory. The
 APP-READY-097 source-path tests connect the sanitized error bridge through
 consent/session checks to the strict HTTP adapter; the increase from 1,364 to
 1,366 was exactly +2 with no removed, skipped, disabled or weakened tests. Local
@@ -24,8 +26,13 @@ enabled alert policies (all referencing the approved operations email channel).
 A five-minute three-region HTTPS check verifies API gateway `/health` returns
 HTTP 200 and JSON `status=ok`; current samples pass in all regions. Its alert
 policy opens after at least two regions fail persistently and treats prolonged
-missing check data as unhealthy. The liveness alert email has not been exercised
-and this does not prove database readiness.
+missing check data as unhealthy. A bounded synthetic failure test produced
+firing and resolved emails at `2026-11-05T19:57:33Z` and
+`2026-11-05T19:58:15Z` through a temporary 60-second policy on the same uptime
+metric and approved email channel. The temporary policy was deleted, `/health`
+was restored, and fresh samples passed in all three regions. This proves the
+metric-to-channel delivery path, not the production policy's full 20-minute
+alignment and 300-second duration. This does not prove database readiness.
 A test-only temporary alert policy on existing staging-admin request metrics
 fired; the user confirmed the firing email, then the temporary policy was
 deleted. Separately, nine bounded API Gateway readiness GETs while SQL was
@@ -38,9 +45,12 @@ controlled recovery, not continuous availability. Gmail confirms the real-policy
 firing and resolved messages for this incident at `2026-11-04T19:55:21Z` and
 `2026-11-04T20:00:21Z`; this does not prove delivery for every policy. The
 original 13 policies remain, plus the liveness policy. The current inventory
-has controlled alert-email evidence for three policies (API 5xx, sanitized
-release-health, and API p95 latency); the other eleven
-have configuration/channel evidence but no controlled condition-delivery proof.
+has exact-policy alert-email evidence for three persistent policies (API 5xx,
+sanitized release-health, and API p95 latency); the other eleven persistent
+policies remain configuration-only. The separate liveness metric/channel test
+above is not counted as proof for its production policy's full evaluation
+window; those eleven have configuration/channel evidence but no controlled
+condition-delivery proof.
 The p95 alert fired at 11,457.57 ms on 503 responses at `2026-11-05T10:48:12Z`;
 its resolved email reports missing metric data after 57m55s, not a healthy
 recovery. The policy's `evaluationMissingData` remains unset.

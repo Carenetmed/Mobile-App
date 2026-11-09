@@ -1,6 +1,11 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
+Current Mobile integration is `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
+APP-READY-102 PR #282; exact-head CI `42570975195` and merged-result CI
+`42572846070` passed. The 1,366-test inventory did not change. The prior
+checkpoint was `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after APP-READY-101.
+Historical checkpoint details follow for provenance.
+Current Mobile integration was `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
 APP-READY-101 PR #281. Reviewed head `bb8b117fe5e0741ceb28bb29af0b716cba1efade`
 passed CI `42091108978`; merged-result CI `42093709035` passed on the exact
 merge SHA, including 1,366 tests, analyzer, debug APK, Android release

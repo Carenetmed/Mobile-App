@@ -2,7 +2,14 @@
 
 ## Current Readiness Reconciliation (2026-11-09)
 
-The current integration is `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
+The current integration is `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
+APP-READY-102 PR #282. Head `260c8cec0d643498d328bcf18d1ee3bba4b9fe94`
+passed CI `42570975195`; merged-result CI `42572846070` passed with 1,366
+tests and configured Android gates. PR #282 changed six docs/test files and
+did not change the test inventory. The previous checkpoint was
+`3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after APP-READY-101.
+Historical checkpoint details follow.
+The current integration was `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
 APP-READY-101 PR #281. Reviewed head `bb8b117fe5e0741ceb28bb29af0b716cba1efade`
 passed PR CI `42091108978`; merged-result CI `42093709035` passed on the exact
 merge SHA with 1,366 tests and all configured checks, including debug APK,

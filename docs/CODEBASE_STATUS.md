@@ -2,7 +2,17 @@
 
 ## Current Checkpoint (2026-11-09)
 
-Integration base is `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
+Integration base is `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
+APP-READY-102 PR #282. Reviewed head `260c8cec0d643498d328bcf18d1ee3bba4b9fe94`
+passed CI `42570975195`; merged-result CI `42572846070` passed with 1,366 tests
+and configured Android gates. PR #282 changed six documentation/test files
+without changing test inventory. The previous base was
+`3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after APP-READY-101.
+APP-READY-101's reviewed head was
+`bb8b117fe5e0741ceb28bb29af0b716cba1efade` and passed PR CI `42091108978`;
+its merged-result CI was `42093709035`.
+<!-- Historical checkpoint details follow. -->
+Integration base was `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
 APP-READY-101 PR #281. Reviewed head `bb8b117fe5e0741ceb28bb29af0b716cba1efade`
 passed PR CI `42091108978`; merged-result CI `42093709035` passed on the exact
 integration SHA with 1,366 tests, analyzer, debug APK, Android release

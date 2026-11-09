@@ -30,9 +30,16 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('3d447f7d1e78c1bd32007b3038bef4b6b204c9b9'),
-        reason: '${entry.key} must name the current mobile integration.',
+        contains('00a7021b60c620e1f4fae25fbce405ce17f322ad'),
+        reason: '${entry.key} must name the current merged integration.',
       );
+      expect(
+        entry.value,
+        contains('3d447f7d1e78c1bd32007b3038bef4b6b204c9b9'),
+        reason: '${entry.key} must retain the previous checkpoint for provenance.',
+      );
+      expect(entry.value, contains('42570975195'));
+      expect(entry.value, contains('42572846070'));
       expect(
         entry.value,
         contains('1e2072bf2520b387d3dcc28f32918c21a86ad880'),

@@ -502,6 +502,15 @@ class _AccountShellPageState extends State<AccountShellPage> {
                       Navigator.pushNamed(context, RouteName.manageProfile);
                     },
                   ),
+                if (isProfessionalAccount)
+                  _AccountTile(
+                    icon: Icons.video_library_outlined,
+                    title: 'Education studio',
+                    subtitle: 'Create health education posts for review',
+                    onTap: () {
+                      Navigator.pushNamed(context, RouteName.educationStudio);
+                    },
+                  ),
                 if (isPatientAccount)
                   _AccountTile(
                     icon: Icons.person_outline,

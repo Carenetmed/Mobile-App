@@ -1,6 +1,6 @@
 # CareNet — canonical routes
 
-Live inventory at APP-READY-086: `RouteName.values` defines 79 identifiers; 78
+Current branch inventory: `RouteName.values` defines 80 identifiers; 79
 are registered in `generateRoute`, with `login` intentionally reserved and
 unwired. An executable route contract partitions every identifier into an exact
 active widget, approved compatibility alias, fail-closed deferred destination,
@@ -27,6 +27,8 @@ The detailed KEEP/ADAPT/DEFER/DELETE table is maintained separately below.
 > The Account `Email address` row opens the registered `editEmail` verification
 > screen, which displays backend-owned email/verification state and can request
 > a verification link when unverified. Email change/removal remain deferred.
+> Professional Account also links to `educationStudio`; author and content
+> eligibility are rechecked by the backend.
 > Patients edit the existing backend patient profile and professionals enter
 > backend professional management. Local PIN, phone, email mutation,
 > deactivation drafts fail closed. `deleteAccount` now resolves to the canonical
@@ -58,7 +60,7 @@ remains the unchanged backend-owned professional Schedule destination.
 
 All navigation uses **`RouteName`** constants and **`generateRoute`** in `lib/core/constants/navigators/router.dart`.
 
-The verified inventory remains 79 declared constants (78 registered route
+The verified inventory is 80 declared constants (79 registered route
 values plus the reserved, unwired `login`). Deferred health-reading, content,
 community, emergency, creator-portfolio, and local account-mutation constants
 are retained for source recovery, but route resolution now opens
@@ -132,6 +134,7 @@ Do not invent route strings in screens. Add new routes here and in `RouteName` b
 | `managePortfolio` | `managePortfolio` | `DeferredFeaturePage` | `lib/core/routing/deferred_feature_page.dart` |
 | `professionalVerificationDocuments` | `professionalVerificationDocuments` | `ProfessionalVerificationDocumentsShellPage` | `lib/features/Home/presentation/pages/professional_verification_documents_shell.dart` |
 | `professionalFinance` | `professionalFinance` | `ProfessionalFinanceShellPage` (professional price, bank, balances, ledger, payouts) | `lib/features/Home/presentation/pages/professional_finance_shell.dart` |
+| `educationStudio` | `educationStudio` | `EducationStudioShellPage` (professional-owned drafts and review state) | `lib/features/Education/presentation/pages/education_studio_shell.dart` |
 | `editYourName` | `editYourName` | `EditYourNameShellPage` | `lib/features/Home/presentation/pages/edit_your_name_shell.dart` |
 | `editProfessionalDetails` | `editProfessionalDetails` | `EditProfessionalDetailsShellPage` | `lib/features/Home/presentation/pages/edit_professional_details_shell.dart` |
 | `editYourWebsite` | `editYourWebsite` | `DeferredFeaturePage` | `lib/core/routing/deferred_feature_page.dart` |
@@ -207,6 +210,7 @@ Figma `routes.json` uses paths like `/splash-screen`, `/sign-up-with-phone`. App
 | `/manage-portfolio` | `managePortfolio` |
 | Professional verification owner documents | `professionalVerificationDocuments` |
 | Professional payments and payouts | `professionalFinance` |
+| Professional education authoring | `educationStudio` (Account entry; backend enforces eligible doctor authority) |
 | `/edit-your-name` | `editYourName` |
 | Professional category/specialty details | `editProfessionalDetails` |
 | `/edit-your-website` | `editYourWebsite` |

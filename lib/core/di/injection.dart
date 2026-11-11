@@ -21,6 +21,8 @@ import '../../features/Authentication/data/storage/session_store.dart';
 import '../../features/Consultation/data/repositories/consultation_repository.dart';
 import '../../features/Consultation/data/services/consultation_api_client.dart';
 import '../../features/Consultation/domain/services/consultation_permission_service.dart';
+import '../../features/Education/data/repositories/education_content_repository.dart';
+import '../../features/Education/data/services/education_content_api_client.dart';
 import '../../features/Home/data/repositories/profile_repository.dart';
 import '../../features/Home/data/repositories/financial_repository.dart';
 import '../../features/Home/data/repositories/onboarding_repository.dart';
@@ -153,6 +155,14 @@ Future<void> configureDependencies() async {
       () => ProfileApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
     );
   }
+  if (!sl.isRegistered<EducationContentApiClient>()) {
+    sl.registerLazySingleton<EducationContentApiClient>(
+      () => EducationContentApiClient(
+        config: sl<CareNetApiConfig>(),
+        dio: sl<Dio>(),
+      ),
+    );
+  }
   if (!sl.isRegistered<FinancialApiClient>()) {
     sl.registerLazySingleton<FinancialApiClient>(
       () => FinancialApiClient(config: sl<CareNetApiConfig>(), dio: sl<Dio>()),
@@ -265,6 +275,14 @@ Future<void> configureDependencies() async {
     sl.registerLazySingleton<ProfileRepository>(
       () => ProfileRepository(
         apiClient: sl<ProfileApiClient>(),
+        sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<EducationContentRepository>()) {
+    sl.registerLazySingleton<EducationContentRepository>(
+      () => EducationContentRepository(
+        apiClient: sl<EducationContentApiClient>(),
         sessionStore: sl<SessionStore>(),
       ),
     );

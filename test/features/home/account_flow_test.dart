@@ -127,6 +127,8 @@ Future<void> _pumpAccount(
               const Scaffold(body: Text('verification-documents-route')),
           RouteName.professionalFinance: (_) =>
               const Scaffold(body: Text('professional-finance-route')),
+          RouteName.educationStudio: (_) =>
+              const Scaffold(body: Text('education-studio-route')),
           RouteName.notificationPreferences: (_) =>
               const Scaffold(body: Text('notification-preferences-route')),
         },
@@ -604,6 +606,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('manage-profile-route'), findsOneWidget);
+    Navigator.of(tester.element(find.text('manage-profile-route'))).pop();
+    await tester.pumpAndSettle();
+    expect(find.text('Education studio'), findsOneWidget);
+    await tester.tap(find.text('Education studio'));
+    await tester.pumpAndSettle();
+    expect(find.text('education-studio-route'), findsOneWidget);
   });
 
   testWidgets('professional account opens verification documents route', (
@@ -672,6 +680,7 @@ void main() {
 
     expect(find.text('PATIENT account - active'), findsOneWidget);
     expect(find.text('Manage Profile'), findsNothing);
+    expect(find.text('Education studio'), findsNothing);
     expect(find.text('Verification documents'), findsNothing);
     expect(find.text('Payments & payouts'), findsNothing);
     expect(find.text('View or edit profile'), findsOneWidget);

@@ -12,6 +12,7 @@ import 'package:app_t/features/Authentication/presentation/pages/reset_password_
 import 'package:app_t/features/Home/presentation/pages/edit_email_shell.dart';
 import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Consultation/presentation/pages/consultation_shell.dart';
+import 'package:app_t/features/Education/presentation/pages/education_studio_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_description_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/appointment_experience_shell.dart';
@@ -181,6 +182,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
     case RouteName.professionalFinance:
       return _page(settings, const ProfessionalFinanceShellPage());
+    case RouteName.educationStudio:
+      return _page(settings, const EducationStudioShellPage());
     case RouteName.editYourName:
       return _page(settings, const EditYourNameShellPage());
     case RouteName.editProfessionalDetails:

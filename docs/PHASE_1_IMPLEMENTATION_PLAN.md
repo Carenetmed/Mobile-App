@@ -10,6 +10,16 @@ consultation are approved Phase 1 capabilities, but this plan does not silently
 invent their runtime contracts. It also does not solve payment, support, refund,
 payout, dual-role, or notification-provider contracts.
 
+## APP-P1-007 - Doctor Education Authoring
+
+The separate doctor-education product decision is being implemented through the
+backend-owned education-content contract. Eligible medical doctors can create
+text and short-video drafts, edit eligible content, submit it for human review,
+and archive it. The patient-facing reader remains a later, separately gated
+slice. `EDUCATION_CONTENT_PUBLIC_ENABLED` stays false until private media
+storage, reviewer operations, abuse controls, and launch approval are proven.
+See `PHASE_1_DOCTOR_EDUCATION.md`.
+
 ## APP-P1-017 - Legal pages and authentication app links
 
 Canonical Firebase Hosting serves versioned Terms, Privacy, Support, and
@@ -45,8 +55,9 @@ contrast, semantics, focus order, keyboard use where applicable, tap targets,
 responsive layouts, and enlarged text. Shared theme/button changes are a
 foundation, not a declaration that all screens are ready. Physical-device
 accessibility acceptance remains a later gate. Content publishing or short-form
-video is not part of this accessibility milestone and requires a separate
-product, moderation, storage, and cost decision.
+video is a separate product surface with its own moderation, private-media,
+storage, and cost gates; it is not evidence that this accessibility milestone
+is complete.
 
 ## Global gates for every runtime slice
 

@@ -1,5 +1,17 @@
 # Codebase status
 
+## Current Activity (2026-11-11)
+
+APP-P1-007 is being implemented on the isolated branch
+`slice/APP-P1-007-doctor-education-authoring`, based on
+`adbca02536b5408afc5b557f8e8cee701ed615ff`. The slice adds a professional
+education studio backed by the merged education-content API and reviewer UI.
+The public patient feed remains disabled by backend configuration; this mobile
+authoring work does not provision media storage, change cloud settings, or make
+content public. Local verification passed: 1,394 Flutter tests,
+`flutter analyze`, and `flutter build apk --debug --flavor staging`. PR and CI
+review are pending.
+
 ## Current Checkpoint (2026-11-09)
 
 Integration base is `00a7021b60c620e1f4fae25fbce405ce17f322ad` after

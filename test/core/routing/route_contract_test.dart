@@ -29,6 +29,7 @@ const _activeTypes = <String, String>{
   RouteName.professionalVerificationDocuments:
       'ProfessionalVerificationDocumentsShellPage',
   RouteName.professionalFinance: 'ProfessionalFinanceShellPage',
+  RouteName.educationStudio: 'EducationStudioShellPage',
   RouteName.editYourName: 'EditYourNameShellPage',
   RouteName.editProfessionalDetails: 'EditProfessionalDetailsShellPage',
   RouteName.addDescription: 'AddDescriptionShellPage',
@@ -111,7 +112,7 @@ void main() {
       RouteName.login,
     ];
 
-    expect(RouteName.values, hasLength(79));
+    expect(RouteName.values, hasLength(80));
     expect(sourceMatches, hasLength(RouteName.values.length));
     expect(sourceValues, equals(RouteName.values.toSet()));
     expect(RouteName.values.toSet(), hasLength(RouteName.values.length));

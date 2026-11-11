@@ -85,6 +85,7 @@ class RouteName {
   static const String professionalVerificationDocuments =
       'professionalVerificationDocuments';
   static const String professionalFinance = 'professionalFinance';
+  static const String educationStudio = 'educationStudio';
   static const String editYourName = 'editYourName';
   static const String editProfessionalDetails = 'editProfessionalDetails';
   static const String editYourWebsite = 'editYourWebsite';
@@ -169,6 +170,7 @@ class RouteName {
     managePortfolio,
     professionalVerificationDocuments,
     professionalFinance,
+    educationStudio,
     editYourName,
     editProfessionalDetails,
     editYourWebsite,

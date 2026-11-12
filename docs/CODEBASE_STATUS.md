@@ -2,23 +2,32 @@
 
 ## Current Activity (2026-11-12)
 
-APP-P1-007 authoring is merged in mobile PR #284. APP-P1-007B patient reader is
-being implemented on isolated branch
-`slice/APP-P1-007B-patient-education-reader`, based on mobile integration
-`54e3b337c3555e8651176af0a801761345d63ad6`. Backend education contracts are on
-`main` at `431094b429581e62e5f5f21acdaae693031b7859`. The reader uses only
-published API data and does not change the public-content flag, provision media
-storage, or activate cloud services. Local verification passes: 52 targeted
-reader/routing regressions, all 1,423 Flutter tests (1,394 base + 29 added),
-`flutter analyze`, and the staging Android arm64 debug APK. PR and exact-head CI
-remain open.
+APP-P1-007 doctor authoring and APP-P1-007B patient education reader are merged
+through mobile PRs #284 and #285. Current integration is
+`83f2dfb095b022f1d9dc41952ae0ec13b4557180`. PR #285's reviewed head
+`c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes; merged-result
+runs `43148540818` (Flutter PR CI) and `43148540838` (iOS Flavor Build) also
+passed on the exact integration SHA. The suite is 1,423 tests (1,394 base + 29
+net added by #285); no tests were removed, skipped, disabled, or weakened.
+The reader uses published API data and tap-to-play signed Google Storage URLs.
+It does not enable public delivery, provision media storage, or activate cloud
+services. Backend education contracts are on `main` at
+`431094b429581e62e5f5f21acdaae693031b7859`.
 
-Cloud SQL is not being changed as part of this mobile slice. Two direct
-read-only SQL Admin API observations on Nov 11 returned `RUNNABLE` while
-`activationPolicy=NEVER`, conflicting with the earlier `STOPPED` observation.
-The user did not start it and is unsure whether the team did. No start, stop,
-restore, clone, or database write has been issued. Reconcile the control-plane
-state and service impact before the previously approved PITR proof.
+Read-only Cloud SQL inspection on Nov 12 returned `STOPPED`,
+`activationPolicy=NEVER`, and deletion protection enabled. This resolves the
+latest observed instance-state question only; the Nov 11 `RUNNABLE` observations
+remain part of the history, and the Cloud Run service inventory timed out, so
+service dependencies and other runtime state are not newly verified. No start,
+stop, restore, clone, or database write was issued. APP-READY-082 remains
+partial; reconcile dependencies and current backup/security facts before the
+previously approved PITR proof.
+
+The ten most recent SQL operations returned as `DONE`; the newest was an
+`UPDATE` ending `2026-11-09T23:51:07Z`, and none of those ten was a start/stop
+operation. The current backup-list request also timed out. The last successful
+backup evidence, read on Nov 5, named `2026-10-27T18:00:00Z`; current backup
+freshness is therefore not verified.
 
 ## Previous Integration Checkpoint (2026-11-09)
 

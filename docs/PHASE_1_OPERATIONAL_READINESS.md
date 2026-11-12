@@ -1,6 +1,33 @@
 # Phase 1 Operational Readiness
 
-## Current Checkpoint (2026-11-09)
+## Current Checkpoint (2026-11-12)
+
+Mobile integration is `83f2dfb095b022f1d9dc41952ae0ec13b4557180` after
+APP-P1-007B PR #285. Its reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04`
+passed both PR CI lanes. Merged-result runs `43148540818` (Flutter PR CI) and
+`43148540838` (iOS Flavor Build) passed on the exact integration SHA. The
+integrated suite is 1,423 tests (1,394 base + 29 net added by #285); no tests
+were removed, skipped, disabled, or weakened. Doctor authoring (#284) and the
+patient reader (#285) are implemented, but public education delivery remains
+disabled pending private media storage/IAM, moderator video review, content
+safety/retention/appeals, abuse controls, and an explicit launch gate.
+Backend `main` for the education contracts is
+`431094b429581e62e5f5f21acdaae693031b7859`.
+
+Latest read-only Cloud SQL inspection on Nov 12 returned `STOPPED`,
+`activationPolicy=NEVER`, with deletion protection enabled. Nov 11 `RUNNABLE`
+observations remain a historical discrepancy; the latest read resolves only
+the currently observed instance state. Cloud Run service-list calls timed out,
+so current service dependencies were not verified. No Cloud SQL state or data
+was changed. The ten most recent SQL operations all returned `DONE`; the
+newest was an `UPDATE` ending `2026-11-09T23:51:07Z`, and none of those ten was
+a start/stop operation. The current backup-list request timed out. The last
+successful backup evidence from Nov 5 named `2026-10-27T18:00:00Z`, so current
+backup freshness remains unverified. Preserve APP-READY-082 as partial and continue with read-only
+dependency/backup/security reconciliation before any separately approved RPO
+drill.
+
+## Previous Checkpoint (2026-11-09)
 
 Mobile integration is `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
 APP-READY-102 PR #282. Reviewed head `260c8cec0d643498d328bcf18d1ee3bba4b9fe94`
@@ -185,8 +212,11 @@ at 50%, 90%, and 100%; it is not a hard cap. The CLI has no spend-report
 command, and no BigQuery dataset or export was found. Actual current spend has
 not been read in this checkpoint, so no cost forecast is claimed.
 
-APP-READY-082 remains the recorded next operational track. Do not turn this
-checkpoint into a provider activation or start short-form content work.
+APP-READY-082 remains the recorded next operational track. Doctor authoring
+and the patient reader are now merged; do not enable the public-content flag or
+provision media until the separate storage, moderation, safety, retention,
+abuse-control, and launch gates are proven. Do not turn this checkpoint into a
+provider activation.
 APP-READY-097 is merged; its fake-transport test proves only the local source
 path. Deployed admission, logs/retention, real mobile submission, and native
 crash behavior remain unproved.

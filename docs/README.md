@@ -1,10 +1,16 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
-APP-READY-102 PR #282; exact-head CI `42570975195` and merged-result CI
-`42572846070` passed. The 1,366-test inventory did not change. The prior
-checkpoint was `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after APP-READY-101.
-Historical checkpoint details follow for provenance.
+Current Mobile integration is `83f2dfb095b022f1d9dc41952ae0ec13b4557180` after
+APP-P1-007B PR #285. Reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04`
+passed both PR CI lanes; merged-result runs `43148540818` and `43148540838`
+passed on the exact integration SHA. The suite is 1,423 tests (1,394 base + 29
+net added by #285), with no tests removed, skipped, disabled, or weakened. PR
+#285 adds the patient education reader; it does not enable public delivery or
+provision media storage. Backend education source is `431094b429581e62e5f5f21acdaae693031b7859`.
+The previous operational checkpoint was `00a7021b60c620e1f4fae25fbce405ce17f322ad`
+after APP-READY-102 PR #282; its exact-head CI `42570975195` and merged-result
+CI `42572846070` passed with 1,366 tests. Historical checkpoint details follow
+for provenance.
 Current Mobile integration was `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
 APP-READY-101 PR #281. Reviewed head `bb8b117fe5e0741ceb28bb29af0b716cba1efade`
 passed CI `42091108978`; merged-result CI `42093709035` passed on the exact

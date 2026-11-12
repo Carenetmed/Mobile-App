@@ -30,21 +30,27 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('00a7021b60c620e1f4fae25fbce405ce17f322ad'),
+        contains('83f2dfb095b022f1d9dc41952ae0ec13b4557180'),
         reason: '${entry.key} must name the current merged integration.',
       );
       expect(
         entry.value,
-        contains('3d447f7d1e78c1bd32007b3038bef4b6b204c9b9'),
-        reason: '${entry.key} must retain the previous checkpoint for provenance.',
+        contains('00a7021b60c620e1f4fae25fbce405ce17f322ad'),
+        reason: '${entry.key} must retain the prior checkpoint for provenance.',
       );
+      expect(entry.value, contains('3d447f7d1e78c1bd32007b3038bef4b6b204c9b9'));
+      expect(entry.value, contains('43148540818'));
+      expect(entry.value, contains('43148540838'));
+      expect(entry.value, contains('1,423 tests'));
       expect(entry.value, contains('42570975195'));
       expect(entry.value, contains('42572846070'));
       expect(
         entry.value,
-        contains('1e2072bf2520b387d3dcc28f32918c21a86ad880'),
-        reason: '${entry.key} must name current backend main.',
+        contains('431094b429581e62e5f5f21acdaae693031b7859'),
+        reason:
+            '${entry.key} must name the current backend education contract source.',
       );
+      expect(entry.value, contains('1e2072bf2520b387d3dcc28f32918c21a86ad880'));
       expect(
         entry.value,
         contains('42091108978'),
@@ -65,13 +71,7 @@ void main() {
         contains('42084055217'),
         reason: '${entry.key} must name current merged-result CI.',
       );
-      if (entry.key == 'AI_HANDOFF.md' || entry.key == 'CODEBASE_STATUS.md') {
-        expect(
-          entry.value,
-          contains('1,366 tests'),
-          reason: '${entry.key} must record the verified full-suite count.',
-        );
-      }
+      expect(entry.value, contains('1,366 tests'));
       expect(
         entry.value,
         contains('carenet-admin-staging-00008-cig'),
@@ -176,22 +176,39 @@ void main() {
         .singleWhere((line) => line.startsWith('| APP-READY-082 |'));
 
     expect(task, contains('**NEXT**'));
-    expect(task, contains('`3d447f7`'));
-    expect(task, contains('APP-READY-101 PR #281'));
-    expect(task, contains('`42091108978`'));
-    expect(task, contains('`42093709035`'));
-    expect(task, contains('APP-READY-100 PR #280'));
-    expect(task, contains('backend docs PR #194 merged at `1e2072b`'));
-    expect(task, contains('controlled SQL-off readiness test'));
-    expect(task, contains('admin revision `00008-cig`'));
-    expect(task, contains('14 persistent policies on the approved channel'));
-    expect(task, contains('exact-policy email evidence for 3/14'));
-    expect(task, contains('fresh samples from all three regions pass'));
-    expect(task, contains('production liveness policy\'s full 20-minute'));
-    expect(task, contains('produced the 5xx firing/resolved emails'));
-    expect(task, contains('a gated readiness request returned HTTP 200'));
-    expect(task, contains('actual cost report remains unread'));
-    expect(task, isNot(contains('af0e7ab')));
+    expect(task, contains('`83f2dfb`'));
+    expect(task, contains('1,423 tests'));
+    expect(task, contains('STOPPED'));
+    expect(task, contains('timed out'));
+    expect(task, contains('3/14'));
+    expect(task, contains('public content stays disabled'));
+
+    final readiness =
+        File('docs/PHASE_1_OPERATIONAL_READINESS.md').readAsStringSync();
+    expect(handoff, contains('APP-READY-101 merged through PR #281'));
+    expect(handoff, contains('42091108978'));
+    expect(handoff, contains('42093709035'));
+    expect(handoff, contains('APP-READY-100 merged through PR #280'));
+    expect(handoff, contains('42081173591'));
+    expect(handoff, contains('42084055217'));
+    expect(handoff, contains('`1e2072bf2520b387d3dcc28f32918c21a86ad880`'));
+    expect(handoff, contains('carenet-admin-staging-00008-cig'));
+    expect(handoff, contains('all 14 persistent policies are enabled'));
+    expect(handoff, contains('exact-policy email proof exists for only 3/14'));
+    expect(handoff, contains('actual spend was'));
+    expect(handoff, contains('not read here'));
+    expect(readiness, contains('fresh samples passed in all three regions'));
+    expect(readiness, contains('production policy\'s 20-minute alignment'));
+    expect(readiness, contains('Gmail confirms the real-policy'));
+    expect(readiness, contains('one `GET /health/ready` returned'));
+    expect(readiness, contains('Actual current spend has'));
+    expect(readiness, contains('not been read in this checkpoint'));
+    expect(readiness, contains('ten most recent SQL operations all returned'));
+    expect(readiness, contains('newest was an `UPDATE` ending'));
+    expect(readiness, contains('none of those ten was'));
+    expect(readiness, contains('a start/stop operation'));
+    expect(readiness, contains('current backup-list request timed out'));
+    expect(readiness, contains('2026-10-27T18:00:00Z'));
   });
 
   test('admin download deployment is distinct from valid-file acceptance', () {

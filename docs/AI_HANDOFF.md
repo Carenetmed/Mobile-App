@@ -1,8 +1,34 @@
 # AI handoff - read this first
 
-## Current Verified Checkpoint (2026-11-09)
+## Current Verified Checkpoint (2026-11-12)
 
-Current Mobile integration is `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
+Mobile integration is `83f2dfb095b022f1d9dc41952ae0ec13b4557180` after APP-P1-007B
+PR #285. Reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR
+CI lanes; exact-merge runs `43148540818` (Flutter PR CI) and `43148540838`
+(iOS Flavor Build) passed. The integrated suite is 1,423 tests: PR #285 added
+29 over its 1,394-test base. No tests were removed, skipped, disabled, or
+weakened. PR #284 introduced the doctor-authoring surface; PR #285 added the
+patient feed/detail reader and tap-to-play video player. Public education
+delivery remains gated: no public flag change, media bucket provisioning, or
+cloud service activation occurred. Backend education source is recorded at
+`431094b429581e62e5f5f21acdaae693031b7859`; deployed flag, bucket, IAM, and
+reviewer video-preview behavior are not established by that source SHA.
+
+The latest read-only Cloud SQL inspection on Nov 12 returned `STOPPED`,
+`activationPolicy=NEVER`, and deletion protection enabled. This is a current
+instance-state observation, not proof of who initiated the earlier Nov 11
+`RUNNABLE` state or whether all staging dependencies are healthy. Cloud Run
+service inventory requests timed out; no service state is inferred from them.
+The ten most recent SQL operations returned `DONE`; the newest was an `UPDATE`
+ending `2026-11-09T23:51:07Z`, with no start/stop operation among those ten.
+The current backup-list request timed out. The last successful backup evidence
+from Nov 5 named `2026-10-27T18:00:00Z`; backup freshness has not been
+reverified.
+No Cloud SQL start/stop, restore, clone, or data write occurred in this
+checkpoint. Continue APP-READY-082 with read-only dependency/backup/security
+reconciliation before any approved RPO drill.
+
+The prior APP-READY-102 checkpoint was `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
 APP-READY-102 PR #282. Reviewed head `260c8cec0d643498d328bcf18d1ee3bba4b9fe94`
 passed PR CI `42570975195`; merged-result CI `42572846070` passed with 1,366
 tests and all configured Android gates. PR #282 changed six documentation/test
@@ -23,14 +49,14 @@ without changing test inventory. APP-READY-098 merged through PR #278 with CI
 APP-READY-097's two source-path regression tests changed the base from 1,364
 to 1,366; no tests were removed, skipped, disabled or weakened. Local APK
 packaging had failed from E: drive exhaustion, but CI successfully produced
-the debug APK. Backend `main` is
+the debug APK. At that Nov 9 checkpoint, backend `main` was
 `1e2072bf2520b387d3dcc28f32918c21a86ad880`; docs-only PR #194 recorded the
 bounded 5xx alert-condition test, with PR CI `41982489735` and post-merge CI
 `41982963454` passing all three lanes. Older APP-READY-090 evidence below is
-historical; these checkpoints do not complete the readiness program. The
-current integration suite is 1,366 tests with analyzer and Android gates green.
-The previously recorded 1,363 was a one-test undercount. No test is removed,
-skipped, disabled or weakened.
+historical; these checkpoints do not complete the readiness program. The Nov 9
+checkpoint recorded 1,366 tests; the current integration suite is 1,423. The
+previously recorded 1,363 was a one-test undercount at that older checkpoint.
+No test is removed, skipped, disabled or weakened.
 
 Cloud SQL was briefly started for the Nov 5 admin-console proof and returned
 to STOPPED with activation policy NEVER and deletion protection on. All three
@@ -136,7 +162,9 @@ the one approved plain test email arrived in the support mailbox. The sender
 identity is omitted from public documentation.
 
 APP-READY-082 remains the single recorded next operational track and is still
-partial. APP-READY-097 now tests the connected framework-error bridge,
+partial. The education reader is merged, but public delivery remains disabled
+until storage, moderation, safety, retention, abuse controls, and launch approval
+are closed. APP-READY-097 now tests the connected framework-error bridge,
 consent/session coordinator and release-health HTTP projection with a fake
 transport; this is local source-path evidence, not deployed acceptance. The
 bounded service-recovery proof and this incident's real-policy
@@ -1392,7 +1420,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Nov 9 checkpoint: integration `3d447f7`, PR #281 head `bb8b117` passed CI `42091108978`, merged-result CI `42093709035` passed with 1,366 tests and configured Android gates; APP-READY-101 PR #281 reconciled six docs/test files without test inventory change; APP-READY-100 PR #280 added the three-region API liveness check; a bounded synthetic failure produced firing/resolved emails through a deleted short-window policy on the same liveness metric/channel, then `/health` was restored and fresh samples from all three regions pass; production liveness policy's full 20-minute alignment/300-second duration is still untested; APP-READY-099 PR #279 reconciled budget/alert evidence without test changes; APP-READY-097 PR #277 added two source-path tests (deployed acceptance remains open); backend docs PR #194 merged at `1e2072b`; Web PR #16 merged at `2a3f299` and admin revision `00008-cig` serves the deployed Download action; operator confirmed one document download, but byte integrity and valid-PDF preview/recovery remain unproved; a controlled SQL-off readiness test produced the 5xx firing/resolved emails, while p95 measured 11,457.57 ms on 503 responses and resolved after metric data went missing (not recovery); a gated readiness request returned HTTP 200, then SQL was restored to STOPPED/NEVER; sanitized release-health has separate incident/email evidence; 14 persistent policies on the approved channel, with exact-policy email evidence for 3/14 and the separate liveness signal/channel test above; all three Scheduler jobs remain PAUSED; Cloud SQL STOPPED/NEVER with deletion protection, automated backups/PITR enabled and 7-backup retention, but newest successful backup is Oct 27; public IPv4 assigned, private IP absent, no authorized networks configured, SSL requirement false (security/connectivity review remains open); the project budget is USD 31.75 (labelled INR 3,000 equivalent) with 50/90/100% current-spend alerts, not a cap; actual cost report remains unread and no BigQuery export is configured; memory, RTC, worker, provider, security/RPO and release/device gates remain open |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Current integration `83f2dfb` / 1,423 tests; PR #285 merged with PR and merged-result CI green. Nov 12 read-only Cloud SQL describe returned `STOPPED`, activation `NEVER`, deletion protection enabled; Nov 11 `RUNNABLE` observations remain unexplained, and Cloud Run service inventory timed out, so dependencies are not newly verified. No cloud state/data mutation occurred. Still partial: exact-policy email proof exists for only 3/14 persistent policies; production liveness window, actual spend, billing export, restore-point/RPO and SQL network/SSL security review, worker/RTC/provider operations, valid uploaded-document preview, signed release/device, iOS signing/device, and separately approved test-only Paystack activation remain open. Education authoring and patient reader are merged, but public content stays disabled pending storage/IAM, reviewer video preview, moderation/safety/retention/abuse controls, and explicit launch approval. |
 
 ### APP-READY-055 implementation evidence
 

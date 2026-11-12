@@ -2,20 +2,35 @@
 
 ## Current Readiness Reconciliation (2026-11-12)
 
-Current Mobile integration is `83f2dfb095b022f1d9dc41952ae0ec13b4557180` after
-APP-P1-007B PR #285. Reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04`
-passed both PR CI lanes; merged-result runs `43148540818` and `43148540838`
-passed on that exact integration SHA. The suite is 1,423 tests (1,394 base + 29
-net added), with no tests removed, skipped, disabled, or weakened. The reader
+Current Mobile integration is `e3ccafbc7dd2e831f4fc035166ee1d160443dacf` after
+PR #286. Its head `bc757266fbb322d55f7aa47fe3eb39f97387b839` passed
+Analyze/test/build/lint run `43155362903`; the six-file docs/test change did not
+change runtime. PR #285's reviewed head
+`c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes;
+merged-result runs `43148540818` and `43148540838` passed on merge SHA
+`83f2dfb095b022f1d9dc41952ae0ec13b4557180`. The suite remains 1,423 tests
+(1,394 base + 29 net added by #285), with no tests removed, skipped, disabled,
+or weakened. The reader
 uses published education API data and tap-to-play private-media URLs; public
 delivery and media-bucket provisioning remain gated. Backend education source
 is `431094b429581e62e5f5f21acdaae693031b7859`.
 
-Latest read-only Cloud SQL inspection returned `STOPPED`, `activationPolicy=NEVER`,
-and deletion protection enabled. The Nov 11 `RUNNABLE` observations remain
-unexplained historically; Cloud Run inventory requests timed out, so this does
-not establish current service dependencies. No cloud resource or database data
-was changed. APP-READY-082 remains partial.
+Nov 12 controlled Cloud SQL PITR proof used eleven pre-existing
+actorless/subjectless audit markers. The latest successful automated backup
+started `2026-11-09T20:28:51.567Z`; PITR and seven-day log retention are
+enabled. A disposable clone restored at `2026-11-09T23:41:46.171Z`, exactly
+five minutes before marker 11. It contained marker 1 and excluded markers
+2-11; actor, subject, and role fields were null. This is one verified
+five-minute cut-point recovery, not a continuous RPO guarantee or RPO SLO. The
+clone was deleted and the source returned to activation `NEVER`; the SQL users
+API confirmed the source was not running, although the instance API still
+reports `RUNNABLE`. Cloud Run inventory timed out, leaving current database
+dependencies unknown. APP-READY-082 remains partial.
+
+Current SQL configuration keeps connector enforcement `REQUIRED` and deletion
+protection enabled, but public IPv4 remains enabled, private IP is absent, no
+authorized networks are configured, and `requireSsl=false`. Network/SSL review
+remains open. No services were deployed, promoted, or scaled during this drill.
 
 The prior checkpoint was `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
 APP-READY-102 PR #282; exact-head CI `42570975195` and merged-result CI
@@ -98,9 +113,10 @@ false. These backup-freshness and network-security review items remain open;
 no setting changed.
 This tests one controlled degraded-readiness condition, not a natural outage or
 delivery for every alert. The owner
-confirmed the approved support-mailbox test arrived. One
-disposable PITR proof completed verification in 56m08s and its clone was deleted;
-RPO remains unknown. The Firebase Admin SDK identity's project-wide Token Creator
+confirmed the approved support-mailbox test arrived. Historical Nov 5 PITR
+verification completed in 56m08s; that run did not establish RPO. The Nov 12
+five-minute cut-point evidence is recorded in the current reconciliation above;
+it does not establish a continuous RPO SLO. The Firebase Admin SDK identity's project-wide Token Creator
 grant is now self-scoped; the broader least-privilege review remains open. Public
 legal/support/auth-link routes and assetlinks.json returned HTTP 200 from the
 default Hosting site. The active admin revision's digest and successful build

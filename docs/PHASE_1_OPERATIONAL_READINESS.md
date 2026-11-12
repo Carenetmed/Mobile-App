@@ -2,11 +2,14 @@
 
 ## Current Checkpoint (2026-11-12)
 
-Mobile integration is `83f2dfb095b022f1d9dc41952ae0ec13b4557180` after
-APP-P1-007B PR #285. Its reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04`
-passed both PR CI lanes. Merged-result runs `43148540818` (Flutter PR CI) and
-`43148540838` (iOS Flavor Build) passed on the exact integration SHA. The
-integrated suite is 1,423 tests (1,394 base + 29 net added by #285); no tests
+Mobile integration is `e3ccafbc7dd2e831f4fc035166ee1d160443dacf` after PR #286.
+PR #286 head `bc757266fbb322d55f7aa47fe3eb39f97387b839` passed
+Analyze/test/build/lint run `43155362903`; its six-file docs/test change did
+not change runtime. PR #285's reviewed head
+`c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes.
+Merged-result runs `43148540818` (Flutter PR CI) and `43148540838` (iOS Flavor
+Build) passed on its merge SHA `83f2dfb095b022f1d9dc41952ae0ec13b4557180`.
+The integrated suite is 1,423 tests (1,394 base + 29 net added by #285); no tests
 were removed, skipped, disabled, or weakened. Doctor authoring (#284) and the
 patient reader (#285) are implemented, but public education delivery remains
 disabled pending private media storage/IAM, moderator video review, content
@@ -14,18 +17,26 @@ safety/retention/appeals, abuse controls, and an explicit launch gate.
 Backend `main` for the education contracts is
 `431094b429581e62e5f5f21acdaae693031b7859`.
 
-Latest read-only Cloud SQL inspection on Nov 12 returned `STOPPED`,
-`activationPolicy=NEVER`, with deletion protection enabled. Nov 11 `RUNNABLE`
-observations remain a historical discrepancy; the latest read resolves only
-the currently observed instance state. Cloud Run service-list calls timed out,
-so current service dependencies were not verified. No Cloud SQL state or data
-was changed. The ten most recent SQL operations all returned `DONE`; the
-newest was an `UPDATE` ending `2026-11-09T23:51:07Z`, and none of those ten was
-a start/stop operation. The current backup-list request timed out. The last
-successful backup evidence from Nov 5 named `2026-10-27T18:00:00Z`, so current
-backup freshness remains unverified. Preserve APP-READY-082 as partial and continue with read-only
-dependency/backup/security reconciliation before any separately approved RPO
-drill.
+Nov 12 controlled database recovery proof: automated backups and PITR are
+enabled with seven-day transaction-log retention; the newest successful
+automated backup started `2026-11-09T20:28:51.567Z`. Eleven existing
+actorless/subjectless `STAGING_RPO_PROBE` rows formed one ordered sequence. A
+one-use Cloud SQL clone restored at `2026-11-09T23:41:46.171Z`, exactly five
+minutes before sequence 11. The clone contained sequence 1 and excluded
+sequences 2-11; actor, subject, and role fields were null. This proves one
+controlled five-minute PITR cut point, not continuous RPO or an RPO SLO. The
+clone was deleted; its inherited deletion protection was disabled only on that
+clone. Source activation returned to `NEVER`, and the SQL users API confirmed
+the source was not running. The instance API still reports `RUNNABLE` while
+activation is `NEVER`; this status discrepancy remains open. Cloud Run service
+inventory timed out, so current database dependencies remain unverified.
+
+Current SQL security read-back shows connector enforcement `REQUIRED`,
+deletion protection enabled, public IPv4 enabled, no private IP, zero
+authorized networks, and `requireSsl=false`. Network/SSL security review and
+dependency reconciliation remain open. APP-READY-082 remains partial; provider/
+worker operations, alert coverage, billing visibility, valid document preview,
+release/device, iOS, and separately approved test-only Paystack gates remain.
 
 ## Previous Checkpoint (2026-11-09)
 
@@ -118,11 +129,10 @@ reconciliation does not close the remaining operational gates.
   mutation Oct 23). BE-P1-058 is delivered; backend PR #194 records the
   controlled 5xx exercise. Recent samples remain below threshold; no real memory breach or
   memory-policy notification delivery is claimed.
-- Database recovery: a disposable PITR clone was verified and deleted. Time
-  from clone submission to completed verification was 56m08s, below the
-  provisional 60-minute target for this one run. The latest available restore
-  point was about 16m22s before source shutdown; actual RPO and data loss remain
-  unknown. No RPO SLO is claimed.
+- Historical Nov 5 database recovery: one disposable PITR clone completed
+  verification in 56m08s; that earlier run did not establish RPO. The Nov 12
+  controlled five-minute cut-point result is recorded in the current checkpoint
+  above. Neither run establishes a continuous RPO SLO.
 - Current database configuration (read-only, Nov 5): Cloud SQL is `STOPPED`,
   activation `NEVER`, deletion protection on, automated backups and PITR enabled,
   with seven retained backups. The newest successful automated backup is
@@ -294,9 +304,10 @@ one-uptime-check state.
 - Worker/provider: natural retry, actual FCM delivery and full-worker execution
   are not proved by local tests, one delivered email or an SDK response alone.
   The worker schedule remains paused.
-- Database/security: one PITR restore verification completed within 56m08s, but
-  RPO is unknown; the latest restore point preceded shutdown by about 16m22s.
-  The live SQL memory condition now matches the intended metric, but the
+- Database/security: a controlled five-minute PITR cut point was verified on
+  Nov 12, but continuous RPO/SLO remains unproved. Public IPv4, absent private
+  IP, and `requireSsl=false` require security review. The live SQL memory
+  condition now matches the intended metric, but the
   backend's stale status note and a real breach/notification proof remain open.
   Remaining least-privilege review also remains open after the narrowly scoped
   Firebase SDK binding repair above. Do not resize, restart or suppress an alert

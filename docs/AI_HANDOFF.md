@@ -2,10 +2,14 @@
 
 ## Current Verified Checkpoint (2026-11-12)
 
-Mobile integration is `83f2dfb095b022f1d9dc41952ae0ec13b4557180` after APP-P1-007B
-PR #285. Reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR
-CI lanes; exact-merge runs `43148540818` (Flutter PR CI) and `43148540838`
-(iOS Flavor Build) passed. The integrated suite is 1,423 tests: PR #285 added
+Mobile integration is `e3ccafbc7dd2e831f4fc035166ee1d160443dacf` after mobile
+PR #286. Its head `bc757266fbb322d55f7aa47fe3eb39f97387b839` passed
+Analyze/test/build/lint run `43155362903`; the six-file docs/test change did not
+change runtime. APP-P1-007B PR #285's reviewed head
+`c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes;
+exact-merge runs `43148540818` (Flutter PR CI) and `43148540838`
+(iOS Flavor Build) passed on merge SHA `83f2dfb095b022f1d9dc41952ae0ec13b4557180`.
+The integrated suite is 1,423 tests: PR #285 added
 29 over its 1,394-test base. No tests were removed, skipped, disabled, or
 weakened. PR #284 introduced the doctor-authoring surface; PR #285 added the
 patient feed/detail reader and tap-to-play video player. Public education
@@ -14,19 +18,23 @@ cloud service activation occurred. Backend education source is recorded at
 `431094b429581e62e5f5f21acdaae693031b7859`; deployed flag, bucket, IAM, and
 reviewer video-preview behavior are not established by that source SHA.
 
-The latest read-only Cloud SQL inspection on Nov 12 returned `STOPPED`,
-`activationPolicy=NEVER`, and deletion protection enabled. This is a current
-instance-state observation, not proof of who initiated the earlier Nov 11
-`RUNNABLE` state or whether all staging dependencies are healthy. Cloud Run
-service inventory requests timed out; no service state is inferred from them.
-The ten most recent SQL operations returned `DONE`; the newest was an `UPDATE`
-ending `2026-11-09T23:51:07Z`, with no start/stop operation among those ten.
-The current backup-list request timed out. The last successful backup evidence
-from Nov 5 named `2026-10-27T18:00:00Z`; backup freshness has not been
-reverified.
-No Cloud SQL start/stop, restore, clone, or data write occurred in this
-checkpoint. Continue APP-READY-082 with read-only dependency/backup/security
-reconciliation before any approved RPO drill.
+Nov 12 database recovery checkpoint: the newest successful automated backup
+started `2026-11-09T20:28:51.567Z`; automated backups and PITR are enabled with
+seven-day transaction-log retention. Eleven pre-existing actorless/subjectless
+staging audit markers were restored to `2026-11-09T23:41:46.171Z`, exactly
+five minutes before marker 11. The restored database contained marker 1 and
+excluded markers 2-11; actor, subject, and role fields were null. This proves
+one controlled five-minute PITR cut point, not continuous RPO or an RPO SLO.
+The one-use clone was deleted, and source activation returned to `NEVER`; the
+SQL users API confirmed the source was not running. The instance API still
+reports `RUNNABLE` with `NEVER`, so do not infer readiness from that field.
+
+Current SQL security read-back: connector enforcement `REQUIRED`, deletion
+protection enabled, public IPv4 enabled, no private IP, zero authorized
+networks, and `requireSsl=false`. Network/SSL review remains open. Cloud Run
+service inventory timed out, so database dependencies remain unverified.
+APP-READY-082 remains partial; continue its remaining operational gates rather
+than starting public education/video delivery or Paystack activation.
 
 The prior APP-READY-102 checkpoint was `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
 APP-READY-102 PR #282. Reviewed head `260c8cec0d643498d328bcf18d1ee3bba4b9fe94`
@@ -124,12 +132,11 @@ arrived. Hosting responses include `nosniff`, `no-referrer`, `DENY`, and a
 Content Security Policy. The admin revision was updated as detailed below;
 backend and messaging revisions were not deployed or scaled up.
 
-A disposable PITR clone completed one restore verification in 56m08s from
-clone submission to verified receipt, below the provisional 60-minute target.
-This is one restore observation, not an established SLO. The latest available
-restore point preceded source shutdown by about 16m22s; actual RPO/data loss is
-unknown and remains open. The clone, local proxy, and temporary proof resources
-were deleted; the source instance remains stopped.
+Historical Nov 5 PITR verification took 56m08s from clone submission to
+verified receipt, below the provisional 60-minute target for that run. That
+earlier run did not establish RPO; the Nov 12 five-minute cut-point evidence is
+recorded in the current checkpoint above. Neither observation establishes a
+continuous RPO SLO. The Nov 5 clone and local proxy were deleted.
 
 The admin Download action was added in Web PR #11
 (`8dfbaada9d4a55d7e0781bca7ae9e97cc40a117e`); PR #12 added browser fixture/flow
@@ -1420,7 +1427,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Current integration `83f2dfb` / 1,423 tests; PR #285 merged with PR and merged-result CI green. Nov 12 read-only Cloud SQL describe returned `STOPPED`, activation `NEVER`, deletion protection enabled; Nov 11 `RUNNABLE` observations remain unexplained, and Cloud Run service inventory timed out, so dependencies are not newly verified. No cloud state/data mutation occurred. Still partial: exact-policy email proof exists for only 3/14 persistent policies; production liveness window, actual spend, billing export, restore-point/RPO and SQL network/SSL security review, worker/RTC/provider operations, valid uploaded-document preview, signed release/device, iOS signing/device, and separately approved test-only Paystack activation remain open. Education authoring and patient reader are merged, but public content stays disabled pending storage/IAM, reviewer video preview, moderation/safety/retention/abuse controls, and explicit launch approval. |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Current integration `e3ccafbc` / 1,423 tests; PR #286 check `43155362903` passed. Controlled five-minute PITR cut-point verified at `2026-11-09T23:41:46.171Z`; clone deleted and source returned to `NEVER` (users API confirms not running; instance API still says `RUNNABLE`). Latest successful backup started `2026-11-09T20:28:51.567Z`. Cloud Run dependency inventory timed out. Still partial: exact-policy email proof exists for only 3/14 persistent policies; production liveness window, actual spend, billing export, continuous RPO/SLO, SQL network/SSL security review, worker/RTC/provider operations, valid uploaded-document preview, signed release/device, iOS signing/device, and separately approved test-only Paystack activation remain open. Education authoring and patient reader are merged, but public content stays disabled pending storage/IAM, reviewer video preview, moderation/safety/retention/abuse controls, and explicit launch approval. |
 
 ### APP-READY-055 implementation evidence
 

@@ -4,30 +4,42 @@
 
 APP-P1-007 doctor authoring and APP-P1-007B patient education reader are merged
 through mobile PRs #284 and #285. Current integration is
-`83f2dfb095b022f1d9dc41952ae0ec13b4557180`. PR #285's reviewed head
-`c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes; merged-result
-runs `43148540818` (Flutter PR CI) and `43148540838` (iOS Flavor Build) also
-passed on the exact integration SHA. The suite is 1,423 tests (1,394 base + 29
-net added by #285); no tests were removed, skipped, disabled, or weakened.
+`e3ccafbc7dd2e831f4fc035166ee1d160443dacf` after PR #286. PR #286 head
+`bc757266fbb322d55f7aa47fe3eb39f97387b839` passed Analyze/test/build/lint run
+`43155362903`; the PR changed six docs/test files and did not change runtime.
+PR #285's reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both
+PR CI lanes; merged-result runs `43148540818` (Flutter PR CI) and `43148540838`
+(iOS Flavor Build) passed on its merge SHA `83f2dfb095b022f1d9dc41952ae0ec13b4557180`.
+The current suite is 1,423 tests (1,394 base + 29 net added by #285); no tests
+were removed, skipped, disabled, or weakened.
 The reader uses published API data and tap-to-play signed Google Storage URLs.
 It does not enable public delivery, provision media storage, or activate cloud
 services. Backend education contracts are on `main` at
 `431094b429581e62e5f5f21acdaae693031b7859`.
 
-Read-only Cloud SQL inspection on Nov 12 returned `STOPPED`,
-`activationPolicy=NEVER`, and deletion protection enabled. This resolves the
-latest observed instance-state question only; the Nov 11 `RUNNABLE` observations
-remain part of the history, and the Cloud Run service inventory timed out, so
-service dependencies and other runtime state are not newly verified. No start,
-stop, restore, clone, or database write was issued. APP-READY-082 remains
-partial; reconcile dependencies and current backup/security facts before the
-previously approved PITR proof.
+Controlled Cloud SQL PITR proof completed on Nov 12. The latest successful
+automated backup is `2026-11-09T20:28:51.567Z`; seven-day transaction-log
+retention and PITR are enabled. The proof reused eleven pre-existing,
+actorless/subjectless staging audit markers. A disposable clone restored to
+`2026-11-09T23:41:46.171Z`, exactly five minutes before marker 11; the clone
+contained marker 1 and not markers 2-11, with actor, subject, and role fields
+null. This proves a controlled five-minute PITR cut point for this data set,
+not a continuous RPO guarantee or production RPO SLO. Clone
+`carenet-rpo-proof-20261112` was deleted after verification; only its inherited
+deletion-protection flag was disabled. The source was returned to
+`activationPolicy=NEVER`; the Cloud SQL users API confirmed it was not running.
+The instance API still reports `RUNNABLE` alongside `NEVER`, so that status
+field discrepancy remains documented rather than treated as proof of service
+readiness.
 
-The ten most recent SQL operations returned as `DONE`; the newest was an
-`UPDATE` ending `2026-11-09T23:51:07Z`, and none of those ten was a start/stop
-operation. The current backup-list request also timed out. The last successful
-backup evidence, read on Nov 5, named `2026-10-27T18:00:00Z`; current backup
-freshness is therefore not verified.
+Current SQL security read-back: backups/PITR enabled, seven retained backups,
+deletion protection enabled, connector enforcement `REQUIRED`; public IPv4 is
+enabled, private IP is absent, there are zero authorized networks, and
+`requireSsl=false`. Network/SSL security review remains open. The Cloud Run
+service inventory timed out, so current database dependencies remain
+unverified. APP-READY-082 is still partial; provider/worker operations, exact
+alert coverage, billing visibility, valid document preview, release/device,
+iOS, and separately approved test-only Paystack gates also remain.
 
 ## Previous Integration Checkpoint (2026-11-09)
 

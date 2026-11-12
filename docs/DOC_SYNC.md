@@ -1,6 +1,26 @@
 # Documentation sync index
 
-## Current Readiness Reconciliation (2026-11-09)
+## Current Readiness Reconciliation (2026-11-12)
+
+Current Mobile integration is `83f2dfb095b022f1d9dc41952ae0ec13b4557180` after
+APP-P1-007B PR #285. Reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04`
+passed both PR CI lanes; merged-result runs `43148540818` and `43148540838`
+passed on that exact integration SHA. The suite is 1,423 tests (1,394 base + 29
+net added), with no tests removed, skipped, disabled, or weakened. The reader
+uses published education API data and tap-to-play private-media URLs; public
+delivery and media-bucket provisioning remain gated. Backend education source
+is `431094b429581e62e5f5f21acdaae693031b7859`.
+
+Latest read-only Cloud SQL inspection returned `STOPPED`, `activationPolicy=NEVER`,
+and deletion protection enabled. The Nov 11 `RUNNABLE` observations remain
+unexplained historically; Cloud Run inventory requests timed out, so this does
+not establish current service dependencies. No cloud resource or database data
+was changed. APP-READY-082 remains partial.
+
+The prior checkpoint was `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
+APP-READY-102 PR #282; exact-head CI `42570975195` and merged-result CI
+`42572846070` passed with 1,366 tests. Historical checkpoint details follow.
+## Previous Readiness Reconciliation (2026-11-09)
 
 The current integration is `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
 APP-READY-102 PR #282. Head `260c8cec0d643498d328bcf18d1ee3bba4b9fe94`

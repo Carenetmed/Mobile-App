@@ -1,16 +1,31 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `83f2dfb095b022f1d9dc41952ae0ec13b4557180` after
-APP-P1-007B PR #285. Reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04`
-passed both PR CI lanes; merged-result runs `43148540818` and `43148540838`
-passed on the exact integration SHA. The suite is 1,423 tests (1,394 base + 29
-net added by #285), with no tests removed, skipped, disabled, or weakened. PR
+Current Mobile integration is `e3ccafbc7dd2e831f4fc035166ee1d160443dacf` after
+PR #286. Its head `bc757266fbb322d55f7aa47fe3eb39f97387b839` passed
+Analyze/test/build/lint run `43155362903`; the six-file docs/test change did
+not change runtime. APP-P1-007B PR #285's reviewed head
+`c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes;
+merged-result runs `43148540818` and `43148540838` passed on merge SHA
+`83f2dfb095b022f1d9dc41952ae0ec13b4557180`. The current suite is 1,423 tests
+(1,394 base + 29 net added by #285), with no tests removed, skipped, disabled,
+or weakened. PR
 #285 adds the patient education reader; it does not enable public delivery or
 provision media storage. Backend education source is `431094b429581e62e5f5f21acdaae693031b7859`.
 The previous operational checkpoint was `00a7021b60c620e1f4fae25fbce405ce17f322ad`
 after APP-READY-102 PR #282; its exact-head CI `42570975195` and merged-result
 CI `42572846070` passed with 1,366 tests. Historical checkpoint details follow
 for provenance.
+Nov 12 controlled PITR proof restored eleven pre-existing actorless/subjectless
+staging markers to `2026-11-09T23:41:46.171Z`, exactly five minutes before the
+last marker. The restored clone contained marker 1 and excluded markers 2-11;
+actor, subject, and role fields were null. The one-use clone was deleted and
+staging SQL returned to activation `NEVER`; its users API confirmed it was not
+running, although the instance API still reports `RUNNABLE`. This proves one
+five-minute recovery cut point, not a continuous RPO SLO. The latest successful
+automated backup started `2026-11-09T20:28:51.567Z`; PITR retention is seven
+days. Network review remains open: public IPv4 enabled, no private IP or
+authorized networks, and `requireSsl=false` (connector enforcement is
+`REQUIRED`).
 Current Mobile integration was `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
 APP-READY-101 PR #281. Reviewed head `bb8b117fe5e0741ceb28bb29af0b716cba1efade`
 passed CI `42091108978`; merged-result CI `42093709035` passed on the exact
@@ -57,12 +72,11 @@ unset; four auto-close in 30 minutes, nine in 60, and only three explicitly
 request an `OPENED` prompt. Actual
 current spend remains unread: the Billing Viewer report is available in the
 Cloud Console, and no BigQuery dataset was found in the canonical project.
-Nov 5 read-only database inspection found PITR enabled with seven retained
-backups but the newest successful automated backup dated Oct 27. Public IPv4 is
-assigned, private IP is absent, no authorized networks are configured, and
-`requireSsl` is false; security/RPO review remains open.
-APP-READY-082, provider, security/RPO, release/device, and final Paystack gates
-remain open. Web PR #16 merged at `2a3f299f6cc00779b2d7625a0c60339e83551595`
+Historical Nov 5 database inspection reported the Oct 27 backup as newest at
+that time. APP-READY-082 remains partial: the controlled five-minute PITR cut
+point is verified, while continuous RPO, network/SSL security, provider,
+release/device, and final Paystack gates remain open. Web PR #16 merged at
+`2a3f299f6cc00779b2d7625a0c60339e83551595`
 and post-merge CI `42000423597` passed. It validates a valid mocked PDF
 response (HTTP 200, `application/pdf`), not visual rendering or a real staging
 upload; it changed no runtime code and triggered no deployment. Older

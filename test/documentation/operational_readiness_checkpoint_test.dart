@@ -30,9 +30,17 @@ void main() {
     for (final entry in currentSections.entries) {
       expect(
         entry.value,
-        contains('83f2dfb095b022f1d9dc41952ae0ec13b4557180'),
+        contains('e3ccafbc7dd2e831f4fc035166ee1d160443dacf'),
         reason: '${entry.key} must name the current merged integration.',
       );
+      expect(
+        entry.value,
+        contains('83f2dfb095b022f1d9dc41952ae0ec13b4557180'),
+        reason: '${entry.key} must retain the APP-P1-007B merge checkpoint.',
+      );
+      expect(entry.value, contains('bc757266fbb322d55f7aa47fe3eb39f97387b839'));
+      expect(entry.value, contains('43155362903'));
+      expect(entry.value, contains('2026-11-09T23:41:46.171Z'));
       expect(
         entry.value,
         contains('00a7021b60c620e1f4fae25fbce405ce17f322ad'),
@@ -130,8 +138,8 @@ void main() {
     expect(readiness, contains('A project-scoped monthly budget alert is'));
     expect(readiness, contains('50%, 90%, and 100% current-spend email'));
     expect(readiness, contains('BE-P1-058 is delivered'));
-    expect(readiness, contains('newest successful automated backup is'));
-    expect(readiness, contains('2026-10-27T18:00:00Z'));
+    expect(readiness, contains('seven-day transaction-log retention'));
+    expect(readiness, contains('2026-11-09T20:28:51.567Z'));
     expect(readiness, contains('earlier 503 exercise was controlled'));
     expect(readiness, contains('Gmail confirms the real-policy'));
     expect(readiness, contains('Three have controlled exact-policy'));
@@ -176,9 +184,11 @@ void main() {
         .singleWhere((line) => line.startsWith('| APP-READY-082 |'));
 
     expect(task, contains('**NEXT**'));
-    expect(task, contains('`83f2dfb`'));
+    expect(task, contains('`e3ccafbc`'));
     expect(task, contains('1,423 tests'));
-    expect(task, contains('STOPPED'));
+    expect(task, contains('not running'));
+    expect(task, contains('five-minute PITR cut-point'));
+    expect(task, contains('continuous RPO/SLO'));
     expect(task, contains('timed out'));
     expect(task, contains('3/14'));
     expect(task, contains('public content stays disabled'));
@@ -203,11 +213,15 @@ void main() {
     expect(readiness, contains('one `GET /health/ready` returned'));
     expect(readiness, contains('Actual current spend has'));
     expect(readiness, contains('not been read in this checkpoint'));
-    expect(readiness, contains('ten most recent SQL operations all returned'));
-    expect(readiness, contains('newest was an `UPDATE` ending'));
-    expect(readiness, contains('none of those ten was'));
-    expect(readiness, contains('a start/stop operation'));
-    expect(readiness, contains('current backup-list request timed out'));
+    expect(readiness, contains('Nov 12 controlled database recovery proof'));
+    expect(readiness, contains('five-minute PITR cut point'));
+    expect(readiness, contains('2026-11-09T23:41:46.171Z'));
+    expect(readiness, contains('SQL users API confirmed'));
+    expect(readiness, contains('source was not running'));
+    expect(readiness, contains('inventory timed out'));
+    expect(readiness, contains('connector enforcement `REQUIRED`'));
+    expect(readiness, contains('`requireSsl=false`'));
+    expect(readiness, contains('public IPv4 enabled, no private IP, zero'));
     expect(readiness, contains('2026-10-27T18:00:00Z'));
   });
 

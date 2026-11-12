@@ -1,11 +1,14 @@
 # Documentation sync index
 
-## Current Readiness Reconciliation (2026-11-12)
+## Current Readiness Reconciliation (2026-11-13)
 
-Current Mobile integration is `e3ccafbc7dd2e831f4fc035166ee1d160443dacf` after
-PR #286. Its head `bc757266fbb322d55f7aa47fe3eb39f97387b839` passed
-Analyze/test/build/lint run `43155362903`; the six-file docs/test change did not
-change runtime. PR #285's reviewed head
+Current Mobile integration is `d97e781194845427b2a996424e583f14f56031b3` after
+PR #287. Its reviewed head `1752dc660e0ec18c51e39f7a7b34594d19f03071` passed
+PR CI `43270653477`; merged-result CI `43273323794` passed on the exact merge
+SHA with 1,423 tests and all configured Android/analyzer checks. The six-file
+docs/test reconciliation changed no runtime or test inventory. PR #286's prior
+integration was `e3ccafbc7dd2e831f4fc035166ee1d160443dacf`; its head
+`bc757266fbb322d55f7aa47fe3eb39f97387b839` passed run `43155362903`. PR #285's reviewed head
 `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes;
 merged-result runs `43148540818` and `43148540838` passed on merge SHA
 `83f2dfb095b022f1d9dc41952ae0ec13b4557180`. The suite remains 1,423 tests
@@ -22,15 +25,32 @@ enabled. A disposable clone restored at `2026-11-09T23:41:46.171Z`, exactly
 five minutes before marker 11. It contained marker 1 and excluded markers
 2-11; actor, subject, and role fields were null. This is one verified
 five-minute cut-point recovery, not a continuous RPO guarantee or RPO SLO. The
-clone was deleted and the source returned to activation `NEVER`; the SQL users
-API confirmed the source was not running, although the instance API still
-reports `RUNNABLE`. Cloud Run inventory timed out, leaving current database
-dependencies unknown. APP-READY-082 remains partial.
+clone was deleted and source activation remains `NEVER`; the latest SQL API
+read reports `STOPPED`, resolving the earlier `RUNNABLE`/`NEVER` discrepancy.
+Fresh Cloud Run inventory confirms only the backend declares the SQL
+attachment; admin calls API Gateway and messaging points to backend. Admin
+default percentage traffic is 100% on `carenet-admin-staging-00009-4t7`; the
+previously checked download revision `carenet-admin-staging-00008-cig` remains
+tagged `web-ready-011`, but latest-revision feature parity is unverified. No
+positive service-level or revision-level minimum instance setting was found;
+request-triggered instances can still incur usage. All three Scheduler jobs
+remain paused. The backend's default percentage allocation is 100% to the
+existing `be075-candidate`; tagged revisions remain separately addressable
+subject to invoker IAM. The messaging service grants `allUsers`
+`roles/run.invoker`; application-level WebSocket authentication remains in
+place, but ingress abuse/cost controls are still open. No promotion or service
+configuration change was made.
 
-Current SQL configuration keeps connector enforcement `REQUIRED` and deletion
-protection enabled, but public IPv4 remains enabled, private IP is absent, no
-authorized networks are configured, and `requireSsl=false`. Network/SSL review
-remains open. No services were deployed, promoted, or scaled during this drill.
+Current SQL configuration has connector enforcement `REQUIRED`,
+`sslMode=ENCRYPTED_ONLY`, deletion protection, public IPv4, no private IP, and
+no authorized networks. `requireSsl=false` is the documented compatible legacy
+PostgreSQL value for that SSL mode. The backend runtime identity has
+`roles/cloudsql.client`, and its Cloud Run spec includes the SQL attachment.
+Connector traffic is encrypted and direct database connections are rejected;
+the secret-backed DB URL was not read and live connectivity was not tested
+while the instance is stopped. Thus the earlier timeout and blanket
+requireSsl concern are superseded, while private-network/live-connection and
+continuous RPO questions remain. No infrastructure settings were changed.
 
 The prior checkpoint was `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
 APP-READY-102 PR #282; exact-head CI `42570975195` and merged-result CI
@@ -129,8 +149,9 @@ CI `42000423597` passed. Its valid one-page mock PDF and iframe HTTP 200 /
 rendering or real-file acceptance and did not change/deploy runtime. Web PR #15
 main `f511d6a36d69157eed239a77c73d9253e57d8e7e` passed post-merge CI
 `41927227034`; Cloud Build `caace09e-6c85-4a48-b05e-d62b66575785`
-produced the digest now serving as revision `carenet-admin-staging-00008-cig`
-at 100% staging traffic:
+produced the digest served by revision `carenet-admin-staging-00008-cig` at the
+Nov 5 read. The Nov 13 inventory now shows default traffic on
+`carenet-admin-staging-00009-4t7`; `00008-cig` remains tagged `web-ready-011`:
 `sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7`.
 The revision is Ready/ContainerHealthy, and CI's container smoke served `/admin`;
 operator visual confirmation remains open because the CLI request reached IAP's

@@ -14,6 +14,15 @@ backend currently does not provide an edge/account read-rate limit. Likes,
 comments, creator payouts, personalized medical matching and automated medical
 advice are not part of the reader.
 
+The current contract uses private Google Cloud Storage and short-lived signed
+URLs; it does not establish transcoding or a managed video-hosting provider.
+Cloudflare Stream was discussed as a possible lower-operations route, but no
+integration is configured in the inspected CareNet staging runtime. Keep
+provider selection, cost validation, upload processing, moderation, retention
+and launch approval in a separate education-delivery slice. Older APP-READY-082
+subtask headings below preserve their historical checkpoints; the parent
+APP-READY-082 remains the sole current readiness task.
+
 ## APP-READY-090 Upload Recovery Boundary
 
 APP-READY-090 is merged through mobile PR #264. Confirmed provider expiry is

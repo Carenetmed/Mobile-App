@@ -1,12 +1,17 @@
 # Codebase status
 
-## Current Activity (2026-11-12)
+## Current Activity (2026-11-13)
 
 APP-P1-007 doctor authoring and APP-P1-007B patient education reader are merged
 through mobile PRs #284 and #285. Current integration is
-`e3ccafbc7dd2e831f4fc035166ee1d160443dacf` after PR #286. PR #286 head
-`bc757266fbb322d55f7aa47fe3eb39f97387b839` passed Analyze/test/build/lint run
-`43155362903`; the PR changed six docs/test files and did not change runtime.
+`d97e781194845427b2a996424e583f14f56031b3` after PR #287. PR #287 reviewed
+head `1752dc660e0ec18c51e39f7a7b34594d19f03071` passed PR CI `43270653477`;
+merged-result CI `43273323794` passed on the exact merge SHA with 1,423 tests,
+analysis, debug APK, Android release lint, signing and release-environment
+regressions. The PR changed six docs/test files, no runtime code and no test
+inventory. PR #286's previous integration was
+`e3ccafbc7dd2e831f4fc035166ee1d160443dacf`; head
+`bc757266fbb322d55f7aa47fe3eb39f97387b839` passed run `43155362903`.
 PR #285's reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both
 PR CI lanes; merged-result runs `43148540818` (Flutter PR CI) and `43148540838`
 (iOS Flavor Build) passed on its merge SHA `83f2dfb095b022f1d9dc41952ae0ec13b4557180`.
@@ -28,18 +33,36 @@ not a continuous RPO guarantee or production RPO SLO. Clone
 `carenet-rpo-proof-20261112` was deleted after verification; only its inherited
 deletion-protection flag was disabled. The source was returned to
 `activationPolicy=NEVER`; the Cloud SQL users API confirmed it was not running.
-The instance API still reports `RUNNABLE` alongside `NEVER`, so that status
-field discrepancy remains documented rather than treated as proof of service
-readiness.
+An earlier instance read reported `RUNNABLE` with `NEVER`; a fresh read now
+reports `STOPPED/NEVER`, so the earlier status discrepancy no longer reproduces.
 
-Current SQL security read-back: backups/PITR enabled, seven retained backups,
-deletion protection enabled, connector enforcement `REQUIRED`; public IPv4 is
-enabled, private IP is absent, there are zero authorized networks, and
-`requireSsl=false`. Network/SSL security review remains open. The Cloud Run
-service inventory timed out, so current database dependencies remain
-unverified. APP-READY-082 is still partial; provider/worker operations, exact
-alert coverage, billing visibility, valid document preview, release/device,
-iOS, and separately approved test-only Paystack gates also remain.
+Current SQL read-back: instance `STOPPED`, activation `NEVER`, backups/PITR
+enabled, seven-day transaction-log retention, deletion protection enabled,
+connector enforcement `REQUIRED`, and `sslMode=ENCRYPTED_ONLY`. Public IPv4 is
+allocated, private IP is absent, and authorized networks are empty. PostgreSQL
+`requireSsl=false` is the documented compatible legacy value for
+`ENCRYPTED_ONLY`; the Cloud SQL connector itself encrypts traffic and connector
+enforcement rejects direct database connections. The backend service is the
+only Cloud Run service with the Cloud SQL attachment; its runtime identity has
+`roles/cloudsql.client`. Admin targets the API Gateway, and messaging targets
+the backend. Admin default percentage traffic is 100% on
+`carenet-admin-staging-00009-4t7`; the previously checked download revision
+`carenet-admin-staging-00008-cig` remains tagged `web-ready-011`, but latest-
+revision feature parity and valid-file behavior have not been rechecked. No
+positive service-level or revision-level minimum instance
+setting was found, but request-triggered instances can still incur usage. The
+backend's default percentage allocation is 100% to `be075-candidate`; tagged
+revisions remain addressable subject to invoker IAM. Messaging has an `allUsers`
+`roles/run.invoker` binding; its application protocol requires authentication,
+but unauthenticated invocation can still incur usage, so ingress abuse/cost
+controls remain open. All three Scheduler jobs are paused. The secret-backed
+database URL was not inspected, and live DB connectivity was not tested while
+SQL is stopped. Public IP allocation/private networking and continuous
+recovery objectives remain review items; the prior inventory-timeout and
+blanket SSL concern are superseded. APP-READY-082 remains partial;
+provider/worker operations, exact alert coverage, billing visibility, valid
+document preview, release/device, iOS, and separately approved test-only
+Paystack gates also remain.
 
 ## Previous Integration Checkpoint (2026-11-09)
 
@@ -86,8 +109,10 @@ upload, byte integrity and PDF preview remain unproved.
 
 Cost-control read-back: staging SQL is STOPPED/NEVER with deletion protection;
 all three Scheduler jobs are PAUSED; Cloud Run backend/admin/messaging have no
-minimum-instance floor; fourteen monitoring policies and the email channel are
-enabled. The new API gateway `/health` HTTPS check runs every five minutes from
+minimum-instance floor. The Nov 13 read-only inventory found 17 enabled
+monitoring policies, all using the approved email channel: 14 ongoing
+operational policies plus three expired BE-P1-072 SQL-window policies. The new
+API gateway `/health` HTTPS check runs every five minutes from
 Asia-Pacific, Europe and US-Iowa, requires HTTP 200 and JSON status `ok`, and
 currently passes in all three checker regions. Its policy alerts after at least
 two regions fail persistently and treats prolonged missing check data as
@@ -133,12 +158,15 @@ The live policy was last mutated on Oct 23; no actual high-pressure breach or
 real memory-pressure notification delivery is proved. The canary verifies the
 test-only firing email; actual API 5xx firing and resolved alert emails are
 confirmed for the single controlled incident only.
-The current inventory confirms 14 enabled policies on the approved channel.
+The Nov 13 inventory confirms 17/17 enabled policies use the approved
+notification channel. This consists of 14 ongoing operational policies and
+three retained BE-P1-072 SQL-window policies whose query windows expired at
+`2026-11-09T23:54:20Z`; the expired policies remain enabled, not deleted.
 Controlled exact-policy alert-email evidence exists for API 5xx, sanitized
 release-health, and API p95 latency (3/14). Separately, the liveness metric and
 same email channel were exercised through a deleted short-window test policy;
 the production policy evaluation window remains untested. The other eleven
-persistent policies remain configuration-only. The p95 alert measured
+ongoing operational policies remain configuration-only. The p95 alert measured
 11,457.57 ms on staging 503
 responses at `2026-11-05T10:48:12Z`; its resolved email at `11:46:07Z` says the
 metric was missing after 57m55s. Because `evaluationMissingData` is unset, that
@@ -158,8 +186,11 @@ One disposable PITR clone was verified and deleted. Restore verification took
 that run only. Latest available restore point was about 16m22s before source
 shutdown; actual RPO/data loss remains unknown. Do not claim an RPO SLO.
 
-The admin Download action and sign-in clarification are now in active Cloud
-Run revision `carenet-admin-staging-00008-cig` at 100% staging traffic. Web PR
+The admin Download action and sign-in clarification were present in Cloud Run
+revision `carenet-admin-staging-00008-cig` at the Nov 5 deployment read. The
+Nov 13 read shows default traffic on `carenet-admin-staging-00009-4t7`, with
+`00008-cig` retained under tag `web-ready-011`; parity on the latest default
+revision remains unverified. Web PR
 #16 merged at `2a3f299f6cc00779b2d7625a0c60339e83551595`; post-merge CI
 `42000423597` passed. It improves only the mocked browser fixture/assertion:
 the valid one-page PDF response returns HTTP 200 and `application/pdf`. It did

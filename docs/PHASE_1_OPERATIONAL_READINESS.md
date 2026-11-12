@@ -1,21 +1,29 @@
 # Phase 1 Operational Readiness
 
-## Current Checkpoint (2026-11-12)
+## Current Checkpoint (2026-11-13)
 
-Mobile integration is `e3ccafbc7dd2e831f4fc035166ee1d160443dacf` after PR #286.
-PR #286 head `bc757266fbb322d55f7aa47fe3eb39f97387b839` passed
-Analyze/test/build/lint run `43155362903`; its six-file docs/test change did
-not change runtime. PR #285's reviewed head
-`c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes.
-Merged-result runs `43148540818` (Flutter PR CI) and `43148540838` (iOS Flavor
-Build) passed on its merge SHA `83f2dfb095b022f1d9dc41952ae0ec13b4557180`.
-The integrated suite is 1,423 tests (1,394 base + 29 net added by #285); no tests
-were removed, skipped, disabled, or weakened. Doctor authoring (#284) and the
-patient reader (#285) are implemented, but public education delivery remains
-disabled pending private media storage/IAM, moderator video review, content
-safety/retention/appeals, abuse controls, and an explicit launch gate.
-Backend `main` for the education contracts is
-`431094b429581e62e5f5f21acdaae693031b7859`.
+Mobile integration is `d97e781194845427b2a996424e583f14f56031b3` after PR #287.
+PR #287 reviewed head `1752dc660e0ec18c51e39f7a7b34594d19f03071` passed PR CI
+`43270653477`; merged-result CI `43273323794` passed on the exact merge SHA.
+The workflow passed 1,423 tests, analysis, debug APK, Android release lint,
+protected signing, and release-environment regressions. PR #287 changed six
+documentation/test files, changed no runtime code, and did not change test
+inventory. No tests were removed, skipped, disabled, or weakened. PR #286's
+previous integration was `e3ccafbc7dd2e831f4fc035166ee1d160443dacf`; its head
+`bc757266fbb322d55f7aa47fe3eb39f97387b839` passed run `43155362903`.
+APP-P1-007B PR #285's reviewed head
+`c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes;
+merged-result runs `43148540818` and `43148540838` passed on merge SHA
+`83f2dfb095b022f1d9dc41952ae0ec13b4557180` and added 29 tests over its
+1,394-test base.
+Doctor authoring (#284) and the patient reader (#285) are implemented, but
+public education delivery remains disabled pending media storage/IAM, reviewer
+preview, content safety/retention/appeals, abuse controls, and an explicit
+launch gate. The backend contract uses private Google Cloud Storage with
+short-lived signed playback URLs. No Cloudflare Stream integration is
+configured in the inspected CareNet staging runtime; short-form hosting has
+not been activated. Backend `main` for the
+education contracts is `431094b429581e62e5f5f21acdaae693031b7859`.
 
 Nov 12 controlled database recovery proof: automated backups and PITR are
 enabled with seven-day transaction-log retention; the newest successful
@@ -26,17 +34,53 @@ minutes before sequence 11. The clone contained sequence 1 and excluded
 sequences 2-11; actor, subject, and role fields were null. This proves one
 controlled five-minute PITR cut point, not continuous RPO or an RPO SLO. The
 clone was deleted; its inherited deletion protection was disabled only on that
-clone. Source activation returned to `NEVER`, and the SQL users API confirmed
-the source was not running. The instance API still reports `RUNNABLE` while
-activation is `NEVER`; this status discrepancy remains open. Cloud Run service
-inventory timed out, so current database dependencies remain unverified.
+clone. Source activation remains `NEVER`; the latest Cloud SQL API read reports
+`STOPPED` (an earlier `RUNNABLE`/`NEVER` observation no longer reproduces).
+No source change was made during this read-only inventory.
 
-Current SQL security read-back shows connector enforcement `REQUIRED`,
-deletion protection enabled, public IPv4 enabled, no private IP, zero
-authorized networks, and `requireSsl=false`. Network/SSL security review and
-dependency reconciliation remain open. APP-READY-082 remains partial; provider/
-worker operations, alert coverage, billing visibility, valid document preview,
-release/device, iOS, and separately approved test-only Paystack gates remain.
+Fresh Cloud Run inventory lists admin, backend, and messaging staging services.
+Only `carenet-backend-staging` declares the Cloud SQL attachment; admin calls
+the API Gateway and messaging points to the backend. Admin default percentage
+traffic is 100% on `carenet-admin-staging-00009-4t7`; the previously checked
+download revision `carenet-admin-staging-00008-cig` remains tagged
+`web-ready-011`. Its feature parity with the latest default revision and
+current valid-file preview/download have not been rechecked. No positive service-level
+or revision-level minimum instance setting was found across the three services
+and their listed revisions (messaging explicitly sets service min to zero).
+This means there is no configured idle minimum-instance floor; it does not
+disable request-triggered instances or prevent usage charges. All three Cloud
+Scheduler jobs remain paused. The backend's default percentage allocation is
+100% to `carenet-backend-staging-be075-candidate`. Tagged revisions remain
+independently addressable subject to their invoker IAM. No
+revision was promoted. The backend service IAM lists only the gateway and
+messaging-ingress service accounts as invokers, with no project-level
+`run.invoker` binding found. The messaging service separately grants
+`allUsers` `roles/run.invoker`; its WebSocket protocol requires an application
+authentication frame and closes unauthenticated connections, but public
+invocation can still incur request-based usage. Keep messaging ingress abuse
+and cost controls open; it was not disabled because the application uses it.
+
+Current Cloud SQL settings are: deletion protection enabled, backups/PITR with
+seven-day transaction-log retention, connector enforcement `REQUIRED`,
+`sslMode=ENCRYPTED_ONLY`, public IPv4 enabled, no private IP, and zero
+authorized networks. `requireSsl=false` is the compatible legacy PostgreSQL
+pair for `ENCRYPTED_ONLY`, not evidence that this setting allows plaintext.
+The backend Cloud Run service declares the Cloud SQL connector attachment, and
+its runtime service account has `roles/cloudsql.client`. Google documents that
+connector traffic is TLS-encrypted and identity-verified and that required
+connector enforcement rejects direct database connections
+([SSL mode](https://docs.cloud.google.com/sql/docs/postgres/configure-ssl-instance),
+[connector enforcement](https://docs.cloud.google.com/sql/docs/postgres/language-connectors)).
+The public IP is still allocated and private IP is absent; the secret-backed
+`DATABASE_URL` was not read, and the database is stopped, so a live runtime
+connection was not retested. The remaining database review is limited to that
+networking/deployment boundary and continuous recovery objectives, not the
+legacy `requireSsl` field alone.
+
+APP-READY-082 remains partial; exact-policy alert coverage, production liveness
+window, actual spend/billing visibility, continuous RPO/SLO, provider/worker
+operations, valid document preview, release/device, iOS, and separately
+approved test-only Paystack gates remain.
 
 ## Previous Checkpoint (2026-11-09)
 
@@ -64,17 +108,20 @@ reconciliation does not close the remaining operational gates.
 
 - Cloud cost posture: Cloud SQL was briefly enabled for the Nov 5 admin proof
   and is now `STOPPED`, activation `NEVER`, deletion
-  protection enabled; all three Scheduler jobs `PAUSED`; Cloud Run backend,
-  admin and messaging have no minimum-instance floor (messaging explicitly
-  minScale 0). Cloud Billing and the Billing Budgets API are enabled. Firebase
+  protection enabled; all three Scheduler jobs `PAUSED`; no positive
+  service-level or revision-level Cloud Run minimum-instance setting was found.
+  This is not the same as disabling request-based services. Cloud Billing and
+  the Billing Budgets API are enabled. Firebase
   Hosting's control-plane API is enabled for static pages. The admin revision
   was updated as detailed below; backend and messaging were not deployed or
-  scaled up, and no service has a minimum-instance floor.
-- Backend traffic: read-only Cloud Run state shows
-  `carenet-backend-staging-be075-candidate` at 100%. The latest ready revision
-  is `carenet-backend-staging-be079-expiry-proof` but receives no traffic; the
-  latest created revision is `carenet-backend-staging-be079-default-restored`.
-  This is not approval to promote a candidate.
+  scaled up, and no positive service/revision min-instance setting was found.
+- Backend traffic: the default percentage allocation is 100% to
+  `carenet-backend-staging-be075-candidate`. Other revisions retain tagged URLs
+  and are independently addressable subject to invoker IAM; 100% does not mean
+  tagged revisions are unreachable. The latest ready revision is
+  `carenet-backend-staging-be079-expiry-proof`; the latest created revision is
+  `carenet-backend-staging-be079-default-restored`. This is not approval to
+  promote a candidate.
 - IAM: the Firebase Admin SDK identity's project-wide
   `roles/iam.serviceAccountTokenCreator` grant was narrowed to a self-only
   service-account binding. Read-back confirms zero project binding, one
@@ -83,8 +130,10 @@ reconciliation does not close the remaining operational gates.
   identity; the runtime identity's existing self-only signing grant is
   unchanged. This closes only the cross-service-account impersonation finding,
   not the broader least-privilege review.
-- Monitoring: 14 policies and the email channel are enabled; all 14 policies
-  reference the approved operations channel. The user confirmed the firing
+- Monitoring: the Nov 9 snapshot records 14 ongoing operational policies. The
+  Nov 13 read-only inventory found 17 enabled policies total, all referencing
+  the approved channel: those 14 plus three expired BE-P1-072 SQL-window
+  policies. The user confirmed the firing
   email from a bounded test-only canary policy on existing staging-admin
   request metrics; that temporary policy was deleted. Separately, nine bounded
   API Gateway readiness GETs while Cloud SQL was intentionally stopped produced
@@ -148,9 +197,12 @@ reconciliation does not close the remaining operational gates.
   `f511d6a36d69157eed239a77c73d9253e57d8e7e` passed post-merge CI
   `41927227034`. Cloud Build
   `caace09e-6c85-4a48-b05e-d62b66575785` built the merged source; staging now
-  serves digest `sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7`
-  in revision `carenet-admin-staging-00008-cig` at 100% traffic. The revision
-  is Ready/ContainerHealthy and CI's container smoke served `/admin`. The CLI
+  served digest `sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7`
+  from revision `carenet-admin-staging-00008-cig` at the Nov 5 read. The Nov 13
+  inventory shows default traffic on `carenet-admin-staging-00009-4t7` and keeps
+  `00008-cig` under tag `web-ready-011`; latest-revision feature parity remains
+  unverified. The old revision was Ready/ContainerHealthy and CI's smoke served
+  `/admin`. The CLI
   check reached IAP's OAuth redirect, so operator visual confirmation of the
   updated sign-in copy remains open. The operator previously confirmed admin
   sign-in and one document download during a bounded SQL window; byte integrity
@@ -180,8 +232,8 @@ current spend is still unread.
 
 ## Live Alert Policy Inventory (Read-Only, 2026-11-09)
 
-Current Cloud Monitoring read-back found 14 persistent enabled policies, each
-referencing the same approved email channel. Three have controlled exact-policy
+The Nov 9 Cloud Monitoring snapshot found 14 persistent operational policies,
+each referencing the same approved email channel. Three have controlled exact-policy
 alert-email evidence; eleven are configuration-only. A separate temporary
 short-window policy on the liveness metric produced firing and recovery emails
 to that channel and was deleted; it is not counted among the 14. The check has
@@ -221,6 +273,23 @@ The project-scoped $31.75 USD monthly budget alert sends current-spend notices
 at 50%, 90%, and 100%; it is not a hard cap. The CLI has no spend-report
 command, and no BigQuery dataset or export was found. Actual current spend has
 not been read in this checkpoint, so no cost forecast is claimed.
+
+### Latest read-only inventory reconciliation (2026-11-13)
+
+The current GCP read-back found 17 enabled policies, all referencing the same
+approved notification channel: the 14 ongoing operational policies in the
+Nov 9 snapshot above plus three retained BE-P1-072 SQL-shutdown window
+policies scoped to window `8045dc20b77b18991f75740b6a0a8977`:
+
+- `SQL shutdown execution FAILED`
+- `SQL shutdown expected launch unobserved`
+- `SQL shutdown shutdown completion unobserved`
+
+Their PromQL upper time bound expired at
+`2026-11-09T23:54:20Z`. They remain enabled; expiry did not delete them. They
+are not included in the operational email-evidence denominator: controlled
+delivery evidence is 3/14 ongoing policies. No Cloud Monitoring policy was
+modified during this read-only check.
 
 APP-READY-082 remains the recorded next operational track. Doctor authoring
 and the patient reader are now merged; do not enable the public-content flag or
@@ -305,9 +374,11 @@ one-uptime-check state.
   are not proved by local tests, one delivered email or an SDK response alone.
   The worker schedule remains paused.
 - Database/security: a controlled five-minute PITR cut point was verified on
-  Nov 12, but continuous RPO/SLO remains unproved. Public IPv4, absent private
-  IP, and `requireSsl=false` require security review. The live SQL memory
-  condition now matches the intended metric, but the
+  Nov 12, but continuous RPO/SLO remains unproved. Cloud SQL enforces connector
+  use and `ENCRYPTED_ONLY` TLS; the legacy PostgreSQL `requireSsl=false` value
+  is the documented compatible pair. Public IPv4 remains allocated, private
+  IP is absent, and the secret-backed runtime connection was not re-tested
+  while SQL is stopped. The live SQL memory condition now matches the intended metric, but the
   backend's stale status note and a real breach/notification proof remain open.
   Remaining least-privilege review also remains open after the narrowly scoped
   Firebase SDK binding repair above. Do not resize, restart or suppress an alert

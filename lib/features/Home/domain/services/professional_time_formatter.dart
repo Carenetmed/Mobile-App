@@ -23,6 +23,11 @@ class ProfessionalTimeFormatter {
   }
 
   static bool _initialized = false;
+  static final Map<String, timezone.Location> _locations =
+      <String, timezone.Location>{};
+  static final Map<String, DateFormat> _formats = <String, DateFormat>{};
+
+  final Map<String, String> _professionalDates = <String, String>{};
 
   static void _initialize() {
     if (_initialized) {
@@ -37,34 +42,56 @@ class ProfessionalTimeFormatter {
     required String professionalTimezone,
   }) {
     final utc = utcStartAt.toUtc();
-    final location = timezone.getLocation(professionalTimezone);
+    final location = _location(professionalTimezone);
     final professional = timezone.TZDateTime.from(utc, location);
     final local = utc.toLocal();
     final professionalOffset = professional.timeZoneOffset;
     final localOffset = local.timeZoneOffset;
     return ProfessionalTimeLabels(
-      professionalDate: DateFormat(
-        'EEE, d MMM y',
-        CareNetPresentation.dateLocale,
-      ).format(professional),
-      professionalTime: DateFormat(
-        'h:mm a',
-        CareNetPresentation.dateLocale,
-      ).format(professional),
+      professionalDate: _dateFormat('EEE, d MMM y').format(professional),
+      professionalTime: _dateFormat('h:mm a').format(professional),
       professionalTimezone: professionalTimezone,
       patientLocalTime:
           professionalOffset == localOffset
               ? null
-              : '${DateFormat('EEE, d MMM, h:mm a', CareNetPresentation.dateLocale).format(local)} local time',
+              : '${_dateFormat('EEE, d MMM, h:mm a').format(local)} local time',
+    );
+  }
+
+  String professionalDateLabel({
+    required DateTime utcStartAt,
+    required String professionalTimezone,
+  }) {
+    final professional = timezone.TZDateTime.from(
+      utcStartAt.toUtc(),
+      _location(professionalTimezone),
+    );
+    final key =
+        '$professionalTimezone|${professional.year}-${professional.month}-${professional.day}';
+    return _professionalDates.putIfAbsent(
+      key,
+      () => _dateFormat('EEE, d MMM y').format(professional),
     );
   }
 
   bool isValidTimezone(String value) {
     try {
-      timezone.getLocation(value);
+      _location(value);
       return true;
     } catch (_) {
       return false;
     }
+  }
+
+  static timezone.Location _location(String name) {
+    return _locations.putIfAbsent(name, () => timezone.getLocation(name));
+  }
+
+  static DateFormat _dateFormat(String pattern) {
+    final key = '${CareNetPresentation.dateLocale}|$pattern';
+    return _formats.putIfAbsent(
+      key,
+      () => DateFormat(pattern, CareNetPresentation.dateLocale),
+    );
   }
 }

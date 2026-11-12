@@ -71,6 +71,25 @@ void main() {
     expect(after.professionalTime, '3:30 am');
   });
 
+  test('date-only labels preserve IANA local calendar dates', () {
+    final formatter = ProfessionalTimeFormatter();
+
+    expect(
+      formatter.professionalDateLabel(
+        utcStartAt: DateTime.utc(2026, 7, 24, 23, 30),
+        professionalTimezone: 'Asia/Kolkata',
+      ),
+      'Sat, 25 Jul 2026',
+    );
+    expect(
+      formatter.professionalDateLabel(
+        utcStartAt: DateTime.utc(2026, 3, 8, 7, 30),
+        professionalTimezone: 'America/New_York',
+      ),
+      'Sun, 8 Mar 2026',
+    );
+  });
+
   testWidgets(
     'app controls use day-first dates and explicit twelve-hour time',
     (tester) async {

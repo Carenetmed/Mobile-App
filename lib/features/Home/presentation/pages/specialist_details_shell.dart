@@ -469,13 +469,10 @@ class _RequestableTimesSectionState extends State<_RequestableTimesSection> {
     final grouped = <String, List<RequestableTime>>{};
     for (final time in response.times) {
       try {
-        final day =
-            formatter
-                .format(
-                  utcStartAt: time.startAt,
-                  professionalTimezone: timezone,
-                )
-                .professionalDate;
+        final day = formatter.professionalDateLabel(
+          utcStartAt: time.startAt,
+          professionalTimezone: timezone,
+        );
         grouped.putIfAbsent(day, () => <RequestableTime>[]).add(time);
       } catch (_) {
         // The controller rejects invalid timezone contracts. Ignore any

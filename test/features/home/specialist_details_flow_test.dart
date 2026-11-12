@@ -332,6 +332,13 @@ void main() {
     tester,
   ) async {
     final firstStart = DateTime.parse('2026-07-25T08:00:00.000Z');
+    final times = <RequestableTime>[
+      for (var index = 0; index < 14 * 48; index++)
+        RequestableTime(
+          startAt: firstStart.add(Duration(minutes: 30 * index)),
+          endAt: firstStart.add(Duration(minutes: 30 * index + 30)),
+        ),
+    ];
     final scheduling = _FakeSchedulingRepository(
       response: RequestableTimes(
         professionalProfileId: 'pro-1',
@@ -340,13 +347,7 @@ void main() {
         cadenceMinutes: 30,
         leadTimeMinutes: 120,
         bookingHorizonDays: 60,
-        times: <RequestableTime>[
-          for (var day = 0; day < 60; day++)
-            RequestableTime(
-              startAt: firstStart.add(Duration(days: day)),
-              endAt: firstStart.add(Duration(days: day, minutes: 30)),
-            ),
-        ],
+        times: times,
       ),
     );
 
@@ -357,6 +358,8 @@ void main() {
       find.textContaining('9:00 am Africa/Lagos - 30 min'),
       findsOneWidget,
     );
+    expect(find.byIcon(Icons.radio_button_off), findsNWidgets(30));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('unauthenticated request saves intent before entering auth', (

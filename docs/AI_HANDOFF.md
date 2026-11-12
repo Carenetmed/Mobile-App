@@ -1,11 +1,16 @@
 # AI handoff - read this first
 
-## Current Verified Checkpoint (2026-11-12)
+## Current Verified Checkpoint (2026-11-13)
 
-Mobile integration is `e3ccafbc7dd2e831f4fc035166ee1d160443dacf` after mobile
-PR #286. Its head `bc757266fbb322d55f7aa47fe3eb39f97387b839` passed
-Analyze/test/build/lint run `43155362903`; the six-file docs/test change did not
-change runtime. APP-P1-007B PR #285's reviewed head
+Mobile integration is `d97e781194845427b2a996424e583f14f56031b3` after mobile
+PR #287. Its reviewed head `1752dc660e0ec18c51e39f7a7b34594d19f03071` passed
+PR CI `43270653477`; merged-result CI `43273323794` passed on the exact merge
+SHA, including 1,423 tests, analysis, debug APK, Android release lint, protected
+signing and release-environment regressions. PR #287 changed six docs/test
+files, no runtime, and no test inventory. PR #286's previous integration was
+`e3ccafbc7dd2e831f4fc035166ee1d160443dacf`; its head
+`bc757266fbb322d55f7aa47fe3eb39f97387b839` passed run `43155362903`.
+APP-P1-007B PR #285's reviewed head
 `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes;
 exact-merge runs `43148540818` (Flutter PR CI) and `43148540838`
 (iOS Flavor Build) passed on merge SHA `83f2dfb095b022f1d9dc41952ae0ec13b4557180`.
@@ -26,15 +31,42 @@ five minutes before marker 11. The restored database contained marker 1 and
 excluded markers 2-11; actor, subject, and role fields were null. This proves
 one controlled five-minute PITR cut point, not continuous RPO or an RPO SLO.
 The one-use clone was deleted, and source activation returned to `NEVER`; the
-SQL users API confirmed the source was not running. The instance API still
-reports `RUNNABLE` with `NEVER`, so do not infer readiness from that field.
+SQL users API confirmed the source was not running. An earlier instance read
+reported `RUNNABLE` with `NEVER`; a fresh read now reports `STOPPED/NEVER`, so
+the earlier status discrepancy no longer reproduces.
 
-Current SQL security read-back: connector enforcement `REQUIRED`, deletion
-protection enabled, public IPv4 enabled, no private IP, zero authorized
-networks, and `requireSsl=false`. Network/SSL review remains open. Cloud Run
-service inventory timed out, so database dependencies remain unverified.
-APP-READY-082 remains partial; continue its remaining operational gates rather
-than starting public education/video delivery or Paystack activation.
+Current Cloud SQL state is `STOPPED`, activation `NEVER`, deletion protection
+enabled, backups/PITR enabled, connector enforcement `REQUIRED`, and
+`sslMode=ENCRYPTED_ONLY`. `requireSsl=false` is the documented compatible
+legacy PostgreSQL pair, not a plaintext-permission finding. Cloud Run inventory
+confirms only the backend is attached to SQL; admin targets API Gateway and
+messaging targets backend. Admin default percentage traffic is 100% on
+`carenet-admin-staging-00009-4t7`; the previously checked download revision
+`carenet-admin-staging-00008-cig` remains tagged `web-ready-011`. Feature parity
+and valid-file behavior on the latest default revision have not been rechecked.
+No positive service-level or revision-level minimum
+instance setting was found; request-triggered instances can still incur usage.
+All three Scheduler jobs are paused. The backend's default percentage
+allocation is 100% to `be075-candidate`; tagged revisions remain independently
+addressable subject to invoker IAM. Backend service IAM lists the gateway and
+messaging-ingress identities only, with no project-level `run.invoker` binding
+found. The messaging service grants `allUsers` `roles/run.invoker`; its
+WebSocket protocol closes clients that fail the application-authentication
+frame, but public invocation can still incur usage. Keep messaging ingress
+abuse/cost controls open; it was not disabled because the application depends
+on it. The backend runtime identity has
+`roles/cloudsql.client`. Public IPv4 is allocated, but authorized networks are
+empty and connector enforcement rejects direct connections; private IP is not
+configured. The secret-backed database URL was not read, and live connection
+was not tested while SQL is stopped. Keep private-network/live-connection and
+continuous RPO questions open; do not start SQL, promote a revision, or resume a
+worker as part of this read-only review.
+
+APP-READY-082 remains partial; continue the operational gates rather than
+starting public education/video delivery or Paystack activation. Doctor and
+patient education surfaces exist, but media delivery remains disabled. The
+current backend contract uses signed Google Storage URLs; no Cloudflare Stream
+integration is configured in the inspected CareNet staging runtime.
 
 The prior APP-READY-102 checkpoint was `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
 APP-READY-102 PR #282. Reviewed head `260c8cec0d643498d328bcf18d1ee3bba4b9fe94`
@@ -152,10 +184,13 @@ not proof that Chromium visually rendered the PDF or that a real uploaded
 staging document previews correctly. Web main before PR #16 was
 `f511d6a36d69157eed239a77c73d9253e57d8e7e`, with post-merge CI
 `41927227034`. Cloud Build `caace09e-6c85-4a48-b05e-d62b66575785` built the
-merged source, and staging now serves digest
+merged source. On the Nov 5 read, staging served digest
 `sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7` from
-revision `carenet-admin-staging-00008-cig` at 100% traffic. The revision is
-Ready/ContainerHealthy; CI container smoke served `/admin`. The CLI check reached
+revision `carenet-admin-staging-00008-cig` at 100% default traffic. The Nov 13
+read shows default traffic on `carenet-admin-staging-00009-4t7`, while
+`00008-cig` remains tagged `web-ready-011`; latest-revision feature parity is
+unverified. The old revision is Ready/ContainerHealthy; CI container smoke served `/admin`.
+The CLI check reached
 the IAP OAuth redirect, so operator visual confirmation of the updated sign-in
 copy remains open. The user previously confirmed CareNet admin sign-in and one
 download during the controlled SQL window. This is not independent
@@ -1425,9 +1460,9 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-078 | Make the existing backend email-verification request reachable from authenticated Account and render backend-owned email/status | S | **DONE** - PR #242 merged at `f8aea76`; 933-test suite and CI passed; physical-device link verification remains pending |
 | APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **DONE** - IAP-protected staging console deployed and first super-administrator provisioned; operator browser smoke pending |
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
-| APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue proved; Download is in the deployed `download-lf-63c089c` revision; mocked download tests pass; real valid-file preview/download remains open |
+| APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue and one staging download were confirmed; download revision `00008-cig` remains tagged `web-ready-011`, while default traffic is now on `00009-4t7` and feature parity is unverified; mocked download tests pass; real valid-file preview and byte integrity remain open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Current integration `e3ccafbc` / 1,423 tests; PR #286 check `43155362903` passed. Controlled five-minute PITR cut-point verified at `2026-11-09T23:41:46.171Z`; clone deleted and source returned to `NEVER` (users API confirms not running; instance API still says `RUNNABLE`). Latest successful backup started `2026-11-09T20:28:51.567Z`. Cloud Run dependency inventory timed out. Still partial: exact-policy email proof exists for only 3/14 persistent policies; production liveness window, actual spend, billing export, continuous RPO/SLO, SQL network/SSL security review, worker/RTC/provider operations, valid uploaded-document preview, signed release/device, iOS signing/device, and separately approved test-only Paystack activation remain open. Education authoring and patient reader are merged, but public content stays disabled pending storage/IAM, reviewer video preview, moderation/safety/retention/abuse controls, and explicit launch approval. |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Current integration `d97e7811` / 1,423 tests; PR #287 head `1752dc66` passed run `43270653477`, and merged CI `43273323794` passed. Nov 12 controlled five-minute PITR cut-point verified at `2026-11-09T23:41:46.171Z`; clone deleted, source is now confirmed `STOPPED/NEVER`, latest successful backup started `2026-11-09T20:28:51.567Z`. Fresh Cloud Run inventory confirms only backend has a Cloud SQL attachment; admin uses Gateway, messaging uses backend; no positive service/revision min-instance setting was found, but request-triggered services can still incur usage. All schedulers remain paused. Backend default percentage allocation is 100% to `be075-candidate`; tagged revisions remain separately addressable under IAM. Messaging has an `allUsers` invoker binding and application-level WebSocket auth; ingress abuse/cost controls remain open. Connector enforcement is `REQUIRED`, SSL mode is `ENCRYPTED_ONLY` (the legacy `requireSsl=false` is the compatible pair); no authorized networks, public IPv4 allocated, no private IP, live DB URL/connection not retested. Still partial: exact-policy email proof exists for only 3/14 persistent policies; production liveness window, actual spend, billing export, continuous RPO/SLO, private-network/live-connection review, worker/RTC/provider operations, valid uploaded-document preview, signed release/device, iOS signing/device, and separately approved test-only Paystack activation remain open. Education authoring and patient reader are merged, but public delivery remains disabled pending media IAM, reviewer video preview, moderation/safety/retention/abuse controls, and explicit launch approval. Existing media contract is signed Google Storage; no Cloudflare Stream integration is configured in the inspected CareNet staging runtime. |
 
 ### APP-READY-055 implementation evidence
 

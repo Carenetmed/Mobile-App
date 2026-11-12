@@ -31,8 +31,16 @@ void main() {
       expect(
         entry.value,
         contains('e3ccafbc7dd2e831f4fc035166ee1d160443dacf'),
+        reason: '${entry.key} must retain the PR #286 integration checkpoint.',
+      );
+      expect(
+        entry.value,
+        contains('d97e781194845427b2a996424e583f14f56031b3'),
         reason: '${entry.key} must name the current merged integration.',
       );
+      expect(entry.value, contains('1752dc660e0ec18c51e39f7a7b34594d19f03071'));
+      expect(entry.value, contains('43270653477'));
+      expect(entry.value, contains('43273323794'));
       expect(
         entry.value,
         contains('83f2dfb095b022f1d9dc41952ae0ec13b4557180'),
@@ -82,9 +90,11 @@ void main() {
       expect(entry.value, contains('1,366 tests'));
       expect(
         entry.value,
-        contains('carenet-admin-staging-00008-cig'),
-        reason: '${entry.key} must name the current admin revision.',
+        contains('carenet-admin-staging-00009-4t7'),
+        reason: '${entry.key} must name the current default admin revision.',
       );
+      expect(entry.value, contains('carenet-admin-staging-00008-cig'));
+      expect(entry.value, contains('web-ready-011'));
       expect(
         entry.value,
         isNot(contains('carenet-admin-staging-00006-55n')),
@@ -184,14 +194,20 @@ void main() {
         .singleWhere((line) => line.startsWith('| APP-READY-082 |'));
 
     expect(task, contains('**NEXT**'));
-    expect(task, contains('`e3ccafbc`'));
+    expect(task, contains('`d97e7811`'));
     expect(task, contains('1,423 tests'));
-    expect(task, contains('not running'));
+    expect(task, contains('STOPPED/NEVER'));
     expect(task, contains('five-minute PITR cut-point'));
     expect(task, contains('continuous RPO/SLO'));
-    expect(task, contains('timed out'));
+    expect(task, contains('only backend has a Cloud SQL attachment'));
+    expect(task, contains('SSL mode is `ENCRYPTED_ONLY`'));
+    expect(task, contains('no positive service/revision min-instance setting'));
+    expect(task, contains('tagged revisions remain separately addressable'));
+    expect(task, contains('Messaging has an `allUsers` invoker binding'));
+    expect(task, contains('ingress abuse/cost controls remain open'));
+    expect(task, contains('no Cloudflare Stream integration is configured'));
     expect(task, contains('3/14'));
-    expect(task, contains('public content stays disabled'));
+    expect(task, contains('public delivery remains disabled'));
 
     final readiness =
         File('docs/PHASE_1_OPERATIONAL_READINESS.md').readAsStringSync();
@@ -216,12 +232,29 @@ void main() {
     expect(readiness, contains('Nov 12 controlled database recovery proof'));
     expect(readiness, contains('five-minute PITR cut point'));
     expect(readiness, contains('2026-11-09T23:41:46.171Z'));
-    expect(readiness, contains('SQL users API confirmed'));
-    expect(readiness, contains('source was not running'));
-    expect(readiness, contains('inventory timed out'));
+    expect(readiness, contains('latest Cloud SQL API read reports'));
+    expect(
+      readiness,
+      contains(
+        '`STOPPED` (an earlier `RUNNABLE`/`NEVER` observation no longer reproduces)',
+      ),
+    );
+    expect(
+      readiness,
+      contains(
+        'Only `carenet-backend-staging` declares the Cloud SQL attachment',
+      ),
+    );
+    expect(readiness, contains('No positive service-level'));
+    expect(readiness, contains('Tagged revisions remain'));
+    expect(readiness, contains('`allUsers` `roles/run.invoker`'));
     expect(readiness, contains('connector enforcement `REQUIRED`'));
-    expect(readiness, contains('`requireSsl=false`'));
-    expect(readiness, contains('public IPv4 enabled, no private IP, zero'));
+    expect(readiness, contains('`sslMode=ENCRYPTED_ONLY`'));
+    expect(
+      readiness,
+      contains('`requireSsl=false` is the compatible legacy PostgreSQL'),
+    );
+    expect(readiness, contains('public IPv4 enabled, no private IP'));
     expect(readiness, contains('2026-10-27T18:00:00Z'));
   });
 
@@ -249,7 +282,8 @@ void main() {
         'sha256:bcf9814146b3cdf2008487ef61623d331ab0d18859574e753a4ad33041e61cc7',
       ),
     );
-    expect(handoff, contains('100% traffic'));
+    expect(handoff, contains('Admin default percentage traffic is 100% on'));
+    expect(handoff, contains('default traffic on `carenet-admin-staging-00009-4t7`'));
     expect(handoff, contains('CI container smoke served `/admin`'));
     expect(handoff, contains('63-byte smoke PDF'));
   });

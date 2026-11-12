@@ -1,9 +1,14 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `e3ccafbc7dd2e831f4fc035166ee1d160443dacf` after
-PR #286. Its head `bc757266fbb322d55f7aa47fe3eb39f97387b839` passed
-Analyze/test/build/lint run `43155362903`; the six-file docs/test change did
-not change runtime. APP-P1-007B PR #285's reviewed head
+Current Mobile integration is `d97e781194845427b2a996424e583f14f56031b3` after
+PR #287. Its reviewed head `1752dc660e0ec18c51e39f7a7b34594d19f03071` passed
+PR CI `43270653477`; merged-result CI `43273323794` passed on the exact merge
+SHA, including 1,423 tests, analyzer, debug APK, Android release lint, signing,
+and release-environment regressions. The six-file docs/test reconciliation did
+not change runtime or test inventory. PR #286's previous integration was
+`e3ccafbc7dd2e831f4fc035166ee1d160443dacf`; its head
+`bc757266fbb322d55f7aa47fe3eb39f97387b839` passed run `43155362903`.
+APP-P1-007B PR #285's reviewed head
 `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes;
 merged-result runs `43148540818` and `43148540838` passed on merge SHA
 `83f2dfb095b022f1d9dc41952ae0ec13b4557180`. The current suite is 1,423 tests
@@ -19,13 +24,28 @@ Nov 12 controlled PITR proof restored eleven pre-existing actorless/subjectless
 staging markers to `2026-11-09T23:41:46.171Z`, exactly five minutes before the
 last marker. The restored clone contained marker 1 and excluded markers 2-11;
 actor, subject, and role fields were null. The one-use clone was deleted and
-staging SQL returned to activation `NEVER`; its users API confirmed it was not
-running, although the instance API still reports `RUNNABLE`. This proves one
+staging SQL returned to activation `NEVER`; the latest instance read reports
+`STOPPED`, resolving the earlier `RUNNABLE`/`NEVER` observation. This proves one
 five-minute recovery cut point, not a continuous RPO SLO. The latest successful
 automated backup started `2026-11-09T20:28:51.567Z`; PITR retention is seven
-days. Network review remains open: public IPv4 enabled, no private IP or
-authorized networks, and `requireSsl=false` (connector enforcement is
-`REQUIRED`).
+days. Current configuration is connector enforcement `REQUIRED` and
+`sslMode=ENCRYPTED_ONLY`; `requireSsl=false` is the compatible legacy
+PostgreSQL pair. The backend service declares the Cloud SQL connector
+attachment, and its runtime identity has `roles/cloudsql.client`. Public IPv4
+is allocated, but authorized networks are empty and direct database connections
+are rejected; private IP is absent. The secret-backed URL was not inspected and
+live connectivity was not retested while SQL is stopped. Only the backend
+Cloud Run service is attached to SQL; admin uses API Gateway, messaging points
+to backend, and all schedulers remain paused. No positive service-level or
+revision-level Cloud Run minimum-instance setting was found, but this does not
+disable request-based services. No Cloudflare Stream integration is configured
+in the inspected CareNet staging runtime; the education API currently returns
+short-lived signed Google Storage URLs. Messaging grants `allUsers` Cloud Run
+invocation and relies on application-level WebSocket authentication; ingress
+abuse/cost controls remain open. The backend's 100% default percentage
+allocation does not make tagged revision URLs unreachable.
+Public education remains disabled until media access, moderation, retention,
+safety, abuse handling and launch approval are closed.
 Current Mobile integration was `3d447f7d1e78c1bd32007b3038bef4b6b204c9b9` after
 APP-READY-101 PR #281. Reviewed head `bb8b117fe5e0741ceb28bb29af0b716cba1efade`
 passed CI `42091108978`; merged-result CI `42093709035` passed on the exact
@@ -40,10 +60,12 @@ Backend `main` is
 `1e2072bf2520b387d3dcc28f32918c21a86ad880` after docs-only PR #194; all three
 CI lanes passed on the PR and merged result (`41982489735`, `41982963454`). See `AI_HANDOFF.md`,
 `CODEBASE_STATUS.md`, and `PHASE_1_OPERATIONAL_READINESS.md` for current gates.
-The admin Download control and sign-in clarification are deployed in staging
-revision `carenet-admin-staging-00008-cig` at 100% traffic. The operator
-previously confirmed sign-in and a staging document download on Nov 5; byte
-integrity and valid-file preview acceptance remain open. The default
+Admin default percentage traffic is 100% on
+`carenet-admin-staging-00009-4t7`. The previously checked Download revision
+`carenet-admin-staging-00008-cig` remains tagged `web-ready-011`; latest-revision
+feature parity is unverified. The operator previously confirmed sign-in and a
+staging document download on Nov 5; byte integrity and valid-file preview
+acceptance remain open. The default
 Firebase Hosting site serves the approved public/legal pages, and the owner
 confirmed the support mailbox test arrived. Cloud Billing and the Budgets API
 are enabled. A project-scoped $31.75 USD monthly budget alert (~₹3,000 at the

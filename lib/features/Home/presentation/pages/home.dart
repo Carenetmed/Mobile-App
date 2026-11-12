@@ -20,6 +20,7 @@ class Home extends StatefulWidget {
     required this.onPrimaryAction,
     required this.onAppointments,
     required this.onReadinessAction,
+    this.onEducation,
     this.onAppointment,
     this.profileRepository,
     this.onboardingRepository,
@@ -32,6 +33,7 @@ class Home extends StatefulWidget {
   final VoidCallback onAppointments;
   final ValueChanged<String>? onAppointment;
   final ValueChanged<AccountReadiness?> onReadinessAction;
+  final VoidCallback? onEducation;
   final ProfileRepository? profileRepository;
   final OnboardingRepository? onboardingRepository;
   final SchedulingRepository? schedulingRepository;
@@ -117,6 +119,17 @@ class _HomeState extends State<Home> {
             isProfessional: isProfessional,
             onTap: widget.onPrimaryAction,
           ),
+          if (!isProfessional && widget.onEducation != null) ...[
+            SizedBox(height: 8.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: widget.onEducation,
+                icon: const Icon(Icons.menu_book_outlined),
+                label: const Text('Doctor-created health education'),
+              ),
+            ),
+          ],
           if (state.failedSections.isNotEmpty) ...[
             SizedBox(height: 14.h),
             _PartialFailure(onRetry: _load),

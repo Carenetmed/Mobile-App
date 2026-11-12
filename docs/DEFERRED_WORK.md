@@ -1,5 +1,19 @@
 # Deferred work and backend replacement map
 
+## APP-P1-007B Patient Education Reader - operational launch gates
+
+The mobile public feed/detail reader uses the published-content API, doctor
+identity projection, bounded cursor and short-lived signed video URLs. Its
+development empty state is expected while public delivery is disabled; this
+slice does not enable `EDUCATION_CONTENT_PUBLIC_ENABLED`, provision a media
+bucket, or change cloud spend. Before public rollout, verify the deployed flag,
+private bucket access/IAM, video URL issuance and playback, publication review
+coverage, clinical-content policy, retention/appeal handling, reporting
+operations, abuse/rate controls, and physical-device/network behavior. The
+backend currently does not provide an edge/account read-rate limit. Likes,
+comments, creator payouts, personalized medical matching and automated medical
+advice are not part of the reader.
+
 ## APP-READY-090 Upload Recovery Boundary
 
 APP-READY-090 is merged through mobile PR #264. Confirmed provider expiry is

@@ -22,6 +22,7 @@ import '../../features/Consultation/data/repositories/consultation_repository.da
 import '../../features/Consultation/data/services/consultation_api_client.dart';
 import '../../features/Consultation/domain/services/consultation_permission_service.dart';
 import '../../features/Education/data/repositories/education_content_repository.dart';
+import '../../features/Education/data/repositories/education_public_content_repository.dart';
 import '../../features/Education/data/services/education_content_api_client.dart';
 import '../../features/Home/data/repositories/profile_repository.dart';
 import '../../features/Home/data/repositories/financial_repository.dart';
@@ -282,6 +283,14 @@ Future<void> configureDependencies() async {
   if (!sl.isRegistered<EducationContentRepository>()) {
     sl.registerLazySingleton<EducationContentRepository>(
       () => EducationContentRepository(
+        apiClient: sl<EducationContentApiClient>(),
+        sessionStore: sl<SessionStore>(),
+      ),
+    );
+  }
+  if (!sl.isRegistered<EducationPublicContentRepository>()) {
+    sl.registerLazySingleton<EducationPublicContentRepository>(
+      () => EducationPublicContentRepository(
         apiClient: sl<EducationContentApiClient>(),
         sessionStore: sl<SessionStore>(),
       ),

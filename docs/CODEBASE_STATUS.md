@@ -1,18 +1,26 @@
 # Codebase status
 
-## Current Activity (2026-11-11)
+## Current Activity (2026-11-12)
 
-APP-P1-007 is being implemented on the isolated branch
-`slice/APP-P1-007-doctor-education-authoring`, based on
-`adbca02536b5408afc5b557f8e8cee701ed615ff`. The slice adds a professional
-education studio backed by the merged education-content API and reviewer UI.
-The public patient feed remains disabled by backend configuration; this mobile
-authoring work does not provision media storage, change cloud settings, or make
-content public. Local verification passed: 1,394 Flutter tests,
-`flutter analyze`, and `flutter build apk --debug --flavor staging`. PR and CI
-review are pending.
+APP-P1-007 authoring is merged in mobile PR #284. APP-P1-007B patient reader is
+being implemented on isolated branch
+`slice/APP-P1-007B-patient-education-reader`, based on mobile integration
+`54e3b337c3555e8651176af0a801761345d63ad6`. Backend education contracts are on
+`main` at `431094b429581e62e5f5f21acdaae693031b7859`. The reader uses only
+published API data and does not change the public-content flag, provision media
+storage, or activate cloud services. Local verification passes: 52 targeted
+reader/routing regressions, all 1,423 Flutter tests (1,394 base + 29 added),
+`flutter analyze`, and the staging Android arm64 debug APK. PR and exact-head CI
+remain open.
 
-## Current Checkpoint (2026-11-09)
+Cloud SQL is not being changed as part of this mobile slice. Two direct
+read-only SQL Admin API observations on Nov 11 returned `RUNNABLE` while
+`activationPolicy=NEVER`, conflicting with the earlier `STOPPED` observation.
+The user did not start it and is unsure whether the team did. No start, stop,
+restore, clone, or database write has been issued. Reconcile the control-plane
+state and service impact before the previously approved PITR proof.
+
+## Previous Integration Checkpoint (2026-11-09)
 
 Integration base is `00a7021b60c620e1f4fae25fbce405ce17f322ad` after
 APP-READY-102 PR #282. Reviewed head `260c8cec0d643498d328bcf18d1ee3bba4b9fe94`

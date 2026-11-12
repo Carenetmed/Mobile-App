@@ -77,6 +77,8 @@ Future<void> _pumpDashboard(
                   (_) => const Scaffold(body: Text('notification-route')),
               RouteName.account:
                   (_) => const Scaffold(body: Text('account-route')),
+              RouteName.educationFeed:
+                  (_) => const Scaffold(body: Text('education-feed-route')),
             },
           ),
     ),
@@ -112,6 +114,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(SearchShellPage), findsOneWidget);
     expect(find.text('Find Care'), findsWidgets);
+  });
+
+  testWidgets('patient Home opens education without changing tab contract', (
+    tester,
+  ) async {
+    await _pumpDashboard(tester, role: 'PATIENT');
+
+    final entry = find.text('Doctor-created health education');
+    await tester.ensureVisible(entry);
+    await tester.tap(entry);
+    await tester.pumpAndSettle();
+
+    expect(find.text('education-feed-route'), findsOneWidget);
+  });
+
+  testWidgets('professional Home does not show the patient education entry', (
+    tester,
+  ) async {
+    await _pumpDashboard(tester, role: 'PROFESSIONAL');
+
+    expect(find.text('Doctor-created health education'), findsNothing);
+    expect(_bottomLabels(tester), <String?>[
+      'Home',
+      'Schedule',
+      'Appointments',
+      'Messages',
+    ]);
   });
 
   testWidgets('patient dashboard remains usable on compact large text', (

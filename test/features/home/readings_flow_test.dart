@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:app_t/core/constants/navigators/routeName.dart';
 import 'package:app_t/features/Home/presentation/pages/add_device_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/blood_sug_shell.dart';
@@ -5,6 +7,7 @@ import 'package:app_t/features/Home/presentation/pages/manage_readings.dart';
 import 'package:app_t/features/Home/presentation/pages/readings.dart';
 import 'package:app_t/features/Home/presentation/state/readings_local_store.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -27,10 +30,23 @@ Future<void> _pumpReadings(WidgetTester tester) async {
               RouteName.addDevice: (_) => const AddDeviceShellPage(),
               RouteName.bloodSug: (_) => const BloodSugShellPage(),
             },
+            builder:
+                (context, child) => DefaultAssetBundle(
+                  bundle: _FileAssetBundle(),
+                  child: child!,
+                ),
           ),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+class _FileAssetBundle extends CachingAssetBundle {
+  @override
+  Future<ByteData> load(String key) async {
+    final bytes = await File(key).readAsBytes();
+    return ByteData.sublistView(bytes);
+  }
 }
 
 void main() {

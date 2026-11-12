@@ -13,6 +13,7 @@ import 'package:app_t/features/Home/presentation/pages/edit_email_shell.dart';
 import 'package:app_t/features/Authentication/data/repositories/account_repository.dart';
 import 'package:app_t/features/Consultation/presentation/pages/consultation_shell.dart';
 import 'package:app_t/features/Education/presentation/pages/education_studio_shell.dart';
+import 'package:app_t/features/Education/presentation/pages/education_feed_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/add_description_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/account_shell.dart';
 import 'package:app_t/features/Home/presentation/pages/appointment_experience_shell.dart';
@@ -184,6 +185,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return _page(settings, const ProfessionalFinanceShellPage());
     case RouteName.educationStudio:
       return _page(settings, const EducationStudioShellPage());
+    case RouteName.educationFeed:
+      return _page(settings, const EducationFeedShellPage());
+    case RouteName.educationDetail:
+      final args = settings.arguments;
+      return _page(
+        settings,
+        EducationDetailShellPage(contentId: args is String ? args : null),
+      );
     case RouteName.editYourName:
       return _page(settings, const EditYourNameShellPage());
     case RouteName.editProfessionalDetails:

@@ -259,6 +259,11 @@ class _DashboardState extends State<Dashboard> {
                       : MarketplaceHomeRole.patient,
               onPrimaryAction: () => _selectIndex(1),
               onAppointments: () => _selectIndex(2),
+              onEducation:
+                  professional
+                      ? null
+                      : () =>
+                          Navigator.pushNamed(context, RouteName.educationFeed),
               onAppointment: (appointmentId) {
                 Navigator.pushNamed(
                   context,

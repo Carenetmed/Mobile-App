@@ -20,6 +20,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.7.2
+  flutter: ">=3.41.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -73,6 +74,7 @@ dependencies:
   firebase_messaging: ^16.4.3
   flutter_local_notifications: ^20.1.0
   package_info_plus: ^9.0.1
+  video_player: ^2.10.1
 
 dev_dependencies:
   flutter_test:

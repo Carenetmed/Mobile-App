@@ -4,6 +4,7 @@ import 'package:app_t/core/config/carenet_api_config.dart';
 import 'package:app_t/core/network/carenet_http_client.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Education/domain/entities/education_content.dart';
+import 'package:app_t/features/Education/domain/entities/public_education_content.dart';
 import 'package:dio/dio.dart';
 
 class EducationContentApiClient {
@@ -16,6 +17,95 @@ class EducationContentApiClient {
 
   static const String contentPath = '/education/content';
   static const int maxVideoBytes = 25 * 1024 * 1024;
+
+  Future<PublicEducationFeedPage> listPublic({
+    String? cursor,
+    CancelToken? cancelToken,
+  }) async {
+    if (cursor != null &&
+        (cursor.length > 128 ||
+            !RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(cursor))) {
+      throw const AuthFailure(
+        type: AuthFailureType.validation,
+        message: 'Education posts could not be loaded. Please refresh.',
+      );
+    }
+    final response = await _request(
+      () => _dio.get<dynamic>(
+        _url(contentPath),
+        queryParameters:
+            cursor == null ? null : <String, String>{'cursor': cursor},
+        cancelToken: cancelToken,
+      ),
+    );
+    try {
+      return PublicEducationFeedPage.fromJson(response);
+    } on FormatException {
+      throw _invalidResponse();
+    }
+  }
+
+  Future<PublicEducationContent> getPublic({
+    required String contentId,
+    CancelToken? cancelToken,
+  }) async {
+    if (contentId.trim().isEmpty) {
+      throw const AuthFailure(
+        type: AuthFailureType.validation,
+        message: 'This education post is not available.',
+      );
+    }
+    final response = await _request(
+      () => _dio.get<dynamic>(
+        _url('$contentPath/${Uri.encodeComponent(contentId)}'),
+        cancelToken: cancelToken,
+      ),
+    );
+    try {
+      return PublicEducationContent.fromJson(_object(response));
+    } on FormatException {
+      throw _invalidResponse();
+    }
+  }
+
+  Future<void> reportPublic({
+    required String contentId,
+    required String accessToken,
+    required String reason,
+  }) async {
+    const reasons = <String>{
+      'MISLEADING_HEALTH_INFORMATION',
+      'HARMFUL_OR_UNSAFE',
+      'PRIVACY_CONCERN',
+      'SPAM_OR_PROMOTION',
+      'OTHER',
+    };
+    if (contentId.trim().isEmpty || !reasons.contains(reason)) {
+      throw const AuthFailure(
+        type: AuthFailureType.validation,
+        message: 'Choose a report reason and try again.',
+      );
+    }
+    try {
+      final response = await _request(
+        () => _dio.post<dynamic>(
+          _url('$contentPath/${Uri.encodeComponent(contentId)}/reports'),
+          data: <String, String>{'reason': reason},
+          options: Options(headers: _headers(accessToken)),
+        ),
+      );
+      if (_object(response)['received'] != true) throw _invalidResponse();
+    } on AuthFailure catch (error) {
+      if (error.statusCode == 409) {
+        throw const AuthFailure(
+          type: AuthFailureType.validation,
+          message: 'You have already reported this post.',
+          statusCode: 409,
+        );
+      }
+      rethrow;
+    }
+  }
 
   Future<List<EducationContent>> listMine({
     required String accessToken,

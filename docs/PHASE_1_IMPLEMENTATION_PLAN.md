@@ -12,13 +12,24 @@ payout, dual-role, or notification-provider contracts.
 
 ## APP-P1-007 - Doctor Education Authoring
 
-The separate doctor-education product decision is being implemented through the
-backend-owned education-content contract. Eligible medical doctors can create
-text and short-video drafts, edit eligible content, submit it for human review,
-and archive it. The patient-facing reader remains a later, separately gated
-slice. `EDUCATION_CONTENT_PUBLIC_ENABLED` stays false until private media
-storage, reviewer operations, abuse controls, and launch approval are proven.
+The authoring surface uses the backend-owned education-content contract.
+Eligible medical doctors can create text and short-video drafts, edit eligible
+content, submit it for human review, and archive it. The patient reader is
+tracked separately below. `EDUCATION_CONTENT_PUBLIC_ENABLED` stays off until
+private media storage, reviewer operations, abuse controls, and launch approval
+are proven.
 See `PHASE_1_DOCTOR_EDUCATION.md`.
+
+## APP-P1-007B - Patient Doctor-Education Reader
+
+The patient Home shortcut opens the canonical public education feed and
+content-ID detail route without changing the four-tab navigation contract.
+Public listing and detail use backend-published content only; the app adds no
+local results, social interactions, or client-side medical interpretation.
+Short videos use expiring backend-issued private-media URLs and tap-to-play
+playback. The public API flag, media bucket, moderation operations, abuse
+controls, clinical publication policy, and physical-device playback remain
+separate launch gates and are not changed by this mobile slice.
 
 ## APP-P1-017 - Legal pages and authentication app links
 

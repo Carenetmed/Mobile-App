@@ -10,6 +10,27 @@ an author or professional-profile ID. The backend remains authoritative for
 active-account, verified medical-doctor eligibility and content ownership; a
 professional navigation role alone does not grant authoring access.
 
+Patient Home has a separate `Doctor-created health education` entry to
+`RouteName.educationFeed`; it does not add a bottom-navigation destination. The
+feed calls public `GET /education/content` with the backend cursor and page size,
+and detail calls public `GET /education/content/:contentId`. The client renders
+only the returned title, body/caption, published date and doctor display name,
+category and optional specialty. The backend owns publication eligibility and
+ordering. Empty API responses remain empty; failures never fall back to drafts,
+fixtures or seeded posts. Reports use authenticated
+`POST /education/content/:contentId/reports` and one of the backend's supported
+reason codes.
+
+Short videos are tap-to-play and do not autoplay. Detail reloads the post to
+obtain a fresh private-media URL; the client accepts only HTTPS Google Storage
+URLs with bounded expiry, pauses playback when the app is inactive, and offers
+a detail refresh when the signed link expires or playback fails. `video_player`
+is used for native playback (`^2.10.1` in the package constraint; the current
+Flutter/Dart resolver selects 2.11.1). Its resolved AVFoundation plugin
+requires Flutter 3.41 or newer, now declared by the app. Android's shipped
+manifest includes internet access, which is required for both the existing API
+and signed media requests.
+
 Text drafts support a title up to 120 characters, body up to 3,000 characters,
 and an optional caption up to 280 characters. Short-video drafts support an
 optional caption up to 280 characters. Video selection is bounded to MP4, at most 60 seconds and 25 MiB
@@ -27,10 +48,11 @@ contract exists.
 
 ## Publication And Cost Gates
 
-The public API flag `EDUCATION_CONTENT_PUBLIC_ENABLED` remains false unless an
-approved launch gate explicitly changes it. Reviewer approval is not a promise
-that public feed delivery is enabled. The patient reader is not included in this
-authoring slice.
+The public API flag `EDUCATION_CONTENT_PUBLIC_ENABLED` must remain off until an
+approved launch gate explicitly enables it. Reviewer approval is not a promise
+that public feed delivery is enabled. The reader is source-implemented, but a
+disabled API currently returns an empty feed; this UI work does not change the
+deployed flag or prove public publishing readiness.
 
 Video upload requires a dedicated private `EDUCATION_MEDIA_BUCKET` with public
 access prevention, uniform bucket-level access, minimal IAM, bounded Cloud Run
@@ -53,10 +75,15 @@ reviewer access remain necessary before public launch.
 
 ## Current Limitations
 
-- No patient-facing content feed or video playback UI is active.
-- No in-app video preview or transcoding is included; human review is required.
+- The patient feed and detail reader are implemented, but public content
+  delivery has not been enabled or operationally accepted.
+- No authoring-side video preview or transcoding is included; human review is required.
 - Video upload remains unavailable until private storage and its runtime gate
   are provisioned and verified.
 - Public publishing remains disabled until abuse controls, clinical policy,
   retention/appeal decisions, reviewer coverage, and launch approval are closed.
-- Physical-device recording and upload acceptance remain a separate test gate.
+- The API currently has no edge/account read-rate limit; report admission and
+  abuse monitoring require an operational review before public launch.
+- The five-minute signed media URL depends on the deployed private bucket and
+  its IAM configuration; the mobile reader does not provision or validate it.
+- Physical-device playback, recording, and upload acceptance remain a separate test gate.

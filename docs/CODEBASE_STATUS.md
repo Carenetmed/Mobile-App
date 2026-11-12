@@ -109,8 +109,10 @@ upload, byte integrity and PDF preview remain unproved.
 
 Cost-control read-back: staging SQL is STOPPED/NEVER with deletion protection;
 all three Scheduler jobs are PAUSED; Cloud Run backend/admin/messaging have no
-minimum-instance floor; fourteen monitoring policies and the email channel are
-enabled. The new API gateway `/health` HTTPS check runs every five minutes from
+minimum-instance floor. The Nov 13 read-only inventory found 17 enabled
+monitoring policies, all using the approved email channel: 14 ongoing
+operational policies plus three expired BE-P1-072 SQL-window policies. The new
+API gateway `/health` HTTPS check runs every five minutes from
 Asia-Pacific, Europe and US-Iowa, requires HTTP 200 and JSON status `ok`, and
 currently passes in all three checker regions. Its policy alerts after at least
 two regions fail persistently and treats prolonged missing check data as
@@ -156,12 +158,15 @@ The live policy was last mutated on Oct 23; no actual high-pressure breach or
 real memory-pressure notification delivery is proved. The canary verifies the
 test-only firing email; actual API 5xx firing and resolved alert emails are
 confirmed for the single controlled incident only.
-The current inventory confirms 14 enabled policies on the approved channel.
+The Nov 13 inventory confirms 17/17 enabled policies use the approved
+notification channel. This consists of 14 ongoing operational policies and
+three retained BE-P1-072 SQL-window policies whose query windows expired at
+`2026-11-09T23:54:20Z`; the expired policies remain enabled, not deleted.
 Controlled exact-policy alert-email evidence exists for API 5xx, sanitized
 release-health, and API p95 latency (3/14). Separately, the liveness metric and
 same email channel were exercised through a deleted short-window test policy;
 the production policy evaluation window remains untested. The other eleven
-persistent policies remain configuration-only. The p95 alert measured
+ongoing operational policies remain configuration-only. The p95 alert measured
 11,457.57 ms on staging 503
 responses at `2026-11-05T10:48:12Z`; its resolved email at `11:46:07Z` says the
 metric was missing after 57m55s. Because `evaluationMissingData` is unset, that

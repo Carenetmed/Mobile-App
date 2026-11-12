@@ -80,8 +80,12 @@ Gmail confirms the actual API 5xx policy's firing and resolved messages for
 this incident; it does not prove delivery for every policy. The API p95 policy
 also fired on staging 503s at 11,457.57 ms and delivered an email. It resolved
 after 57m55s because metric data became missing; this is not service-recovery
-proof. A current inventory found 14 enabled policies on the approved channel,
-with alert-email evidence for three and configuration-only evidence for eleven.
+proof. A Nov 13 read-only inventory found 17 enabled policies on the approved
+channel: 14 ongoing operational policies and three retained BE-P1-072
+SQL-window policies whose query gates expired at `2026-11-09T23:54:20Z`.
+The expired policies remain enabled but do not enter the operational
+delivery-evidence denominator; controlled alert-email evidence exists for
+3/14 ongoing policies, with configuration-only evidence for eleven.
 A five-minute three-region HTTPS check validates API gateway `/health` (HTTP
 200 and JSON `status=ok`); fresh samples pass. A bounded synthetic failure test
 delivered firing and resolved emails through a temporary 60-second policy on

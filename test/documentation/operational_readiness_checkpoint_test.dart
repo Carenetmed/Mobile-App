@@ -140,7 +140,7 @@ void main() {
     expect(handoff, contains('auto-closed while SQL remained stopped'));
     expect(handoff, contains('temporary policy was deleted'));
     expect(handoff, contains('not delivery for every policy'));
-    expect(handoff, contains('Fourteen monitoring policies'));
+    expect(handoff, contains('17 enabled policies, all referencing'));
     expect(handoff, contains('five-minute HTTPS uptime check'));
     expect(handoff, contains('all three regions'));
     expect(handoff, contains('liveness policy'));
@@ -219,8 +219,29 @@ void main() {
     expect(handoff, contains('42084055217'));
     expect(handoff, contains('`1e2072bf2520b387d3dcc28f32918c21a86ad880`'));
     expect(handoff, contains('carenet-admin-staging-00008-cig'));
-    expect(handoff, contains('all 14 persistent policies are enabled'));
-    expect(handoff, contains('exact-policy email proof exists for only 3/14'));
+    expect(handoff, contains('all 14 persistent operational'));
+    expect(
+      handoff,
+      contains('were enabled and referenced the approved email channel'),
+    );
+    expect(handoff, contains('exact-policy email proof remains 3/14'));
+    expect(handoff, contains('2026-11-09T23:54:20Z'));
+    expect(
+      handoff,
+      contains('enabled in Cloud Monitoring; expiry is not deletion.'),
+    );
+    expect(handoff, contains('notification channel `8585658639310171247`'));
+    expect(readiness, contains('17 enabled policies, all referencing'));
+    expect(readiness, contains('8045dc20b77b18991f75740b6a0a8977'));
+    expect(readiness, contains('SQL shutdown expected launch unobserved'));
+    expect(readiness, contains('SQL shutdown execution FAILED'));
+    expect(readiness, contains('SQL shutdown shutdown completion unobserved'));
+    expect(readiness, contains('No Cloud Monitoring policy was'));
+    expect(readiness, contains('modified during this read-only check.'));
+    expect(
+      readiness,
+      contains('not included in the operational email-evidence denominator'),
+    );
     expect(handoff, contains('actual spend was'));
     expect(handoff, contains('not read here'));
     expect(readiness, contains('fresh samples passed in all three regions'));
@@ -283,7 +304,10 @@ void main() {
       ),
     );
     expect(handoff, contains('Admin default percentage traffic is 100% on'));
-    expect(handoff, contains('default traffic on `carenet-admin-staging-00009-4t7`'));
+    expect(
+      handoff,
+      contains('default traffic on `carenet-admin-staging-00009-4t7`'),
+    );
     expect(handoff, contains('CI container smoke served `/admin`'));
     expect(handoff, contains('63-byte smoke PDF'));
   });

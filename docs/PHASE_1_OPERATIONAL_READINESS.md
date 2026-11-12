@@ -130,8 +130,10 @@ reconciliation does not close the remaining operational gates.
   identity; the runtime identity's existing self-only signing grant is
   unchanged. This closes only the cross-service-account impersonation finding,
   not the broader least-privilege review.
-- Monitoring: 14 policies and the email channel are enabled; all 14 policies
-  reference the approved operations channel. The user confirmed the firing
+- Monitoring: the Nov 9 snapshot records 14 ongoing operational policies. The
+  Nov 13 read-only inventory found 17 enabled policies total, all referencing
+  the approved channel: those 14 plus three expired BE-P1-072 SQL-window
+  policies. The user confirmed the firing
   email from a bounded test-only canary policy on existing staging-admin
   request metrics; that temporary policy was deleted. Separately, nine bounded
   API Gateway readiness GETs while Cloud SQL was intentionally stopped produced
@@ -230,8 +232,8 @@ current spend is still unread.
 
 ## Live Alert Policy Inventory (Read-Only, 2026-11-09)
 
-Current Cloud Monitoring read-back found 14 persistent enabled policies, each
-referencing the same approved email channel. Three have controlled exact-policy
+The Nov 9 Cloud Monitoring snapshot found 14 persistent operational policies,
+each referencing the same approved email channel. Three have controlled exact-policy
 alert-email evidence; eleven are configuration-only. A separate temporary
 short-window policy on the liveness metric produced firing and recovery emails
 to that channel and was deleted; it is not counted among the 14. The check has
@@ -271,6 +273,23 @@ The project-scoped $31.75 USD monthly budget alert sends current-spend notices
 at 50%, 90%, and 100%; it is not a hard cap. The CLI has no spend-report
 command, and no BigQuery dataset or export was found. Actual current spend has
 not been read in this checkpoint, so no cost forecast is claimed.
+
+### Latest read-only inventory reconciliation (2026-11-13)
+
+The current GCP read-back found 17 enabled policies, all referencing the same
+approved notification channel: the 14 ongoing operational policies in the
+Nov 9 snapshot above plus three retained BE-P1-072 SQL-shutdown window
+policies scoped to window `8045dc20b77b18991f75740b6a0a8977`:
+
+- `SQL shutdown execution FAILED`
+- `SQL shutdown expected launch unobserved`
+- `SQL shutdown shutdown completion unobserved`
+
+Their PromQL upper time bound expired at
+`2026-11-09T23:54:20Z`. They remain enabled; expiry did not delete them. They
+are not included in the operational email-evidence denominator: controlled
+delivery evidence is 3/14 ongoing policies. No Cloud Monitoring policy was
+modified during this read-only check.
 
 APP-READY-082 remains the recorded next operational track. Doctor authoring
 and the patient reader are now merged; do not enable the public-content flag or

@@ -102,9 +102,12 @@ Cloud SQL was briefly started for the Nov 5 admin-console proof and returned
 to STOPPED with activation policy NEVER and deletion protection on. All three
 scheduler jobs remain PAUSED;
 Cloud Run backend/admin/messaging have no minimum-instance floor (messaging
-explicitly minScale 0). Fourteen monitoring policies and their email channel
-are enabled. A five-minute HTTPS uptime check named `CareNet staging backend
-liveness` checks the API gateway `/health` endpoint from Asia-Pacific, Europe,
+explicitly minScale 0). The latest read-only inventory found 17 enabled
+monitoring policies, all using the approved email channel: 14 ongoing
+operational policies and three retained BE-P1-072 SQL-window policies whose
+query gates expired on `2026-11-09T23:54:20Z`. A five-minute HTTPS uptime check
+named `CareNet staging backend liveness` checks the API gateway `/health`
+endpoint from Asia-Pacific, Europe,
 and US-Iowa, requiring HTTP 200 and JSON `status="ok"`. Current check samples
 pass in all three regions. Its policy fires after at least two regions fail
 persistently and treats prolonged missing check data as unhealthy. This is API
@@ -219,8 +222,9 @@ RTC/worker provider proof, signed-store/device checks, iOS signing/device proof,
 and final separately approved test-only Paystack activation remain distinct
 gates.
 
-Current alert inventory after PR #281: all 14 persistent policies are enabled
-and reference the approved email channel. Controlled exact-policy alert-email
+The alert inventory recorded after PR #281: all 14 persistent operational
+policies were enabled and referenced the approved email channel. Controlled
+exact-policy alert-email
 evidence exists for three policies: API 5xx, sanitized release-health, and API
 p95 latency. Separately, a deleted short-window test policy exercised the
 liveness metric and same email channel; the production liveness policy's full
@@ -239,6 +243,19 @@ auto-close after 30 minutes and nine after 60; only three explicitly request an 
 prompt, and only the release-health policy explicitly renotifies after 60
 minutes. The approved Billing Viewer can open the report, but actual spend was
 not read here.
+
+Read-only GCP recheck on 2026-11-13 found 17 enabled policies, all referencing
+notification channel `8585658639310171247`: the 14 ongoing operational
+policies above plus three retained BE-P1-072 SQL-shutdown window policies for
+window `8045dc20b77b18991f75740b6a0a8977`:
+- `SQL shutdown execution FAILED`
+- `SQL shutdown expected launch unobserved`
+- `SQL shutdown shutdown completion unobserved`
+
+Their PromQL upper time
+bound is `2026-11-09T23:54:20Z`, so the windows are expired. They remain
+enabled in Cloud Monitoring; expiry is not deletion. They are not part of the
+14-policy operational delivery-proof denominator. No policy was changed.
 
 Read-only Cloud Run state on Nov 4: `carenet-backend-staging-be075-candidate`
 serves 100% of API traffic. `carenet-backend-staging-be079-expiry-proof` is the
@@ -1462,7 +1479,7 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
 | APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue and one staging download were confirmed; download revision `00008-cig` remains tagged `web-ready-011`, while default traffic is now on `00009-4t7` and feature parity is unverified; mocked download tests pass; real valid-file preview and byte integrity remain open |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Current integration `d97e7811` / 1,423 tests; PR #287 head `1752dc66` passed run `43270653477`, and merged CI `43273323794` passed. Nov 12 controlled five-minute PITR cut-point verified at `2026-11-09T23:41:46.171Z`; clone deleted, source is now confirmed `STOPPED/NEVER`, latest successful backup started `2026-11-09T20:28:51.567Z`. Fresh Cloud Run inventory confirms only backend has a Cloud SQL attachment; admin uses Gateway, messaging uses backend; no positive service/revision min-instance setting was found, but request-triggered services can still incur usage. All schedulers remain paused. Backend default percentage allocation is 100% to `be075-candidate`; tagged revisions remain separately addressable under IAM. Messaging has an `allUsers` invoker binding and application-level WebSocket auth; ingress abuse/cost controls remain open. Connector enforcement is `REQUIRED`, SSL mode is `ENCRYPTED_ONLY` (the legacy `requireSsl=false` is the compatible pair); no authorized networks, public IPv4 allocated, no private IP, live DB URL/connection not retested. Still partial: exact-policy email proof exists for only 3/14 persistent policies; production liveness window, actual spend, billing export, continuous RPO/SLO, private-network/live-connection review, worker/RTC/provider operations, valid uploaded-document preview, signed release/device, iOS signing/device, and separately approved test-only Paystack activation remain open. Education authoring and patient reader are merged, but public delivery remains disabled pending media IAM, reviewer video preview, moderation/safety/retention/abuse controls, and explicit launch approval. Existing media contract is signed Google Storage; no Cloudflare Stream integration is configured in the inspected CareNet staging runtime. |
+| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Current integration `d97e7811` / 1,423 tests; PR #287 head `1752dc66` passed run `43270653477`, and merged CI `43273323794` passed. Nov 12 controlled five-minute PITR cut-point verified at `2026-11-09T23:41:46.171Z`; clone deleted, source is now confirmed `STOPPED/NEVER`, latest successful backup started `2026-11-09T20:28:51.567Z`. Fresh Cloud Run inventory confirms only backend has a Cloud SQL attachment; admin uses Gateway, messaging uses backend; no positive service/revision min-instance setting was found, but request-triggered services can still incur usage. All schedulers remain paused. Backend default percentage allocation is 100% to `be075-candidate`; tagged revisions remain separately addressable under IAM. Messaging has an `allUsers` invoker binding and application-level WebSocket auth; ingress abuse/cost controls remain open. Connector enforcement is `REQUIRED`, SSL mode is `ENCRYPTED_ONLY` (the legacy `requireSsl=false` is the compatible pair); no authorized networks, public IPv4 allocated, no private IP, live DB URL/connection not retested. The Nov 13 read-only alert inventory found 17/17 enabled policies using the approved channel: 14 ongoing operational policies plus three expired BE-P1-072 window policies (query gates ended `2026-11-09T23:54:20Z`); exact-policy email proof remains 3/14 operational policies. Still partial: production liveness window, actual spend, billing export, continuous RPO/SLO, private-network/live-connection review, worker/RTC/provider operations, valid uploaded-document preview, signed release/device, iOS signing/device, and separately approved test-only Paystack activation remain open. Education authoring and patient reader are merged, but public delivery remains disabled pending media IAM, reviewer video preview, moderation/safety/retention/abuse controls, and explicit launch approval. Existing media contract is signed Google Storage; no Cloudflare Stream integration is configured in the inspected CareNet staging runtime. |
 
 ### APP-READY-055 implementation evidence
 

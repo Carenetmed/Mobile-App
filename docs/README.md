@@ -1,6 +1,38 @@
 ﻿# CareNet project documentation
 
-Current Mobile integration is `d97e781194845427b2a996424e583f14f56031b3` after
+Current Mobile integration is `0406f53da7e5a7e53fcd31a1767226c1255bb545` after
+PR #289. Reviewed head `9155c58703d746bbd46827ee9ee25fd029848691` passed PR CI
+`43309919222`; merged-result CI `43312643931` passed on the exact merge SHA.
+Both runs were verified through `gh`: 1,424 tests, analysis, debug APK, Android
+release lint, protected signing and release-environment regressions passed.
+PR #289 changed four files with no dependency/native changes; one new date-only
+professional timezone formatter test in
+`test/core/presentation/carenet_locale_test.dart` raised the suite from 1,423
+to 1,424. The existing large-response widget regression was strengthened. No
+tests were removed, skipped, disabled, or weakened. Local debug APK packaging
+was blocked by storage, but CI built it. No Android device acceptance or
+freeze/ANR resolution is claimed.
+
+The immediate user goal is a working Android staging pilot INCLUDING doctor
+posts/shorts, with Paystack excluded/deferred until separate final approval.
+Full readiness remains partial, APP-READY-082 remains the sole NEXT task, and
+no product guard is removed, including backend payment eligibility. Admin
+login/queue/download and documented notification delivery are completed
+evidence, distinct from extra production assurance; physical push proof does
+not cover every flow. Backend PR191 proves the real-PDF provider expiry/renewal,
+412/replay and generation-pinned download path, not browser preview/admin parity.
+See `PHASE_1_OPERATIONAL_READINESS.md` for remaining pilot proof and assurance.
+
+The private education bucket and zero-traffic tagged BE087 education candidate
+are verified Ready with public content disabled. Postdeploy BE075 remains 100%,
+candidate 0%, SQL STOPPED/NEVER; synthetic private-MP4 storage/access proof
+passed, not published shorts/mobile playback. No migration/public content was
+activated. Safe review,
+moderation/abuse controls, device proof and explicit launch approval remain gates.
+
+## Historical Checkpoints And Inventory (Before Pilot Preparation)
+
+Previous Mobile integration was `d97e781194845427b2a996424e583f14f56031b3` after
 PR #287. Its reviewed head `1752dc660e0ec18c51e39f7a7b34594d19f03071` passed
 PR CI `43270653477`; merged-result CI `43273323794` passed on the exact merge
 SHA, including 1,423 tests, analyzer, debug APK, Android release lint, signing,
@@ -11,7 +43,7 @@ not change runtime or test inventory. PR #286's previous integration was
 APP-P1-007B PR #285's reviewed head
 `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes;
 merged-result runs `43148540818` and `43148540838` passed on merge SHA
-`83f2dfb095b022f1d9dc41952ae0ec13b4557180`. The current suite is 1,423 tests
+`83f2dfb095b022f1d9dc41952ae0ec13b4557180`. That suite was 1,423 tests
 (1,394 base + 29 net added by #285), with no tests removed, skipped, disabled,
 or weakened. PR
 #285 adds the patient education reader; it does not enable public delivery or
@@ -64,8 +96,9 @@ Admin default percentage traffic is 100% on
 `carenet-admin-staging-00009-4t7`. The previously checked Download revision
 `carenet-admin-staging-00008-cig` remains tagged `web-ready-011`; latest-revision
 feature parity is unverified. The operator previously confirmed sign-in and a
-staging document download on Nov 5; byte integrity and valid-file preview
-acceptance remain open. The default
+staging document download on Nov 5; that admin download's integrity and browser
+preview were not verified. Backend PR191 separately proves real-PDF provider
+download; browser preview/current-default-admin parity remain open. The default
 Firebase Hosting site serves the approved public/legal pages, and the owner
 confirmed the support mailbox test arrived. Cloud Billing and the Budgets API
 are enabled. A project-scoped $31.75 USD monthly budget alert (~₹3,000 at the
@@ -193,7 +226,9 @@ Current implementation policy:
   availability, and appointment repository boundaries.
 - Do not expose local/mock fallback as real retained Phase 1 behavior.
 - Treat broad Figma/social/content/readings/emergency/creator screens as archive
-  references, not active product scope.
+  references, not active product scope. The implemented doctor education
+  posts/shorts are the bounded exception included in the staging pilot goal;
+  this does not restore legacy social/creator functionality or remove launch gates.
 - Avoid dummy widget logic that would force screen rewrites later.
 
 ---

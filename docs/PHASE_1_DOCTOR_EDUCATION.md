@@ -1,5 +1,42 @@
 # Phase 1 Doctor Education
 
+## Android Staging Pilot Checkpoint (2026-11-13)
+
+The user's immediate goal is a working Android staging pilot INCLUDING doctor
+posts/shorts. Paystack is excluded/deferred until separate final approval;
+existing payment eligibility and all product/safety guards remain unchanged.
+APP-READY-082 is the sole NEXT task and full readiness remains partial.
+
+Current mobile integration is `0406f53da7e5a7e53fcd31a1767226c1255bb545` after
+PR #289, head `9155c58703d746bbd46827ee9ee25fd029848691`. PR CI `43309919222`
+and exact-merge CI `43312643931` passed, verified through `gh`, with 1,424 tests
+and configured Android gates. PR #289 changed four files with no dependency
+or native changes; one date-only professional timezone formatter test in
+`test/core/presentation/carenet_locale_test.dart` raised the suite from 1,423
+to 1,424. No tests were removed, skipped, disabled, or weakened. Local debug APK
+packaging was storage-blocked; CI built it. No Android device, playback or
+reported freeze/ANR resolution is claimed by that performance change.
+
+Pilot preparation provisioned private bucket
+`project-a96784ee-811c-46ab-a7b-education-media-staging` in `ASIA-SOUTH1`, with
+public access prevention enforced and uniform access true. The bucket-scoped
+runtime role and exact scanned-main BE087 candidate are recorded in
+`PHASE_1_OPERATIONAL_READINESS.md`. The candidate has zero traffic and
+`EDUCATION_CONTENT_PUBLIC_ENABLED=false`, Ready=True, max instances 1 and no
+minimum-instance floor. Postdeploy BE075 remains 100%, candidate 0%, SQL
+STOPPED/NEVER. Synthetic private-MP4 storage/access proof passed; application
+upload/playback and published shorts are not proved. No migration/public
+content was activated. The earlier
+three-bucket/no-education inventory predates this preparation.
+
+Before posts/shorts can work in the pilot, verify runtime media access and
+anonymous-read denial, safe reviewer video preview/publication, signed playback,
+reporting, clinical safety, retention/appeals, abuse controls and explicit launch approval.
+Android real-file upload and playback acceptance remain required. A staging
+pilot does not waive these publication/media guards. See
+`PHASE_1_OPERATIONAL_READINESS.md` for completed admin/notification evidence
+versus remaining pilot proof and additional production assurance.
+
 ## Authoring Surface
 
 The professional Account page links to `RouteName.educationStudio`. The
@@ -56,10 +93,9 @@ deployed flag or prove public publishing readiness.
 
 Video upload requires a dedicated private `EDUCATION_MEDIA_BUCKET` with public
 access prevention, uniform bucket-level access, minimal IAM, bounded Cloud Run
-upload concurrency, and proven anonymous-read denial. This mobile change does
-not provision the bucket. If the backend reports upload unavailable, the
-client retains the draft and gives a retryable error; this slice does not enable
-or deploy any paid cloud service.
+upload concurrency, and proven anonymous-read denial. The dedicated bucket is
+now provisioned; runtime upload/playback acceptance remains open. If the backend
+reports upload unavailable, the client retains the draft and gives a retryable error.
 
 The current draft-create API has no idempotency key. If a create request has an
 ambiguous network/server outcome, the app reloads the author's posts and reuses
@@ -78,8 +114,8 @@ reviewer access remain necessary before public launch.
 - The patient feed and detail reader are implemented, but public content
   delivery has not been enabled or operationally accepted.
 - No authoring-side video preview or transcoding is included; human review is required.
-- Video upload remains unavailable until private storage and its runtime gate
-  are provisioned and verified.
+- Private storage is provisioned; runtime video upload and playback remain
+  unverified on the prepared candidate.
 - Public publishing remains disabled until abuse controls, clinical policy,
   retention/appeal decisions, reviewer coverage, and launch approval are closed.
 - The API currently has no edge/account read-rate limit; report admission and

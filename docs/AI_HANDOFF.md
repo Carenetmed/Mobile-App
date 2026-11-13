@@ -2,7 +2,42 @@
 
 ## Current Verified Checkpoint (2026-11-13)
 
-Mobile integration is `d97e781194845427b2a996424e583f14f56031b3` after mobile
+Mobile integration is `0406f53da7e5a7e53fcd31a1767226c1255bb545` after mobile
+PR #289. Reviewed head `9155c58703d746bbd46827ee9ee25fd029848691` passed
+PR CI `43309919222`; merged-result CI `43312643931` passed on the exact merge
+SHA. Both runs were verified through `gh`; analysis, 1,424 tests, debug APK,
+Android release lint, protected signing and release-environment regressions
+passed. PR #289 changed four files with no dependency or native changes. The
+suite grew from 1,423 to 1,424: one date-only professional timezone formatter
+test in `test/core/presentation/carenet_locale_test.dart`. The existing large-
+response widget regression was strengthened, not added. Local debug APK
+packaging was blocked by storage; the CI build passed. This reduces booking-
+time formatting work, but proves neither Android device acceptance nor
+resolution of the reported freeze/ANR. No tests were removed, skipped,
+disabled, or weakened.
+
+The user's immediate goal is a working Android staging pilot INCLUDING doctor
+posts/shorts. Paystack is excluded/deferred until separate final approval;
+this does not bypass existing payment eligibility or any other product guard.
+APP-READY-082 remains the sole NEXT task and the full readiness program remains
+partial.
+Admin login/queue/download and documented notification delivery are completed
+evidence. Backend PR191 also proves real-PDF provider expiry/renewal, create-only
+412, completion replay and generation-pinned download; browser preview and
+current-default-admin parity remain separate. Physical push proof covers only
+its documented flows, not every flow.
+
+Pilot preparation has provisioned the private education bucket and deployed
+zero-traffic tagged candidate `carenet-backend-staging-be087-education-pilot`
+Ready with public content disabled. Postdeploy BE075 remains 100%, candidate
+0%, SQL STOPPED/NEVER; synthetic private-MP4 storage/access proof passed.
+This is not published shorts or mobile playback acceptance. No migration/public
+content was activated. See
+`PHASE_1_OPERATIONAL_READINESS.md` for exact deployment and provider evidence.
+
+### Earlier Mobile Checkpoints
+
+Previous integration was `d97e781194845427b2a996424e583f14f56031b3` after
 PR #287. Its reviewed head `1752dc660e0ec18c51e39f7a7b34594d19f03071` passed
 PR CI `43270653477`; merged-result CI `43273323794` passed on the exact merge
 SHA, including 1,423 tests, analysis, debug APK, Android release lint, protected
@@ -14,7 +49,7 @@ APP-P1-007B PR #285's reviewed head
 `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes;
 exact-merge runs `43148540818` (Flutter PR CI) and `43148540838`
 (iOS Flavor Build) passed on merge SHA `83f2dfb095b022f1d9dc41952ae0ec13b4557180`.
-The integrated suite is 1,423 tests: PR #285 added
+That integrated suite was 1,423 tests: PR #285 added
 29 over its 1,394-test base. No tests were removed, skipped, disabled, or
 weakened. PR #284 introduced the doctor-authoring surface; PR #285 added the
 patient feed/detail reader and tap-to-play video player. Public education
@@ -22,6 +57,12 @@ delivery remains gated: no public flag change, media bucket provisioning, or
 cloud service activation occurred. Backend education source is recorded at
 `431094b429581e62e5f5f21acdaae693031b7859`; deployed flag, bucket, IAM, and
 reviewer video-preview behavior are not established by that source SHA.
+
+### Nov 13 Inventory Before Pilot Preparation
+
+The earlier inventory found no education bucket among three buckets and no
+`EDUCATION` env on the BE075 default revision. This predates bucket/candidate
+preparation; the following traffic/SQL readings are not postdeploy readbacks.
 
 Nov 12 database recovery checkpoint: the newest successful automated backup
 started `2026-11-09T20:28:51.567Z`; automated backups and PITR are enabled with
@@ -35,7 +76,7 @@ SQL users API confirmed the source was not running. An earlier instance read
 reported `RUNNABLE` with `NEVER`; a fresh read now reports `STOPPED/NEVER`, so
 the earlier status discrepancy no longer reproduces.
 
-Current Cloud SQL state is `STOPPED`, activation `NEVER`, deletion protection
+At that inventory, Cloud SQL state was `STOPPED`, activation `NEVER`, deletion protection
 enabled, backups/PITR enabled, connector enforcement `REQUIRED`, and
 `sslMode=ENCRYPTED_ONLY`. `requireSsl=false` is the documented compatible
 legacy PostgreSQL pair, not a plaintext-permission finding. Cloud Run inventory
@@ -94,7 +135,7 @@ the debug APK. At that Nov 9 checkpoint, backend `main` was
 bounded 5xx alert-condition test, with PR CI `41982489735` and post-merge CI
 `41982963454` passing all three lanes. Older APP-READY-090 evidence below is
 historical; these checkpoints do not complete the readiness program. The Nov 9
-checkpoint recorded 1,366 tests; the current integration suite is 1,423. The
+checkpoint recorded 1,366 tests; the current integration suite is 1,424. The
 previously recorded 1,363 was a one-test undercount at that older checkpoint.
 No test is removed, skipped, disabled or weakened.
 
@@ -197,7 +238,9 @@ The CLI check reached
 the IAP OAuth redirect, so operator visual confirmation of the updated sign-in
 copy remains open. The user previously confirmed CareNet admin sign-in and one
 download during the controlled SQL window. This is not independent
-byte-integrity or valid-PDF proof. The 63-byte smoke PDF previously shown
+byte-integrity or valid-PDF proof of that admin download. Separately, backend
+PR191 proves generation-pinned real-PDF provider download; browser preview and
+current-default-admin parity remain open. The 63-byte smoke PDF previously shown
 failing in the browser remains invalid for preview; no review decision was made.
 Public `/terms`,
 `/privacy`, `/support`, `/account-deletion`, `/verify-email`, `/reset-password`,
@@ -217,7 +260,7 @@ firing/resolution email delivery are complete; delivery for all policies,
 cost/budget visibility, provider, database/security, release/device, and other
 gates remain open. Follow `PHASE_1_OPERATIONAL_READINESS.md` for its reconciled current
 evidence; do not start new product scope, a duplicate network/session slice, or
-Paystack activation. Real upload/download acceptance, RPO/security review,
+Paystack activation. Browser preview/current-default-admin parity, RPO/security review,
 RTC/worker provider proof, signed-store/device checks, iOS signing/device proof,
 and final separately approved test-only Paystack activation remain distinct
 gates.
@@ -343,7 +386,7 @@ controller/adapter, backend, native/dependency or navigation changes.
 Largest-text overflow is repaired in the active shell with separated status,
 media and scrollable control bands. All1,169 tests (1,153 retained+16 new),
 targeted65, analyzer, debug APK, fresh623-task release lint and local protected
-signing/environment/backup/flavor checks pass. Parent and independent static
+signing/environment/backup/flavor checks pass. Independent static
 review found no actionable issues. Signed artifacts and CI remain delivery gates.
 APP-READY-082G source delivered in PR254, reviewed1751ca8/merged0913862; PR and
 integration CI green. Its older pending notes below are historical. Full
@@ -952,7 +995,7 @@ refresh/booking bounds. No backend, provider, dependency, route or visual change
 
 Expected files: secure session store, splash screen, session resilience/restore
 tests, new secure-session recovery tests, and these canonical status/decision/
-deferred/index documents. Parent runs all tests/analyzer and unchanged CI. No
+deferred/index documents. Full tests/analyzer and unchanged CI remain required. No
 device acceptance or full-program completion claim. Remaining cancellation,
 optional Firebase lifecycle, operational reporting, signed RC and payment gates
 remain explicit. APP-READY-065's old backend drift task is already closed through
@@ -1477,9 +1520,9 @@ do not prove native hardware shutdown or SDK-internal reconnect republishing.
 | APP-READY-078 | Make the existing backend email-verification request reachable from authenticated Account and render backend-owned email/status | S | **DONE** - PR #242 merged at `f8aea76`; 933-test suite and CI passed; physical-device link verification remains pending |
 | APP-READY-077 | Resolve and execute the staging admin-console host/perimeter and first-operator gate only after explicit identity, role, and time-window approval; keep SQL and schedulers off outside that window | S | **DONE** - IAP-protected staging console deployed and first super-administrator provisioned; operator browser smoke pending |
 | APP-READY-079 | Route ordinary sign-in and restored sessions through backend-owned account readiness without changing booking-intent or signup authority | M | **DONE** - PR #243 merged at `94f20dc`; PR and integration CI passed; 940 tests (+7) |
-| APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue and one staging download were confirmed; download revision `00008-cig` remains tagged `web-ready-011`, while default traffic is now on `00009-4t7` and feature parity is unverified; mocked download tests pass; real valid-file preview and byte integrity remain open |
+| APP-READY-080 | Complete a read-only staging admin browser smoke for IAP, CareNet sign-in, verification queue, safe document preview, and recovery; do not approve/reject a real professional record | S | **PARTIAL** - IAP/login/queue and one staging download were confirmed; PR191 real-PDF provider acceptance is complete. Before-preparation admin inventory: download revision `00008-cig` tagged `web-ready-011`, default `00009-4t7`, parity unverified. Browser preview and integrity of the operator's admin download remain open, not all provider download acceptance. |
 | APP-READY-081 | Correct hosted auth-link certificate associations for the signed Android flavors; retain explicit Play/device gates | S | **DONE** - PR #245 merged; Hosting manifest/live-content checks passed; post-merge CI passed on integration base |
-| APP-READY-082 | Complete cost-conscious operational alerting through the owning backend/cloud boundaries without unnecessary probes or workers | M | **NEXT** - Current integration `d97e7811` / 1,423 tests; PR #287 head `1752dc66` passed run `43270653477`, and merged CI `43273323794` passed. Nov 12 controlled five-minute PITR cut-point verified at `2026-11-09T23:41:46.171Z`; clone deleted, source is now confirmed `STOPPED/NEVER`, latest successful backup started `2026-11-09T20:28:51.567Z`. Fresh Cloud Run inventory confirms only backend has a Cloud SQL attachment; admin uses Gateway, messaging uses backend; no positive service/revision min-instance setting was found, but request-triggered services can still incur usage. All schedulers remain paused. Backend default percentage allocation is 100% to `be075-candidate`; tagged revisions remain separately addressable under IAM. Messaging has an `allUsers` invoker binding and application-level WebSocket auth; ingress abuse/cost controls remain open. Connector enforcement is `REQUIRED`, SSL mode is `ENCRYPTED_ONLY` (the legacy `requireSsl=false` is the compatible pair); no authorized networks, public IPv4 allocated, no private IP, live DB URL/connection not retested. The Nov 13 read-only alert inventory found 17/17 enabled policies using the approved channel: 14 ongoing operational policies plus three expired BE-P1-072 window policies (query gates ended `2026-11-09T23:54:20Z`); exact-policy email proof remains 3/14 operational policies. Still partial: production liveness window, actual spend, billing export, continuous RPO/SLO, private-network/live-connection review, worker/RTC/provider operations, valid uploaded-document preview, signed release/device, iOS signing/device, and separately approved test-only Paystack activation remain open. Education authoring and patient reader are merged, but public delivery remains disabled pending media IAM, reviewer video preview, moderation/safety/retention/abuse controls, and explicit launch approval. Existing media contract is signed Google Storage; no Cloudflare Stream integration is configured in the inspected CareNet staging runtime. |
+| APP-READY-082 | Continue the working Android staging pilot and cost-conscious operational gates | M | **NEXT** - Integration `0406f53` / 1,424 tests; PR #289 head `9155c587`, CI `43309919222` / exact-merge `43312643931` passed. Four files, no dependency/native changes; +1 date-only formatter test. Local APK storage-blocked; CI APK passed, no Android device/freeze/ANR resolution claimed. Pilot includes doctor posts/shorts; Paystack deferred until separate final approval, no product guard bypass. Admin login/queue/download and documented notification delivery are completed; physical push proof does not cover every flow. Backend PR191 proves real-PDF provider expiry/renewal, 412/replay and generation-pinned download; browser preview/current-default-admin parity remain open. Education bucket/IAM and zero-traffic tagged BE087 candidate from scanned main431094 are prepared with public content false; Ready=True, max instances 1/no min floor; postdeploy BE075 100%, candidate 0%, SQL STOPPED/NEVER and synthetic private-MP4 storage/access proof verified, not published shorts. No migration/public content activated. Before pilot preparation: BE075 default 100%, SQL `STOPPED/NEVER`, no education env/bucket; only backend has a Cloud SQL attachment; no positive service/revision min-instance setting; tagged revisions remain separately addressable. Messaging has an `allUsers` invoker binding; ingress abuse/cost controls remain open. SSL mode is `ENCRYPTED_ONLY`, connector enforcement required; private-network/live-connection review remains open. Nov 12 five-minute PITR cut-point `2026-11-09T23:41:46.171Z` proved, continuous RPO/SLO unproved. exact-policy email proof remains 3/14 ongoing policies; full readiness partial. Education public delivery remains disabled pending reviewer/safety/retention/abuse/device/launch gates; no Cloudflare Stream integration is configured. Exact preparation details and remaining operational/release gates are in PHASE_1_OPERATIONAL_READINESS.md. |
 
 ### APP-READY-055 implementation evidence
 

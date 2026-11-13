@@ -2,7 +2,29 @@
 
 ## Current Checkpoint (2026-11-13)
 
-Mobile integration is `d97e781194845427b2a996424e583f14f56031b3` after PR #287.
+Mobile integration is `0406f53da7e5a7e53fcd31a1767226c1255bb545` after PR #289.
+Reviewed head `9155c58703d746bbd46827ee9ee25fd029848691` passed PR CI
+`43309919222`; merged-result CI `43312643931` passed on the exact merge SHA.
+Both runs were verified through `gh`: 1,424 tests, analysis, debug APK, Android
+release lint, protected signing and release-environment regressions passed.
+PR #289 changed four files with no dependency/native changes. One date-only
+professional timezone formatter test in
+`test/core/presentation/carenet_locale_test.dart` raised the suite from 1,423
+to 1,424; the existing large-response widget regression was strengthened.
+No tests were removed, skipped, disabled, or weakened. Local debug APK packaging
+was blocked by storage; CI built it successfully. The formatting-work reduction
+does not prove Android device acceptance or resolution of the reported
+freeze/ANR.
+
+Local verification (Nov 13, baseline `0406f53` plus this docs/test reconciliation):
+the fresh full Flutter run passed 1,424 tests with 0 failed and 0 skipped;
+`flutter analyze --no-pub test/documentation` found no issues. The earlier
+1,423-pass/1-fail run remains unidentified/unreproduced, not retroactively green
+or claimed fixed.
+
+### Earlier Mobile Checkpoints
+
+Previous integration was `d97e781194845427b2a996424e583f14f56031b3` after PR #287.
 PR #287 reviewed head `1752dc660e0ec18c51e39f7a7b34594d19f03071` passed PR CI
 `43270653477`; merged-result CI `43273323794` passed on the exact merge SHA.
 The workflow passed 1,423 tests, analysis, debug APK, Android release lint,
@@ -24,6 +46,52 @@ short-lived signed playback URLs. No Cloudflare Stream integration is
 configured in the inspected CareNet staging runtime; short-form hosting has
 not been activated. Backend `main` for the
 education contracts is `431094b429581e62e5f5f21acdaae693031b7859`.
+
+### Education Pilot Preparation (2026-11-13)
+
+The user's immediate goal is a working Android staging pilot INCLUDING doctor
+posts/shorts. Paystack is excluded/deferred until separate final approval;
+this does not waive existing payment eligibility, authorization or safety
+guards. APP-READY-082 remains the sole NEXT task, and the full readiness
+program remains partial.
+
+Dedicated bucket `project-a96784ee-811c-46ab-a7b-education-media-staging` is
+provisioned in `ASIA-SOUTH1`, with `public_access_prevention=enforced` and
+uniform bucket-level access true. Custom runtime role
+`stagingEducationMediaObjects` is granted only on that bucket, with exactly
+`storage.buckets.get`, `storage.objects.create`, `storage.objects.get` and
+`storage.objects.delete`; there is no project-level grant for that role.
+Zero-traffic tagged candidate `carenet-backend-staging-be087-education-pilot`
+is deployed from exact scanned main `431094b429581e62e5f5f21acdaae693031b7859`,
+requested scanned OCI index
+`sha256:77eb7dc90b568c1e69c8491df8e54ed75d88e3533d6b58f07d8ef83ff449a2d3`.
+Cloud Run runtime digest
+`sha256:db3a7ad72956468ca7389959e1acf13ca99faa719422bda00958f82357b620f1`
+was independently verified as that index's `linux/amd64` child through the
+Artifact Registry manifest. Candidate `Ready=True`,
+`EDUCATION_CONTENT_PUBLIC_ENABLED=false`, maximum instances 1 and no
+minimum-instance floor were verified. Postdeploy default
+BE075 traffic remains 100%, candidate traffic 0%, and SQL `STOPPED/NEVER`.
+Bucket owner/editor defaults remain; default project-Viewer bucket/object read
+bindings were removed. The custom runtime role still has exactly the four
+bucket-scoped permissions above, not a project-level grant.
+
+A synthetic 2664-byte repository MP4 was uploaded create-only; stored MD5/size
+matched and anonymous HEAD returned 403. Generation `1794539441698690` was
+deleted using its exact-generation suffix. This is storage/access proof, not
+live published shorts or application upload/playback acceptance. No database
+user data, auth session, appointment/payment or public content was touched;
+no migration was activated. Reviewer preview, safety/abuse controls, Android
+playback and explicit launch approval remain gates.
+
+### Nov 13 Inventory Before Pilot Preparation
+
+Earlier read-only live checks found backend default traffic 100% on
+`carenet-backend-staging-be075-candidate` (BE075), no `EDUCATION` environment
+variables on that default revision, SQL `STOPPED/NEVER`, and no education media
+bucket in the three-bucket inventory. These readings predate the dedicated
+bucket and BE087 deployment above; they are not postdeploy traffic/SQL checks.
+They do not establish the state of every tagged revision.
 
 Nov 12 controlled database recovery proof: automated backups and PITR are
 enabled with seven-day transaction-log retention; the newest successful
@@ -81,6 +149,43 @@ APP-READY-082 remains partial; exact-policy alert coverage, production liveness
 window, actual spend/billing visibility, continuous RPO/SLO, provider/worker
 operations, valid document preview, release/device, iOS, and separately
 approved test-only Paystack gates remain.
+
+### Pilot Proof Versus Production Assurance
+
+Completed evidence must not be reclassified as missing: IAP/CareNet admin login,
+SUPER ADMIN queue access and the user-confirmed document download are proved.
+The historical account-security email has provider, mailbox and signed-callback
+delivery evidence. `PHASE_1_TRANSACTIONAL_NOTIFICATIONS.md` also records staging
+provider acceptance, inbox/delivery-state integration, physical Android
+foreground/background/terminated receipt, and the exact appointment-conversation
+cold-start tap. These are completed documented flows, not proof of every flow,
+every event category, full-worker retry or production reliability.
+
+Backend PR191's [latest provider result](../../pilot-backend-inspect/docs/81-verification-provider-acceptance.md)
+(2 November UTC) records actual real-PDF acceptance in 415354ms: expired
+capability rejection, same-document renewal, MIME binding, create-only repeated
+PUT 412, completion replay, completed-document renewal refusal and authorized
+generation-pinned valid PDF download. Both disposable accounts were suspended,
+sessions revoked and old JWTs rejected. This controlled provider proof is
+complete; it is not browser preview, current-default-admin parity, approval of
+professional evidence or destructive-cleanup acceptance. The user's original
+staging download evidence also remains completed.
+
+| Area | Remaining proof for the working Android staging pilot | Extra production assurance; not a repeat of completed functionality |
+| --- | --- | --- |
+| Admin documents | Browser preview and current-default-admin parity remain open, distinct from completed PR191 real-PDF provider download and the user's download. The observed 63-byte smoke PDF is not valid preview evidence; do not approve/reject or overwrite it. | Broader operator recovery, retention/in-flight cleanup and least-privilege assurance remain open. |
+| Notifications | Map existing receipt evidence to the actual pilot event/channel and current dispatch path before claiming coverage. Do not request another generic receipt for an already-proved flow or infer every flow works. | Natural retry/full-worker acceptance, sustained queue/observer operation and exact-policy failure delivery remain open; schedules stay paused pending approved operational work. |
+| Consultations | Real LiveKit control-plane and two-participant VIDEO/AUDIO device acceptance, including admission, actual media and end/cleanup behavior, remain unproved. Fake-room/controller tests are not this proof. See `PHASE_1_APPOINTMENT_CONSULTATIONS.md` and `CONSULTATION_ACCOUNT_AUTHORITY.md`. | Sustained reconciliation cadence, useful provider cleanup, queue-age evidence and failure-alert delivery are separate operational assurance. |
+| Doctor posts/shorts | Bucket/IAM, Ready zero-traffic BE087 candidate and synthetic private-storage proof are complete; postdeploy BE075 100% and SQL STOPPED/NEVER are verified. Application upload/signed playback, safe reviewer preview/publication, reporting/safety/retention/appeals/abuse controls, Android proof and explicit launch approval remain open. No guard is waived for a pilot. | Sustained capacity/cost and abuse monitoring are additional assurance; broader creator/social features remain outside scope. |
+| Android pilot | A usable staging APK and focused physical-device acceptance, including the reported freeze/ANR, remain necessary. Local storage-blocked packaging is not a pass; CI packaging is a pass, not device proof. | Signed-store/release acceptance and iOS signing/APNs/device certification remain separate from the Android staging pilot. |
+
+Production liveness evaluation-window proof, continuous recovery SLOs and broad
+alert coverage remain part of partial full readiness, not reasons to repeat
+admin login/download or known notification receipts. Actual spend visibility
+and bounded operating-cost approval still matter before activation; a budget
+alert is not a hard cap. The before-preparation SQL/schedule inventory is not
+evidence of an already-running pilot. The verified preparation above is not
+public-content or end-to-end mobile acceptance.
 
 ## Previous Checkpoint (2026-11-09)
 
@@ -205,8 +310,9 @@ reconciliation does not close the remaining operational gates.
   `/admin`. The CLI
   check reached IAP's OAuth redirect, so operator visual confirmation of the
   updated sign-in copy remains open. The operator previously confirmed admin
-  sign-in and one document download during a bounded SQL window; byte integrity
-  and valid PDF rendering are still unproved. Do not approve/reject or overwrite
+  sign-in and one document download during a bounded SQL window; integrity of
+  that admin download and browser rendering were not verified. Backend PR191
+  separately proves generation-pinned real-PDF provider download. Do not approve/reject or overwrite
   the observed 63-byte smoke document.
 - Support/legal: the default Firebase Hosting site
   `https://project-a96784ee-811c-46ab-a7b.web.app` serves the approved Support
@@ -302,6 +408,8 @@ crash behavior remain unproved.
 
 ## Scope And Authority
 
+The following Nov 5 reconciliation predates the Nov 13 pilot preparation above.
+
 APP-READY-082 remains partially complete. This November 5 handoff reconciles
 mobile status with current Hosting, monitoring and operator evidence. PR #279
 changed only documentation and a regression test. After the merge, one
@@ -370,23 +478,27 @@ one-uptime-check state.
   queue-age evidence remain open. Invocation IAM and schedules remain paused or
   empty. Unknown access must fail closed. See the owning
   [reconciliation contract](https://github.com/ridwanmullick/carenet-backend-lab/blob/main/docs/66-rtc-reconciliation-serialization.md).
-- Worker/provider: natural retry, actual FCM delivery and full-worker execution
-  are not proved by local tests, one delivered email or an SDK response alone.
-  The worker schedule remains paused.
+- Worker/provider: documented physical Android FCM receipt and the controlled
+  account-security email are completed evidence for those flows. Natural retry,
+  full-worker execution and coverage of every pilot event/channel are not proved
+  by local tests, that email, an SDK response or one phone flow alone. The worker
+  schedule remains paused; the earlier blanket FCM-unproved wording is too broad.
 - Database/security: a controlled five-minute PITR cut point was verified on
   Nov 12, but continuous RPO/SLO remains unproved. Cloud SQL enforces connector
   use and `ENCRYPTED_ONLY` TLS; the legacy PostgreSQL `requireSsl=false` value
   is the documented compatible pair. Public IPv4 remains allocated, private
   IP is absent, and the secret-backed runtime connection was not re-tested
-  while SQL is stopped. The live SQL memory condition now matches the intended metric, but the
+  during the stopped-SQL inventory. Postdeploy SQL is also verified STOPPED/NEVER.
+  The live SQL memory condition matches the intended metric, but the
   backend's stale status note and a real breach/notification proof remain open.
   Remaining least-privilege review also remains open after the narrowly scoped
   Firebase SDK binding repair above. Do not resize, restart or suppress an alert
   based on an unverified diagnosis.
 - Admin: IAP, CareNet application login and queue access are proved, and
   Download is deployed. The operator confirmed one staging document download
-  on Nov 5; byte integrity, valid-file preview and operator recovery remain
-  open. Do not approve, reject or overwrite the smoke document to clear this
+  on Nov 5. PR191's real-PDF provider acceptance is complete; browser preview,
+  current-default-admin parity and operator recovery remain open. Do not
+  approve, reject or overwrite the smoke document to clear this
   gate.
 - Support/legal: the approved contact is live and its page returns HTTP 200.
   The owner confirmed the approved mailbox test arrived; no response hours are

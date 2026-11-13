@@ -36,8 +36,17 @@ void main() {
       expect(
         entry.value,
         contains('d97e781194845427b2a996424e583f14f56031b3'),
-        reason: '${entry.key} must name the current merged integration.',
+        reason: '${entry.key} must retain the PR #287 integration checkpoint.',
       );
+      expect(
+        entry.value,
+        contains('0406f53da7e5a7e53fcd31a1767226c1255bb545'),
+        reason: '${entry.key} must name the current PR #289 integration.',
+      );
+      expect(entry.value, contains('9155c58703d746bbd46827ee9ee25fd029848691'));
+      expect(entry.value, contains('43309919222'));
+      expect(entry.value, contains('43312643931'));
+      expect(entry.value, contains('1,424 tests'));
       expect(entry.value, contains('1752dc660e0ec18c51e39f7a7b34594d19f03071'));
       expect(entry.value, contains('43270653477'));
       expect(entry.value, contains('43273323794'));
@@ -194,8 +203,8 @@ void main() {
         .singleWhere((line) => line.startsWith('| APP-READY-082 |'));
 
     expect(task, contains('**NEXT**'));
-    expect(task, contains('`d97e7811`'));
-    expect(task, contains('1,423 tests'));
+    expect(task, contains('`0406f53`'));
+    expect(task, contains('1,424 tests'));
     expect(task, contains('STOPPED/NEVER'));
     expect(task, contains('five-minute PITR cut-point'));
     expect(task, contains('continuous RPO/SLO'));

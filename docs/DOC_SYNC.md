@@ -2,7 +2,32 @@
 
 ## Current Readiness Reconciliation (2026-11-13)
 
-Current Mobile integration is `d97e781194845427b2a996424e583f14f56031b3` after
+Current Mobile integration is `0406f53da7e5a7e53fcd31a1767226c1255bb545` after
+PR #289, reviewed head `9155c58703d746bbd46827ee9ee25fd029848691`. PR CI
+`43309919222` and exact-merge CI `43312643931` passed, verified through `gh`,
+with 1,424 tests, analysis, debug APK, release lint, signing and environment
+regressions. Four files changed, no dependency/native changes; one date-only
+professional timezone formatter test in `test/core/presentation/carenet_locale_test.dart`
+raised the suite from 1,423 to 1,424. No tests were removed, skipped, disabled,
+or weakened. Local debug APK packaging was storage-blocked; CI built it.
+No Android device acceptance or reported freeze/ANR resolution is claimed.
+
+The goal is a working Android staging pilot INCLUDING doctor posts/shorts;
+Paystack is excluded/deferred until separate final approval. APP-READY-082
+remains the sole NEXT task, full readiness remains partial and no product guard
+is removed. Admin login/queue/download and documented notification delivery are
+completed evidence. Backend PR191 proves controlled real-PDF provider download,
+not browser preview/current-default-admin parity; physical push proof does not
+cover every flow. The private education bucket and zero-traffic tagged BE087
+candidate are verified Ready with public content disabled. Postdeploy BE075
+remains 100%, candidate 0%, SQL STOPPED/NEVER; synthetic private-MP4 storage/access
+proof passed, not published shorts/mobile playback. No migration/public content
+was activated. See
+`PHASE_1_OPERATIONAL_READINESS.md` for exact evidence and remaining gates.
+
+### Earlier Mobile Checkpoints
+
+Previous Mobile integration was `d97e781194845427b2a996424e583f14f56031b3` after
 PR #287. Its reviewed head `1752dc660e0ec18c51e39f7a7b34594d19f03071` passed
 PR CI `43270653477`; merged-result CI `43273323794` passed on the exact merge
 SHA with 1,423 tests and all configured Android/analyzer checks. The six-file
@@ -11,12 +36,17 @@ integration was `e3ccafbc7dd2e831f4fc035166ee1d160443dacf`; its head
 `bc757266fbb322d55f7aa47fe3eb39f97387b839` passed run `43155362903`. PR #285's reviewed head
 `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both PR CI lanes;
 merged-result runs `43148540818` and `43148540838` passed on merge SHA
-`83f2dfb095b022f1d9dc41952ae0ec13b4557180`. The suite remains 1,423 tests
+`83f2dfb095b022f1d9dc41952ae0ec13b4557180`. That suite was 1,423 tests
 (1,394 base + 29 net added by #285), with no tests removed, skipped, disabled,
 or weakened. The reader
 uses published education API data and tap-to-play private-media URLs; public
 delivery and media-bucket provisioning remain gated. Backend education source
 is `431094b429581e62e5f5f21acdaae693031b7859`.
+
+### Nov 13 Inventory Before Pilot Preparation
+
+The following inventory predates the education bucket/candidate preparation;
+its traffic/SQL readings are not postdeploy readbacks.
 
 Nov 12 controlled Cloud SQL PITR proof used eleven pre-existing
 actorless/subjectless audit markers. The latest successful automated backup
@@ -210,7 +240,7 @@ same narrow media-permission and truthful speaker-preference repair. Enlarged
 text exposed a real active-stage overflow, repaired inside the existing shell.
 Targeted65/full1,169 tests, analyzer, debug APK, fresh623-task lint and protected
 signing/environment/backup/flavor gates pass. Signed artifacts and CI remain
-delivery gates. Independent static review is clear. The parent task082 remains
+delivery gates. Independent static review is clear. APP-READY-082 remains
 incomplete. Prior082G
 delivery is PR254/merge0913862, reviewed1751ca8, PR/integration CI green.
 
@@ -225,7 +255,7 @@ Targeted157PASS with an actual removed-emission RED/restored GREEN regression;
 signing/environment/backup/flavor gates pass. Independent review is clear;
 signed staging artifacts and CI remain pending. Prior
 082F delivery is PR253/merge8b8e9fc, reviewedaec4e8f, all PR/integration lanes green.
-The parent readiness task082 remains the sole NEXT and incomplete.
+APP-READY-082 remains the sole NEXT and incomplete.
 
 ## APP-READY-082F Scoped Sync (IN PROGRESS)
 
@@ -246,7 +276,7 @@ release lint, signing regressions and environment gates pass. Signed staging
 artifacts and CI remain pending. Live evidence is limited to
 the documented standalone staging negative ingress boundary, not valid-session,
 message-delivery, device or production acceptance. This scoped sync does not
-change the parent AI_HANDOFF task table or the realtime task spec.
+change the AI_HANDOFF task table or the realtime task spec.
 
 ## APP-READY-082E Scoped Sync
 

@@ -4,6 +4,38 @@
 
 APP-P1-007 doctor authoring and APP-P1-007B patient education reader are merged
 through mobile PRs #284 and #285. Current integration is
+`0406f53da7e5a7e53fcd31a1767226c1255bb545` after PR #289. Reviewed head
+`9155c58703d746bbd46827ee9ee25fd029848691` passed PR CI `43309919222`;
+merged-result CI `43312643931` passed on the exact merge SHA, verified through
+`gh`, with 1,424 tests, analysis, debug APK, Android release lint, protected
+signing and release-environment regressions. PR #289 changed four files, no
+dependencies or native files. Its one new date-only professional timezone
+formatter test in `test/core/presentation/carenet_locale_test.dart` increased
+the suite from 1,423 to 1,424; the existing large-response widget regression
+was strengthened. No tests were removed, skipped, disabled, or weakened.
+Local debug APK packaging was blocked by storage; CI built it successfully.
+Android device acceptance and resolution of the reported freeze/ANR are not
+claimed by this source-performance change.
+
+The immediate user goal is a working Android staging pilot INCLUDING doctor
+posts/shorts; Paystack is excluded/deferred until separate final approval.
+APP-READY-082 remains the sole NEXT task, full readiness remains partial, and
+no product guard is removed (including backend payment eligibility). Admin
+login/queue/download and documented notification delivery are completed;
+browser preview/latest-revision parity and broader worker/provider assurance
+are separate. Backend PR191 proves the controlled real-PDF provider download
+and expiry/renewal/replay path. Physical push proof does not cover every flow.
+
+The private education bucket and zero-traffic tagged BE087 education candidate
+are verified Ready with public content disabled. Postdeploy BE075 remains 100%,
+candidate 0%, SQL STOPPED/NEVER; synthetic private-MP4 storage/access proof
+passed, not published shorts/mobile playback. No migration/public content was
+activated. Exact facts
+and remaining reviewer/safety/device gates are in `PHASE_1_OPERATIONAL_READINESS.md`.
+
+### Earlier Mobile Checkpoints
+
+Previous integration was
 `d97e781194845427b2a996424e583f14f56031b3` after PR #287. PR #287 reviewed
 head `1752dc660e0ec18c51e39f7a7b34594d19f03071` passed PR CI `43270653477`;
 merged-result CI `43273323794` passed on the exact merge SHA with 1,423 tests,
@@ -15,12 +47,17 @@ inventory. PR #286's previous integration was
 PR #285's reviewed head `c6178f3df557716e0feaa67da3b3a088bbc81f04` passed both
 PR CI lanes; merged-result runs `43148540818` (Flutter PR CI) and `43148540838`
 (iOS Flavor Build) passed on its merge SHA `83f2dfb095b022f1d9dc41952ae0ec13b4557180`.
-The current suite is 1,423 tests (1,394 base + 29 net added by #285); no tests
+That suite was 1,423 tests (1,394 base + 29 net added by #285); no tests
 were removed, skipped, disabled, or weakened.
 The reader uses published API data and tap-to-play signed Google Storage URLs.
 It does not enable public delivery, provision media storage, or activate cloud
 services. Backend education contracts are on `main` at
 `431094b429581e62e5f5f21acdaae693031b7859`.
+
+### Nov 13 Inventory Before Pilot Preparation
+
+The following inventory predates the education bucket/candidate preparation;
+its traffic/SQL readings are not postdeploy readbacks.
 
 Controlled Cloud SQL PITR proof completed on Nov 12. The latest successful
 automated backup is `2026-11-09T20:28:51.567Z`; seven-day transaction-log
@@ -36,7 +73,7 @@ deletion-protection flag was disabled. The source was returned to
 An earlier instance read reported `RUNNABLE` with `NEVER`; a fresh read now
 reports `STOPPED/NEVER`, so the earlier status discrepancy no longer reproduces.
 
-Current SQL read-back: instance `STOPPED`, activation `NEVER`, backups/PITR
+Pre-pilot-prep SQL read-back: instance `STOPPED`, activation `NEVER`, backups/PITR
 enabled, seven-day transaction-log retention, deletion protection enabled,
 connector enforcement `REQUIRED`, and `sslMode=ENCRYPTED_ONLY`. Public IPv4 is
 allocated, private IP is absent, and authorized networks are empty. PostgreSQL
@@ -104,8 +141,9 @@ APP-READY-089 Support is published: all seven canonical Hosting paths, including
 present in the live page. The owner confirmed the approved test email arrived
 in the support mailbox. APP-READY-088
 upload recovery and APP-READY-090 confirmed-expiry handling are merged. The
-operator confirmed one staging document download on Nov 5; valid real-file
-upload, byte integrity and PDF preview remain unproved.
+operator confirmed one staging document download on Nov 5. Backend PR191's
+controlled real-PDF provider proof is complete; browser preview and
+current-default-admin parity remain open.
 
 Cost-control read-back: staging SQL is STOPPED/NEVER with deletion protection;
 all three Scheduler jobs are PAUSED; Cloud Run backend/admin/messaging have no
@@ -194,8 +232,9 @@ revision remains unverified. Web PR
 #16 merged at `2a3f299f6cc00779b2d7625a0c60339e83551595`; post-merge CI
 `42000423597` passed. It improves only the mocked browser fixture/assertion:
 the valid one-page PDF response returns HTTP 200 and `application/pdf`. It did
-not change or redeploy runtime code, and headless visual PDF rendering plus a
-real valid staging document remain unproved. Web PR #15 main was
+not change or redeploy runtime code. Headless visual PDF rendering and
+current-default-admin parity remain unproved, distinct from backend PR191's
+completed real-PDF provider download. Web PR #15 main was
 `f511d6a36d69157eed239a77c73d9253e57d8e7e`; its post-merge CI
 `41927227034` passed. Cloud Build `caace09e-6c85-4a48-b05e-d62b66575785`
 produced digest
@@ -204,7 +243,9 @@ The revision is Ready/ContainerHealthy and CI container smoke served `/admin`.
 The CLI check reached the IAP OAuth redirect, so operator visual confirmation
 of the updated sign-in copy remains open. The operator previously confirmed
 CareNet admin sign-in and one document download during a bounded SQL window;
-byte integrity and valid PDF preview remain unproved. The existing 63-byte
+integrity of that admin download and browser preview were not verified.
+Backend PR191 separately proves generation-pinned real-PDF provider download.
+The existing 63-byte
 smoke document must not be approved, rejected or overwritten. Cloud SQL is back
 to STOPPED/NEVER. APP-READY-082 remains
 the sole recorded next operational track. See `AI_HANDOFF.md` for current
@@ -400,7 +441,7 @@ are separated, with scrollable enlarged captions and no text-scale cap.
 Targeted65 tests, full1,169 tests (1,153 retained+16 added), analyzer and diff
 checks pass. Staging debug APK, fresh623-task release lint, protected signing,
 30 environment probes/eight packaging graphs, backup25 and iOS configuration
-checks pass. Signed artifacts and CI remain delivery gates. Parent and
+checks pass. Signed artifacts and CI remain delivery gates. Internal and
 independent static review found no actionable issues; no device proof is claimed.
 Physical routing/permissions and full readiness remain open. 082G delivered in
 PR254/merge0913862 with green PR/integration CI; older pending notes are historical.

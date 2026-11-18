@@ -18,6 +18,7 @@ Future<void> _pumpSetup(
   WidgetTester tester, {
   required Widget child,
   required _FakeProfileRepository repository,
+  String? routeName,
   Size screenSize = _phoneSize,
   TextScaler textScaler = TextScaler.noScaling,
 }) async {
@@ -42,8 +43,24 @@ Future<void> _pumpSetup(
                   (_) => const Scaffold(body: Text('community-agreement')),
               RouteName.professionalVerificationDocuments:
                   (_) => const Scaffold(body: Text('verification-documents')),
+              if (routeName == RouteName.manageProfile)
+                RouteName.manageProfile: (_) => child,
             },
-            home: child,
+            home:
+                routeName == null
+                    ? child
+                    : Scaffold(
+                      body: Builder(
+                        builder:
+                            (context) => TextButton(
+                              onPressed:
+                                  () => Navigator.of(
+                                    context,
+                                  ).pushNamed(routeName),
+                              child: const Text('Open profile edit'),
+                            ),
+                      ),
+                    ),
           ),
     ),
   );
@@ -563,6 +580,113 @@ void main() {
       expect(find.text('Nigeria'), findsWidgets);
     });
 
+    testWidgets(
+      'professional setup resolves legacy profession and country labels',
+      (tester) async {
+        final repository = _FakeProfileRepository(
+          professionalProfile: const ProfessionalProfile(
+            legalName: 'Ada Okafor',
+            displayName: 'Dr. Ada Okafor',
+            category: ' medical DOCTOR ',
+            licenseNumber: 'MDCN-12345',
+            qualifications: 'MBBS',
+            yearsOfExperience: 8,
+            practiceName: 'Care Clinic',
+            practiceCity: 'Ikeja',
+            practiceCountry: ' nigeria ',
+          ),
+        );
+        await _pumpSetup(
+          tester,
+          repository: repository,
+          child: ProfessionalOnboardingSetupPage(
+            profileRepository: repository,
+            onboardingRepository: _FakeOnboardingRepository(),
+          ),
+        );
+
+        expect(find.text('Medical doctor'), findsWidgets);
+        expect(find.text('Nigeria'), findsWidgets);
+        await _fillMinimumProfessionalForm(tester);
+        await tester.tap(find.text('Save and verify'));
+        await tester.pumpAndSettle();
+        expect(repository.lastCategory, 'MEDICAL_DOCTOR');
+        expect(repository.lastPracticeCountry, 'NG');
+      },
+    );
+
+    testWidgets('verified professional onboarding skips document uploads', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository(
+        professionalProfile: const ProfessionalProfile(
+          displayName: 'Dr. Ada Okafor',
+          category: 'MEDICAL_DOCTOR',
+          verificationStatus: 'VERIFIED',
+          licenseNumber: 'MDCN-12345',
+          qualifications: 'MBBS',
+          yearsOfExperience: 8,
+          practiceName: 'Care Clinic',
+          practiceCity: 'Ikeja',
+          practiceState: 'LA',
+          practiceCountry: 'NG',
+        ),
+      );
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        child: ProfessionalOnboardingSetupPage(
+          profileRepository: repository,
+          onboardingRepository: _FakeOnboardingRepository(
+            readiness: _professionalReadiness(verificationStatus: 'VERIFIED'),
+          ),
+        ),
+      );
+      await _fillMinimumProfessionalForm(tester);
+      await tester.tap(find.text('Save and verify'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('patient-dashboard'), findsOneWidget);
+      expect(find.text('verification-documents'), findsNothing);
+    });
+
+    testWidgets('professional profile edit returns to its caller after save', (
+      tester,
+    ) async {
+      final repository = _FakeProfileRepository(
+        professionalProfile: const ProfessionalProfile(
+          displayName: 'Dr. Ada Okafor',
+          category: 'MEDICAL_DOCTOR',
+          verificationStatus: 'PENDING',
+          licenseNumber: 'MDCN-12345',
+          qualifications: 'MBBS',
+          yearsOfExperience: 8,
+          practiceName: 'Care Clinic',
+          practiceCity: 'Ikeja',
+          practiceState: 'LA',
+          practiceCountry: 'NG',
+        ),
+      );
+      await _pumpSetup(
+        tester,
+        repository: repository,
+        routeName: RouteName.manageProfile,
+        child: ProfessionalOnboardingSetupPage(
+          profileRepository: repository,
+          onboardingRepository: _FakeOnboardingRepository(),
+        ),
+      );
+      await tester.tap(find.text('Open profile edit'));
+      await tester.pumpAndSettle();
+      await _fillMinimumProfessionalForm(tester);
+      await tester.tap(find.text('Save and verify'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('verification-documents'), findsNothing);
+      expect(find.text('patient-dashboard'), findsNothing);
+      expect(find.text('Open profile edit'), findsOneWidget);
+    });
+
     testWidgets('professional setup saves required Nigeria profile fields', (
       tester,
     ) async {
@@ -730,6 +854,30 @@ Future<void> _fillMinimumProfessionalForm(WidgetTester tester) async {
   await tester.ensureVisible(find.text('Save and verify'));
   await tester.pumpAndSettle();
 }
+
+AccountReadiness _professionalReadiness({required String verificationStatus}) =>
+    AccountReadiness(
+      account: const ReadinessAccount(
+        role: 'PROFESSIONAL',
+        status: 'ACTIVE',
+        emailVerified: true,
+      ),
+      professional: ProfessionalReadiness(
+        applicationStatus: 'APPROVED',
+        verificationStatus: verificationStatus,
+        countryCode: 'NG',
+        professionCode: 'MEDICAL_DOCTOR',
+        regulatorCode: 'MDCN',
+        requiredProfileFields: const <String>[],
+        requiredEvidence: const <String>[],
+        missingEvidence: const <String>[],
+      ),
+      nextAction:
+          verificationStatus == 'VERIFIED'
+              ? 'DASHBOARD'
+              : 'PROFESSIONAL_REVIEW',
+      requiredActions: const <String>[],
+    );
 
 Future<void> _selectCatalogValue(
   WidgetTester tester,
@@ -925,6 +1073,7 @@ class _FakeProfileRepository implements ProfileRepository {
       practiceCity: practiceCity,
       practiceState: practiceState,
       practiceCountry: practiceCountry,
+      verificationStatus: professionalProfile?.verificationStatus,
     );
   }
 

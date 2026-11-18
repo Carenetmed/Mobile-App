@@ -79,6 +79,8 @@ Future<void> _pumpDashboard(
                   (_) => const Scaffold(body: Text('account-route')),
               RouteName.educationFeed:
                   (_) => const Scaffold(body: Text('education-feed-route')),
+              RouteName.educationStudio:
+                  (_) => const Scaffold(body: Text('education-studio-route')),
             },
           ),
     ),
@@ -135,6 +137,34 @@ void main() {
     await _pumpDashboard(tester, role: 'PROFESSIONAL');
 
     expect(find.text('Doctor-created health education'), findsNothing);
+    expect(_bottomLabels(tester), <String?>[
+      'Home',
+      'Schedule',
+      'Appointments',
+      'Messages',
+    ]);
+  });
+
+  testWidgets('professional Home shortcuts open Studio and retain all tabs', (
+    tester,
+  ) async {
+    await _pumpDashboard(tester, role: 'PROFESSIONAL');
+
+    expect(find.text('Create post or video'), findsOneWidget);
+    expect(_bottomLabels(tester), <String?>[
+      'Home',
+      'Schedule',
+      'Appointments',
+      'Messages',
+    ]);
+
+    await tester.tap(find.text('Create post or video'));
+    await tester.pumpAndSettle();
+    expect(find.text('education-studio-route'), findsOneWidget);
+
+    Navigator.of(tester.element(find.text('education-studio-route'))).pop();
+    await tester.pumpAndSettle();
+    expect(find.text('Create post or video'), findsOneWidget);
     expect(_bottomLabels(tester), <String?>[
       'Home',
       'Schedule',

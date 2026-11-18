@@ -154,6 +154,7 @@ void main() {
             'legalName': 'Ada Okafor',
             'displayName': 'Dr. Care',
             'category': 'Cardiologist',
+            'professionCode': 'MEDICAL_DOCTOR',
             'specialty': 'Heart health',
             'bio': 'Focused on prevention.',
             'verificationStatus': 'PENDING',
@@ -166,6 +167,7 @@ void main() {
             'practiceCity': 'Ikeja',
             'practiceState': 'Lagos',
             'practiceCountry': 'Nigeria',
+            'practiceCountryCode': 'NG',
           },
         );
         final repository = _repository(adapter: adapter, withSession: true);
@@ -198,6 +200,8 @@ void main() {
         expect(profile.practiceCity, 'Ikeja');
         expect(profile.practiceState, 'Lagos');
         expect(profile.practiceCountry, 'Nigeria');
+        expect(profile.professionCode, 'MEDICAL_DOCTOR');
+        expect(profile.practiceCountryCode, 'NG');
         expect(adapter.lastOptions?.method, 'PUT');
         expect(
           adapter.lastOptions?.uri.toString(),

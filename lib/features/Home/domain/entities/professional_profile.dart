@@ -18,6 +18,8 @@ class ProfessionalProfile {
     this.practiceCity,
     this.practiceState,
     this.practiceCountry,
+    this.professionCode,
+    this.practiceCountryCode,
     this.consultationPrice,
   });
 
@@ -37,5 +39,7 @@ class ProfessionalProfile {
   final String? practiceCity;
   final String? practiceState;
   final String? practiceCountry;
+  final String? professionCode;
+  final String? practiceCountryCode;
   final ConsultationPrice? consultationPrice;
 }

@@ -264,6 +264,13 @@ class _DashboardState extends State<Dashboard> {
                       ? null
                       : () =>
                           Navigator.pushNamed(context, RouteName.educationFeed),
+              onStudio:
+                  professional
+                      ? () => Navigator.pushNamed(
+                        context,
+                        RouteName.educationStudio,
+                      )
+                      : null,
               onAppointment: (appointmentId) {
                 Navigator.pushNamed(
                   context,

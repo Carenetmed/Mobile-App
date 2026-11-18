@@ -28,9 +28,10 @@ for any other project must not be installed.
 - `/account-deletion`
 
 Terms and Privacy identify their published version and effective date. Signup
-links to Terms and Privacy. Account links to Support, Privacy/legal, and account
-deletion information. Account deletion itself remains an authenticated,
-backend-owned operation requiring recent authentication.
+and the authenticated Account surface link directly to Terms and Privacy.
+Account also links to Support and account-deletion information. Account
+deletion itself remains an authenticated, backend-owned operation requiring
+recent authentication.
 
 The live Support page uses the user-approved contact and does not invent
 response hours. Mailbox delivery and operational ownership checks remain open.

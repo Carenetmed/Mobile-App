@@ -568,9 +568,15 @@ class _AccountShellPageState extends State<AccountShellPage> {
                   onTap: () => _openPublicLink(CareNetPublicLinks.support),
                 ),
                 _AccountTile(
+                  icon: Icons.description_outlined,
+                  title: 'Terms of Service',
+                  subtitle: 'Terms that govern your use of CareNet',
+                  onTap: () => _openPublicLink(CareNetPublicLinks.terms),
+                ),
+                _AccountTile(
                   icon: Icons.privacy_tip_outlined,
-                  title: 'Privacy and legal',
-                  subtitle: 'Privacy Policy and Terms of Service',
+                  title: 'Privacy Policy',
+                  subtitle: 'How CareNet handles your information',
                   onTap: () => _openPublicLink(CareNetPublicLinks.privacy),
                 ),
                 _AccountTile(

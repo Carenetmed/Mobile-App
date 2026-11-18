@@ -381,7 +381,7 @@ void main() {
     expect(find.text('Delete account'), findsWidgets);
   });
 
-  testWidgets('account opens canonical support and legal pages', (tester) async {
+  testWidgets('account opens the canonical support page', (tester) async {
     final opened = <Uri>[];
     await _pumpAccount(
       tester,
@@ -396,14 +396,50 @@ void main() {
     await tester.scrollUntilVisible(find.text('Support'), 300);
     await tester.tap(find.text('Support'));
     await tester.pump();
-    await tester.scrollUntilVisible(find.text('Privacy and legal'), 300);
-    await tester.tap(find.text('Privacy and legal'));
+
+    expect(opened, <Uri>[CareNetPublicLinks.support]);
+  });
+
+  testWidgets('account opens the canonical Terms of Service page', (
+    tester,
+  ) async {
+    final opened = <Uri>[];
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(),
+      publicLinkLauncher: (uri) async {
+        opened.add(uri);
+        return true;
+      },
+    );
+
+    await tester.scrollUntilVisible(find.text('Terms of Service'), 300);
+    await tester.tap(find.text('Terms of Service'));
     await tester.pump();
 
-    expect(opened, <Uri>[
-      CareNetPublicLinks.support,
-      CareNetPublicLinks.privacy,
-    ]);
+    expect(opened, <Uri>[CareNetPublicLinks.terms]);
+  });
+
+  testWidgets('account opens the canonical Privacy Policy page', (
+    tester,
+  ) async {
+    final opened = <Uri>[];
+    await _pumpAccount(
+      tester,
+      repository: _FakeAuthRepository(),
+      accountRepository: _FakeAccountRepository(),
+      publicLinkLauncher: (uri) async {
+        opened.add(uri);
+        return true;
+      },
+    );
+
+    await tester.scrollUntilVisible(find.text('Privacy Policy'), 300);
+    await tester.tap(find.text('Privacy Policy'));
+    await tester.pump();
+
+    expect(opened, <Uri>[CareNetPublicLinks.privacy]);
   });
 
   for (final failure in ['false', 'sync throw', 'async throw']) {

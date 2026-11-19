@@ -2,7 +2,7 @@ gradle.beforeSettings { settings ->
     settings.pluginManagement.repositories {
         mavenCentral {
             content {
-                includeGroupByRegex 'org\\.jetbrains\\.kotlin(\\..*)?'
+                includeGroupByRegex 'org\\.jetbrains\\.(kotlin|kotlinx|intellij\\.deps)(\\..*)?'
             }
         }
         gradlePluginPortal()

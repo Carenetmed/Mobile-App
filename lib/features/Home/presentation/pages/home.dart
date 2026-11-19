@@ -21,6 +21,7 @@ class Home extends StatefulWidget {
     required this.onAppointments,
     required this.onReadinessAction,
     this.onEducation,
+    this.onStudio,
     this.onAppointment,
     this.profileRepository,
     this.onboardingRepository,
@@ -34,6 +35,7 @@ class Home extends StatefulWidget {
   final ValueChanged<String>? onAppointment;
   final ValueChanged<AccountReadiness?> onReadinessAction;
   final VoidCallback? onEducation;
+  final VoidCallback? onStudio;
   final ProfileRepository? profileRepository;
   final OnboardingRepository? onboardingRepository;
   final SchedulingRepository? schedulingRepository;
@@ -119,6 +121,17 @@ class _HomeState extends State<Home> {
             isProfessional: isProfessional,
             onTap: widget.onPrimaryAction,
           ),
+          if (isProfessional && widget.onStudio != null) ...[
+            SizedBox(height: 12.h),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: widget.onStudio,
+                icon: const Icon(Icons.edit_note_outlined),
+                label: const Text('Create post or video'),
+              ),
+            ),
+          ],
           if (!isProfessional && widget.onEducation != null) ...[
             SizedBox(height: 8.h),
             Align(

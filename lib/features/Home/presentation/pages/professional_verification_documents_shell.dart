@@ -101,7 +101,7 @@ class _ProfessionalVerificationDocumentsShellPageState
   String? _readinessError;
   String? _uploadError;
   String? _uploadSuccess;
-  String _selectedDocumentType = _documentTypes.first;
+  String _selectedDocumentType = '';
   List<VerificationDocument> _documents = const <VerificationDocument>[];
   AccountReadiness? _readiness;
   OnboardingCatalog? _catalog;
@@ -114,11 +114,25 @@ class _ProfessionalVerificationDocumentsShellPageState
       widget.documentPicker ?? const FilePickerVerificationDocumentPicker();
 
   static const int _maxUploadBytes = 10 * 1024 * 1024;
-  static const List<String> _documentTypes = <String>[
-    'LICENSE',
-    'IDENTITY',
-    'CERTIFICATION',
-  ];
+  List<VerificationEvidenceType> get _uploadEvidence =>
+      _catalog?.verificationEvidenceTypes ??
+      const <VerificationEvidenceType>[
+        VerificationEvidenceType(
+          code: 'LICENSE',
+          label: 'Professional licence',
+          documentType: 'LICENSE',
+        ),
+        VerificationEvidenceType(
+          code: 'IDENTITY',
+          label: 'Identity document',
+          documentType: 'IDENTITY',
+        ),
+        VerificationEvidenceType(
+          code: 'CERTIFICATION',
+          label: 'Certification',
+          documentType: 'CERTIFICATION',
+        ),
+      ];
 
   @override
   void initState() {
@@ -416,29 +430,67 @@ class _ProfessionalVerificationDocumentsShellPageState
               _VerificationReadinessCard(
                 readiness: _readiness,
                 catalog: _catalog,
+                documents: _documents,
                 error: _readinessError,
               ),
               SizedBox(height: 16.h),
-              _UploadCard(
-                documentTypes: _documentTypes,
-                selectedDocumentType: _selectedDocumentType,
-                isUploading: _isUploading,
-                isPicking: _isPicking,
-                uploadProgress: _uploadProgress,
-                error: _uploadError,
-                success: _uploadSuccess,
-                onDocumentTypeChanged: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  setState(() {
-                    _selectedDocumentType = value;
-                    _uploadError = null;
-                    _uploadSuccess = null;
-                  });
-                },
-                onUpload: _isUploading ? null : _uploadDocument,
-                onCancel: _isUploading ? _cancelUpload : null,
+              ..._uploadEvidence.map((evidence) {
+                final related =
+                    _documents
+                        .where(
+                          (document) =>
+                              document.documentType.trim().toUpperCase() ==
+                              evidence.documentType.trim().toUpperCase(),
+                        )
+                        .toList();
+                final reviewed = related.any(
+                  (document) => const <String>{
+                    'APPROVED',
+                    'PENDING',
+                  }.contains(document.status.trim().toUpperCase()),
+                );
+                return Padding(
+                  padding: REdgeInsets.only(bottom: 10.h),
+                  child: _UploadCard(
+                    label: evidence.label,
+                    documentType: evidence.documentType,
+                    isComplete: reviewed,
+                    isUploading:
+                        _isUploading &&
+                        _selectedDocumentType == evidence.documentType,
+                    isPicking:
+                        _isPicking &&
+                        _selectedDocumentType == evidence.documentType,
+                    uploadProgress: _uploadProgress,
+                    error:
+                        _selectedDocumentType == evidence.documentType
+                            ? _uploadError
+                            : null,
+                    success:
+                        _selectedDocumentType == evidence.documentType
+                            ? _uploadSuccess
+                            : null,
+                    onUpload:
+                        reviewed || _isUploading
+                            ? null
+                            : () {
+                              setState(() {
+                                _selectedDocumentType = evidence.documentType;
+                                _uploadError = null;
+                                _uploadSuccess = null;
+                              });
+                              _uploadDocument();
+                            },
+                    onCancel: _isUploading ? _cancelUpload : null,
+                  ),
+                );
+              }),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  child: const Text('Done'),
+                ),
               ),
               SizedBox(height: 16.h),
               if (_isLoading && !_hasLoadedDocuments)
@@ -521,26 +573,26 @@ class _IntroCard extends StatelessWidget {
 
 class _UploadCard extends StatelessWidget {
   const _UploadCard({
-    required this.documentTypes,
-    required this.selectedDocumentType,
+    required this.label,
+    required this.documentType,
+    required this.isComplete,
     required this.isUploading,
     required this.isPicking,
     required this.uploadProgress,
     required this.error,
     required this.success,
-    required this.onDocumentTypeChanged,
     required this.onUpload,
     required this.onCancel,
   });
 
-  final List<String> documentTypes;
-  final String selectedDocumentType;
+  final String label;
+  final String documentType;
+  final bool isComplete;
   final bool isUploading;
   final bool isPicking;
   final double uploadProgress;
   final String? error;
   final String? success;
-  final ValueChanged<String?> onDocumentTypeChanged;
   final VoidCallback? onUpload;
   final VoidCallback? onCancel;
 
@@ -564,7 +616,7 @@ class _UploadCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Upload document',
+                  label,
                   style: TextStyle(
                     fontSize: FontSizes.footer3,
                     fontFamily: AppFonts.montserrat,
@@ -574,7 +626,9 @@ class _UploadCard extends StatelessWidget {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  'Select one PDF, JPEG, or PNG file under 10 MB.',
+                  isComplete
+                      ? 'Submitted for review or approved.'
+                      : 'Select one PDF, JPEG, or PNG file under 10 MB.',
                   style: TextStyle(
                     fontSize: FontSizes.footer4,
                     fontFamily: AppFonts.montserrat,
@@ -584,28 +638,11 @@ class _UploadCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 12.h),
-                DropdownButtonFormField<String>(
-                  initialValue: selectedDocumentType,
-                  isExpanded: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Document type',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: documentTypes
-                      .map(
-                        (type) => DropdownMenuItem<String>(
-                          value: type,
-                          child: Text(_documentTypeLabel(type)),
-                        ),
-                      )
-                      .toList(growable: false),
-                  onChanged: isUploading ? null : onDocumentTypeChanged,
-                ),
                 SizedBox(height: 12.h),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: onUpload,
+                    onPressed: isComplete ? null : onUpload,
                     icon:
                         isUploading
                             ? SizedBox(
@@ -621,6 +658,8 @@ class _UploadCard extends StatelessWidget {
                           ? 'Choosing file...'
                           : isUploading
                           ? 'Uploading...'
+                          : isComplete
+                          ? 'Submitted'
                           : 'Choose file to upload',
                     ),
                     style: ElevatedButton.styleFrom(
@@ -676,32 +715,26 @@ class _UploadCard extends StatelessWidget {
       ),
     );
   }
-
-  static String _documentTypeLabel(String value) {
-    return value
-        .split('_')
-        .where((part) => part.isNotEmpty)
-        .map((part) => '${part[0]}${part.substring(1).toLowerCase()}')
-        .join(' ');
-  }
 }
 
 class _VerificationReadinessCard extends StatelessWidget {
   const _VerificationReadinessCard({
     required this.readiness,
     required this.catalog,
+    required this.documents,
     required this.error,
   });
 
   final AccountReadiness? readiness;
   final OnboardingCatalog? catalog;
+  final List<VerificationDocument> documents;
   final String? error;
 
   @override
   Widget build(BuildContext context) {
     final professional = readiness?.professional;
     final evidence = professional?.requiredEvidence ?? const <String>[];
-    final missing = professional?.missingEvidence ?? const <String>[];
+    final missing = _effectiveMissing(professional, catalog, documents);
     return Container(
       width: double.infinity,
       padding: REdgeInsets.all(16.r),
@@ -724,7 +757,7 @@ class _VerificationReadinessCard extends StatelessWidget {
           ),
           SizedBox(height: 6.h),
           Text(
-            _statusCopy(readiness, error),
+            _statusCopy(readiness, catalog, documents, error),
             style: TextStyle(
               fontSize: FontSizes.footer4,
               fontFamily: AppFonts.montserrat,
@@ -757,7 +790,12 @@ class _VerificationReadinessCard extends StatelessWidget {
     );
   }
 
-  static String _statusCopy(AccountReadiness? readiness, String? error) {
+  static String _statusCopy(
+    AccountReadiness? readiness,
+    OnboardingCatalog? catalog,
+    List<VerificationDocument> documents,
+    String? error,
+  ) {
     if (error != null) {
       return '$error Pull to refresh before uploading more documents.';
     }
@@ -768,8 +806,9 @@ class _VerificationReadinessCard extends StatelessWidget {
     if (professional.requiredProfileFields.isNotEmpty) {
       return 'Complete your professional profile before document review.';
     }
-    if (professional.missingEvidence.isNotEmpty) {
-      return '${professional.missingEvidence.length} required evidence item${professional.missingEvidence.length == 1 ? '' : 's'} still need upload.';
+    final missing = _effectiveMissing(professional, catalog, documents);
+    if (missing.isNotEmpty) {
+      return '${missing.length} required evidence item${missing.length == 1 ? '' : 's'} still need upload.';
     }
     return switch (professional.verificationStatus.toUpperCase()) {
       'PENDING' => 'Your documents are uploaded and waiting for review.',
@@ -779,6 +818,37 @@ class _VerificationReadinessCard extends StatelessWidget {
       _ =>
         'Your required evidence is uploaded. CareNet will review it before public verification.',
     };
+  }
+
+  static List<String> _effectiveMissing(
+    ProfessionalReadiness? professional,
+    OnboardingCatalog? catalog,
+    List<VerificationDocument> documents,
+  ) {
+    if (professional == null) return const <String>[];
+    return professional.missingEvidence
+        .where((code) {
+          VerificationEvidenceType? evidence;
+          for (final item
+              in catalog?.verificationEvidenceTypes ??
+                  const <VerificationEvidenceType>[]) {
+            if (item.code == code) {
+              evidence = item;
+              break;
+            }
+          }
+          if (evidence == null) return true;
+          return !documents.any(
+            (document) =>
+                document.documentType.trim().toUpperCase() ==
+                    evidence!.documentType.trim().toUpperCase() &&
+                const <String>{
+                  'APPROVED',
+                  'PENDING',
+                }.contains(document.status.trim().toUpperCase()),
+          );
+        })
+        .toList(growable: false);
   }
 
   static String _evidenceLabel(String code, OnboardingCatalog? catalog) {

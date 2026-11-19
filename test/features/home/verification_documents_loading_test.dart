@@ -58,6 +58,16 @@ const _catalog = OnboardingCatalog(
       label: 'Test identity evidence',
       documentType: 'IDENTITY',
     ),
+    VerificationEvidenceType(
+      code: 'LICENSE_EVIDENCE',
+      label: 'Professional licence',
+      documentType: 'LICENSE',
+    ),
+    VerificationEvidenceType(
+      code: 'CERTIFICATE_EVIDENCE',
+      label: 'Specialty certificate',
+      documentType: 'CERTIFICATION',
+    ),
   ],
   patientHealthInterestCatalog: <PatientHealthInterest>[],
 );
@@ -166,8 +176,9 @@ Future<void> _refresh(WidgetTester tester) async {
 }
 
 Future<void> _choose(WidgetTester tester) async {
-  await tester.ensureVisible(find.byType(ElevatedButton));
-  await tester.tap(find.byType(ElevatedButton));
+  final button = find.byType(ElevatedButton).first;
+  await tester.ensureVisible(button);
+  await tester.tap(button);
   await tester.pump();
 }
 
@@ -325,7 +336,7 @@ void main() {
           h.onboarding.readiness.last.complete(_readiness);
           await tester.pump();
           _hasDocument();
-          expect(find.text('Choose file to upload'), findsOneWidget);
+          expect(find.text('Choose file to upload'), findsNWidgets(2));
           expect(tester.takeException(), isNull);
         },
       );
@@ -357,6 +368,43 @@ void main() {
     _hasDocument();
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('catalog renders three upload rows and Done returns', (
+    tester,
+  ) async {
+    final h = _Harness();
+    await h.loaded(tester);
+    expect(find.text('Test identity evidence'), findsOneWidget);
+    expect(find.text('Professional licence'), findsOneWidget);
+    expect(find.text('Specialty certificate'), findsOneWidget);
+    expect(find.text('Choose file to upload'), findsNWidgets(2));
+    await tester.ensureVisible(find.text('Done'));
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(find.text('Done'), findsOneWidget);
+  });
+
+  for (final status in <String>['APPROVED', 'PENDING']) {
+    testWidgets('$status catalog row has no reupload action', (tester) async {
+      final h = _Harness();
+      await h.mount(tester);
+      h.documents.calls.single.complete(<VerificationDocument>[
+        VerificationDocument(
+          id: 'reviewed-license',
+          documentType: 'LICENSE',
+          status: status,
+          storageProvider: 'test',
+          mimeType: 'application/pdf',
+          checksumProvided: true,
+        ),
+      ]);
+      await h.finishReadiness(tester);
+      expect(find.text('Professional licence'), findsOneWidget);
+      expect(find.text('Submitted'), findsOneWidget);
+      expect(find.text('Choose file to upload'), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets(
     'loaded documents survive refresh pending and failure then recover on retry',

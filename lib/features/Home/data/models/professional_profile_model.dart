@@ -19,6 +19,8 @@ class ProfessionalProfileModel extends ProfessionalProfile {
     super.practiceCity,
     super.practiceState,
     super.practiceCountry,
+    super.professionCode,
+    super.practiceCountryCode,
     super.consultationPrice,
   });
 
@@ -34,15 +36,20 @@ class ProfessionalProfileModel extends ProfessionalProfile {
       licenseNumber: json['licenseNumber'] as String?,
       licensingCouncil: json['licensingCouncil'] as String?,
       qualifications: json['qualifications'] as String?,
-      yearsOfExperience:
-          json['yearsOfExperience'] is int
-              ? json['yearsOfExperience'] as int
-              : null,
+      yearsOfExperience: json['yearsOfExperience'] is int
+          ? json['yearsOfExperience'] as int
+          : null,
       practiceName: json['practiceName'] as String?,
       practiceAddress: json['practiceAddress'] as String?,
       practiceCity: json['practiceCity'] as String?,
       practiceState: json['practiceState'] as String?,
       practiceCountry: json['practiceCountry'] as String?,
+      professionCode:
+          (json['professionCode'] as String?) ??
+          (json['categoryCode'] as String?),
+      practiceCountryCode:
+          (json['practiceCountryCode'] as String?) ??
+          (json['countryCode'] as String?),
       consultationPrice: ConsultationPriceModel.fromNullableJson(
         json['consultationPrice'],
       ),

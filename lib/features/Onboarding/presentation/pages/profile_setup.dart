@@ -111,10 +111,9 @@ class _PatientOnboardingSetupPageState
               value: _selectedState,
               items: _catalog?.nigeriaStates ?? const <OnboardingRegion>[],
               itemLabel: (state) => state.name,
-              onChanged:
-                  _isCatalogReady
-                      ? (state) => setState(() => _selectedState = state)
-                      : null,
+              onChanged: _isCatalogReady
+                  ? (state) => setState(() => _selectedState = state)
+                  : null,
               validator: (_) => null,
             ),
             SizedBox(height: 14.h),
@@ -125,12 +124,11 @@ class _PatientOnboardingSetupPageState
               value: _selectedCountry,
               items: _catalog?.countries ?? const <OnboardingCountry>[],
               itemLabel: (country) => country.name,
-              onChanged:
-                  _isCatalogReady
-                      ? (country) => setState(() => _selectedCountry = country)
-                      : null,
-              validator:
-                  (country) => country == null ? 'Country is required' : null,
+              onChanged: _isCatalogReady
+                  ? (country) => setState(() => _selectedCountry = country)
+                  : null,
+              validator: (country) =>
+                  country == null ? 'Country is required' : null,
             ),
             SizedBox(height: 14.h),
             _CatalogSelect<PatientHealthInterest>(
@@ -142,11 +140,10 @@ class _PatientOnboardingSetupPageState
                   _catalog?.patientHealthInterestCatalog ??
                   const <PatientHealthInterest>[],
               itemLabel: (interest) => interest.label,
-              onChanged:
-                  _isCatalogReady
-                      ? (interest) =>
-                          setState(() => _selectedHealthInterest = interest)
-                      : null,
+              onChanged: _isCatalogReady
+                  ? (interest) =>
+                        setState(() => _selectedHealthInterest = interest)
+                  : null,
               validator: (_) => null,
             ),
             SizedBox(height: 16.h),
@@ -368,6 +365,7 @@ class _ProfessionalOnboardingSetupPageState
   OnboardingRegion? _selectedState;
   ProfessionalCatalogItem? _selectedProfession;
   AccountReadiness? _readiness;
+  ProfessionalProfile? _loadedProfessionalProfile;
   bool _isLoadingCatalog = false;
   bool _isSaving = false;
   bool _catalogLoadFailed = false;
@@ -437,16 +435,12 @@ class _ProfessionalOnboardingSetupPageState
                   _catalog?.professionalCatalog ??
                   const <ProfessionalCatalogItem>[],
               itemLabel: (profession) => profession.label,
-              onChanged:
-                  _isCatalogReady
-                      ? (profession) =>
-                          setState(() => _selectedProfession = profession)
-                      : null,
-              validator:
-                  (profession) =>
-                      profession == null
-                          ? 'Profession/category is required'
-                          : null,
+              onChanged: _isCatalogReady
+                  ? (profession) =>
+                        setState(() => _selectedProfession = profession)
+                  : null,
+              validator: (profession) =>
+                  profession == null ? 'Profession/category is required' : null,
             ),
             SizedBox(height: 14.h),
             CarenetTextField(
@@ -525,13 +519,11 @@ class _ProfessionalOnboardingSetupPageState
               value: _selectedState,
               items: _catalog?.nigeriaStates ?? const <OnboardingRegion>[],
               itemLabel: (state) => state.name,
-              onChanged:
-                  _isCatalogReady
-                      ? (state) => setState(() => _selectedState = state)
-                      : null,
-              validator:
-                  (state) =>
-                      state == null ? 'Practice state is required' : null,
+              onChanged: _isCatalogReady
+                  ? (state) => setState(() => _selectedState = state)
+                  : null,
+              validator: (state) =>
+                  state == null ? 'Practice state is required' : null,
             ),
             SizedBox(height: 14.h),
             _CatalogSelect<OnboardingCountry>(
@@ -541,13 +533,11 @@ class _ProfessionalOnboardingSetupPageState
               value: _selectedCountry,
               items: _catalog?.countries ?? const <OnboardingCountry>[],
               itemLabel: (country) => country.name,
-              onChanged:
-                  _isCatalogReady
-                      ? (country) => setState(() => _selectedCountry = country)
-                      : null,
-              validator:
-                  (country) =>
-                      country == null ? 'Practice country is required' : null,
+              onChanged: _isCatalogReady
+                  ? (country) => setState(() => _selectedCountry = country)
+                  : null,
+              validator: (country) =>
+                  country == null ? 'Practice country is required' : null,
             ),
             SizedBox(height: 16.h),
             const _InfoCard(
@@ -602,12 +592,13 @@ class _ProfessionalOnboardingSetupPageState
       }
       setState(() {
         _catalog = catalog;
+        _loadedProfessionalProfile = profile;
+        _readiness = readiness;
         _applyProfessionalProfile(
           profile,
           catalog,
           preserveExistingInput: preserveFormInput,
         );
-        _readiness = readiness;
         _isLoadingCatalog = false;
         _catalogLoadFailed = false;
       });
@@ -657,11 +648,19 @@ class _ProfessionalOnboardingSetupPageState
     setIfUntouched(_practiceAddressController, profile.practiceAddress ?? '');
     setIfUntouched(_practiceCityController, profile.practiceCity ?? '');
     if (!preserveExistingInput || _selectedProfession == null) {
-      _selectedProfession = _byCode(
-        catalog.professionalCatalog,
-        profile.category,
-        (x) => x.code,
-      );
+      _selectedProfession =
+          _byCodeOrUniqueLabel(
+            catalog.professionalCatalog,
+            profile.professionCode ?? profile.category,
+            (x) => x.code,
+            (x) => x.label,
+          ) ??
+          _byCodeOrUniqueLabel(
+            catalog.professionalCatalog,
+            _readiness?.professional?.professionCode,
+            (x) => x.code,
+            (x) => x.label,
+          );
     }
     if (!preserveExistingInput || _selectedState == null) {
       _selectedState = _byCode(
@@ -671,11 +670,19 @@ class _ProfessionalOnboardingSetupPageState
       );
     }
     if (!preserveExistingInput || _selectedCountry == null) {
-      _selectedCountry = _byCode(
-        catalog.countries,
-        profile.practiceCountry,
-        (x) => x.code,
-      );
+      _selectedCountry =
+          _byCodeOrUniqueLabel(
+            catalog.countries,
+            profile.practiceCountryCode ?? profile.practiceCountry,
+            (x) => x.code,
+            (x) => x.name,
+          ) ??
+          _byCodeOrUniqueLabel(
+            catalog.countries,
+            _readiness?.professional?.countryCode,
+            (x) => x.code,
+            (x) => x.name,
+          );
     }
   }
 
@@ -694,7 +701,7 @@ class _ProfessionalOnboardingSetupPageState
       _isSaving = true;
     });
     try {
-      await _profileRepository.updateProfessionalMe(
+      final updatedProfile = await _profileRepository.updateProfessionalMe(
         legalName: _legalNameController.text.trim(),
         displayName: _displayNameController.text.trim(),
         category: _selectedProfession!.code,
@@ -712,9 +719,24 @@ class _ProfessionalOnboardingSetupPageState
       if (!mounted) {
         return;
       }
-      Navigator.of(
-        context,
-      ).popAndPushNamed(RouteName.professionalVerificationDocuments);
+      final status =
+          (updatedProfile.verificationStatus ??
+                  _loadedProfessionalProfile?.verificationStatus ??
+                  _readiness?.professional?.verificationStatus ??
+                  '')
+              .trim()
+              .toUpperCase();
+      final isProfileEdit =
+          ModalRoute.of(context)?.settings.name == RouteName.manageProfile;
+      if (isProfileEdit) {
+        Navigator.of(context).pop();
+      } else {
+        Navigator.of(context).popAndPushNamed(
+          status == 'VERIFIED'
+              ? RouteName.dashboard
+              : RouteName.professionalVerificationDocuments,
+        );
+      }
     } on AuthFailure catch (failure) {
       if (mounted) {
         setState(() => _message = failure.message);
@@ -997,10 +1019,9 @@ class _CatalogSelect<T> extends StatelessWidget {
               color: CarenetColors.neutral300,
             ),
             filled: true,
-            fillColor:
-                onChanged == null
-                    ? CarenetColors.neutral100
-                    : CarenetColors.white,
+            fillColor: onChanged == null
+                ? CarenetColors.neutral100
+                : CarenetColors.white,
             isDense: true,
             contentPadding: EdgeInsets.symmetric(
               horizontal: 16.w,
@@ -1047,8 +1068,9 @@ class _ReadOnlyValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final display =
-        value?.trim().isNotEmpty == true ? value!.trim() : emptyText;
+    final display = value?.trim().isNotEmpty == true
+        ? value!.trim()
+        : emptyText;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1075,10 +1097,9 @@ class _ReadOnlyValue extends StatelessWidget {
             style: TextStyle(
               fontSize: 16.sp,
               fontFamily: AppFonts.montserrat,
-              color:
-                  value?.trim().isNotEmpty == true
-                      ? CarenetColors.neutral700
-                      : CarenetColors.neutral300,
+              color: value?.trim().isNotEmpty == true
+                  ? CarenetColors.neutral700
+                  : CarenetColors.neutral300,
             ),
           ),
         ),
@@ -1177,6 +1198,26 @@ T? _byCode<T>(List<T> values, String? code, String Function(T) readCode) {
   return null;
 }
 
+T? _byCodeOrUniqueLabel<T>(
+  List<T> values,
+  String? value,
+  String Function(T) readCode,
+  String Function(T) readLabel,
+) {
+  final normalized = value?.trim().toLowerCase();
+  if (normalized == null || normalized.isEmpty) {
+    return null;
+  }
+  final matches = values
+      .where(
+        (item) =>
+            readCode(item).trim().toLowerCase() == normalized ||
+            readLabel(item).trim().toLowerCase() == normalized,
+      )
+      .toList(growable: false);
+  return matches.length == 1 ? matches.single : null;
+}
+
 String _catalogHint(String fallback) {
   return fallback;
 }
@@ -1222,14 +1263,13 @@ List<String> _readinessItems(AccountReadiness? readiness, String role) {
 }
 
 String _fieldLabel(String value) {
-  final spaced =
-      value
-          .replaceAllMapped(
-            RegExp(r'([a-z])([A-Z])'),
-            (match) => '${match.group(1)} ${match.group(2)}',
-          )
-          .replaceAll('_', ' ')
-          .trim();
+  final spaced = value
+      .replaceAllMapped(
+        RegExp(r'([a-z])([A-Z])'),
+        (match) => '${match.group(1)} ${match.group(2)}',
+      )
+      .replaceAll('_', ' ')
+      .trim();
   if (spaced.isEmpty) {
     return value;
   }

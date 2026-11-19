@@ -106,6 +106,13 @@ Future<void> _pumpManageProfile(
   await tester.pumpAndSettle();
 }
 
+Future<void> _tapVerificationUpload(WidgetTester tester, {int row = 0}) async {
+  final button = find.byType(ElevatedButton).at(row);
+  await tester.ensureVisible(button);
+  await tester.tap(button);
+  await tester.pumpAndSettle();
+}
+
 InMemorySessionStore _professionalSessionStore() {
   return InMemorySessionStore()..save(
     const AuthSessionModel(
@@ -702,12 +709,16 @@ void main() {
     expect(find.text('Professional verification'), findsOneWidget);
     expect(find.text('Verification readiness'), findsOneWidget);
     expect(
-      find.text('2 required evidence items still need upload.'),
+      find.text('1 required evidence item still need upload.'),
       findsOneWidget,
     );
     expect(find.text('Missing: Government identity'), findsOneWidget);
     expect(
       find.text('Missing: Professional registration or license'),
+      findsNothing,
+    );
+    expect(
+      find.text('Received: Professional registration or license'),
       findsOneWidget,
     );
     expect(find.text('Received: Qualification certificate'), findsOneWidget);
@@ -720,10 +731,12 @@ void main() {
     expect(find.text('Checksum'), findsNothing);
     expect(find.text('Provided'), findsNothing);
     expect(find.text('15 Jul 2026'), findsOneWidget);
-    expect(find.text('Upload document'), findsOneWidget);
+    expect(find.text('Government identity'), findsOneWidget);
+    expect(find.text('Professional registration or license'), findsOneWidget);
+    expect(find.text('Qualification certificate'), findsOneWidget);
     expect(
       find.text('Select one PDF, JPEG, or PNG file under 10 MB.'),
-      findsOneWidget,
+      findsNWidgets(2),
     );
     expect(find.text('signedUrl'), findsNothing);
     expect(find.text('storageObjectKey'), findsNothing);
@@ -841,8 +854,7 @@ void main() {
 
       await tester.tap(find.text('Verification'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Choose file to upload'));
-      await tester.pumpAndSettle();
+      await _tapVerificationUpload(tester, row: 1);
 
       expect(repository.lastUploadRequest, isNotNull);
       expect(repository.lastUploadRequest!.documentType, 'LICENSE');
@@ -883,12 +895,7 @@ void main() {
 
     await tester.tap(find.text('Verification'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('License'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Identity').last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Choose file to upload'));
-    await tester.pumpAndSettle();
+    await _tapVerificationUpload(tester);
 
     expect(repository.lastUploadRequest?.documentType, 'IDENTITY');
     expect(repository.lastUploadRequest?.originalFileName, 'identity.png');
@@ -913,8 +920,7 @@ void main() {
 
     await tester.tap(find.text('Verification'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Choose file to upload'));
-    await tester.pumpAndSettle();
+    await _tapVerificationUpload(tester);
 
     expect(
       find.text('Only PDF, JPEG, or PNG files are supported.'),
@@ -939,8 +945,7 @@ void main() {
 
     await tester.tap(find.text('Verification'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Choose file to upload'));
-    await tester.pumpAndSettle();
+    await _tapVerificationUpload(tester);
 
     expect(find.text('Select a file smaller than 10 MB.'), findsOneWidget);
     expect(repository.lastUploadRequest, isNull);
@@ -958,8 +963,7 @@ void main() {
 
     await tester.tap(find.text('Verification'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Choose file to upload'));
-    await tester.pumpAndSettle();
+    await _tapVerificationUpload(tester);
 
     expect(find.text('No file selected.'), findsOneWidget);
     expect(repository.lastUploadRequest, isNull);
@@ -983,7 +987,8 @@ void main() {
 
     await tester.tap(find.text('Verification'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Choose file to upload'));
+    await tester.ensureVisible(find.byType(ElevatedButton).first);
+    await tester.tap(find.byType(ElevatedButton).first);
     await tester.pump();
 
     expect(find.text('50% uploaded'), findsOneWidget);
@@ -1019,8 +1024,7 @@ void main() {
 
     await tester.tap(find.text('Verification'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Choose file to upload'));
-    await tester.pumpAndSettle();
+    await _tapVerificationUpload(tester);
 
     expect(
       find.text('Service is unavailable. Please try again.'),

@@ -1,21 +1,13 @@
-import 'dart:typed_data';
-
 import 'package:app_t/core/constants/app_colors.dart';
 import 'package:app_t/core/di/injection.dart';
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Education/data/repositories/education_content_repository.dart';
 import 'package:app_t/features/Education/domain/entities/education_content.dart';
 import 'package:app_t/features/Education/presentation/state/education_studio_controller.dart';
+import 'package:app_t/features/Education/presentation/state/education_video_preparer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
-
-class EducationPickedVideo {
-  const EducationPickedVideo({required this.name, required this.bytes});
-
-  final String name;
-  final Uint8List bytes;
-}
 
 abstract interface class EducationVideoPicker {
   Future<EducationPickedVideo?> pick(ImageSource source);
@@ -31,23 +23,13 @@ class ImagePickerEducationVideoPicker implements EducationVideoPicker {
       maxDuration: const Duration(seconds: 60),
     );
     if (file == null) return null;
-    if (!file.name.toLowerCase().endsWith('.mp4')) {
+    if (await file.length() <= 0) {
       throw const AuthFailure(
         type: AuthFailureType.validation,
-        message: 'Choose an MP4 video under 60 seconds and 25 MB.',
+        message: 'Choose a readable video recording and try again.',
       );
     }
-    final length = await file.length();
-    if (length <= 0 || length > EducationContentApiLimits.maxVideoBytes) {
-      throw const AuthFailure(
-        type: AuthFailureType.validation,
-        message: 'Choose an MP4 video under 25 MB.',
-      );
-    }
-    return EducationPickedVideo(
-      name: file.name,
-      bytes: await file.readAsBytes(),
-    );
+    return EducationPickedVideo(name: file.name, path: file.path);
   }
 }
 
@@ -62,10 +44,12 @@ class EducationStudioShellPage extends StatefulWidget {
     super.key,
     this.repository,
     this.videoPicker,
+    this.videoPreparer,
   });
 
   final EducationContentDataSource? repository;
   final EducationVideoPicker? videoPicker;
+  final EducationVideoPreparer? videoPreparer;
 
   @override
   State<EducationStudioShellPage> createState() =>
@@ -80,9 +64,13 @@ class _EducationStudioShellPageState extends State<EducationStudioShellPage> {
   EducationContentType _type = EducationContentType.textPost;
   bool _savingDraft = false;
   bool _selectingVideo = false;
+  double _preparationProgress = 0;
+  EducationVideoPreparationController? _preparationController;
 
   EducationVideoPicker get _videoPicker =>
       widget.videoPicker ?? const ImagePickerEducationVideoPicker();
+  EducationVideoPreparer get _videoPreparer =>
+      widget.videoPreparer ?? NativeEducationVideoPreparer();
 
   @override
   void initState() {
@@ -95,6 +83,7 @@ class _EducationStudioShellPageState extends State<EducationStudioShellPage> {
 
   @override
   void dispose() {
+    _preparationController?.cancel();
     _controller
       ..removeListener(_onChanged)
       ..dispose();
@@ -208,23 +197,55 @@ class _EducationStudioShellPageState extends State<EducationStudioShellPage> {
           ),
     );
     if (source == null || !mounted) return;
-    setState(() => _selectingVideo = true);
+    final preparationController = EducationVideoPreparationController();
+    _preparationController = preparationController;
+    setState(() {
+      _selectingVideo = true;
+      _preparationProgress = 0;
+    });
     try {
       final video = await _videoPicker.pick(source);
       if (!mounted || video == null) return;
+      final prepared = await _videoPreparer.prepare(
+        video,
+        controller: preparationController,
+        onProgress: (progress) {
+          if (mounted &&
+              identical(_preparationController, preparationController)) {
+            setState(() => _preparationProgress = progress);
+          }
+        },
+      );
+      if (preparationController.isCancelled) {
+        throw const EducationVideoPreparationCancelled();
+      }
       await _controller.uploadVideo(
         contentId: content.id,
-        fileName: video.name,
-        bytes: video.bytes,
+        fileName: prepared.name,
+        bytes: prepared.bytes,
       );
+    } on EducationVideoPreparationCancelled {
+      if (mounted) {
+        _showMessage('Video preparation cancelled. Your draft is saved.');
+      }
     } on AuthFailure catch (failure) {
       if (mounted) _showMessage(failure.message);
     } catch (_) {
       if (mounted) {
-        _showMessage('The video could not be selected. Please try again.');
+        _showMessage(
+          'The video could not be prepared. Your draft is still saved.',
+        );
       }
     } finally {
-      if (mounted) setState(() => _selectingVideo = false);
+      if (identical(_preparationController, preparationController)) {
+        _preparationController = null;
+      }
+      if (mounted) {
+        setState(() {
+          _selectingVideo = false;
+          _preparationProgress = 0;
+        });
+      }
     }
   }
 
@@ -366,6 +387,17 @@ class _EducationStudioShellPageState extends State<EducationStudioShellPage> {
               if (_controller.actionError != null) ...[
                 SizedBox(height: 12.h),
                 _messageBox(_controller.actionError!),
+              ],
+              if (_selectingVideo) ...[
+                SizedBox(height: 10.h),
+                LinearProgressIndicator(value: _preparationProgress),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _preparationController?.cancel,
+                    child: const Text('Cancel preparation'),
+                  ),
+                ),
               ],
               if (_controller.hasUncertainCreate) ...[
                 SizedBox(height: 8.h),

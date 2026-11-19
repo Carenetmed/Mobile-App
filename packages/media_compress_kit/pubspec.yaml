@@ -1,0 +1,42 @@
+name: media_compress_kit
+description: >-
+  Compress images and videos with native encoders (Media3, AVFoundation):
+  size limits, progress, cancel, batch, URLs, estimates, no-permission picker.
+version: 0.1.0
+repository: https://github.com/parthbhensdadiya226/media_compress_kit
+issue_tracker: https://github.com/parthbhensdadiya226/media_compress_kit/issues
+funding:
+  - https://buymeacoffee.com/parthbhensdadiya
+topics: [compression, video, image, compress, picker]
+
+screenshots:
+  - description: 'A portrait video compressed to 720p, half the size.'
+    path: doc/video_result.png
+  - description: 'Compression progress with a cancel button.'
+    path: doc/video_progress.png
+  - description: 'A 12 megapixel photo compressed and turned upright, with a size estimate.'
+    path: doc/image_result.png
+  - description: 'Photos and a video compressed together in a batch.'
+    path: doc/batch.png
+
+environment:
+  sdk: ^3.8.0
+  flutter: '>=3.32.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: dev.parth.media_compress_kit
+        pluginClass: MediaCompressKitPlugin
+      ios:
+        pluginClass: MediaCompressKitPlugin

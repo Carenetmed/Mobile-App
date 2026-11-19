@@ -1,0 +1,10 @@
+gradle.beforeSettings { settings ->
+    settings.pluginManagement.repositories {
+        mavenCentral {
+            content {
+                includeGroupByRegex 'org\\.jetbrains\\.kotlin(\\..*)?'
+            }
+        }
+        gradlePluginPortal()
+    }
+}

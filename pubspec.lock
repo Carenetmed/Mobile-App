@@ -853,6 +853,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.13.0"
+  media_compress_kit:
+    dependency: "direct main"
+    description:
+      path: "packages/media_compress_kit"
+      relative: true
+    source: path
+    version: "0.1.0"
   meta:
     dependency: transitive
     description:

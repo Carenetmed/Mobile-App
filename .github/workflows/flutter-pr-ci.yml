@@ -71,6 +71,12 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Configure Kotlin plugin dependency repository
+        run: |
+          mkdir -p "$HOME/.gradle/init.d"
+          cp android/gradle/kotlin-plugin-repositories.init.gradle \
+            "$HOME/.gradle/init.d/kotlin-plugin-repositories.init.gradle"
+
       - name: Verify dependency lock integrity
         run: git diff --exit-code -- pubspec.lock
 

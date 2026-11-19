@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:app_t/features/Authentication/domain/entities/auth_failure.dart';
 import 'package:app_t/features/Education/presentation/pages/education_studio_shell.dart';
+import 'package:app_t/features/Education/presentation/state/education_video_preparer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -51,7 +52,12 @@ void main() {
     (tester) async {
       final source = FakeEducationContentDataSource();
       final picker = _FakeVideoPicker();
-      await _pumpStudio(tester, source, videoPicker: picker);
+      await _pumpStudio(
+        tester,
+        source,
+        videoPicker: picker,
+        videoPreparer: _FakeVideoPreparer(),
+      );
 
       await tester.tap(find.text('Short video'));
       await tester.pumpAndSettle();
@@ -73,6 +79,54 @@ void main() {
       expect(find.text('Submit for review'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'native preparation failure never starts upload and keeps draft',
+    (tester) async {
+      final source = FakeEducationContentDataSource();
+      await _pumpStudio(
+        tester,
+        source,
+        videoPicker: _FakeVideoPicker(),
+        videoPreparer:
+            _FakeVideoPreparer()
+              ..failure = const AuthFailure(
+                type: AuthFailureType.validation,
+                message: 'This recording could not be prepared.',
+              ),
+      );
+      await _createVideoDraft(tester);
+      await _chooseVideo(tester);
+
+      expect(source.uploadCalls, 0);
+      expect(source.items.single.status, 'DRAFT');
+      expect(
+        find.text('This recording could not be prepared.'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('cancelled native preparation never sends upload bytes', (
+    tester,
+  ) async {
+    final source = FakeEducationContentDataSource();
+    await _pumpStudio(
+      tester,
+      source,
+      videoPicker: _FakeVideoPicker(),
+      videoPreparer: _FakeVideoPreparer()..cancel = true,
+    );
+    await _createVideoDraft(tester);
+    await _chooseVideo(tester);
+
+    expect(source.uploadCalls, 0);
+    expect(source.items.single.status, 'DRAFT');
+    expect(
+      find.text('Video preparation cancelled. Your draft is saved.'),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('initial load failure offers retry instead of empty success', (
     tester,
@@ -166,6 +220,7 @@ Future<void> _pumpStudio(
   WidgetTester tester,
   FakeEducationContentDataSource source, {
   EducationVideoPicker? videoPicker,
+  EducationVideoPreparer? videoPreparer,
 }) async {
   tester.view.physicalSize = const Size(430, 1000);
   tester.view.devicePixelRatio = 1;
@@ -179,6 +234,7 @@ Future<void> _pumpStudio(
             home: EducationStudioShellPage(
               repository: source,
               videoPicker: videoPicker,
+              videoPreparer: videoPreparer,
             ),
           ),
     ),
@@ -192,9 +248,44 @@ class _FakeVideoPicker implements EducationVideoPicker {
   @override
   Future<EducationPickedVideo?> pick(ImageSource source) async {
     lastSource = source;
-    return EducationPickedVideo(
-      name: 'lesson.mp4',
+    return const EducationPickedVideo(name: 'lesson.mov', path: 'fixture.mov');
+  }
+}
+
+class _FakeVideoPreparer implements EducationVideoPreparer {
+  AuthFailure? failure;
+  bool cancel = false;
+
+  @override
+  Future<PreparedEducationVideo> prepare(
+    EducationPickedVideo video, {
+    required EducationVideoPreparationController controller,
+    required void Function(double progress) onProgress,
+  }) async {
+    if (cancel) throw const EducationVideoPreparationCancelled();
+    if (failure case final error?) throw error;
+    return PreparedEducationVideo(
+      name: 'education-video.mp4',
       bytes: Uint8List.fromList(<int>[1, 2, 3]),
+      duration: const Duration(seconds: 30),
     );
   }
+}
+
+Future<void> _createVideoDraft(WidgetTester tester) async {
+  await tester.tap(find.text('Short video'));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byType(TextField).at(0), 'Sleep basics');
+  await tester.enterText(find.byType(TextField).at(1), 'General tips');
+  await tester.tap(find.text('Save draft'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _chooseVideo(WidgetTester tester) async {
+  await tester.ensureVisible(find.text('Add video'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Add video'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Choose a video'));
+  await tester.pumpAndSettle();
 }

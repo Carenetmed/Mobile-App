@@ -211,7 +211,7 @@ class ProfessionalBookingController extends ChangeNotifier {
     timesError = null;
     _notify();
     try {
-      final rangeStartAt = _clock().toUtc();
+      final rangeStartAt = _backendPrecision(_clock());
       final rangeEndAt = rangeStartAt.add(
         const Duration(days: requestableRangeDays),
       );
@@ -225,8 +225,7 @@ class ProfessionalBookingController extends ChangeNotifier {
       }
       if (!_hasValidTimesContract(loaded) ||
           (loaded.rangeStartAt != null &&
-              (loaded.rangeStartAt!.toUtc() != rangeStartAt ||
-                  loaded.rangeEndAt!.isAfter(rangeEndAt)))) {
+              !_isWithinRequestedRange(loaded, rangeStartAt, rangeEndAt))) {
         throw const FormatException('Invalid requestable-time contract.');
       }
       final effectiveLoaded =
@@ -300,8 +299,8 @@ class ProfessionalBookingController extends ChangeNotifier {
       return;
     }
     final current = requestableTimes!;
-    final startAt = current.rangeEndAt!;
-    final policyEndAt = _bookingWindowEndAt!;
+    final startAt = _backendPrecision(current.rangeEndAt!);
+    final policyEndAt = _backendPrecision(_bookingWindowEndAt!);
     final candidateEnd = startAt.add(
       const Duration(days: requestableRangeDays),
     );
@@ -318,9 +317,7 @@ class ProfessionalBookingController extends ChangeNotifier {
       );
       if (_disposed) return;
       if (!_hasValidTimesContract(loaded) ||
-          loaded.rangeStartAt?.toUtc() != startAt.toUtc() ||
-          loaded.rangeEndAt == null ||
-          loaded.rangeEndAt!.isAfter(endAt) ||
+          !_isWithinRequestedRange(loaded, startAt, endAt) ||
           loaded.timezone != current.timezone ||
           loaded.durationMinutes != current.durationMinutes ||
           loaded.cadenceMinutes != current.cadenceMinutes ||
@@ -358,6 +355,27 @@ class ProfessionalBookingController extends ChangeNotifier {
         _notify();
       }
     }
+  }
+
+  DateTime _backendPrecision(DateTime value) =>
+      DateTime.fromMillisecondsSinceEpoch(
+        value.millisecondsSinceEpoch,
+        isUtc: true,
+      );
+
+  bool _isWithinRequestedRange(
+    RequestableTimes loaded,
+    DateTime startAt,
+    DateTime endAt,
+  ) {
+    final start = loaded.rangeStartAt;
+    final end = loaded.rangeEndAt;
+    // The server intersects the request with its authoritative booking window.
+    return start != null &&
+        end != null &&
+        !start.isBefore(startAt) &&
+        end.isAfter(start) &&
+        !end.isAfter(endAt);
   }
 
   bool _hasValidTimesContract(RequestableTimes loaded) {

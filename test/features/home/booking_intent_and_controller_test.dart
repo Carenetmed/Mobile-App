@@ -214,6 +214,132 @@ void main() {
   });
 
   group('Professional booking controller', () {
+    test(
+      'accepts server-clamped ranges with a microsecond client clock',
+      () async {
+        final now = DateTime.parse('2026-11-21T05:10:57.824595Z');
+        final sentStart = DateTime.parse('2026-11-21T05:10:57.824Z');
+        final firstEnd = sentStart.add(const Duration(days: 14));
+        final secondEnd = firstEnd.add(const Duration(days: 14));
+        final serverStart = DateTime.parse('2026-11-21T05:13:25.461Z');
+        final laterServerStart = firstEnd.add(const Duration(minutes: 2));
+        RequestableTimes page(DateTime start, DateTime end) => RequestableTimes(
+          professionalProfileId: 'pro-1',
+          timezone: 'Africa/Lagos',
+          durationMinutes: 30,
+          cadenceMinutes: 30,
+          leadTimeMinutes: 120,
+          bookingHorizonDays: 60,
+          rangeStartAt: start,
+          rangeEndAt: end,
+          times: <RequestableTime>[
+            RequestableTime(
+              startAt: start.add(const Duration(hours: 3)),
+              endAt: start.add(const Duration(hours: 3, minutes: 30)),
+            ),
+          ],
+        );
+        final scheduling = _FakeSchedulingRepository(
+          responses: [
+            page(serverStart, firstEnd),
+            page(laterServerStart, secondEnd),
+          ],
+        );
+        final controller = _controller(
+          scheduling: scheduling,
+          clock: () => now,
+        );
+        addTearDown(controller.dispose);
+
+        await controller.initialize();
+        expect(controller.timesError, isNull);
+        expect(controller.requestableTimes!.rangeStartAt, serverStart);
+        final selected = controller.requestableTimes!.times.single;
+        await controller.selectTime(selected);
+        await controller.loadLaterTimes();
+
+        expect(controller.timesError, isNull);
+        expect(scheduling.requestedRanges, [
+          (sentStart, firstEnd),
+          (firstEnd, secondEnd),
+        ]);
+        expect(controller.requestableTimes!.times, hasLength(2));
+        expect(controller.requestableTimes!.rangeEndAt, secondEnd);
+        expect(controller.selectedTime, same(selected));
+      },
+    );
+
+    for (final invalidRange in [
+      'before',
+      'after',
+      'reversed',
+      'missing',
+      'time',
+    ]) {
+      for (final later in [false, true]) {
+        test(
+          'rejects $invalidRange range on ${later ? 'later' : 'initial'} load',
+          () async {
+            final now = DateTime.parse('2026-07-24T12:00:00.824595Z');
+            final sentStart = DateTime.parse('2026-07-24T12:00:00.824Z');
+            final firstEnd = sentStart.add(const Duration(days: 14));
+            final start = later ? firstEnd : sentStart;
+            final end = start.add(const Duration(days: 14));
+            final invalid = _times(
+              empty: invalidRange != 'time',
+              rangeStartAt:
+                  invalidRange == 'before'
+                      ? start.subtract(const Duration(milliseconds: 1))
+                      : invalidRange == 'reversed'
+                      ? end
+                      : start,
+              rangeEndAt:
+                  invalidRange == 'missing'
+                      ? null
+                      : invalidRange == 'after'
+                      ? end.add(const Duration(milliseconds: 1))
+                      : invalidRange == 'reversed'
+                      ? start
+                      : end,
+            );
+            // The fixture time is outside the later page; use a narrowed initial
+            // range to exercise the same interval containment check there too.
+            final response =
+                invalidRange == 'time' && !later
+                    ? _times(
+                      rangeStartAt: start,
+                      rangeEndAt: start.add(const Duration(hours: 1)),
+                    )
+                    : invalid;
+            final initial = _times(
+              rangeStartAt: sentStart,
+              rangeEndAt: firstEnd,
+            );
+            final controller = _controller(
+              scheduling: _FakeSchedulingRepository(
+                responses: [if (later) initial, response],
+              ),
+              clock: () => now,
+            );
+            addTearDown(controller.dispose);
+            await controller.initialize();
+            if (later) {
+              await controller.selectTime(
+                controller.requestableTimes!.times.single,
+              );
+              await controller.loadLaterTimes();
+              expect(controller.requestableTimes, same(initial));
+              expect(controller.selectedTime!.startAt, _firstStart);
+            } else {
+              expect(controller.requestableTimes, isNull);
+              expect(controller.selectedTime, isNull);
+            }
+            expect(controller.timesError, contains('Could not load'));
+          },
+        );
+      }
+    }
+
     test('loads bounded requestable-time pages and merges them', () async {
       final now = DateTime.parse('2026-07-24T12:00:00Z');
       final firstEnd = now.add(const Duration(days: 14));

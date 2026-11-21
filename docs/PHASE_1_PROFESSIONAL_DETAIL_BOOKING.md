@@ -59,6 +59,14 @@ an invalid range response fails closed, and a later-page failure preserves alrea
 loaded times. The temporary no-query backend behavior remains a rollout compatibility
 boundary, not the canonical mobile request.
 
+Range requests use UTC millisecond precision, matching backend serialization.
+The server may clamp the returned start forward to its authoritative current
+time and the end to its booking horizon. Mobile accepts a valid returned range
+contained within the requested bounds rather than requiring identical start
+timestamps. Professional identity, policy metadata, interval containment and
+selection validation remain mandatory; a successful HTTP response alone does
+not make an interval selectable.
+
 The `timezone` Dart package converts each returned UTC instant into the
 professional timezone using IANA rules, including daylight-saving transitions.
 Device-local time may appear only as a clearly secondary label.
